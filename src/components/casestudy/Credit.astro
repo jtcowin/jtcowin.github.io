@@ -1,0 +1,39 @@
+---
+/**
+ * Collaboration credit block: who owned what.
+ */
+---
+
+<aside class="credit" aria-label="Collaboration credit">
+  <div class="container credit__inner">
+    <h2 class="eyebrow eyebrow--muted">Collaboration credit</h2>
+    <div class="credit__body prose">
+      <slot />
+    </div>
+  </div>
+</aside>
+
+<style>
+  .credit {
+    padding-block: clamp(2.5rem, 2rem + 2vw, 4rem);
+    border-top: 1px solid var(--line);
+    background: var(--bg-elev);
+  }
+
+  .credit__inner {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .credit__body {
+    font-size: var(--text-base);
+    max-width: 44em;
+  }
+
+  @media (min-width: 60rem) {
+    .credit__inner {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      gap: clamp(2rem, 1.5rem + 3vw, 5rem);
+    }
+  }
+</style>

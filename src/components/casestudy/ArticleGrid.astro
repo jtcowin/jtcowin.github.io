@@ -1,0 +1,26 @@
+---
+import ArticleCard from './ArticleCard.astro';
+
+interface Props {
+  ids: string[];
+}
+
+const { ids } = Astro.props;
+---
+
+<div class="article-grid">
+  {ids.map((id) => <ArticleCard id={id} />)}
+</div>
+
+<style>
+  .article-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  @media (min-width: 40rem) {
+    .article-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

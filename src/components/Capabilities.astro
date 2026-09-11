@@ -1,0 +1,86 @@
+---
+import home from '@data/home.json';
+
+const { capabilities } = home;
+---
+
+<section id="capabilities" class="section capabilities" aria-labelledby="capabilities-heading">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="capabilities-heading" class="display display-lg">{capabilities.heading}</h2>
+    </div>
+    <ol class="capabilities__list">
+      {
+        capabilities.items.map((item, i) => (
+          <li class="capabilities__item">
+            <span class="capabilities__num mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="capabilities__title">{item.title}</h3>
+            <p class="capabilities__copy">{item.copy}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .capabilities {
+    background: var(--bg-elev);
+    border-block: 1px solid var(--line);
+  }
+
+  .capabilities__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .capabilities__item {
+    display: grid;
+    gap: var(--space-3);
+    padding: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+    background: var(--bg-elev);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .capabilities__item:hover {
+    background: var(--bg);
+  }
+
+  .capabilities__num {
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  .capabilities__title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: var(--leading-snug);
+  }
+
+  .capabilities__copy {
+    color: var(--ink-2);
+    line-height: var(--leading-relaxed);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 48rem) {
+    .capabilities__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .capabilities__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

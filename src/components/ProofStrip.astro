@@ -1,0 +1,66 @@
+---
+/**
+ * Four static metrics with precise labels. Numbers are not animated.
+ */
+import home from '@data/home.json';
+
+const { metrics } = home.proof;
+---
+
+<section class="proof" aria-label="Selected figures">
+  <div class="container">
+    <dl class="proof__list">
+      {
+        metrics.map((m) => (
+          <div class="proof__item">
+            <dt class="proof__label">{m.label}</dt>
+            <dd class="proof__value serif">{m.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .proof {
+    padding-block: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  .proof__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5) var(--space-6);
+    margin: 0;
+  }
+
+  .proof__item {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--line-strong);
+  }
+
+  .proof__value {
+    font-size: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);
+    line-height: 0.95;
+    color: var(--ink);
+    font-variant-numeric: lining-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .proof__label {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--ink-3);
+    text-wrap: pretty;
+    max-width: 16em;
+  }
+
+  @media (min-width: 56rem) {
+    .proof__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

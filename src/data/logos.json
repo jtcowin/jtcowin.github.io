@@ -1,0 +1,91 @@
+{
+  "_readme": [
+    "Credibility bar and inline logo marks. Logos render as accessible text wordmarks until an approved file is supplied.",
+    "To add a logo: place a monochrome SVG or PNG in src/assets/logos/ and set `file`, then set `permission` to `approved`. Logos with any other permission status keep rendering as text.",
+    "`relationship` is shown as a small caption so no organization is mislabeled as a client."
+  ],
+  "heading": "Selected companies, products & partners",
+  "logos": [
+    {
+      "id": "phi-labs",
+      "name": "Phi Labs",
+      "relationship": "Employer",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "bolt-liquidity",
+      "name": "Bolt Liquidity",
+      "relationship": "Product",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "archway",
+      "name": "Archway",
+      "relationship": "Product",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "trezor",
+      "name": "Trezor",
+      "relationship": "Co-sponsor",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "bitrefill",
+      "name": "Bitrefill",
+      "relationship": "Co-sponsor",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "rayls-labs",
+      "name": "Rayls Labs",
+      "relationship": "Co-sponsor",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "sui-summit",
+      "name": "Sui Summit",
+      "relationship": "Sponsored event",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "xeta-capital",
+      "name": "XETA Capital",
+      "relationship": "Employer",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "aftermath",
+      "name": "Aftermath",
+      "relationship": "Ecosystem partner",
+      "file": null,
+      "permission": "pending",
+      "url": null,
+      "inBar": false
+    }
+  ]
+}

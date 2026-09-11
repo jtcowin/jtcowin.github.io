@@ -1,0 +1,125 @@
+---
+import home from '@data/home.json';
+import site from '@data/site.json';
+import { withBase } from '@lib/paths';
+import { getAsset, isRenderable } from '@lib/assets';
+import Media from './Media.astro';
+import Icon from './Icon.astro';
+
+const { about } = home;
+const headshot = getAsset(about.headshot);
+// The headshot is optional: it only renders once a file is supplied.
+const showHeadshot = isRenderable(headshot);
+const resumeHref = withBase(site.resumePath);
+---
+
+<section id="about" class="section about" aria-labelledby="about-heading">
+  <div class="container about__grid">
+    <div class="about__main">
+      <p class="eyebrow">About</p>
+      <h2 id="about-heading" class="display display-lg">{about.heading}</h2>
+      <div class="prose about__prose">
+        {about.paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+
+    <aside class="about__side" aria-labelledby="career-heading">
+      {
+        showHeadshot && (
+          <div class="about__headshot">
+            <Media id={about.headshot} sizes="(min-width: 60rem) 30vw, 60vw" />
+          </div>
+        )
+      }
+      <h3 id="career-heading" class="eyebrow eyebrow--muted">{about.career.heading}</h3>
+      <ol class="career">
+        {
+          about.career.items.map((item) => (
+            <li class="career__item">
+              <span class="career__org">{item.org}</span>
+              {item.role && <span class="career__role">{item.role}</span>}
+              <span class="career__detail">{item.detail}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <a href={resumeHref} class="arrow-link" download>
+        {about.career.link.label} <Icon name="download" size={14} />
+      </a>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .about__grid {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
+  }
+
+  .about__main {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 40rem;
+  }
+
+  .about__prose {
+    margin-top: var(--space-2);
+  }
+
+  .about__side {
+    display: grid;
+    gap: var(--space-5);
+    align-content: start;
+  }
+
+  .about__headshot {
+    max-width: 16rem;
+  }
+
+  .career {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+
+  .career__item {
+    display: grid;
+    gap: 0.2rem;
+    padding-block: var(--space-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .career__item:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .career__org {
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+
+  .career__role {
+    font-size: var(--text-sm);
+    color: var(--accent-ink);
+    font-weight: 500;
+  }
+
+  .career__detail {
+    font-size: var(--text-sm);
+    color: var(--ink-3);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 60rem) {
+    .about__grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+
+    .about__side {
+      padding-top: 2.5rem;
+    }
+  }
+</style>

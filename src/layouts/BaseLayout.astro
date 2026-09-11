@@ -1,0 +1,119 @@
+---
+import '@styles/global.css';
+import site from '@data/site.json';
+import { withBase, absoluteUrl, pagePath } from '@lib/paths';
+import { getAsset } from '@lib/assets';
+import Header from '@components/Header.astro';
+import Footer from '@components/Footer.astro';
+
+interface Props {
+  /** Page title without the site suffix. Omit for the homepage. */
+  title?: string;
+  description?: string;
+  /** Site-relative path of this page, e.g. `/work/creator-campaigns/`. */
+  path: string;
+  /** Asset manifest id of the social preview image. */
+  ogAsset?: string;
+  ogType?: 'website' | 'article';
+  /** Prevent indexing (used by the 404 page). */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = site.description,
+  path,
+  ogAsset = site.ogDefault,
+  ogType = 'website',
+  noindex = false,
+} = Astro.props;
+
+const fullTitle = title ? `${title} | ${site.name}` : `${site.name} — ${site.tagline}`;
+const canonical = absoluteUrl(pagePath(path), Astro.site);
+const og = getAsset(ogAsset);
+const ogImage = og.file ? absoluteUrl(`/${og.file}`, Astro.site) : undefined;
+
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  jobTitle: site.title,
+  email: `mailto:${site.email}`,
+  url: absoluteUrl('/', Astro.site),
+  knowsAbout: ['Web3 marketing', 'Technical content', 'Creator programs', 'Community strategy', 'Event production'],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonical} />}
+    <meta name="theme-color" content="#fafaf8" />
+    <meta name="color-scheme" content="light" />
+
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={withBase('/favicon.ico')} sizes="32x32" />
+    <link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
+    <link rel="manifest" href={withBase('/site.webmanifest')} />
+    <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {!noindex && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content={site.locale} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
+    {ogImage && <meta property="og:image:alt" content={og.alt} />}
+
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    {ogImage && <meta name="twitter:image:alt" content={og.alt} />}
+
+    <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header current={pagePath(path)} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style is:global>
+  .skip-link {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 100;
+    padding: 0.6rem 0.9rem;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 999px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .skip-link:focus-visible {
+    transform: none;
+    outline-offset: 2px;
+  }
+
+  main:focus {
+    outline: none;
+  }
+</style>

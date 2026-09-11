@@ -1,0 +1,26 @@
+{
+  "_readme": "Site-wide settings: identity, navigation, contact, resume path, and default metadata. Page copy lives in home.json and src/content/work/*.mdx.",
+  "name": "John Cowin",
+  "title": "Web3 Marketing, Content & Community Strategist",
+  "tagline": "Web3 marketing built from strategy through execution.",
+  "description": "John Cowin is a Web3 marketer working across positioning, technical content, creator programs, events, and multimedia production. Selected work, resume, and contact.",
+  "email": "jtcowin@yahoo.com",
+  "resumePath": "/resume/John-Cowin-Resume.pdf",
+  "resumeLabel": "Download resume",
+  "locale": "en_US",
+  "ogDefault": "og-home",
+  "nav": [
+    { "label": "Work", "href": "/#work", "menu": "work" },
+    { "label": "About", "href": "/#about" },
+    { "label": "Resume", "href": "/resume/John-Cowin-Resume.pdf", "download": true },
+    { "label": "Contact", "href": "/#contact" }
+  ],
+  "footer": {
+    "line": "John Cowin · Web3 Marketing, Content & Community Strategist",
+    "note": "Built as a static site and published with GitHub Pages."
+  },
+  "social": {
+    "linkedin": null,
+    "github": null
+  }
+}

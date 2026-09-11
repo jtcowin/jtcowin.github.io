@@ -1,0 +1,414 @@
+---
+import { getCollection } from 'astro:content';
+import site from '@data/site.json';
+import { withBase } from '@lib/paths';
+import Icon from './Icon.astro';
+
+interface Props {
+  /** Current page path (site-relative) to mark the active nav item. */
+  current?: string;
+}
+
+const { current = '/' } = Astro.props;
+
+const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const resumeHref = withBase(site.resumePath);
+---
+
+<header class="site-header" id="top">
+  <div class="container site-header__inner">
+    <a href={withBase('/')} class="brand">
+      <span class="brand__mark" aria-hidden="true">JC</span>
+      <span class="brand__name">{site.name}<span class="sr-only"> — home</span></span>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <ul class="nav__list">
+        <li class="nav__item nav__item--menu">
+          <details class="menu" data-menu>
+            <summary class="nav__link menu__summary" aria-haspopup="true">
+              Work <Icon name="chevron-down" size={12} />
+            </summary>
+            <div class="menu__panel">
+              <ul class="menu__list">
+                {
+                  work.map((entry) => (
+                    <li>
+                      <a
+                        href={withBase(`/work/${entry.id}/`)}
+                        class="menu__link"
+                        aria-current={current === `/work/${entry.id}/` ? 'page' : undefined}
+                      >
+                        <span class="menu__eyebrow">{entry.data.eyebrow}</span>
+                        <span class="menu__title">{entry.data.navLabel}</span>
+                      </a>
+                    </li>
+                  ))
+                }
+                <li class="menu__all">
+                  <a href={withBase('/#work')} class="menu__link menu__link--all">
+                    <span class="menu__title">All selected work <Icon name="arrow-right" size={12} /></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </details>
+        </li>
+        <li class="nav__item"><a href={withBase('/#about')} class="nav__link">About</a></li>
+        <li class="nav__item">
+          <a href={resumeHref} class="nav__link" download>Resume</a>
+        </li>
+        <li class="nav__item"><a href={withBase('/#contact')} class="nav__link">Contact</a></li>
+      </ul>
+    </nav>
+
+    <a href={`mailto:${site.email}`} class="btn btn--secondary site-header__cta">
+      <Icon name="mail" size={14} /> Email
+    </a>
+
+    <details class="mobile" data-menu>
+      <summary class="mobile__toggle" aria-label="Open menu">
+        <Icon name="menu" size={20} class="mobile__icon-open" />
+        <Icon name="close" size={20} class="mobile__icon-close" />
+      </summary>
+      <nav class="mobile__panel" aria-label="Mobile">
+        <ul class="mobile__list">
+          <li class="mobile__group">
+            <a href={withBase('/#work')} class="mobile__link">Work</a>
+            <ul class="mobile__sub">
+              {
+                work.map((entry) => (
+                  <li>
+                    <a href={withBase(`/work/${entry.id}/`)} class="mobile__sublink">
+                      {entry.data.navLabel}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </li>
+          <li><a href={withBase('/#about')} class="mobile__link">About</a></li>
+          <li><a href={resumeHref} class="mobile__link" download>Resume <Icon name="download" size={14} /></a></li>
+          <li><a href={withBase('/#contact')} class="mobile__link">Contact</a></li>
+          <li class="mobile__email">
+            <a href={`mailto:${site.email}`} class="btn btn--primary">
+              <Icon name="mail" size={14} /> {site.email}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<script>
+  // Close any open <details data-menu> when clicking outside, pressing Escape,
+  // or following a link inside. Pure enhancement; menus work without JS.
+  const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details[data-menu]'));
+
+  function closeAll(except?: HTMLDetailsElement) {
+    for (const m of menus) if (m !== except && m.open) m.open = false;
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const within = target.closest('details[data-menu]') as HTMLDetailsElement | null;
+    if (target.closest('a')) {
+      closeAll();
+      return;
+    }
+    closeAll(within ?? undefined);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+
+  for (const m of menus) {
+    m.addEventListener('toggle', () => {
+      if (m.open) closeAll(m);
+      if (m.classList.contains('mobile')) {
+        document.documentElement.classList.toggle('menu-open', m.open);
+      }
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: 4.25rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin-right: auto;
+  }
+
+  .brand__mark {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    background: var(--ink);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .brand:hover .brand__mark {
+    background: var(--accent);
+  }
+
+  .brand:hover {
+    color: var(--ink);
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .nav__list {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .nav__item {
+    position: relative;
+  }
+
+  .nav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.55rem 0.8rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-radius: 999px;
+    cursor: pointer;
+    list-style: none;
+    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .nav__link:hover,
+  .menu[open] > .menu__summary {
+    color: var(--ink);
+    background: var(--bg-sunk);
+  }
+
+  .menu__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu__summary :global(svg) {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .menu[open] > .menu__summary :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .menu__panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    min-width: 21rem;
+    padding: 0.4rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+
+  .menu__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+
+  .menu__link {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .menu__link:hover,
+  .menu__link[aria-current='page'] {
+    background: var(--bg-sunk);
+    color: var(--ink);
+  }
+
+  .menu__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .menu__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .menu__all {
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .menu__link--all .menu__title {
+    color: var(--ink-2);
+  }
+
+  .site-header__cta {
+    display: none;
+  }
+
+  /* ---- Mobile ---------------------------------------------------------- */
+  .mobile {
+    position: relative;
+  }
+
+  .mobile__toggle {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile :global(.mobile__icon-close) {
+    display: none;
+  }
+
+  .mobile[open] :global(.mobile__icon-open) {
+    display: none;
+  }
+
+  .mobile[open] :global(.mobile__icon-close) {
+    display: block;
+  }
+
+  .mobile__panel {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    width: min(22rem, calc(100vw - 2 * var(--gutter)));
+    padding: 0.75rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+
+  .mobile__list,
+  .mobile__sub {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mobile__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0.9rem;
+    font-size: var(--text-md);
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius);
+  }
+
+  .mobile__link:hover {
+    background: var(--bg-sunk);
+    color: var(--ink);
+  }
+
+  .mobile__sub {
+    padding: 0 0 0.5rem 0.9rem;
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .mobile__sublink {
+    display: block;
+    padding: 0.5rem 0.9rem;
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    text-decoration: none;
+    border-left: 1px solid var(--line);
+  }
+
+  .mobile__sublink:hover {
+    color: var(--ink);
+    border-left-color: var(--accent);
+  }
+
+  .mobile__email {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.4rem 0.2rem;
+  }
+
+  .mobile__email .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  @media (min-width: 60rem) {
+    .nav {
+      display: block;
+    }
+
+    .site-header__cta {
+      display: inline-flex;
+    }
+
+    .mobile {
+      display: none;
+    }
+  }
+</style>

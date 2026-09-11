@@ -1,0 +1,99 @@
+---
+/**
+ * Case-study section: sticky title column on desktop, prose + media on the right.
+ * Use `wide` for sections whose media should span the full container.
+ */
+interface Props {
+  id: string;
+  title: string;
+  /** Optional mono kicker above the title (e.g. "01"). */
+  kicker?: string;
+  wide?: boolean;
+  class?: string;
+}
+
+const { id, title, kicker, wide = false, class: className } = Astro.props;
+---
+
+<section id={id} class:list={['cs-section', wide && 'cs-section--wide', className]} aria-labelledby={`${id}-title`}>
+  <div class="container cs-section__grid">
+    <div class="cs-section__head">
+      {kicker && <span class="cs-section__kicker mono">{kicker}</span>}
+      <h2 id={`${id}-title`} class="cs-section__title display display-md">{title}</h2>
+    </div>
+    <div class="cs-section__body prose">
+      <slot />
+    </div>
+    {
+      Astro.slots.has('wide') && (
+        <div class="cs-section__wide">
+          <slot name="wide" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .cs-section {
+    padding-block: clamp(2.5rem, 2rem + 2.5vw, 4.5rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .cs-section__grid {
+    display: grid;
+    gap: var(--space-5) clamp(2rem, 1.5rem + 3vw, 5rem);
+  }
+
+  .cs-section__head {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+  }
+
+  .cs-section__kicker {
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+
+  .cs-section__title {
+    max-width: 14em;
+  }
+
+  .cs-section__body {
+    min-width: 0;
+  }
+
+  .cs-section__body > :global(* + *) {
+    margin-top: 1.25em;
+  }
+
+  .cs-section__body > :global(.media),
+  .cs-section__body > :global(.media-grid),
+  .cs-section__body > :global(.gallery),
+  .cs-section__body > :global(.stats),
+  .cs-section__body > :global(.creators),
+  .cs-section__body > :global(.link-card),
+  .cs-section__body > :global(.testimonial),
+  .cs-section__body > :global(.activations),
+  .cs-section__body > :global(.article-grid) {
+    margin-top: var(--space-6);
+  }
+
+  .cs-section__wide {
+    grid-column: 1 / -1;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 60rem) {
+    .cs-section__grid {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    }
+
+    .cs-section__head {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+</style>

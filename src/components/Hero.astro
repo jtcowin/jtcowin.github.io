@@ -1,0 +1,350 @@
+---
+/**
+ * Split editorial hero: copy on the left, a layered "work system" of real work
+ * categories on the right. Motion is limited to staggered entry, a slow drift,
+ * and a slight pointer response on fine-pointer devices. With
+ * prefers-reduced-motion the composition renders fully static.
+ */
+import home from '@data/home.json';
+import site from '@data/site.json';
+import { withBase } from '@lib/paths';
+import Media from './Media.astro';
+import MetricMarker from './MetricMarker.astro';
+import Icon from './Icon.astro';
+
+const { hero } = home;
+const a = hero.artifacts;
+
+function resolveHref(href: string) {
+  return href === 'resume' ? withBase(site.resumePath) : withBase(href);
+}
+---
+
+<section class="hero grid-texture" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow rise" style="--delay: 0ms">{hero.eyebrow}</p>
+      <h1 id="hero-title" class="display display-xl rise" style="--delay: 60ms">{hero.headline}</h1>
+      <p class="lede rise" style="--delay: 140ms">{hero.copy}</p>
+      <div class="hero__actions rise" style="--delay: 220ms">
+        <a href={resolveHref(hero.primaryCta.href)} class="btn btn--primary">
+          {hero.primaryCta.label} <Icon name="arrow-right" size={14} />
+        </a>
+        <a href={resolveHref(hero.secondaryCta.href)} class="btn btn--secondary" download>
+          <Icon name="download" size={14} /> {hero.secondaryCta.label}
+        </a>
+        {
+          hero.emailLink && (
+            <a href={`mailto:${site.email}`} class="hero__email mono">
+              {site.email}
+            </a>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="hero__stage" data-stage aria-label="Selected work artifacts" role="group">
+      <div class="artifact artifact--doc" style="--i: 0; --rot: -2deg;" data-depth="0.45">
+        <div class="artifact__parallax">
+          <div class="artifact__inner">
+            <Media id={a.docPanel} compact priority sizes="(min-width: 60rem) 26vw, 45vw" />
+          </div>
+        </div>
+      </div>
+
+      <div class="artifact artifact--creator" style="--i: 1; --rot: 1.6deg;" data-depth="0.8">
+        <div class="artifact__parallax">
+          <div class="artifact__inner">
+            <Media id={a.creatorStill} compact priority sizes="(min-width: 60rem) 28vw, 45vw" />
+          </div>
+        </div>
+      </div>
+
+      <div class="artifact artifact--article" style="--i: 2; --rot: 1.2deg;" data-depth="0.6">
+        <div class="artifact__parallax">
+          <div class="artifact__inner">
+            <Media id={a.articleCard} compact sizes="(min-width: 60rem) 20vw, 45vw" />
+          </div>
+        </div>
+      </div>
+
+      <div class="artifact artifact--summit" style="--i: 3; --rot: -1.2deg;" data-depth="1">
+        <div class="artifact__parallax">
+          <div class="artifact__inner">
+            <Media id={a.summitStill} compact sizes="(min-width: 60rem) 26vw, 45vw" />
+          </div>
+        </div>
+      </div>
+
+      <div class="artifact artifact--metric" style="--i: 4; --rot: 0deg;" data-depth="1.3">
+        <div class="artifact__parallax">
+          <div class="artifact__inner">
+            <MetricMarker id={a.metric} />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Slight pointer response for the layered artifacts. Enhancement only.
+  const stage = document.querySelector<HTMLElement>('[data-stage]');
+  const hero = stage?.closest<HTMLElement>('.hero');
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (stage && hero && fine.matches && !reduce.matches) {
+    const items = Array.from(stage.querySelectorAll<HTMLElement>('.artifact'));
+    let raf = 0;
+    let nx = 0;
+    let ny = 0;
+
+    const apply = () => {
+      raf = 0;
+      for (const el of items) {
+        const depth = Number(el.dataset.depth ?? 1);
+        el.style.setProperty('--dx', `${(nx * depth * 9).toFixed(2)}px`);
+        el.style.setProperty('--dy', `${(ny * depth * 7).toFixed(2)}px`);
+      }
+    };
+
+    hero.addEventListener('pointerenter', () => {
+      hero.dataset.parallaxActive = '';
+    });
+
+    hero.addEventListener('pointermove', (e) => {
+      const r = stage.getBoundingClientRect();
+      nx = Math.max(-1, Math.min(1, ((e.clientX - (r.left + r.width / 2)) / r.width) * 2));
+      ny = Math.max(-1, Math.min(1, ((e.clientY - (r.top + r.height / 2)) / r.height) * 2));
+      if (!raf) raf = requestAnimationFrame(apply);
+    });
+
+    hero.addEventListener('pointerleave', () => {
+      nx = 0;
+      ny = 0;
+      if (!raf) raf = requestAnimationFrame(apply);
+      // Drop the compositing hint once the transition back to rest has finished.
+      window.setTimeout(() => delete hero.dataset.parallaxActive, 750);
+    });
+  }
+</script>
+
+<style>
+  .hero {
+    padding-block: clamp(3rem, 2rem + 4vw, 6rem) clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+    overflow: hidden;
+  }
+
+  .hero__grid {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
+    align-items: center;
+  }
+
+  .hero__copy {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 38rem;
+  }
+
+  .hero__copy h1 {
+    margin-top: -0.25rem;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-top: var(--space-2);
+  }
+
+  .hero__email {
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+    text-decoration-color: var(--line-strong);
+    padding-inline: 0.25rem;
+  }
+
+  /* ---- Stage: mobile-first simplified composition ------------------ */
+  .hero__stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    max-width: 34rem;
+  }
+
+  .artifact {
+    position: relative;
+    min-width: 0;
+    animation: artifact-in 900ms var(--ease-out) both;
+    animation-delay: calc(140ms + var(--i) * 110ms);
+  }
+
+  .artifact__parallax {
+    transform: translate3d(var(--dx, 0px), var(--dy, 0px), 0);
+    transition: transform 700ms var(--ease-out);
+  }
+
+  /* `will-change` is applied by the pointer-parallax script only on devices that
+     actually run it, and only while the pointer is over the hero. Leaving it in CSS
+     pins a compositing layer for the life of the page for no benefit. */
+  .hero[data-parallax-active] .artifact__parallax {
+    will-change: transform;
+  }
+
+  .artifact__inner {
+    transform: rotate(var(--rot));
+    animation: drift 11s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -1.7s);
+    filter: drop-shadow(0 18px 28px rgba(22, 24, 26, 0.16));
+  }
+
+  .artifact--doc .artifact__inner,
+  .artifact--article .artifact__inner {
+    filter: drop-shadow(0 14px 24px rgba(22, 24, 26, 0.12));
+  }
+
+  /* The metric marker sits at the intersection of the 2x2 grid on small screens */
+  .artifact--metric {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+    animation-name: artifact-in-center;
+  }
+
+  .artifact--metric .artifact__inner {
+    animation: none;
+    filter: none;
+  }
+
+  .artifact--metric :global(.metric-marker) {
+    min-width: 9.5rem;
+    padding: 0.65rem 0.85rem 0.7rem;
+  }
+
+  .artifact--metric :global(.metric-marker__value) {
+    font-size: 1.5rem;
+  }
+
+  @keyframes artifact-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 28px, 0) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes artifact-in-center {
+    from {
+      opacity: 0;
+      transform: translate(-50%, calc(-50% + 20px));
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: rotate(var(--rot)) translateY(0);
+    }
+    50% {
+      transform: rotate(var(--rot)) translateY(-6px);
+    }
+  }
+
+  /* ---- Desktop: layered offset composition ------------------------- */
+  @media (min-width: 60rem) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 11fr) minmax(0, 10fr);
+    }
+
+    .hero__stage {
+      display: block;
+      max-width: none;
+      aspect-ratio: 1 / 0.92;
+      margin-inline-end: -4%;
+    }
+
+    .artifact {
+      position: absolute;
+    }
+
+    .artifact--doc {
+      left: 0;
+      top: 8%;
+      width: 56%;
+      z-index: 1;
+    }
+
+    .artifact--creator {
+      left: 37%;
+      top: 0;
+      width: 61%;
+      z-index: 2;
+    }
+
+    .artifact--article {
+      left: 5%;
+      top: 55%;
+      width: 42%;
+      z-index: 3;
+    }
+
+    .artifact--summit {
+      left: 41%;
+      top: 48%;
+      width: 57%;
+      z-index: 4;
+    }
+
+    .artifact--metric {
+      left: auto;
+      right: 8%;
+      top: 38%;
+      width: auto;
+      transform: none;
+      animation-name: artifact-in;
+    }
+
+    .artifact--metric :global(.metric-marker) {
+      min-width: 11.5rem;
+      padding: 0.85rem 1.1rem 0.9rem;
+    }
+
+    .artifact--metric :global(.metric-marker__value) {
+      font-size: 1.85rem;
+    }
+  }
+
+  @media (min-width: 75rem) {
+    .hero__stage {
+      margin-inline-end: -8%;
+    }
+  }
+
+  /* Reduced motion: fully static composition */
+  @media (prefers-reduced-motion: reduce) {
+    .artifact,
+    .artifact__inner,
+    .artifact--metric {
+      animation: none !important;
+    }
+
+    .artifact__parallax {
+      transition: none;
+      transform: none !important;
+    }
+  }
+</style>

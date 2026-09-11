@@ -1,0 +1,384 @@
+---
+/**
+ * Manifest-driven media frame.
+ *
+ * Give it an asset id from src/data/assets.json. If the entry has a file (and its
+ * permission allows publishing) it renders the real, optimized media at the entry's
+ * aspect ratio. Otherwise it renders an intentional, labeled placeholder at the same
+ * ratio, so layouts are final before assets arrive and nothing is presented as a
+ * real production asset.
+ */
+import { Picture } from 'astro:assets';
+import { getAsset, isRenderable, resolveImage, aspectToCss } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from './Icon.astro';
+import ExternalLink from './ExternalLink.astro';
+
+interface Props {
+  id: string;
+  class?: string;
+  /** Responsive `sizes` attribute for real images. */
+  sizes?: string;
+  /** Load eagerly (above the fold). */
+  priority?: boolean;
+  /** Show the credit line / caption below the frame. */
+  caption?: boolean;
+  /** Override the manifest aspect ratio (e.g. when a card crops a hero still). */
+  aspect?: string;
+  /** Hide the small id marker on placeholders (used inside the hero stack). */
+  compact?: boolean;
+  /** Extra descriptive text shown under a placeholder label. */
+  note?: string;
+}
+
+const {
+  id,
+  class: className,
+  sizes = '(min-width: 1200px) 1100px, 100vw',
+  priority = false,
+  caption = false,
+  aspect,
+  compact = false,
+  note,
+} = Astro.props;
+
+const entry = getAsset(id);
+const ratio = aspectToCss(aspect ?? entry.aspect);
+const variant = entry.variant ?? (entry.type === 'video' || entry.type === 'code' ? 'dark' : 'light');
+const image = resolveImage(entry);
+const renderable = isRenderable(entry) && (entry.type === 'video' ? Boolean(image || entry.file) : Boolean(image));
+
+const typeLabel: Record<string, string> = {
+  image: 'Image',
+  video: 'Video still',
+  analytics: 'Analytics',
+  artifact: 'Redacted artifact',
+  code: 'Code / GitHub',
+  slides: 'Slide deck',
+  article: 'Article card',
+  og: 'Social preview',
+  gallery: 'Gallery',
+  creator: 'Creator',
+  metric: 'Metric',
+  testimonial: 'Testimonial',
+  link: 'Link',
+};
+
+const videoSrc = entry.type === 'video' && entry.file ? withBase(`/media/${entry.file.replace(/^\/+/, '')}`) : null;
+const widths = [480, 768, 1024, 1440, 1920].filter((w) => !image || w <= image.width * 1.05);
+---
+
+<figure class:list={['media', `media--${variant}`, className]} data-asset={entry.id}>
+  <div class="media__frame" style={`aspect-ratio: ${ratio};`}>
+    {
+      renderable && entry.type === 'video' && videoSrc ? (
+        <video
+          class="media__video"
+          controls
+          preload="none"
+          playsinline
+          poster={image ? image.src : undefined}
+          aria-label={entry.alt}
+        >
+          <source src={videoSrc} />
+          <p>
+            Your browser does not support embedded video.
+            {entry.externalUrl && <ExternalLink href={entry.externalUrl}>Watch on X</ExternalLink>}
+          </p>
+        </video>
+      ) : renderable && image ? (
+        <>
+          <Picture
+            src={image}
+            alt={entry.alt}
+            widths={widths.length ? widths : [image.width]}
+            sizes={sizes}
+            formats={['avif', 'webp']}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding={priority ? 'sync' : 'async'}
+            fetchpriority={priority ? 'high' : undefined}
+            class="media__img"
+          />
+          {entry.type === 'video' && (
+            <span class="media__badge" aria-hidden="true">
+              <Icon name="play" size={12} /> Video
+            </span>
+          )}
+        </>
+      ) : (
+        <div class:list={['ph', `ph--${entry.type}`]} aria-label={`Placeholder for ${entry.label}`} role="img">
+          <div class="ph__texture" aria-hidden="true"></div>
+
+          {entry.type === 'video' && (
+            <span class="ph__glyph ph__glyph--play" aria-hidden="true">
+              <Icon name="play" size={22} />
+            </span>
+          )}
+
+          {entry.type === 'artifact' && (
+            <svg class="ph__glyph ph__glyph--doc" viewBox="0 0 200 150" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+              <rect x="24" y="26" width="86" height="9" rx="2" />
+              <rect x="24" y="48" width="152" height="5" rx="2" />
+              <rect x="24" y="60" width="140" height="5" rx="2" />
+              <rect x="24" y="72" width="128" height="5" rx="2" />
+              <rect x="24" y="92" width="64" height="5" rx="2" />
+              <rect x="24" y="104" width="152" height="5" rx="2" />
+              <rect x="24" y="116" width="96" height="5" rx="2" />
+            </svg>
+          )}
+
+          {entry.type === 'code' && (
+            <svg class="ph__glyph ph__glyph--code" viewBox="0 0 200 125" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+              <rect x="20" y="22" width="52" height="5" rx="2" />
+              <rect x="32" y="36" width="88" height="5" rx="2" />
+              <rect x="44" y="50" width="66" height="5" rx="2" />
+              <rect x="44" y="64" width="102" height="5" rx="2" />
+              <rect x="32" y="78" width="40" height="5" rx="2" />
+              <rect x="20" y="92" width="26" height="5" rx="2" />
+            </svg>
+          )}
+
+          {entry.type === 'slides' && (
+            <svg class="ph__glyph ph__glyph--slides" viewBox="0 0 200 112" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+              <rect x="22" y="30" width="96" height="10" rx="2" />
+              <rect x="22" y="48" width="64" height="5" rx="2" />
+              <rect x="22" y="86" width="14" height="4" rx="1" />
+            </svg>
+          )}
+
+          <span class="ph__type">
+            {typeLabel[entry.type] ?? entry.type} · {aspect ?? entry.aspect}
+          </span>
+          <span class="ph__label">
+            {entry.label}
+            {note && <small class="ph__note">{note}</small>}
+          </span>
+          {!compact && <span class="ph__id">{entry.id}</span>}
+        </div>
+      )
+    }
+  </div>
+  {
+    caption && (entry.credit || entry.externalUrl) && (
+      <figcaption class="media__caption">
+        {entry.credit && <span>{entry.credit}</span>}
+        {entry.externalUrl && (
+          <ExternalLink href={entry.externalUrl} class="media__ext">
+            View the live post
+          </ExternalLink>
+        )}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .media {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .media__frame {
+    position: relative;
+    width: 100%;
+    container-type: inline-size;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg-sunk);
+    border: 1px solid var(--line);
+  }
+
+  .media--dark .media__frame {
+    background: var(--dark);
+    border-color: var(--dark-line);
+  }
+
+  .media__frame :global(.media__img),
+  .media__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .media__video {
+    background: var(--dark);
+  }
+
+  .media__badge {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.3rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dark-text);
+    background: rgba(20, 22, 24, 0.72);
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+
+  .media__caption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+
+  .media__caption :global(.media__ext) {
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+  }
+
+  /* ---- Placeholder --------------------------------------------------- */
+  .ph {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: clamp(0.6rem, 2.5cqi, 1rem);
+    color: var(--ink-3);
+    overflow: hidden;
+  }
+
+  .ph__texture {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 9px,
+      rgba(22, 24, 26, 0.05) 9px 10px
+    );
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.35));
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.35));
+  }
+
+  .media--dark .ph {
+    color: var(--dark-text-2);
+  }
+
+  .media--dark .ph__texture {
+    background-image:
+      radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.06), transparent 65%),
+      repeating-linear-gradient(-45deg, transparent 0 9px, rgba(255, 255, 255, 0.035) 9px 10px);
+  }
+
+  /* corner marks */
+  .ph::before,
+  .ph::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: currentColor;
+    border-style: solid;
+    opacity: 0.45;
+  }
+
+  .ph::before {
+    top: 6px;
+    left: 6px;
+    border-width: 1px 0 0 1px;
+  }
+
+  .ph::after {
+    right: 6px;
+    bottom: 6px;
+    border-width: 0 1px 1px 0;
+  }
+
+  .ph__type {
+    position: relative;
+    grid-row: 1;
+    justify-self: start;
+    font-family: var(--font-mono);
+    font-size: clamp(0.55rem, 3cqi, 0.7rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25em 0.55em;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    opacity: 0.85;
+    white-space: nowrap;
+  }
+
+  .ph__glyph {
+    position: relative;
+    grid-row: 2;
+    align-self: center;
+    justify-self: center;
+    width: min(70%, 320px);
+    height: auto;
+    fill: currentColor;
+    opacity: 0.35;
+  }
+
+  .ph__glyph--play {
+    width: clamp(2.5rem, 16cqi, 4rem);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.8;
+  }
+
+  .ph__glyph--play svg {
+    width: 45%;
+    height: 45%;
+    margin-left: 6%;
+  }
+
+  .ph__label {
+    position: relative;
+    grid-row: 3;
+    align-self: end;
+    display: grid;
+    gap: 0.2em;
+    font-size: clamp(0.7rem, 3.4cqi, 0.9rem);
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--ink-2);
+    max-width: 24em;
+    text-wrap: balance;
+  }
+
+  .media--dark .ph__label {
+    color: var(--dark-text);
+  }
+
+  .ph__note {
+    font-size: 0.85em;
+    font-weight: 400;
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  .ph__id {
+    position: absolute;
+    right: clamp(0.6rem, 2.5cqi, 1rem);
+    bottom: clamp(0.6rem, 2.5cqi, 1rem);
+    font-family: var(--font-mono);
+    font-size: clamp(0.5rem, 2.6cqi, 0.65rem);
+    letter-spacing: 0.04em;
+    opacity: 0.55;
+  }
+
+  /* Keep the label and id from colliding on narrow frames */
+  @container (max-width: 260px) {
+    .ph__id {
+      display: none;
+    }
+  }
+</style>

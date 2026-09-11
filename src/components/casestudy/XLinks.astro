@@ -1,0 +1,68 @@
+---
+/**
+ * Compact list of live X post links, clearly labeled as external.
+ */
+import ExternalLink from '../ExternalLink.astro';
+
+interface Props {
+  links: { href: string; label: string }[];
+  heading?: string;
+}
+
+const { links, heading = 'Live posts' } = Astro.props;
+---
+
+<div class="xlinks">
+  <span class="xlinks__heading mono">{heading}</span>
+  <ul class="xlinks__list">
+    {
+      links.map((l) => (
+        <li>
+          <ExternalLink href={l.href} class="xlinks__link">
+            {l.label}
+          </ExternalLink>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .xlinks {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .xlinks__heading {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .xlinks__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .xlinks__list :global(.xlinks__link) {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+
+  .xlinks__list :global(.xlinks__link:hover) {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+</style>

@@ -1,0 +1,85 @@
+---
+/**
+ * Long-form article card. The header visual comes from the manifest (placeholder
+ * until supplied). Visible X figures, if ever added, are labeled as post views.
+ */
+import { getAsset } from '@lib/assets';
+import Media from '../Media.astro';
+import ExternalLink from '../ExternalLink.astro';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const entry = getAsset(id);
+---
+
+<article class="article-card">
+  <Media id={id} sizes="(min-width: 1200px) 250px, 50vw" />
+  <div class="article-card__body">
+    <h3 class="article-card__title">{entry.articleTitle}</h3>
+    {entry.articleNote && <p class="article-card__note">{entry.articleNote}</p>}
+    <div class="article-card__meta">
+      {entry.postViews && <span class="mono article-card__views">{entry.postViews} X post views</span>}
+      {
+        entry.externalUrl && (
+          <ExternalLink href={entry.externalUrl} class="article-card__link">
+            Read on X
+          </ExternalLink>
+        )
+      }
+    </div>
+  </div>
+</article>
+
+<style>
+  .article-card {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .article-card__body {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .article-card__title {
+    font-size: var(--text-md);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .article-card__note {
+    font-size: var(--text-sm);
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  .article-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    margin-top: 0.25rem;
+  }
+
+  .article-card__views {
+    font-size: var(--text-xs);
+    color: var(--ink-3);
+  }
+
+  .article-card__meta :global(.article-card__link) {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .article-card__meta :global(.article-card__link:hover) {
+    color: var(--accent-ink);
+  }
+</style>

@@ -1,0 +1,89 @@
+---
+order: 2
+title: "Technical Product Marketing"
+description: "How John Cowin built positioning, documentation, website copy, and long-form content for Bolt Liquidity."
+navLabel: "Technical marketing"
+eyebrow: "Technical product marketing"
+headline: "Building the system behind the message."
+intro: "I created the strategic and editorial systems used to explain Bolt Liquidity, from internal positioning and claims governance to technical documentation, website copy, and public articles."
+heroAsset: "tm-hero"
+ogAsset: "og-technical-marketing"
+results:
+  - "16-document marketing foundation"
+  - "Six structured stakeholder interviews synthesized"
+  - "27 technical-documentation pages drafted in MDX"
+  - "10 researched, written, edited, and published long-form articles"
+  - "Website strategy, section layout, and copy for a top-to-bottom build"
+card:
+  category: "Technical product marketing"
+  title: "Turning a DeFi protocol into a usable marketing system"
+  summary: "Built Bolt Liquidity’s positioning and messaging foundation, drafted its technical documentation, led website strategy and copy, and developed long-form articles that translated the product for multiple audiences."
+  metrics:
+    - "16-document marketing foundation"
+    - "27 documentation pages"
+    - "10 long-form articles"
+  linkLabel: "View technical marketing case study"
+  asset: "card-technical-marketing"
+---
+
+import Section from '@components/casestudy/Section.astro';
+import MediaGrid from '@components/casestudy/MediaGrid.astro';
+import LinkCard from '@components/casestudy/LinkCard.astro';
+import ArticleGrid from '@components/casestudy/ArticleGrid.astro';
+import Note from '@components/casestudy/Note.astro';
+import Credit from '@components/casestudy/Credit.astro';
+
+<Section id="context" title="Context" kicker="01">
+
+Phi Labs shifted from Archway to Bolt Liquidity four months after I joined. The new protocol required a clear product story, consistent technical explanations, audience-specific messaging, and a process for keeping claims accurate as the product evolved.
+
+</Section>
+
+<Section id="foundation" title="Marketing foundation" kicker="02">
+
+I synthesized interviews with leadership, engineering, business development, pricing, sales, and foundation stakeholders into a 16-document operating foundation. It covered product positioning, buyer roles, messaging architecture, market pain points, competitors, claims governance, audience psychology, voice, terminology, reusable copy, and category narrative.
+
+<Note>Examples below are recreated or redacted. Internal working documents are not published.</Note>
+
+<MediaGrid
+  ids={['tm-artifact-positioning', 'tm-artifact-messaging-ladder', 'tm-artifact-claims-workflow']}
+  columns={3}
+/>
+
+</Section>
+
+<Section id="documentation" title="Technical documentation" kicker="03">
+
+I drafted all 27 documentation pages as MDX files and pushed updates through GitHub. Engineering built the code sections, and I collaborated with design on the documentation’s visual branding.
+
+<MediaGrid ids={['tm-docs-landing', 'tm-docs-page']} columns={2} caption />
+
+<MediaGrid ids={['tm-code-mdx-workflow']} columns={1} />
+
+<LinkCard id="tm-link-docs" />
+
+</Section>
+
+<Section id="website" title="Website" kicker="04">
+
+I led website strategy, copy, and section layout and worked with the design team on a top-to-bottom build. The work connected product positioning to the page hierarchy, narrative sequence, and final copy.
+
+<MediaGrid ids={['tm-website-full', 'tm-website-detail']} columns={2} caption />
+
+</Section>
+
+<Section id="articles" title="Long-form articles" kicker="05">
+
+I researched, wrote, edited, published, and directed the visuals for 10 long-form articles. Five remain live; five were removed with the previous website.
+
+<Note>Historical claims in the articles are preserved as published. Any figures shown from X are post views.</Note>
+
+<ArticleGrid ids={['tm-article-1', 'tm-article-2', 'tm-article-3']} />
+
+</Section>
+
+<Credit>
+
+I owned research, positioning, messaging architecture, documentation drafting, article development, website strategy, copy, and section layout. Engineering owned documentation code sections. Designers collaborated on branding, website design, article visuals, and final production.
+
+</Credit>

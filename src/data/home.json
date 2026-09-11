@@ -1,0 +1,92 @@
+{
+  "_readme": "Homepage copy (Draft 1). Case-study cards are drawn from each case study's frontmatter in src/content/work/.",
+  "hero": {
+    "eyebrow": "John Cowin",
+    "headline": "Web3 marketing built from strategy through execution.",
+    "copy": "I turn complex products into clear positioning, technical content, creator programs, events, and multimedia campaigns. My work spans the systems behind the message and the hands-on execution that brings it to market.",
+    "primaryCta": { "label": "View selected work", "href": "/#work" },
+    "secondaryCta": { "label": "Download resume", "href": "resume" },
+    "emailLink": true,
+    "artifacts": {
+      "_note": "Asset manifest ids for the layered work-system composition. Order matters: it defines stacking and stagger sequence.",
+      "docPanel": "hero-doc-panel",
+      "articleCard": "hero-article-card",
+      "creatorStill": "hero-creator-still",
+      "summitStill": "hero-summit-still",
+      "metric": "hero-metric"
+    }
+  },
+  "proof": {
+    "_note": "Static figures. Do not animate as counters. Keep 'approximate' on the impressions figure.",
+    "metrics": [
+      { "value": "1.22M", "label": "approximate impressions across three international creator activations" },
+      { "value": "80", "label": "creator-campaign content deliverables" },
+      { "value": "27", "label": "technical-documentation pages drafted in MDX" },
+      { "value": "16", "label": "documents in Bolt Liquidity’s marketing foundation" }
+    ]
+  },
+  "work": {
+    "heading": "Selected work",
+    "copy": "My strongest work sits at the intersection of technical communication, creative production, and coordinated execution. These projects show how I define the message, build the operating plan, manage collaborators, and carry the work through publication and distribution."
+  },
+  "capabilities": {
+    "heading": "What I do",
+    "items": [
+      {
+        "title": "Positioning and messaging",
+        "copy": "I turn stakeholder knowledge and technical product details into positioning, messaging architecture, audience strategy, claims standards, and reusable copy systems."
+      },
+      {
+        "title": "Technical content",
+        "copy": "I research and write technical documentation, articles, website copy, presentations, scripts, and social content designed for different levels of product familiarity."
+      },
+      {
+        "title": "Creator and community programs",
+        "copy": "I manage creator relationships, sponsor packages, contracts, logistics, content reviews, publishing schedules, and coordinated distribution across social communities."
+      },
+      {
+        "title": "Multimedia and events",
+        "copy": "I develop concepts, scripts, shot lists, decks, and production plans, then work hands-on with cameras, lighting, audio, speakers, creators, editors, and event partners."
+      }
+    ]
+  },
+  "about": {
+    "heading": "Strategy without losing the execution",
+    "paragraphs": [
+      "I joined Phi Labs Global to manage social media for Archway. Four months later, the company sunset Archway and shifted its focus to Bolt Liquidity. As the marketing team contracted, I assumed work previously distributed across content, community, developer relations, partnerships, marketing operations, and design coordination.",
+      "That transition shaped how I work today. I can build the strategic foundation, translate a technical product, manage external relationships, and step into production or distribution when the work needs to ship. Before Web3, I spent more than a decade building audiences and managing the business behind an independent music project."
+    ],
+    "headshot": "about-headshot",
+    "career": {
+      "heading": "Career snapshot",
+      "items": [
+        {
+          "org": "Phi Labs Global",
+          "role": "Social Media Manager",
+          "detail": "Expanded ownership across strategy, content, community, documentation, creators, events, and production"
+        },
+        {
+          "org": "XETA",
+          "role": "Social Media Marketing Manager",
+          "detail": "Across Avalanche and Ethereum communities"
+        },
+        {
+          "org": "Phoenix Community Capital",
+          "role": "Marketing Director",
+          "detail": "Managing a five-person team and a 17,000-member Discord community"
+        },
+        {
+          "org": "Independent music and marketing",
+          "role": null,
+          "detail": "Brand, audience, touring, partnerships, digital commerce, and 140-plus annual performances"
+        }
+      ],
+      "link": { "label": "Read the full resume", "href": "resume" }
+    }
+  },
+  "contact": {
+    "heading": "Let’s talk about the work.",
+    "copy": "I’m interested in remote Web3 marketing roles and open to the right opportunity in AI or technical products.",
+    "secondary": { "label": "Download resume", "href": "resume" }
+  }
+}

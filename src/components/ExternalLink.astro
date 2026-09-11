@@ -1,0 +1,38 @@
+---
+/**
+ * External link with a visible marker and an accessible "opens in a new tab" note.
+ * Use for anything leaving the site (X posts, live documentation, partner pages).
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  class?: string;
+  /** Short label for the destination, e.g. "X" or "docs.boltliquidity.io". Shown to screen readers. */
+  destination?: string;
+  newTab?: boolean;
+}
+
+const { href, class: className, destination, newTab = true } = Astro.props;
+
+let host = destination;
+if (!host) {
+  try {
+    host = new URL(href).hostname.replace(/^www\./, '');
+    if (host === 'x.com' || host === 'twitter.com') host = 'X';
+  } catch {
+    host = 'external site';
+  }
+}
+---
+
+<a
+  href={href}
+  class:list={['ext', className]}
+  target={newTab ? '_blank' : undefined}
+  rel={newTab ? 'noopener noreferrer' : 'noopener'}
+>
+  <slot />
+  <Icon name="arrow-up-right" size="0.85em" />
+  <span class="sr-only">{newTab ? ` (opens ${host} in a new tab)` : ` (${host})`}</span>
+</a>

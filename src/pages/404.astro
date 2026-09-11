@@ -1,0 +1,43 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Icon from '@components/Icon.astro';
+import site from '@data/site.json';
+import { withBase } from '@lib/paths';
+---
+
+<BaseLayout title="Page not found" description="The page you were looking for does not exist." path="/404/" noindex>
+  <section class="section nf">
+    <div class="container nf__inner">
+      <p class="eyebrow">404</p>
+      <h1 class="display display-xl">This page didn’t make the final cut.</h1>
+      <p class="lede">The address may be out of date, or the page was moved. The work, resume, and contact details are all one click away.</p>
+      <div class="nf__actions">
+        <a href={withBase('/')} class="btn btn--primary">Back to the homepage <Icon name="arrow-right" size={14} /></a>
+        <a href={withBase('/#work')} class="btn btn--secondary">Selected work</a>
+        <a href={`mailto:${site.email}`} class="arrow-link">{site.email}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    min-height: 60dvh;
+    display: grid;
+    align-items: center;
+  }
+
+  .nf__inner {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 44rem;
+  }
+
+  .nf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    margin-top: var(--space-2);
+  }
+</style>

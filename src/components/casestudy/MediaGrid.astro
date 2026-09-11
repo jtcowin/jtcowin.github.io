@@ -1,0 +1,39 @@
+---
+/**
+ * Grid of manifest media frames. Pass asset ids; optionally show captions.
+ */
+import Media from '../Media.astro';
+
+interface Props {
+  ids: string[];
+  columns?: 1 | 2 | 3;
+  caption?: boolean;
+  /** Optional per-id note shown under the placeholder label. */
+  notes?: Record<string, string>;
+}
+
+const { ids, columns = 2, caption = false, notes = {} } = Astro.props;
+const sizes = columns === 1 ? '(min-width: 1200px) 760px, 100vw' : columns === 2 ? '(min-width: 1200px) 380px, 50vw' : '(min-width: 1200px) 250px, 50vw';
+---
+
+<div class:list={['media-grid', `media-grid--${columns}`]}>
+  {ids.map((id) => <Media id={id} caption={caption} sizes={sizes} note={notes[id]} />)}
+</div>
+
+<style>
+  .media-grid {
+    display: grid;
+    gap: var(--space-4);
+    align-items: start;
+  }
+
+  @media (min-width: 40rem) {
+    .media-grid--2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .media-grid--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

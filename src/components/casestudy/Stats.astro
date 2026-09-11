@@ -1,0 +1,64 @@
+---
+/**
+ * Compact list of result/scope statements rendered as a bordered grid.
+ */
+interface Props {
+  items: string[];
+  label?: string;
+  columns?: 2 | 3;
+}
+
+const { items, label = 'Results', columns = 2 } = Astro.props;
+---
+
+<ul class:list={['stats', `stats--${columns}`]} aria-label={label}>
+  {items.map((item) => <li class="stats__item">{item}</li>)}
+</ul>
+
+<style>
+  .stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .stats__item {
+    padding: 1rem 1.15rem;
+    background: var(--bg-elev);
+    box-shadow: 0 0 0 1px var(--line);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--ink);
+    font-weight: 500;
+    text-wrap: pretty;
+  }
+
+  .stats__item::before {
+    content: '';
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    background: var(--accent);
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
+  @media (min-width: 40rem) {
+    .stats--2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stats--3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+/**
+ * Minimal inline icon set. Stroke icons inherit currentColor.
+ */
+interface Props {
+  name: 'arrow-right' | 'arrow-up-right' | 'download' | 'play' | 'mail' | 'menu' | 'close' | 'chevron-down';
+  size?: number | string;
+  class?: string;
+  title?: string;
+}
+
+const { name, size = 16, class: className, title } = Astro.props;
+
+const paths: Record<Props['name'], string> = {
+  'arrow-right': 'M3 8h10M9 4l4 4-4 4',
+  'arrow-up-right': 'M4.5 11.5l7-7M5.5 4.5h6v6',
+  download: 'M8 2v8m0 0l-3-3m3 3l3-3M3 12.5h10',
+  play: 'M5 3.5v9l7.5-4.5z',
+  mail: 'M2 4h12v8H2zM2 4l6 5 6-5',
+  menu: 'M2 4.5h12M2 8h12M2 11.5h12',
+  close: 'M3.5 3.5l9 9m0-9l-9 9',
+  'chevron-down': 'M4 6l4 4 4-4',
+};
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 16 16"
+  fill={name === 'play' ? 'currentColor' : 'none'}
+  stroke={name === 'play' ? 'none' : 'currentColor'}
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden={title ? undefined : 'true'}
+  role={title ? 'img' : undefined}
+  focusable="false"
+>
+  {title && <title>{title}</title>}
+  <path d={paths[name]} />
+</svg>

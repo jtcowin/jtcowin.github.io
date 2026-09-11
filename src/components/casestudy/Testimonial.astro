@@ -1,0 +1,87 @@
+---
+/**
+ * Testimonial driven by the manifest. Renders the quote only when a quote is
+ * present AND permission is approved; otherwise a clearly labeled pending card.
+ */
+import { getAsset } from '@lib/assets';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const entry = getAsset(id);
+const approved = entry.permission === 'approved' && Boolean(entry.quote);
+---
+
+<figure class:list={['testimonial', !approved && 'testimonial--pending']}>
+  {
+    approved ? (
+      <>
+        <blockquote class="testimonial__quote serif">“{entry.quote}”</blockquote>
+        {entry.attribution && <figcaption class="testimonial__attr">{entry.attribution}</figcaption>}
+      </>
+    ) : (
+      <div class="testimonial__pending" role="note">
+        <span class="testimonial__type mono">Testimonial · pending permission</span>
+        <span class="testimonial__label">{entry.label}</span>
+        <span class="testimonial__id mono">{entry.id}</span>
+      </div>
+    )
+  }
+</figure>
+
+<style>
+  .testimonial {
+    padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .testimonial__quote {
+    font-size: var(--text-xl);
+    line-height: 1.25;
+    color: var(--ink);
+  }
+
+  .testimonial__attr {
+    font-size: var(--text-sm);
+    color: var(--ink-3);
+  }
+
+  .testimonial--pending {
+    border-left-color: var(--line-strong);
+    background-image: repeating-linear-gradient(-45deg, transparent 0 9px, rgba(22, 24, 26, 0.04) 9px 10px);
+  }
+
+  .testimonial__pending {
+    display: grid;
+    gap: 0.4rem;
+    color: var(--ink-3);
+  }
+
+  .testimonial__type {
+    justify-self: start;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25em 0.55em;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+  }
+
+  .testimonial__label {
+    font-weight: 500;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  .testimonial__id {
+    font-size: 0.62rem;
+    opacity: 0.6;
+  }
+</style>

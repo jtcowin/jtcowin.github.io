@@ -1,0 +1,83 @@
+---
+/**
+ * One activation block (location + figures + gallery).
+ */
+import Gallery from './Gallery.astro';
+
+interface Props {
+  place: string;
+  region: string;
+  stats: string[];
+  gallery: string;
+  index: number;
+}
+
+const { place, region, stats, gallery, index } = Astro.props;
+---
+
+<article class="activation">
+  <header class="activation__head">
+    <span class="activation__num mono">{String(index).padStart(2, '0')}</span>
+    <div>
+      <h3 class="activation__place">{place}</h3>
+      <p class="activation__region">{region}</p>
+    </div>
+  </header>
+  <ul class="activation__stats">
+    {stats.map((s) => <li>{s}</li>)}
+  </ul>
+  <Gallery id={gallery} />
+</article>
+
+<style>
+  .activation {
+    display: grid;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--line);
+  }
+
+  .activation__head {
+    display: flex;
+    gap: 0.9rem;
+    align-items: baseline;
+  }
+
+  .activation__num {
+    font-size: var(--text-xs);
+    color: var(--accent);
+    letter-spacing: 0.08em;
+  }
+
+  .activation__place {
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .activation__region {
+    font-size: var(--text-sm);
+    color: var(--ink-3);
+    margin-top: 0.15rem;
+  }
+
+  .activation__stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .activation__stats li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--ink-2);
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elev);
+  }
+</style>

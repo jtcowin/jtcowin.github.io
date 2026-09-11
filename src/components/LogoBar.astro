@@ -1,0 +1,117 @@
+---
+/**
+ * Restrained monochrome credibility bar. Renders approved logo files when
+ * present; otherwise accessible text wordmarks. Relationship captions keep
+ * employers, products, co-sponsors, and events clearly distinguished.
+ */
+import { Image } from 'astro:assets';
+import { logos, resolveLogoImage } from '@lib/assets';
+
+const items = logos.logos.filter((l) => l.inBar);
+---
+
+<section class="logobar" aria-labelledby="logobar-heading">
+  <div class="container">
+    <h2 id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</h2>
+    <ul class="logobar__list">
+      {
+        items.map((logo) => {
+          const img = resolveLogoImage(logo);
+          return (
+            <li class="logobar__item">
+              {img ? (
+                <Image src={img} alt={logo.name} height={28} class="logobar__img" loading="lazy" />
+              ) : (
+                <span class="logobar__wordmark">{logo.name}</span>
+              )}
+              <span class="logobar__rel">{logo.relationship}</span>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .logobar {
+    border-block: 1px solid var(--line);
+    padding-block: var(--space-6);
+    background: var(--bg-elev);
+  }
+
+  .logobar__heading {
+    margin-bottom: var(--space-5);
+    text-align: center;
+  }
+
+  .logobar__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4) var(--space-3);
+  }
+
+  .logobar__item {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    padding: 0.85rem 0.5rem;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .logobar__wordmark {
+    font-family: var(--font-sans);
+    font-weight: 650;
+    font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.15rem);
+    letter-spacing: -0.01em;
+    color: var(--ink-2);
+    white-space: nowrap;
+    filter: grayscale(1);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .logobar__item:hover .logobar__wordmark {
+    color: var(--ink);
+  }
+
+  .logobar__item :global(.logobar__img) {
+    height: 28px;
+    width: auto;
+    filter: grayscale(1) contrast(1.05);
+    opacity: 0.78;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .logobar__item:hover .logobar__item :global(.logobar__img) {
+    opacity: 1;
+  }
+
+  .logobar__rel {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  @media (min-width: 40rem) {
+    .logobar__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .logobar__list {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: var(--space-2);
+    }
+
+    .logobar__item {
+      padding-inline: 0.25rem;
+    }
+  }
+</style>

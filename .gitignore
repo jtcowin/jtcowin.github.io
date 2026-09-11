@@ -1,0 +1,16 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# environment / local
+.env
+.env.*
+!.env.example
+.DS_Store
+npm-debug.log*
+
+# verification artifacts (screenshots, reports) are local only
+.verify/

@@ -1,0 +1,184 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import Media from '@components/Media.astro';
+import Stats from '@components/casestudy/Stats.astro';
+import Contact from '@components/Contact.astro';
+import Icon from '@components/Icon.astro';
+import { withBase } from '@lib/paths';
+
+interface Props {
+  entry: CollectionEntry<'work'>;
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const path = `/work/${entry.id}/`;
+
+const all = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const idx = all.findIndex((e) => e.id === entry.id);
+const prev = all[(idx - 1 + all.length) % all.length];
+const next = all[(idx + 1) % all.length];
+---
+
+<BaseLayout title={d.title} description={d.description} path={path} ogAsset={d.ogAsset} ogType="article">
+  <article class="cs">
+    <header class="cs-hero">
+      <div class="container cs-hero__inner">
+        <nav class="cs-hero__crumbs" aria-label="Breadcrumb">
+          <a href={withBase('/#work')}>Selected work</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{d.navLabel}</span>
+        </nav>
+        <p class="eyebrow rise" style="--delay: 0ms">{d.eyebrow}</p>
+        <h1 class="display display-xl cs-hero__title rise" style="--delay: 60ms">{d.headline}</h1>
+        <p class="lede cs-hero__intro rise" style="--delay: 140ms">{d.intro}</p>
+      </div>
+      <div class="container cs-hero__media rise" style="--delay: 220ms">
+        <Media id={d.heroAsset} priority sizes="(min-width: 1280px) 1180px, 100vw" />
+      </div>
+    </header>
+
+    <section class="cs-results" aria-labelledby="results-title">
+      <div class="container cs-results__grid">
+        <h2 id="results-title" class="eyebrow eyebrow--muted">Results</h2>
+        <Stats items={d.results} columns={d.results.length > 4 ? 3 : 2} />
+      </div>
+    </section>
+
+    <slot />
+
+    <nav class="cs-nav" aria-label="Other case studies">
+      <div class="container cs-nav__grid">
+        <a href={withBase(`/work/${prev.id}/`)} class="cs-nav__link cs-nav__link--prev">
+          <span class="cs-nav__dir mono"><Icon name="arrow-right" size={12} class="cs-nav__flip" /> Previous</span>
+          <span class="cs-nav__title">{prev.data.navLabel}</span>
+        </a>
+        <a href={withBase(`/work/${next.id}/`)} class="cs-nav__link cs-nav__link--next">
+          <span class="cs-nav__dir mono">Next <Icon name="arrow-right" size={12} /></span>
+          <span class="cs-nav__title">{next.data.navLabel}</span>
+        </a>
+      </div>
+    </nav>
+  </article>
+
+  <Contact compact />
+</BaseLayout>
+
+<style>
+  .cs-hero {
+    padding-top: clamp(2.5rem, 2rem + 3vw, 5rem);
+  }
+
+  .cs-hero__inner {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 56rem;
+    margin-bottom: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  }
+
+  .cs-hero__crumbs {
+    display: flex;
+    gap: 0.6rem;
+    font-size: var(--text-sm);
+    color: var(--ink-3);
+  }
+
+  .cs-hero__crumbs a {
+    color: var(--ink-3);
+    text-decoration: none;
+  }
+
+  .cs-hero__crumbs a:hover {
+    color: var(--accent-ink);
+  }
+
+  .cs-hero__title {
+    max-width: 16em;
+  }
+
+  .cs-hero__intro {
+    max-width: 40em;
+  }
+
+  .cs-hero__media :global(.media__frame) {
+    border-radius: var(--radius-lg);
+  }
+
+  .cs-results {
+    padding-block: clamp(2.5rem, 2rem + 2.5vw, 4.5rem);
+  }
+
+  .cs-results__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .cs-nav {
+    border-top: 1px solid var(--line);
+    padding-block: var(--space-6);
+  }
+
+  .cs-nav__grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .cs-nav__link {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--bg-elev);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .cs-nav__link:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .cs-nav__dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cs-nav__dir :global(.cs-nav__flip) {
+    transform: rotate(180deg);
+  }
+
+  .cs-nav__title {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    line-height: 1.2;
+  }
+
+  .cs-nav__link--next {
+    text-align: right;
+  }
+
+  .cs-nav__link--next .cs-nav__dir {
+    justify-self: end;
+  }
+
+  @media (min-width: 60rem) {
+    .cs-results__grid {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      gap: clamp(2rem, 1.5rem + 3vw, 5rem);
+      align-items: start;
+    }
+
+    .cs-nav__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

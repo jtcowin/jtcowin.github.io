@@ -1,0 +1,129 @@
+---
+import home from '@data/home.json';
+import site from '@data/site.json';
+import { withBase } from '@lib/paths';
+import Icon from './Icon.astro';
+
+interface Props {
+  /** Compact variant used at the bottom of case-study pages. */
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+const { contact } = home;
+const resumeHref = withBase(site.resumePath);
+---
+
+<section id="contact" class:list={['section', 'contact', compact && 'contact--compact']} aria-labelledby="contact-heading">
+  <div class="container contact__inner">
+    <div class="contact__copy">
+      <p class="eyebrow contact__eyebrow">Contact</p>
+      <h2 id="contact-heading" class:list={['display', compact ? 'display-lg' : 'display-xl']}>{contact.heading}</h2>
+      <p class="lede contact__lede">{contact.copy}</p>
+    </div>
+    <div class="contact__actions">
+      <a href={`mailto:${site.email}`} class="contact__email">
+        <span class="contact__email-text">{site.email}</span>
+        <Icon name="arrow-up-right" size={20} />
+      </a>
+      <a href={resumeHref} class="btn btn--secondary" download>
+        <Icon name="download" size={14} /> {contact.secondary.label}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact {
+    background: var(--ink);
+    color: var(--dark-text);
+  }
+
+  .contact--compact {
+    padding-block: calc(var(--section-y) * 0.75);
+  }
+
+  .contact__inner {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+
+  .contact__copy {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 40rem;
+  }
+
+  .contact__eyebrow {
+    color: #7fc8bd;
+  }
+
+  .contact__lede {
+    color: var(--dark-text-2);
+  }
+
+  .contact__actions {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+    align-content: end;
+  }
+
+  .contact__email {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px solid var(--dark-line);
+    padding-bottom: 0.25rem;
+    transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+    overflow-wrap: anywhere;
+  }
+
+  .contact__email :global(svg) {
+    flex: none;
+    align-self: center;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .contact__email:hover {
+    color: #fff;
+    border-color: #7fc8bd;
+  }
+
+  .contact__email:hover :global(svg) {
+    transform: translate(2px, -2px);
+  }
+
+  .contact .btn--secondary {
+    color: var(--dark-text);
+    border-color: var(--dark-line);
+  }
+
+  .contact .btn--secondary:hover {
+    background: var(--dark-2);
+    border-color: var(--dark-text-2);
+    color: #fff;
+  }
+
+  .contact :focus-visible {
+    outline-color: #7fc8bd;
+  }
+
+  @media (min-width: 60rem) {
+    .contact__inner {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: end;
+    }
+
+    .contact__actions {
+      justify-items: end;
+      text-align: right;
+    }
+  }
+</style>

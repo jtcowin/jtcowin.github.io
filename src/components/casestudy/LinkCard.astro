@@ -1,0 +1,82 @@
+---
+/**
+ * Link placeholder driven by the manifest. Becomes a live external link only
+ * once `permission` is set to approved.
+ */
+import { getAsset } from '@lib/assets';
+import ExternalLink from '../ExternalLink.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const entry = getAsset(id);
+const live = entry.permission === 'approved' && Boolean(entry.url);
+const display = (entry.url ?? '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+---
+
+<div class:list={['link-card', !live && 'link-card--pending']}>
+  <span class="link-card__kicker mono">{live ? 'Live link' : 'Link · pending confirmation'}</span>
+  {
+    live ? (
+      <ExternalLink href={entry.url!} class="link-card__link">
+        <span class="link-card__label">{entry.label}</span>
+        <span class="link-card__url mono">{display}</span>
+      </ExternalLink>
+    ) : (
+      <span class="link-card__static">
+        <span class="link-card__label">{entry.label}</span>
+        <span class="link-card__url mono">{display} <Icon name="arrow-up-right" size={12} /></span>
+      </span>
+    )
+  }
+</div>
+
+<style>
+  .link-card {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+  }
+
+  .link-card--pending {
+    background-image: repeating-linear-gradient(-45deg, transparent 0 9px, rgba(22, 24, 26, 0.04) 9px 10px);
+  }
+
+  .link-card__kicker {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .link-card :global(.link-card__link),
+  .link-card__static {
+    display: grid;
+    gap: 0.15rem;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .link-card__label {
+    font-weight: 600;
+    font-size: var(--text-sm);
+  }
+
+  .link-card__url {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: var(--text-xs);
+    color: var(--ink-3);
+  }
+
+  .link-card :global(.link-card__link:hover) .link-card__label {
+    color: var(--accent-ink);
+  }
+</style>
