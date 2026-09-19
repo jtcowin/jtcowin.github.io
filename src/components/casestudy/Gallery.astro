@@ -4,7 +4,7 @@
  * as optimized images, and fills remaining slots with labeled placeholders.
  */
 import { Picture } from 'astro:assets';
-import { getAsset, resolveGalleryImages, aspectToCss } from '@lib/assets';
+import { getAsset, resolveGalleryImages, aspectToCss, SHOW_PLACEHOLDERS } from '@lib/assets';
 
 interface Props {
   id: string;
@@ -13,11 +13,13 @@ interface Props {
 const { id } = Astro.props;
 const entry = getAsset(id);
 const images = resolveGalleryImages(entry);
-const slots = Math.max(entry.slots ?? 3, images.length);
+const slots = SHOW_PLACEHOLDERS ? Math.max(entry.slots ?? 3, images.length) : images.length;
 const ratio = aspectToCss(entry.aspect);
 const empty = Math.max(0, slots - images.length);
 ---
 
+{
+  slots > 0 && (
 <div class="gallery" role="group" aria-label={entry.label}>
   {
     images.map((img) => (
@@ -42,6 +44,8 @@ const empty = Math.max(0, slots - images.length);
     ))
   }
 </div>
+  )
+}
 
 <style>
   .gallery {

@@ -3,6 +3,7 @@
  * Grid of manifest media frames. Pass asset ids; optionally show captions.
  */
 import Media from '../Media.astro';
+import { isIdVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
 
 interface Props {
   ids: string[];
@@ -13,12 +14,21 @@ interface Props {
 }
 
 const { ids, columns = 2, caption = false, notes = {} } = Astro.props;
-const sizes = columns === 1 ? '(min-width: 1200px) 760px, 100vw' : columns === 2 ? '(min-width: 1200px) 380px, 50vw' : '(min-width: 1200px) 250px, 50vw';
+
+// Unresolved slots are dropped from the production build entirely, and the
+// column count collapses so the remaining items still fill the row.
+const shown = SHOW_PLACEHOLDERS ? ids : ids.filter((id) => isIdVisible(id));
+const cols = Math.max(1, Math.min(columns, shown.length));
+const sizes = cols === 1 ? '(min-width: 1200px) 760px, 100vw' : cols === 2 ? '(min-width: 1200px) 380px, 50vw' : '(min-width: 1200px) 250px, 50vw';
 ---
 
-<div class:list={['media-grid', `media-grid--${columns}`]}>
-  {ids.map((id) => <Media id={id} caption={caption} sizes={sizes} note={notes[id]} />)}
-</div>
+{
+  shown.length > 0 && (
+    <div class:list={['media-grid', `media-grid--${cols}`]}>
+      {shown.map((id) => <Media id={id} caption={caption} sizes={sizes} note={notes[id]} />)}
+    </div>
+  )
+}
 
 <style>
   .media-grid {

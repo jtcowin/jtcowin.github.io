@@ -3,7 +3,7 @@
  * Link placeholder driven by the manifest. Becomes a live external link only
  * once `permission` is set to approved.
  */
-import { getAsset } from '@lib/assets';
+import { getAsset, SHOW_PLACEHOLDERS } from '@lib/assets';
 import ExternalLink from '../ExternalLink.astro';
 import Icon from '../Icon.astro';
 
@@ -17,6 +17,8 @@ const live = entry.permission === 'approved' && Boolean(entry.url);
 const display = (entry.url ?? '').replace(/^https?:\/\//, '').replace(/\/$/, '');
 ---
 
+{
+  (live || SHOW_PLACEHOLDERS) && (
 <div class:list={['link-card', !live && 'link-card--pending']}>
   <span class="link-card__kicker mono">{live ? 'Live link' : 'Link · pending confirmation'}</span>
   {
@@ -33,6 +35,8 @@ const display = (entry.url ?? '').replace(/^https?:\/\//, '').replace(/\/$/, '')
     )
   }
 </div>
+  )
+}
 
 <style>
   .link-card {

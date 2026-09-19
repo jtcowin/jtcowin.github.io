@@ -7,6 +7,7 @@ import Stats from '@components/casestudy/Stats.astro';
 import Contact from '@components/Contact.astro';
 import Icon from '@components/Icon.astro';
 import { withBase } from '@lib/paths';
+import { isIdVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
 
 interface Props {
   entry: CollectionEntry<'work'>;
@@ -35,9 +36,13 @@ const next = all[(idx + 1) % all.length];
         <h1 class="display display-xl cs-hero__title rise" style="--delay: 60ms">{d.headline}</h1>
         <p class="lede cs-hero__intro rise" style="--delay: 140ms">{d.intro}</p>
       </div>
-      <div class="container cs-hero__media rise" style="--delay: 220ms">
-        <Media id={d.heroAsset} priority sizes="(min-width: 1280px) 1180px, 100vw" />
-      </div>
+      {
+        (isIdVisible(d.heroAsset) || SHOW_PLACEHOLDERS) && (
+          <div class="container cs-hero__media rise" style="--delay: 220ms">
+            <Media id={d.heroAsset} priority caption sizes="(min-width: 1280px) 1180px, 100vw" />
+          </div>
+        )
+      }
     </header>
 
     <section class="cs-results" aria-labelledby="results-title">

@@ -1,13 +1,19 @@
 ---
 /**
- * Split editorial hero: copy on the left, a layered "work system" of real work
- * categories on the right. Motion is limited to staggered entry, a slow drift,
- * and a slight pointer response on fine-pointer devices. With
- * prefers-reduced-motion the composition renders fully static.
+ * Split editorial hero: copy on the left, a layered "work system" on the right.
+ *
+ * The portrait is the human anchor and the largest layer; three artifacts behind
+ * and around it prove technical, strategic, and production breadth. Motion is
+ * limited to staggered entry, a slow drift, and a slight pointer response on
+ * fine-pointer devices. With prefers-reduced-motion the composition is static.
+ *
+ * On small screens the copy comes first, then the portrait plus two supporting
+ * artifacts; the website frame is dropped rather than shrunk to illegibility.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
+import { isIdVisible } from '@lib/assets';
 import Media from './Media.astro';
 import MetricMarker from './MetricMarker.astro';
 import Icon from './Icon.astro';
@@ -18,6 +24,17 @@ const a = hero.artifacts;
 function resolveHref(href: string) {
   return href === 'resume' ? withBase(site.resumePath) : withBase(href);
 }
+
+// Each layer is dropped entirely if its asset is not approved, so the
+// composition stays intentional rather than showing a gap.
+const layers = [
+  { key: 'portrait', id: a.portrait, cls: 'artifact--portrait', i: 0, rot: '-1.4deg', depth: '0.5', sizes: '(min-width: 60rem) 22vw, 48vw', priority: true },
+  { key: 'doc', id: a.docPanel, cls: 'artifact--doc', i: 1, rot: '1.4deg', depth: '0.8', sizes: '(min-width: 60rem) 28vw, 48vw', priority: true },
+  { key: 'summit', id: a.summitStill, cls: 'artifact--summit', i: 2, rot: '-1deg', depth: '1', sizes: '(min-width: 60rem) 27vw, 48vw', priority: false },
+  { key: 'website', id: a.websiteFrame, cls: 'artifact--website', i: 3, rot: '1.1deg', depth: '1.25', sizes: '(min-width: 60rem) 24vw, 48vw', priority: false },
+].filter((l) => isIdVisible(l.id));
+
+const showMetric = isIdVisible(a.metric);
 ---
 
 <section class="hero grid-texture" aria-labelledby="hero-title">
@@ -43,46 +60,29 @@ function resolveHref(href: string) {
       </div>
     </div>
 
-    <div class="hero__stage" data-stage aria-label="Selected work artifacts" role="group">
-      <div class="artifact artifact--doc" style="--i: 0; --rot: -2deg;" data-depth="0.45">
-        <div class="artifact__parallax">
-          <div class="artifact__inner">
-            <Media id={a.docPanel} compact priority sizes="(min-width: 60rem) 26vw, 45vw" />
+    <div class="hero__stage" data-stage role="group" aria-label="John Cowin and selected work artifacts">
+      {
+        layers.map((l) => (
+          <div class:list={['artifact', l.cls]} style={`--i: ${l.i}; --rot: ${l.rot};`} data-depth={l.depth}>
+            <div class="artifact__parallax">
+              <div class="artifact__inner">
+                <Media id={l.id} compact priority={l.priority} sizes={l.sizes} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div class="artifact artifact--creator" style="--i: 1; --rot: 1.6deg;" data-depth="0.8">
-        <div class="artifact__parallax">
-          <div class="artifact__inner">
-            <Media id={a.creatorStill} compact priority sizes="(min-width: 60rem) 28vw, 45vw" />
+        ))
+      }
+      {
+        showMetric && (
+          <div class="artifact artifact--metric" style="--i: 4; --rot: 0deg;" data-depth="1.45">
+            <div class="artifact__parallax">
+              <div class="artifact__inner">
+                <MetricMarker id={a.metric} />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div class="artifact artifact--article" style="--i: 2; --rot: 1.2deg;" data-depth="0.6">
-        <div class="artifact__parallax">
-          <div class="artifact__inner">
-            <Media id={a.articleCard} compact sizes="(min-width: 60rem) 20vw, 45vw" />
-          </div>
-        </div>
-      </div>
-
-      <div class="artifact artifact--summit" style="--i: 3; --rot: -1.2deg;" data-depth="1">
-        <div class="artifact__parallax">
-          <div class="artifact__inner">
-            <Media id={a.summitStill} compact sizes="(min-width: 60rem) 26vw, 45vw" />
-          </div>
-        </div>
-      </div>
-
-      <div class="artifact artifact--metric" style="--i: 4; --rot: 0deg;" data-depth="1.3">
-        <div class="artifact__parallax">
-          <div class="artifact__inner">
-            <MetricMarker id={a.metric} />
-          </div>
-        </div>
-      </div>
+        )
+      }
     </div>
   </div>
 </section>
@@ -167,11 +167,11 @@ function resolveHref(href: string) {
     padding-inline: 0.25rem;
   }
 
-  /* ---- Stage: mobile-first simplified composition ------------------ */
+  /* ---- Stage: mobile-first, portrait led ------------------------------ */
   .hero__stage {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.05fr 1fr;
     gap: 0.75rem;
     align-items: start;
     max-width: 34rem;
@@ -182,6 +182,23 @@ function resolveHref(href: string) {
     min-width: 0;
     animation: artifact-in 900ms var(--ease-out) both;
     animation-delay: calc(140ms + var(--i) * 110ms);
+  }
+
+  .artifact--portrait {
+    grid-row: 1 / span 2;
+    align-self: stretch;
+  }
+
+  /* The website frame is the least legible at phone size, so it is dropped
+     rather than shrunk. Portrait plus two artifacts carry the composition. */
+  .artifact--website {
+    display: none;
+  }
+
+  .artifact--metric {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 0.25rem;
   }
 
   .artifact__parallax {
@@ -203,19 +220,8 @@ function resolveHref(href: string) {
     filter: drop-shadow(0 18px 28px rgba(22, 24, 26, 0.16));
   }
 
-  .artifact--doc .artifact__inner,
-  .artifact--article .artifact__inner {
-    filter: drop-shadow(0 14px 24px rgba(22, 24, 26, 0.12));
-  }
-
-  /* The metric marker sits at the intersection of the 2x2 grid on small screens */
-  .artifact--metric {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    z-index: 5;
-    transform: translate(-50%, -50%);
-    animation-name: artifact-in-center;
+  .artifact--portrait .artifact__inner {
+    filter: drop-shadow(0 26px 44px rgba(22, 24, 26, 0.26));
   }
 
   .artifact--metric .artifact__inner {
@@ -243,17 +249,6 @@ function resolveHref(href: string) {
     }
   }
 
-  @keyframes artifact-in-center {
-    from {
-      opacity: 0;
-      transform: translate(-50%, calc(-50% + 20px));
-    }
-    to {
-      opacity: 1;
-      transform: translate(-50%, -50%);
-    }
-  }
-
   @keyframes drift {
     0%,
     100% {
@@ -264,16 +259,16 @@ function resolveHref(href: string) {
     }
   }
 
-  /* ---- Desktop: layered offset composition ------------------------- */
+  /* ---- Desktop: layered collage, portrait dominant -------------------- */
   @media (min-width: 60rem) {
     .hero__grid {
-      grid-template-columns: minmax(0, 11fr) minmax(0, 10fr);
+      grid-template-columns: minmax(0, 10fr) minmax(0, 11fr);
     }
 
     .hero__stage {
       display: block;
       max-width: none;
-      aspect-ratio: 1 / 0.92;
+      aspect-ratio: 1 / 0.94;
       margin-inline-end: -4%;
     }
 
@@ -281,41 +276,44 @@ function resolveHref(href: string) {
       position: absolute;
     }
 
-    .artifact--doc {
+    .artifact--portrait {
       left: 0;
       top: 8%;
-      width: 56%;
-      z-index: 1;
-    }
-
-    .artifact--creator {
-      left: 37%;
-      top: 0;
-      width: 61%;
-      z-index: 2;
-    }
-
-    .artifact--article {
-      left: 5%;
-      top: 55%;
-      width: 42%;
+      width: 45%;
       z-index: 3;
     }
 
-    .artifact--summit {
+    .artifact--doc {
       left: 41%;
-      top: 48%;
+      top: 0;
       width: 57%;
+      z-index: 2;
+    }
+
+    .artifact--summit {
+      left: 46%;
+      top: 31%;
+      width: 54%;
       z-index: 4;
     }
 
+    .artifact--website {
+      display: block;
+      left: 33%;
+      top: 60%;
+      width: 52%;
+      z-index: 5;
+    }
+
+    /* Tucked under the portrait rather than over the website frame, which it
+       previously covered at the headline. */
     .artifact--metric {
-      left: auto;
-      right: 8%;
-      top: 38%;
+      left: 0;
+      right: auto;
+      top: 67%;
       width: auto;
-      transform: none;
-      animation-name: artifact-in;
+      margin-top: 0;
+      z-index: 6;
     }
 
     .artifact--metric :global(.metric-marker) {
@@ -330,7 +328,7 @@ function resolveHref(href: string) {
 
   @media (min-width: 75rem) {
     .hero__stage {
-      margin-inline-end: -8%;
+      margin-inline-end: -7%;
     }
   }
 

@@ -48,8 +48,8 @@ for (const f of files) {
   known.add(rel);
   if (rel.endsWith('/index.html')) known.add(rel.replace(/index\.html$/, ''));
 }
-// Files that are expected to be added by John later; report as notes, not failures.
-const expectedLater = new Set([`${BASE}/resume/John-Cowin-Resume.pdf`]);
+// Nothing is expected later in v1.1: every linked file must resolve.
+const expectedLater = new Set();
 
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8');
@@ -79,15 +79,23 @@ for (const f of htmlFiles) {
 // ----------------------------------------------------------- 2. guardrails
 const forbidden = [
   { re: /@johnboycrypto/i, why: 'handle must not appear' },
-  { re: /524\s?%/, why: 'unverified Trezor lift claim' },
+  { re: /524\s?%/, why: 'retired Trezor lift claim' },
+  { re: /\bXETA\b/i, why: 'XETA must not appear on public surfaces' },
+  { re: /Phoenix Community Capital/i, why: 'Phoenix must not appear on public surfaces' },
   { re: /Sui Network/i, why: 'confidential negotiations must not be mentioned' },
   { re: /17 unique creators/i, why: 'must be 8 unique creators across 17 participations' },
   { re: /linear\.app/i, why: 'internal Linear links must not be published' },
+  { re: /youtube\.com|youtu\.be/i, why: 'do not link the Sui Summit YouTube upload' },
+  { re: /(prepared|provided|supplied)\s+by\s+Trezor/i, why: 'Trezor did not prepare the creator-account comparison' },
+  { re: /Influencer Manager/i, why: 'do not name or title the individual behind the testimonial' },
   { re: /Senior (Marketing|Social)/i, why: 'do not invent a senior title' },
   { re: /Head of/i, why: 'do not invent a senior title' },
   { re: /\[\[[A-Z ]+PLACEHOLDER/i, why: 'raw brief placeholder token leaked into output' },
   { re: /article reads/i, why: 'X figures must be labeled as post views' },
   { re: /\bclients?\b/i, why: 'logo bar organizations must not be called clients' },
+  { re: /\u2014/, why: 'no em dashes in public-facing copy' },
+  { re: /class="[^"]*\bph\b[^"]*"/, why: 'placeholder block rendered into the public build' },
+  { re: /pending permission|pending confirmation/i, why: 'pending-permission UI rendered into the public build' },
 ];
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8');
@@ -101,9 +109,22 @@ const creator = fs.readFileSync(path.join(dist, 'work/creator-campaigns/index.ht
 if (!/Eight unique creators across 17 participations/.test(creator)) {
   failures.push('[claim] creator page must state "Eight unique creators across 17 participations"');
 }
+if (!/8\.7 times the account/i.test(creator)) {
+  failures.push('[claim] creator page must use the approved 8.7x impressions benchmark');
+}
+if (!/directional performance benchmarks, not Trezor-owned analytics/i.test(creator)) {
+  failures.push('[claim] creator page must carry the comparison methodology note');
+}
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 if (!/approximate impressions/i.test(home)) failures.push('[claim] homepage proof strip must keep "approximate" on the 1.22M figure');
 if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
+if (!/Web3 marketing consulting/.test(home)) failures.push('[claim] homepage must carry the consolidated consulting career row');
+if (!/clear market narratives/.test(home)) failures.push('[claim] homepage must use the approved hero supporting copy');
+if (!/globally distributed independent music project/.test(home)) failures.push('[claim] homepage must use the approved About copy');
+// The resume must actually exist for v1.1.
+if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
+  failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
+}
 
 // ---------------------------------------------------------- 3. manifest
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8'));
@@ -135,7 +156,7 @@ for (const f of srcFiles) {
   for (const m of s.matchAll(/<(?:Media|Gallery|Testimonial|LinkCard|ArticleCard|MetricMarker)\b[^>]*\bid=["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/\b(?:heroAsset|ogAsset|asset|gallery|headshot)\s*[:=]\s*["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/ids=\{\[([^\]]+)\]\}/g)) for (const id of m[1].matchAll(/["']([a-z0-9-]+)["']/g)) idRefs.add(id[1]);
-  for (const m of s.matchAll(/"(docPanel|articleCard|creatorStill|summitStill|metric)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
+  for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
 }
 for (const id of idRefs) {
   if (!ids.has(id) && !['context', 'role', 'main', 'top', 'work', 'about', 'contact', 'capabilities'].includes(id)) {

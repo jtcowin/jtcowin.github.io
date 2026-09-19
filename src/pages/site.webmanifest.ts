@@ -13,9 +13,10 @@ export const GET: APIRoute = () => {
     background_color: '#fafaf8',
     theme_color: '#fafaf8',
     icons: [
-      { src: `${base}favicon.svg`, sizes: 'any', type: 'image/svg+xml' },
-      { src: `${base}icon-192.png`, sizes: '192x192', type: 'image/png' },
-      { src: `${base}icon-512.png`, sizes: '512x512', type: 'image/png' },
+      { src: `${base}favicon-32.png`, sizes: '32x32', type: 'image/png' },
+      { src: `${base}apple-touch-icon.png`, sizes: '180x180', type: 'image/png' },
+      { src: `${base}icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: `${base}icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },
     ],
   };
   return new Response(JSON.stringify(manifest, null, 2), {

@@ -104,11 +104,45 @@ export function hasAsset(id: string): boolean {
   return byId.has(id);
 }
 
-/** Whether the entry may render real media (a file exists and permission allows it). */
+/**
+ * Placeholders are an authoring aid, not public content. They render during
+ * `astro dev` so missing slots stay visible while working, and never in a
+ * production build, so the published site can't show a placeholder card.
+ */
+export const SHOW_PLACEHOLDERS = import.meta.env.DEV;
+
+/** Whether the entry may render real media: approved, with a real file. */
 export function isRenderable(entry: AssetEntry): boolean {
-  if (entry.permission === 'private-only') return false;
-  if (entry.type === 'video') return Boolean(entry.poster || entry.file);
+  if (entry.permission !== 'approved') return false;
+  if (entry.type === 'video') return Boolean(entry.file || entry.poster);
   return Boolean(entry.file);
+}
+
+/**
+ * Whether this entry produces any visible output. Non-media types (metric,
+ * creator, testimonial, link) carry their content in the manifest rather than
+ * in a file, so each has its own completeness test.
+ */
+export function isVisible(entry: AssetEntry): boolean {
+  switch (entry.type) {
+    case 'metric':
+      return entry.permission === 'approved' && Boolean(entry.value);
+    case 'creator':
+      return entry.permission === 'approved' && Boolean(entry.name ?? entry.label);
+    case 'testimonial':
+      return entry.permission === 'approved' && Boolean(entry.quote);
+    case 'link':
+      return entry.permission === 'approved' && Boolean(entry.url);
+    case 'gallery':
+      return resolveGalleryImages(entry).length > 0;
+    default:
+      return isRenderable(entry);
+  }
+}
+
+/** Convenience: look an id up and report whether it will render anything. */
+export function isIdVisible(id: string): boolean {
+  return hasAsset(id) && isVisible(getAsset(id));
 }
 
 /** Resolved optimized image for an entry (or its poster, for video), if present. */

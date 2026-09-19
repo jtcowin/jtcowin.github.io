@@ -1,17 +1,17 @@
 {
-  "_readme": "Homepage copy (Draft 1). Case-study cards are drawn from each case study's frontmatter in src/content/work/.",
+  "_readme": "Homepage copy (Version 1.1). Case-study cards are drawn from each case study's frontmatter in src/content/work/.",
   "hero": {
     "eyebrow": "John Cowin",
     "headline": "Web3 marketing built from strategy through execution.",
-    "copy": "I turn complex products into clear positioning, technical content, creator programs, events, and multimedia campaigns. My work spans the systems behind the message and the hands-on execution that brings it to market.",
+    "copy": "I turn complex products into clear market narratives and carry them through technical content, creator programs, events, and multimedia production.",
     "primaryCta": { "label": "View selected work", "href": "/#work" },
     "secondaryCta": { "label": "Download resume", "href": "resume" },
     "emailLink": true,
     "artifacts": {
-      "_note": "Asset manifest ids for the layered work-system composition. Order matters: it defines stacking and stagger sequence.",
+      "_note": "Asset manifest ids for the layered work-system composition. The portrait is the human anchor and the largest layer; the rest prove technical, strategic, and production breadth.",
+      "portrait": "hero-portrait",
       "docPanel": "hero-doc-panel",
-      "articleCard": "hero-article-card",
-      "creatorStill": "hero-creator-still",
+      "websiteFrame": "hero-website-frame",
       "summitStill": "hero-summit-still",
       "metric": "hero-metric"
     }
@@ -53,8 +53,8 @@
   "about": {
     "heading": "Strategy without losing the execution",
     "paragraphs": [
-      "I joined Phi Labs Global to manage social media for Archway. Four months later, the company sunset Archway and shifted its focus to Bolt Liquidity. As the marketing team contracted, I assumed work previously distributed across content, community, developer relations, partnerships, marketing operations, and design coordination.",
-      "That transition shaped how I work today. I can build the strategic foundation, translate a technical product, manage external relationships, and step into production or distribution when the work needs to ship. Before Web3, I spent more than a decade building audiences and managing the business behind an independent music project."
+      "I joined Phi Labs Global to manage social media for Archway. Four months later, the company sunset the protocol and shifted its focus to Bolt Liquidity. As the organization evolved, my remit expanded far beyond social: I took ownership across positioning, content, community, technical documentation, creator partnerships, events, and production.",
+      "That experience shaped how I work today. I can build the strategic foundation, translate a technical product, manage external relationships, and step directly into production or distribution when the work needs to ship. Before Web3, I spent more than a decade building audiences and managing the business behind a globally distributed independent music project."
     ],
     "headshot": "about-headshot",
     "career": {
@@ -66,14 +66,9 @@
           "detail": "Expanded ownership across strategy, content, community, documentation, creators, events, and production"
         },
         {
-          "org": "XETA",
-          "role": "Social Media Marketing Manager",
-          "detail": "Across Avalanche and Ethereum communities"
-        },
-        {
-          "org": "Phoenix Community Capital",
-          "role": "Marketing Director",
-          "detail": "Managing a five-person team and a 17,000-member Discord community"
+          "org": "Web3 marketing consulting",
+          "role": "Selected DeFi projects",
+          "detail": "Social strategy, content, community operations, product education, and team leadership across early-stage DeFi projects"
         },
         {
           "org": "Independent music and marketing",

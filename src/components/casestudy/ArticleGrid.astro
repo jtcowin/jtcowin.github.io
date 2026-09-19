@@ -1,16 +1,22 @@
 ---
 import ArticleCard from './ArticleCard.astro';
+import { isIdVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
 
 interface Props {
   ids: string[];
 }
 
 const { ids } = Astro.props;
+const shown = SHOW_PLACEHOLDERS ? ids : ids.filter((id) => isIdVisible(id));
 ---
 
-<div class="article-grid">
-  {ids.map((id) => <ArticleCard id={id} />)}
-</div>
+{
+  shown.length > 0 && (
+    <div class="article-grid">
+      {shown.map((id) => <ArticleCard id={id} />)}
+    </div>
+  )
+}
 
 <style>
   .article-grid {

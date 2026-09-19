@@ -7,7 +7,14 @@
 import { Image } from 'astro:assets';
 import { logos, resolveLogoImage } from '@lib/assets';
 
-const items = logos.logos.filter((l) => l.inBar);
+// Wordmarks and square marks need different heights to read at the same weight,
+// so each logo is measured at build time rather than forced to one height.
+const items = logos.logos
+  .filter((l) => l.inBar)
+  .map((l) => {
+    const img = resolveLogoImage(l);
+    return { logo: l, img, isMark: img ? img.width / img.height < 1.6 : false };
+  });
 ---
 
 <section class="logobar" aria-labelledby="logobar-heading">
@@ -15,19 +22,22 @@ const items = logos.logos.filter((l) => l.inBar);
     <h2 id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</h2>
     <ul class="logobar__list">
       {
-        items.map((logo) => {
-          const img = resolveLogoImage(logo);
-          return (
-            <li class="logobar__item">
-              {img ? (
-                <Image src={img} alt={logo.name} height={28} class="logobar__img" loading="lazy" />
-              ) : (
-                <span class="logobar__wordmark">{logo.name}</span>
-              )}
-              <span class="logobar__rel">{logo.relationship}</span>
-            </li>
-          );
-        })
+        items.map(({ logo, img, isMark }) => (
+          <li class="logobar__item">
+            {img ? (
+              <Image
+                src={img}
+                alt={logo.name}
+                height={isMark ? 46 : 26}
+                class:list={['logobar__img', isMark && 'logobar__img--mark']}
+                loading="lazy"
+              />
+            ) : (
+              <span class="logobar__wordmark">{logo.name}</span>
+            )}
+            <span class="logobar__rel">{logo.relationship}</span>
+          </li>
+        ))
       }
     </ul>
   </div>
@@ -57,7 +67,9 @@ const items = logos.logos.filter((l) => l.inBar);
   .logobar__item {
     display: grid;
     justify-items: center;
-    gap: 0.35rem;
+    align-content: center;
+    gap: 0.5rem;
+    min-height: 4.5rem;
     padding: 0.85rem 0.5rem;
     text-align: center;
     min-width: 0;
@@ -78,16 +90,27 @@ const items = logos.logos.filter((l) => l.inBar);
     color: var(--ink);
   }
 
+  /* Supplied logos arrive in their own brand colours, several of them white
+     artwork that would be invisible on this background. brightness(0) flattens
+     every mark to one silhouette, which keeps the bar monochrome and legible
+     without editing each file. */
   .logobar__item :global(.logobar__img) {
-    height: 28px;
+    height: 26px;
     width: auto;
-    filter: grayscale(1) contrast(1.05);
-    opacity: 0.78;
+    max-width: 130px;
+    object-fit: contain;
+    filter: brightness(0);
+    opacity: 0.55;
     transition: opacity var(--dur-fast) var(--ease-out);
   }
 
-  .logobar__item:hover .logobar__item :global(.logobar__img) {
-    opacity: 1;
+  .logobar__item :global(.logobar__img--mark) {
+    height: 46px;
+    max-width: 64px;
+  }
+
+  .logobar__item:hover :global(.logobar__img) {
+    opacity: 0.92;
   }
 
   .logobar__rel {

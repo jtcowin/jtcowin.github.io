@@ -9,7 +9,7 @@
  * real production asset.
  */
 import { Picture } from 'astro:assets';
-import { getAsset, isRenderable, resolveImage, aspectToCss } from '@lib/assets';
+import { getAsset, isRenderable, isVisible, SHOW_PLACEHOLDERS, resolveImage, aspectToCss } from '@lib/assets';
 import { withBase } from '@lib/paths';
 import Icon from './Icon.astro';
 import ExternalLink from './ExternalLink.astro';
@@ -66,8 +66,15 @@ const typeLabel: Record<string, string> = {
 
 const videoSrc = entry.type === 'video' && entry.file ? withBase(`/media/${entry.file.replace(/^\/+/, '')}`) : null;
 const widths = [480, 768, 1024, 1440, 1920].filter((w) => !image || w <= image.width * 1.05);
+
+// An unresolved slot renders a labeled placeholder while authoring and nothing
+// at all in a production build, so the public site never shows a placeholder.
+const showPlaceholder = !isVisible(entry) && SHOW_PLACEHOLDERS;
+const show = renderable || showPlaceholder;
 ---
 
+{
+  show && (
 <figure class:list={['media', `media--${variant}`, className]} data-asset={entry.id}>
   <div class="media__frame" style={`aspect-ratio: ${ratio};`}>
     {
@@ -75,6 +82,7 @@ const widths = [480, 768, 1024, 1440, 1920].filter((w) => !image || w <= image.w
         <video
           class="media__video"
           controls
+          muted
           preload="none"
           playsinline
           poster={image ? image.src : undefined}
@@ -171,6 +179,8 @@ const widths = [480, 768, 1024, 1440, 1920].filter((w) => !image || w <= image.w
     )
   }
 </figure>
+  )
+}
 
 <style>
   .media {
