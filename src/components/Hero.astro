@@ -1,120 +1,123 @@
 ---
 /**
- * Split editorial hero: copy on the left, a layered "work system" on the right.
+ * Editorial marquee portrait hero.
  *
- * The portrait is the human anchor and the largest layer; three artifacts behind
- * and around it prove technical, strategic, and production breadth. Motion is
- * limited to staggered entry, a slow drift, and a slight pointer response on
- * fine-pointer devices. With prefers-reduced-motion the composition is static.
+ * Layer order, back to front:
+ *   1. dark ground with a subtle technical grid, grain, and teal atmospheric light
+ *   2. a low-contrast "John Cowin" marquee on a slow linear cycle
+ *   3. the three-line headline, supporting copy, and calls to action
+ *   4. the isolated portrait, anchored to the bottom edge
  *
- * On small screens the copy comes first, then the portrait plus two supporting
- * artifacts; the website frame is dropped rather than shrunk to illegibility.
+ * All motion is layering, typography, light, and depth. Nothing animates the
+ * portrait's face or body. Under prefers-reduced-motion the finished
+ * composition renders immediately with no marquee travel, parallax, or
+ * entrance choreography, and the hero is complete without JavaScript.
  */
+import { Picture } from 'astro:assets';
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
-import { isIdVisible } from '@lib/assets';
-import Media from './Media.astro';
-import MetricMarker from './MetricMarker.astro';
+import { getAsset, resolveImage } from '@lib/assets';
 import Icon from './Icon.astro';
 
 const { hero } = home;
-const a = hero.artifacts;
+const portrait = getAsset(hero.portrait);
+const portraitImg = resolveImage(portrait);
 
 function resolveHref(href: string) {
   return href === 'resume' ? withBase(site.resumePath) : withBase(href);
 }
 
-// Each layer is dropped entirely if its asset is not approved, so the
-// composition stays intentional rather than showing a gap.
-const layers = [
-  { key: 'portrait', id: a.portrait, cls: 'artifact--portrait', i: 0, rot: '-1.4deg', depth: '0.5', sizes: '(min-width: 60rem) 22vw, 48vw', priority: true },
-  { key: 'doc', id: a.docPanel, cls: 'artifact--doc', i: 1, rot: '1.4deg', depth: '0.8', sizes: '(min-width: 60rem) 28vw, 48vw', priority: true },
-  { key: 'summit', id: a.summitStill, cls: 'artifact--summit', i: 2, rot: '-1deg', depth: '1', sizes: '(min-width: 60rem) 27vw, 48vw', priority: false },
-  { key: 'website', id: a.websiteFrame, cls: 'artifact--website', i: 3, rot: '1.1deg', depth: '1.25', sizes: '(min-width: 60rem) 24vw, 48vw', priority: false },
-].filter((l) => isIdVisible(l.id));
-
-const showMetric = isIdVisible(a.metric);
+// Repeated enough times to fill ultrawide viewports; the track is duplicated so
+// the loop has no visible seam.
+const marqueeRun = Array.from({ length: 4 }, () => hero.marquee);
 ---
 
-<section class="hero grid-texture" aria-labelledby="hero-title">
-  <div class="container hero__grid">
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__ground" aria-hidden="true">
+    <div class="hero__grid"></div>
+    <div class="hero__glow"></div>
+    <div class="hero__grain"></div>
+  </div>
+
+  <div class="hero__marquee" aria-hidden="true" data-parallax="0.35">
+    <div class="hero__marquee-track">
+      {[0, 1].map(() => (
+        <span class="hero__marquee-run">
+          {marqueeRun.map((word) => (
+            <span class="hero__marquee-word">{word}</span>
+          ))}
+        </span>
+      ))}
+    </div>
+  </div>
+
+  <div class="container hero__inner">
     <div class="hero__copy">
-      <p class="eyebrow rise" style="--delay: 0ms">{hero.eyebrow}</p>
-      <h1 id="hero-title" class="display display-xl rise" style="--delay: 60ms">{hero.headline}</h1>
-      <p class="lede rise" style="--delay: 140ms">{hero.copy}</p>
-      <div class="hero__actions rise" style="--delay: 220ms">
-        <a href={resolveHref(hero.primaryCta.href)} class="btn btn--primary">
+      <p class="hero__eyebrow" data-reveal="0">{hero.eyebrow}</p>
+      <h1 id="hero-title" class="hero__title">
+        {hero.headlineLines.map((line, i) => (
+          <span class="hero__line">
+            <span class="hero__line-inner" data-reveal={String(i + 1)}>{line}</span>
+          </span>
+        ))}
+      </h1>
+      <p class="hero__lede" data-reveal="4">{hero.copy}</p>
+      <div class="hero__actions" data-reveal="5">
+        <a href={resolveHref(hero.primaryCta.href)} class="btn btn--hero-primary">
           {hero.primaryCta.label} <Icon name="arrow-right" size={14} />
         </a>
-        <a href={resolveHref(hero.secondaryCta.href)} class="btn btn--secondary" download>
+        <a href={resolveHref(hero.secondaryCta.href)} class="btn btn--hero-secondary" download>
           <Icon name="download" size={14} /> {hero.secondaryCta.label}
         </a>
-        {
-          hero.emailLink && (
-            <a href={`mailto:${site.email}`} class="hero__email mono">
-              {site.email}
-            </a>
-          )
-        }
       </div>
     </div>
 
-    <div class="hero__stage" data-stage role="group" aria-label="John Cowin and selected work artifacts">
-      {
-        layers.map((l) => (
-          <div class:list={['artifact', l.cls]} style={`--i: ${l.i}; --rot: ${l.rot};`} data-depth={l.depth}>
-            <div class="artifact__parallax">
-              <div class="artifact__inner">
-                <Media id={l.id} compact priority={l.priority} sizes={l.sizes} />
-              </div>
-            </div>
-          </div>
-        ))
-      }
-      {
-        showMetric && (
-          <div class="artifact artifact--metric" style="--i: 4; --rot: 0deg;" data-depth="1.45">
-            <div class="artifact__parallax">
-              <div class="artifact__inner">
-                <MetricMarker id={a.metric} />
-              </div>
-            </div>
-          </div>
-        )
-      }
-    </div>
+    {
+      portraitImg && (
+        <div class="hero__portrait" data-portrait data-parallax="1">
+          <Picture
+            src={portraitImg}
+            alt={portrait.alt}
+            widths={[420, 640, 860, 1024]}
+            sizes="(min-width: 75rem) 40vw, (min-width: 60rem) 44vw, 78vw"
+            formats={['avif', 'webp']}
+            loading="eager"
+            fetchpriority="high"
+            class="hero__portrait-img"
+          />
+        </div>
+      )
+    }
   </div>
 </section>
 
 <script>
-  // Slight pointer response for the layered artifacts. Enhancement only.
-  const stage = document.querySelector<HTMLElement>('[data-stage]');
-  const hero = stage?.closest<HTMLElement>('.hero');
+  // Pointer parallax, desktop and fine pointers only. Enhancement over a
+  // composition that is already complete without it.
+  const hero = document.querySelector<HTMLElement>('.hero');
   const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const wide = window.matchMedia('(min-width: 60rem)');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (stage && hero && fine.matches && !reduce.matches) {
-    const items = Array.from(stage.querySelectorAll<HTMLElement>('.artifact'));
+  if (hero && fine.matches && wide.matches && !reduce.matches) {
+    const layers = Array.from(hero.querySelectorAll<HTMLElement>('[data-parallax]'));
     let raf = 0;
     let nx = 0;
     let ny = 0;
 
     const apply = () => {
       raf = 0;
-      for (const el of items) {
-        const depth = Number(el.dataset.depth ?? 1);
-        el.style.setProperty('--dx', `${(nx * depth * 9).toFixed(2)}px`);
-        el.style.setProperty('--dy', `${(ny * depth * 7).toFixed(2)}px`);
+      for (const el of layers) {
+        const depth = Number(el.dataset.parallax ?? 1);
+        // Kept inside the brief's 8 to 12 pixel envelope.
+        el.style.setProperty('--px', `${(nx * depth * 10).toFixed(2)}px`);
+        el.style.setProperty('--py', `${(ny * depth * 7).toFixed(2)}px`);
       }
     };
 
-    hero.addEventListener('pointerenter', () => {
-      hero.dataset.parallaxActive = '';
-    });
-
     hero.addEventListener('pointermove', (e) => {
-      const r = stage.getBoundingClientRect();
+      const r = hero.getBoundingClientRect();
       nx = Math.max(-1, Math.min(1, ((e.clientX - (r.left + r.width / 2)) / r.width) * 2));
       ny = Math.max(-1, Math.min(1, ((e.clientY - (r.top + r.height / 2)) / r.height) * 2));
       if (!raf) raf = requestAnimationFrame(apply);
@@ -124,32 +127,146 @@ const showMetric = isIdVisible(a.metric);
       nx = 0;
       ny = 0;
       if (!raf) raf = requestAnimationFrame(apply);
-      // Drop the compositing hint once the transition back to rest has finished.
-      window.setTimeout(() => delete hero.dataset.parallaxActive, 750);
     });
   }
 </script>
 
 <style>
   .hero {
-    padding-block: clamp(3rem, 2rem + 4vw, 6rem) clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+    position: relative;
+    isolation: isolate;
     overflow: hidden;
+    background: var(--dark);
+    color: var(--dark-text);
+    min-height: min(46rem, 88svh);
+    display: grid;
+    align-items: end;
+    padding-block: clamp(3rem, 2rem + 5vw, 5.5rem) 0;
+  }
+
+  /* ---- 1. ground ----------------------------------------------------- */
+  .hero__ground {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    animation: ground-in 900ms var(--ease-out) both;
   }
 
   .hero__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse at 62% 82%, #000 0%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse at 62% 82%, #000 0%, transparent 78%);
+  }
+
+  .hero__glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 55% at 68% 88%, rgba(15, 110, 99, 0.42), transparent 70%),
+      radial-gradient(45% 40% at 14% 12%, rgba(15, 110, 99, 0.16), transparent 72%);
+  }
+
+  .hero__grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  /* ---- 2. marquee ---------------------------------------------------- */
+  .hero__marquee {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: clamp(4rem, 16vh, 11rem);
+    z-index: 1;
+    pointer-events: none;
+    transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    transition: transform 700ms var(--ease-out);
+    animation: ground-in 1200ms var(--ease-out) 200ms both;
+  }
+
+  .hero__marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 36s linear infinite;
+  }
+
+  .hero__marquee-run {
+    display: flex;
+    flex: none;
+  }
+
+  .hero__marquee-word {
+    font-family: var(--font-serif);
+    font-size: clamp(6rem, 17vw, 17rem);
+    line-height: 0.82;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    padding-inline-end: 0.28em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(233, 234, 230, 0.15);
+  }
+
+  /* ---- 3. copy ------------------------------------------------------- */
+  .hero__inner {
+    position: relative;
+    z-index: 3;
     display: grid;
-    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
-    align-items: center;
+    gap: var(--space-6);
+    align-items: end;
+    width: 100%;
   }
 
   .hero__copy {
     display: grid;
     gap: var(--space-5);
-    max-width: 38rem;
+    max-width: 34rem;
+    padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
   }
 
-  .hero__copy h1 {
-    margin-top: -0.25rem;
+  .hero__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7fc8bd;
+  }
+
+  .hero__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 1.5rem + 4.6vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: -0.018em;
+    color: #fff;
+    margin-top: -0.2rem;
+  }
+
+  /* Each line is its own clipping row so the reveal wipes upward cleanly. */
+  .hero__line {
+    display: block;
+    overflow: hidden;
+  }
+
+  .hero__line-inner {
+    display: block;
+  }
+
+  .hero__lede {
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    color: var(--dark-text-2);
+    /* Deliberately narrower than the copy column so the longest line never runs
+       up against the portrait on wide screens. */
+    max-width: 27em;
+    text-wrap: pretty;
   }
 
   .hero__actions {
@@ -160,88 +277,77 @@ const showMetric = isIdVisible(a.metric);
     margin-top: var(--space-2);
   }
 
-  .hero__email {
-    font-size: var(--text-sm);
-    color: var(--ink-2);
-    text-decoration-color: var(--line-strong);
-    padding-inline: 0.25rem;
+  .btn--hero-primary {
+    background: #fff;
+    color: var(--dark);
+    border-color: #fff;
   }
 
-  /* ---- Stage: mobile-first, portrait led ------------------------------ */
-  .hero__stage {
+  .btn--hero-primary:hover {
+    background: #7fc8bd;
+    border-color: #7fc8bd;
+    color: var(--dark);
+  }
+
+  .btn--hero-secondary {
+    background: transparent;
+    color: var(--dark-text);
+    border-color: rgba(233, 234, 230, 0.32);
+  }
+
+  .btn--hero-secondary:hover {
+    background: rgba(233, 234, 230, 0.08);
+    border-color: var(--dark-text);
+    color: #fff;
+  }
+
+  .hero :global(:focus-visible) {
+    outline-color: #7fc8bd;
+  }
+
+  /* ---- 4. portrait --------------------------------------------------- */
+  .hero__portrait {
     position: relative;
-    display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: 0.75rem;
-    align-items: start;
-    max-width: 34rem;
-  }
-
-  .artifact {
-    position: relative;
-    min-width: 0;
-    animation: artifact-in 900ms var(--ease-out) both;
-    animation-delay: calc(140ms + var(--i) * 110ms);
-  }
-
-  .artifact--portrait {
-    grid-row: 1 / span 2;
-    align-self: stretch;
-  }
-
-  /* The website frame is the least legible at phone size, so it is dropped
-     rather than shrunk. Portrait plus two artifacts carry the composition. */
-  .artifact--website {
-    display: none;
-  }
-
-  .artifact--metric {
-    grid-column: 1 / -1;
-    justify-self: start;
-    margin-top: 0.25rem;
-  }
-
-  .artifact__parallax {
-    transform: translate3d(var(--dx, 0px), var(--dy, 0px), 0);
+    z-index: 2;
+    justify-self: center;
+    align-self: end;
+    width: min(78vw, 22rem);
+    transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
     transition: transform 700ms var(--ease-out);
+    animation: portrait-in 1100ms var(--ease-out) 260ms both;
   }
 
-  /* `will-change` is applied by the pointer-parallax script only on devices that
-     actually run it, and only while the pointer is over the hero. Leaving it in CSS
-     pins a compositing layer for the life of the page for no benefit. */
-  .hero[data-parallax-active] .artifact__parallax {
-    will-change: transform;
+  .hero__portrait-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Lifts the subject off the dark ground without a visible edge. */
+    filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.55));
   }
 
-  .artifact__inner {
-    transform: rotate(var(--rot));
-    animation: drift 11s ease-in-out infinite;
-    animation-delay: calc(var(--i) * -1.7s);
-    filter: drop-shadow(0 18px 28px rgba(22, 24, 26, 0.16));
-  }
-
-  .artifact--portrait .artifact__inner {
-    filter: drop-shadow(0 26px 44px rgba(22, 24, 26, 0.26));
-  }
-
-  .artifact--metric .artifact__inner {
-    animation: none;
-    filter: none;
-  }
-
-  .artifact--metric :global(.metric-marker) {
-    min-width: 9.5rem;
-    padding: 0.65rem 0.85rem 0.7rem;
-  }
-
-  .artifact--metric :global(.metric-marker__value) {
-    font-size: 1.5rem;
-  }
-
-  @keyframes artifact-in {
+  /* ---- motion -------------------------------------------------------- */
+  @keyframes ground-in {
     from {
       opacity: 0;
-      transform: translate3d(0, 28px, 0) scale(0.985);
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes line-in {
+    from {
+      transform: translateY(105%);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes soft-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
     }
     to {
       opacity: 1;
@@ -249,100 +355,89 @@ const showMetric = isIdVisible(a.metric);
     }
   }
 
-  @keyframes drift {
-    0%,
-    100% {
-      transform: rotate(var(--rot)) translateY(0);
+  @keyframes portrait-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 34px, 0) scale(0.97);
     }
-    50% {
-      transform: rotate(var(--rot)) translateY(-6px);
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
     }
   }
 
-  /* ---- Desktop: layered collage, portrait dominant -------------------- */
+  @keyframes marquee {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  [data-reveal] {
+    animation: soft-in 700ms var(--ease-out) both;
+  }
+
+  .hero__line-inner[data-reveal] {
+    animation: line-in 820ms var(--ease-out) both;
+  }
+
+  [data-reveal='0'] { animation-delay: 120ms; }
+  [data-reveal='1'] { animation-delay: 180ms; }
+  [data-reveal='2'] { animation-delay: 280ms; }
+  [data-reveal='3'] { animation-delay: 380ms; }
+  [data-reveal='4'] { animation-delay: 620ms; }
+  [data-reveal='5'] { animation-delay: 760ms; }
+
+  /* ---- desktop composition ------------------------------------------- */
   @media (min-width: 60rem) {
-    .hero__grid {
-      grid-template-columns: minmax(0, 10fr) minmax(0, 11fr);
+    .hero {
+      min-height: min(48rem, 92svh);
     }
 
-    .hero__stage {
-      display: block;
-      max-width: none;
-      aspect-ratio: 1 / 0.94;
-      margin-inline-end: -4%;
+    .hero__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-5);
     }
 
-    .artifact {
-      position: absolute;
+    .hero__copy {
+      padding-bottom: clamp(4rem, 9vw, 7rem);
+      max-width: 36rem;
     }
 
-    .artifact--portrait {
-      left: 0;
-      top: 8%;
-      width: 45%;
-      z-index: 3;
-    }
-
-    .artifact--doc {
-      left: 41%;
-      top: 0;
-      width: 57%;
-      z-index: 2;
-    }
-
-    .artifact--summit {
-      left: 46%;
-      top: 31%;
-      width: 54%;
-      z-index: 4;
-    }
-
-    .artifact--website {
-      display: block;
-      left: 33%;
-      top: 60%;
-      width: 52%;
-      z-index: 5;
-    }
-
-    /* Tucked under the portrait rather than over the website frame, which it
-       previously covered at the headline. */
-    .artifact--metric {
-      left: 0;
-      right: auto;
-      top: 67%;
-      width: auto;
-      margin-top: 0;
-      z-index: 6;
-    }
-
-    .artifact--metric :global(.metric-marker) {
-      min-width: 11.5rem;
-      padding: 0.85rem 1.1rem 0.9rem;
-    }
-
-    .artifact--metric :global(.metric-marker__value) {
-      font-size: 1.85rem;
+    .hero__portrait {
+      justify-self: end;
+      width: min(100%, 34rem);
+      margin-inline-end: clamp(0rem, 2vw, 3rem);
     }
   }
 
   @media (min-width: 75rem) {
-    .hero__stage {
-      margin-inline-end: -7%;
+    .hero__portrait {
+      width: min(100%, 38rem);
     }
   }
 
-  /* Reduced motion: fully static composition */
+  /* ---- reduced motion: finished composition, no choreography ---------- */
   @media (prefers-reduced-motion: reduce) {
-    .artifact,
-    .artifact__inner,
-    .artifact--metric {
+    .hero__ground,
+    .hero__marquee,
+    .hero__portrait,
+    [data-reveal],
+    .hero__line-inner[data-reveal] {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .hero__marquee-track {
       animation: none !important;
     }
 
-    .artifact__parallax {
-      transition: none;
-      transform: none !important;
+    .hero__marquee,
+    .hero__portrait {
+      transition: none !important;
     }
   }
 </style>

@@ -18,7 +18,14 @@ const resumeHref = withBase(site.resumePath);
 <header class="site-header" id="top">
   <div class="container site-header__inner">
     <a href={withBase('/')} class="brand">
-      <span class="brand__mark" aria-hidden="true">JC</span>
+      <img
+        class="brand__mark"
+        src={withBase('/icon-192.png')}
+        alt=""
+        width="32"
+        height="32"
+        decoding="async"
+      />
       <span class="brand__name">{site.name}<span class="sr-only">, home</span></span>
     </a>
 
@@ -163,22 +170,15 @@ const resumeHref = withBase(site.resumePath);
   }
 
   .brand__mark {
-    display: grid;
-    place-items: center;
     width: 2rem;
     height: 2rem;
-    border-radius: 6px;
-    background: var(--ink);
-    color: #fff;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    transition: background-color var(--dur-fast) var(--ease-out);
+    border-radius: 7px;
+    display: block;
+    transition: opacity var(--dur-fast) var(--ease-out);
   }
 
   .brand:hover .brand__mark {
-    background: var(--accent);
+    opacity: 0.85;
   }
 
   .brand:hover {

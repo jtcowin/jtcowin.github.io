@@ -64,20 +64,23 @@ const items = logos.logos
     gap: var(--space-4) var(--space-3);
   }
 
+  /* Two fixed rows so every relationship label sits on the same baseline,
+     however tall or short the mark above it is. */
   .logobar__item {
     display: grid;
+    grid-template-rows: 3rem auto;
     justify-items: center;
-    align-content: center;
-    gap: 0.5rem;
-    min-height: 4.5rem;
+    align-items: center;
+    gap: 0.55rem;
     padding: 0.85rem 0.5rem;
     text-align: center;
     min-width: 0;
   }
 
   .logobar__wordmark {
+    align-self: center;
     font-family: var(--font-sans);
-    font-weight: 650;
+    font-weight: 620;
     font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.15rem);
     letter-spacing: -0.01em;
     color: var(--ink-2);
@@ -114,6 +117,7 @@ const items = logos.logos
   }
 
   .logobar__rel {
+    align-self: start;
     font-family: var(--font-mono);
     font-size: 0.6rem;
     letter-spacing: 0.1em;

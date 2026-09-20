@@ -1,6 +1,11 @@
 ---
 /**
- * Four static metrics with precise labels. Numbers are not animated.
+ * Four static figures. Never animated as counters.
+ *
+ * Each item spans two rows of the parent grid via subgrid, so every value sits
+ * on one shared baseline and every label starts on another, no matter how the
+ * labels wrap. Without subgrid support the items simply stack, which still
+ * reads correctly.
  */
 import home from '@data/home.json';
 
@@ -13,8 +18,8 @@ const { metrics } = home.proof;
       {
         metrics.map((m) => (
           <div class="proof__item">
-            <dt class="proof__label">{m.label}</dt>
             <dd class="proof__value serif">{m.value}</dd>
+            <dt class="proof__label">{m.label}</dt>
           </div>
         ))
       }
@@ -30,32 +35,37 @@ const { metrics } = home.proof;
   .proof__list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto;
     gap: var(--space-5) var(--space-6);
     margin: 0;
   }
 
   .proof__item {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 0.5rem;
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    gap: 0.55rem;
     padding-left: var(--space-4);
     border-left: 1px solid var(--line-strong);
   }
 
   .proof__value {
+    margin: 0;
+    align-self: end;
     font-size: clamp(2.25rem, 1.8rem + 2vw, 3.5rem);
     line-height: 0.95;
     color: var(--ink);
-    font-variant-numeric: lining-nums;
+    font-variant-numeric: lining-nums tabular-nums;
     letter-spacing: -0.02em;
   }
 
   .proof__label {
+    align-self: start;
     font-size: var(--text-sm);
     line-height: 1.45;
     color: var(--ink-3);
     text-wrap: pretty;
-    max-width: 16em;
+    max-width: 18em;
   }
 
   @media (min-width: 56rem) {

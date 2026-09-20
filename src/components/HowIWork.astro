@@ -1,0 +1,303 @@
+---
+/**
+ * How I Work.
+ *
+ * Between the intro and the detail sits a restrained "governed signal field":
+ * several thin neutral paths converge on a single human review checkpoint, and
+ * one approved path continues out of it in the accent color. Motion is a slow
+ * pulse travelling along each path; with prefers-reduced-motion the field
+ * renders static. No metrics, counters, or badges appear in this section by
+ * design.
+ */
+import home from '@data/home.json';
+
+const { howIWork } = home;
+
+// Converging signals. `delay` staggers the travelling pulse so the paths do not
+// read as one synchronized animation.
+const signals = [
+  { d: 'M-40 32 C 200 32 380 100 574 100', delay: '0s' },
+  { d: 'M-40 56 C 220 56 400 100 574 100', delay: '-1.9s' },
+  { d: 'M-40 78 C 260 78 430 100 574 100', delay: '-3.4s' },
+  { d: 'M-40 100 L 574 100', delay: '-0.9s' },
+  { d: 'M-40 122 C 260 122 430 100 574 100', delay: '-4.6s' },
+  { d: 'M-40 144 C 220 144 400 100 574 100', delay: '-2.7s' },
+  { d: 'M-40 168 C 200 168 380 100 574 100', delay: '-5.5s' },
+];
+
+const approved = 'M 626 100 L 1240 100';
+---
+
+<section id="how-i-work" class="section how" aria-labelledby="how-heading">
+  <div class="container">
+    <div class="section-head how__head">
+      <p class="eyebrow">{howIWork.eyebrow}</p>
+      <h2 id="how-heading" class="display display-lg">{howIWork.heading}</h2>
+      <p class="lede">{howIWork.lead}</p>
+      <p class="how__supporting">{howIWork.supporting}</p>
+    </div>
+  </div>
+
+  <div class="how__field" aria-hidden="true">
+    <svg viewBox="0 0 1200 200" preserveAspectRatio="xMidYMid slice" focusable="false">
+      {
+        signals.map((s) => (
+          <>
+            <path class="sig" d={s.d} />
+            <path class="sig sig--pulse" d={s.d} style={`--delay: ${s.delay}`} />
+          </>
+        ))
+      }
+      <path class="sig sig--approved" d={approved} />
+      <path class="sig sig--pulse-approved" d={approved} />
+      <g class="gate">
+        <circle class="gate__halo" cx="600" cy="100" r="34" />
+        <circle class="gate__ring" cx="600" cy="100" r="20" />
+        <path class="gate__check" d="M591 100 L598 107 L610 92" />
+      </g>
+    </svg>
+  </div>
+
+  <div class="container how__rest">
+    <ul class="how__cats">
+      {
+        howIWork.categories.map((cat) => (
+          <li class="cat">
+            <h3 class="cat__title">{cat.title}</h3>
+            <p class="cat__copy">{cat.copy}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="how__accountability">{howIWork.accountability}</p>
+
+    <dl class="tools">
+      {
+        howIWork.tools.map((group) => (
+          <div class="tools__group">
+            <dt class="tools__label mono">{group.group}</dt>
+            <dd class="tools__items">
+              {group.items.map((item) => (
+                <span class="tools__chip">{item}</span>
+              ))}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .how {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Signal field: a full-width band between the section intro and the detail
+     below it. Several neutral paths converge on one human review checkpoint and
+     a single approved path continues out of it. */
+  .how__field {
+    position: relative;
+    z-index: 0;
+    height: clamp(7rem, 4rem + 9vw, 11rem);
+    margin-block: clamp(0.5rem, 1vw, 1.5rem) clamp(2.5rem, 2rem + 2vw, 4rem);
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+
+  .how__field svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .sig {
+    fill: none;
+    stroke: rgba(22, 24, 26, 0.1);
+    stroke-width: 1;
+  }
+
+  .sig--pulse {
+    stroke: rgba(22, 24, 26, 0.24);
+    stroke-dasharray: 26 660;
+    stroke-linecap: round;
+    animation: signal-flow 7.5s linear infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .sig--approved {
+    stroke: var(--accent-line);
+    stroke-width: 1.5;
+  }
+
+  .sig--pulse-approved {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 40 620;
+    stroke-linecap: round;
+    opacity: 0.55;
+    animation: approved-flow 7.5s linear infinite;
+  }
+
+  @keyframes signal-flow {
+    from {
+      stroke-dashoffset: 686;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes approved-flow {
+    from {
+      stroke-dashoffset: 660;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .gate__halo {
+    fill: var(--accent-soft);
+    opacity: 0.55;
+  }
+
+  .gate__ring {
+    fill: var(--bg);
+    stroke: var(--accent);
+    stroke-width: 1.5;
+  }
+
+  .gate__check {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---- Copy ---------------------------------------------------------- */
+  .how__head {
+    max-width: 48rem;
+  }
+
+  .how__supporting {
+    color: var(--ink-2);
+    line-height: var(--leading-relaxed);
+    text-wrap: pretty;
+    max-width: 46em;
+  }
+
+  .how__cats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-5) var(--space-6);
+    grid-template-rows: auto auto;
+  }
+
+  .cat {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .cat__title {
+    align-self: start;
+    font-size: var(--text-md);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+  }
+
+  .cat__copy {
+    align-self: start;
+    margin: 0;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    text-wrap: pretty;
+  }
+
+  .how__accountability {
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+    padding: var(--space-4) 0 var(--space-4) var(--space-5);
+    border-inline-start: 2px solid var(--accent);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    color: var(--ink);
+    text-wrap: pretty;
+    max-width: 44em;
+    background: linear-gradient(90deg, rgba(15, 110, 99, 0.05), rgba(15, 110, 99, 0) 70%);
+  }
+
+  /* ---- Tools --------------------------------------------------------- */
+  .tools {
+    margin: clamp(2rem, 1.5rem + 2vw, 3rem) 0 0;
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .tools__group {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .tools__label {
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .tools__items {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tools__chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    font-size: var(--text-xs);
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 48rem) {
+    .how__cats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tools {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-5) var(--space-6);
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .tools {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sig--pulse,
+    .sig--pulse-approved {
+      display: none;
+    }
+  }
+</style>

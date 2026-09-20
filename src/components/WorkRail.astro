@@ -1,0 +1,209 @@
+---
+/**
+ * One curated visual rail of approved stills, shown after the case-study
+ * panels as supporting proof of range.
+ *
+ * The track duplicates itself so the loop has no seam; the duplicate is hidden
+ * from assistive technology so nothing is announced twice. Movement pauses on
+ * hover and on keyboard focus, and is replaced by an ordinary horizontal
+ * scroller on small screens and under reduced motion.
+ */
+import { Picture } from 'astro:assets';
+import home from '@data/home.json';
+import { getAsset, resolveImage, isIdVisible } from '@lib/assets';
+
+const { rail } = home;
+const items = rail.items
+  .filter((id) => isIdVisible(id))
+  .map((id) => {
+    const entry = getAsset(id);
+    return { entry, img: resolveImage(entry) };
+  })
+  .filter((x) => x.img);
+---
+
+{
+  items.length > 0 && (
+    <section class="rail" aria-labelledby="rail-heading">
+      <div class="container rail__head">
+        <h2 id="rail-heading" class="rail__title">{rail.heading}</h2>
+        <p class="rail__copy">{rail.copy}</p>
+      </div>
+
+      <div class="rail__viewport" tabindex="0" role="group" aria-labelledby="rail-heading">
+        <div class="rail__track">
+          <ul class="rail__run">
+            {items.map(({ entry, img }) => (
+              <li class="rail__item">
+                <figure class="rail__figure">
+                  <Picture
+                    src={img!}
+                    alt={entry.alt}
+                    widths={[360, 560, 760]}
+                    sizes="(min-width: 60rem) 26rem, 17rem"
+                    formats={['avif', 'webp']}
+                    loading="lazy"
+                    class="rail__img"
+                  />
+                  <figcaption class="rail__caption">{entry.label}</figcaption>
+                </figure>
+              </li>
+            ))}
+          </ul>
+          <ul class="rail__run" aria-hidden="true">
+            {items.map(({ entry, img }) => (
+              <li class="rail__item">
+                <figure class="rail__figure">
+                  <Picture
+                    src={img!}
+                    alt=""
+                    widths={[360, 560, 760]}
+                    sizes="(min-width: 60rem) 26rem, 17rem"
+                    formats={['avif', 'webp']}
+                    loading="lazy"
+                    class="rail__img"
+                  />
+                  <figcaption class="rail__caption">{entry.label}</figcaption>
+                </figure>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .rail {
+    padding-block: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+    border-top: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  /* No max-width here: this element also carries `.container`, and overriding
+     its width would re-center the whole block instead of the text inside it. */
+  .rail__head {
+    display: grid;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+    justify-items: start;
+  }
+
+  .rail__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    letter-spacing: -0.012em;
+  }
+
+  .rail__copy {
+    color: var(--ink-3);
+    font-size: var(--text-sm);
+    text-wrap: pretty;
+    max-width: 40rem;
+  }
+
+  /* Small screens: an ordinary swipeable row, no automatic movement. */
+  .rail__viewport {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding-inline: var(--gutter);
+    padding-bottom: 0.5rem;
+  }
+
+  /* The rail is a horizontally scrolling region on small screens, so it has to be
+     reachable and scrollable by keyboard. Focusing it also pauses the desktop
+     marquee, which is handled by the :focus-within rule further down. */
+  .rail__viewport:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: var(--radius);
+  }
+
+  .rail__track {
+    display: flex;
+    width: max-content;
+    gap: var(--space-4);
+  }
+
+  .rail__run {
+    display: flex;
+    gap: var(--space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* The seam duplicate only earns its place once the track is animating. */
+  .rail__run[aria-hidden='true'] {
+    display: none;
+  }
+
+  .rail__item {
+    flex: none;
+    width: 17rem;
+    scroll-snap-align: start;
+  }
+
+  .rail__figure {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+  }
+
+  .rail__figure :global(.rail__img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg-sunk);
+  }
+
+  .rail__caption {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  @keyframes rail-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(calc(-50% - var(--space-4) / 2), 0, 0);
+    }
+  }
+
+  @media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
+    .rail__viewport {
+      overflow: hidden;
+      padding-inline: 0;
+      mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+    }
+
+    .rail__run[aria-hidden='true'] {
+      display: flex;
+    }
+
+    .rail__track {
+      animation: rail-scroll 64s linear infinite;
+    }
+
+    .rail__viewport:hover .rail__track,
+    .rail__viewport:focus-within .rail__track {
+      animation-play-state: paused;
+    }
+
+    .rail__item {
+      width: 26rem;
+    }
+  }
+</style>

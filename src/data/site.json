@@ -10,13 +10,27 @@
   "locale": "en_US",
   "ogDefault": "og-home",
   "nav": [
-    { "label": "Work", "href": "/#work", "menu": "work" },
-    { "label": "About", "href": "/#about" },
-    { "label": "Resume", "href": "/resume/John-Cowin-Resume.pdf", "download": true },
-    { "label": "Contact", "href": "/#contact" }
+    {
+      "label": "Work",
+      "href": "/#work",
+      "menu": "work"
+    },
+    {
+      "label": "About",
+      "href": "/#about"
+    },
+    {
+      "label": "Resume",
+      "href": "/resume/John-Cowin-Resume.pdf",
+      "download": true
+    },
+    {
+      "label": "Contact",
+      "href": "/#contact"
+    }
   ],
   "footer": {
-    "line": "John Cowin · Web3 Marketing, Content & Community Strategist",
+    "line": "Web3 Marketing, Content & Community Strategist",
     "note": "Built as a static site and published with GitHub Pages."
   },
   "social": {

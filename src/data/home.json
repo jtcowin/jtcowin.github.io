@@ -1,59 +1,98 @@
 {
-  "_readme": "Homepage copy (Version 1.1). Case-study cards are drawn from each case study's frontmatter in src/content/work/.",
+  "_readme": "Homepage copy (Version 1.2). Case-study panels are drawn from each case study's frontmatter in src/content/work/.",
   "hero": {
     "eyebrow": "John Cowin",
     "headline": "Web3 marketing built from strategy through execution.",
+    "headlineLines": ["Web3 marketing", "built from strategy", "through execution."],
+    "marquee": "John Cowin",
     "copy": "I turn complex products into clear market narratives and carry them through technical content, creator programs, events, and multimedia production.",
     "primaryCta": { "label": "View selected work", "href": "/#work" },
     "secondaryCta": { "label": "Download resume", "href": "resume" },
-    "emailLink": true,
-    "artifacts": {
-      "_note": "Asset manifest ids for the layered work-system composition. The portrait is the human anchor and the largest layer; the rest prove technical, strategic, and production breadth.",
-      "portrait": "hero-portrait",
-      "docPanel": "hero-doc-panel",
-      "websiteFrame": "hero-website-frame",
-      "summitStill": "hero-summit-still",
-      "metric": "hero-metric"
-    }
+    "portrait": "hero-portrait"
   },
   "proof": {
-    "_note": "Static figures. Do not animate as counters. Keep 'approximate' on the impressions figure.",
+    "_note": "Static figures. Do not animate as counters. Keep 'approximately' on the impressions figure. The 1.25M aggregate replaces all earlier aggregate calculations and all location-level figures.",
     "metrics": [
-      { "value": "1.22M", "label": "approximate impressions across three international creator activations" },
+      { "value": "1.25M", "label": "approximate impressions across three international creator activations" },
       { "value": "80", "label": "creator-campaign content deliverables" },
       { "value": "27", "label": "technical-documentation pages drafted in MDX" },
-      { "value": "16", "label": "documents in Bolt Liquidity’s marketing foundation" }
+      { "value": "16", "label": "documents in Bolt’s positioning and messaging foundation" }
     ]
   },
   "work": {
     "heading": "Selected work",
-    "copy": "My strongest work sits at the intersection of technical communication, creative production, and coordinated execution. These projects show how I define the message, build the operating plan, manage collaborators, and carry the work through publication and distribution."
+    "copy": "These case studies represent only part of my range. My work spans product positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, multimedia production, campaign operations, and distribution. The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship."
+  },
+  "rail": {
+    "heading": "More of the work",
+    "copy": "Selected frames from documentation, website, event, and production work.",
+    "items": [
+      "tm-hero",
+      "tm-docs-architecture",
+      "tm-docs-sdk",
+      "tm-website-hero",
+      "ev-hero",
+      "rail-explainer-still",
+      "ev-image-production-setup"
+    ]
   },
   "capabilities": {
     "heading": "What I do",
     "items": [
       {
+        "icon": "target",
         "title": "Positioning and messaging",
-        "copy": "I turn stakeholder knowledge and technical product details into positioning, messaging architecture, audience strategy, claims standards, and reusable copy systems."
+        "copy": "Translate stakeholder knowledge and technical product detail into positioning, messaging architecture, audience strategy, claims standards, and reusable copy systems."
       },
       {
+        "icon": "file-text",
         "title": "Technical content",
-        "copy": "I research and write technical documentation, articles, website copy, presentations, scripts, and social content designed for different levels of product familiarity."
+        "copy": "Research and write technical documentation, articles, website copy, presentations, scripts, and social content pitched to different levels of product familiarity."
       },
       {
+        "icon": "users",
         "title": "Creator and community programs",
-        "copy": "I manage creator relationships, sponsor packages, contracts, logistics, content reviews, publishing schedules, and coordinated distribution across social communities."
+        "copy": "Manage creator relationships, sponsor packages, contracts, logistics, content reviews, publishing schedules, and coordinated distribution across social communities."
       },
       {
+        "icon": "camera",
         "title": "Multimedia and events",
-        "copy": "I develop concepts, scripts, shot lists, decks, and production plans, then work hands-on with cameras, lighting, audio, speakers, creators, editors, and event partners."
+        "copy": "Develop concepts, scripts, shot lists, decks, and production plans, then work hands-on with cameras, lighting, audio, speakers, creators, editors, and event partners."
       }
+    ]
+  },
+  "howIWork": {
+    "eyebrow": "How I work",
+    "heading": "AI-accelerated. Governed by human judgment.",
+    "lead": "I use AI as operating infrastructure, not as a substitute for strategy. After interviewing company leaders and technical stakeholders, I translate their knowledge into positioning, messaging, claims, audience, and content systems that people and automated workflows can use consistently.",
+    "supporting": "I also build governed workflows for recurring intelligence, analytics, documentation maintenance, opportunity monitoring, and outreach. Every system works from approved brand and claims context, cites its sources, and stops for human review before an unverified fact reaches the public.",
+    "categories": [
+      {
+        "title": "Marketing intelligence",
+        "copy": "Leadership interviews, competitive research, buyer analysis, product positioning, messaging hierarchies, claims logs, and reusable content systems."
+      },
+      {
+        "title": "Governed automation",
+        "copy": "Recurring workflows monitor performance, identify opportunities, maintain prospect intelligence, and propose updates within defined verification and approval rules."
+      },
+      {
+        "title": "Build and execution",
+        "copy": "AI-assisted websites, MDX documentation, dashboards, CRM systems, technical-content maintenance, creative production, and cross-channel distribution."
+      }
+    ],
+    "accountability": "AI accelerates the work. I remain accountable for source verification, brand voice, disclosure standards, cross-functional review, and final approval.",
+    "tools": [
+      { "group": "AI and building", "items": ["ChatGPT", "Claude CoWork", "Claude Code", "GitHub", "MDX"] },
+      { "group": "Systems and measurement", "items": ["Linear", "Mintlify", "GitBook", "Grafana", "Google Analytics"] },
+      { "group": "Creative and distribution", "items": ["Figma", "Photoshop", "Descript", "Typefully"] },
+      { "group": "Channels", "items": ["X", "LinkedIn", "Telegram", "Discord"] }
     ]
   },
   "about": {
     "heading": "Strategy without losing the execution",
+    "intro": "I build the strategic foundation, then stay with the work until it ships.",
     "paragraphs": [
-      "I joined Phi Labs Global to manage social media for Archway. Four months later, the company sunset the protocol and shifted its focus to Bolt Liquidity. As the organization evolved, my remit expanded far beyond social: I took ownership across positioning, content, community, technical documentation, creator partnerships, events, and production.",
+      "I joined Phi Labs Global to manage social media for Archway, a Layer 1 blockchain. Four months later, the company sunset the protocol and shifted its focus to Bolt Liquidity, a next-generation prop AMM. As the organization evolved, my remit expanded far beyond social: I took ownership across positioning, content, community, technical documentation, creator partnerships, events, and production.",
       "That experience shaped how I work today. I can build the strategic foundation, translate a technical product, manage external relationships, and step directly into production or distribution when the work needs to ship. Before Web3, I spent more than a decade building audiences and managing the business behind a globally distributed independent music project."
     ],
     "headshot": "about-headshot",
@@ -73,14 +112,14 @@
         {
           "org": "Independent music and marketing",
           "role": null,
-          "detail": "Brand, audience, touring, partnerships, digital commerce, and 140-plus annual performances"
+          "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performing 140-plus shows annually and securing global distribution, sponsorships, media appearances, and major-festival bookings"
         }
       ],
       "link": { "label": "Read the full resume", "href": "resume" }
     }
   },
   "contact": {
-    "heading": "Let’s talk about the work.",
+    "heading": "Make the complex impossible to ignore.",
     "copy": "I’m interested in remote Web3 marketing roles and open to the right opportunity in AI or technical products.",
     "secondary": { "label": "Download resume", "href": "resume" }
   }

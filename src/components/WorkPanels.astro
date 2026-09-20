@@ -1,0 +1,300 @@
+---
+/**
+ * Selected work as large editorial panels that stack as you scroll.
+ *
+ * The stacking itself is plain CSS `position: sticky`, so it works without
+ * JavaScript and keeps DOM order, reading order, tab order, and link behavior
+ * exactly as they would be in a normal vertical list. A small scroll handler
+ * adds the restrained scale-down of a panel once the next one starts covering
+ * it; it is skipped entirely on small screens and under reduced motion, where
+ * the panels simply read as a normal sequence.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { withBase } from '@lib/paths';
+import { isIdVisible } from '@lib/assets';
+import Media from './Media.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  entries: CollectionEntry<'work'>[];
+}
+
+const { entries } = Astro.props;
+---
+
+<div class="panels" data-panels>
+  {
+    entries.map((entry, index) => {
+      const { card } = entry.data;
+      const href = withBase(`/work/${entry.id}/`);
+      const num = String(index + 1).padStart(2, '0');
+      const hasImage = isIdVisible(card.asset);
+      return (
+        <article class="panel" style={`--i: ${index}`} data-panel>
+          <div class="panel__card">
+            <div class="panel__media">
+              {hasImage ? (
+                <Media id={card.asset} sizes="(min-width: 60rem) 46vw, 100vw" />
+              ) : (
+                <div class="panel__figures">
+                  <ul class="panel__figures-list" aria-label="Selected outcomes">
+                    {card.metrics.map((m) => (
+                      <li>{m}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div class="panel__body">
+              <p class="panel__meta">
+                <span class="mono panel__num">{num}</span>
+                <span class="eyebrow">{card.category}</span>
+              </p>
+              <h3 class="panel__title display display-md">
+                <a href={href} class="panel__link">{card.title}</a>
+              </h3>
+              <p class="panel__summary">{card.summary}</p>
+              {/* With no approved image the figures are already set typographically
+                  in the media area, so the pill list would just repeat them. */}
+              {hasImage && (
+                <ul class="panel__metrics" aria-label="Selected outcomes">
+                  {card.metrics.map((m) => (
+                    <li>{m}</li>
+                  ))}
+                </ul>
+              )}
+              <span class="arrow-link panel__cta" aria-hidden="true">
+                {card.linkLabel} <Icon name="arrow-right" size={14} />
+              </span>
+            </div>
+          </div>
+        </article>
+      );
+    })
+  }
+</div>
+
+<script>
+  // Restrained depth cue: a panel recedes slightly once the next one begins to
+  // cover it. Enhancement only, and only where it will not get in the way.
+  const wide = window.matchMedia('(min-width: 60rem)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-panel]'));
+
+  if (panels.length > 1 && wide.matches && !reduce.matches) {
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      for (let i = 0; i < panels.length - 1; i += 1) {
+        const card = panels[i].querySelector<HTMLElement>('.panel__card');
+        const next = panels[i + 1].getBoundingClientRect();
+        if (!card) continue;
+        const rect = panels[i].getBoundingClientRect();
+        // 0 while the next panel is still below, 1 once it has fully covered.
+        const span = Math.max(rect.height, 1);
+        const covered = Math.min(1, Math.max(0, (rect.bottom - next.top) / span));
+        card.style.setProperty('--recede', String(1 - covered * 0.03));
+        card.style.setProperty('--dim', String(1 - covered * 0.18));
+      }
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll, { passive: true });
+    update();
+  }
+</script>
+
+<style>
+  .panels {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .panel {
+    min-width: 0;
+  }
+
+  .panel__card {
+    display: grid;
+    gap: var(--space-5);
+    padding: clamp(1.25rem, 1rem + 2vw, 2.25rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .panel__media {
+    min-width: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .panel__body {
+    display: grid;
+    gap: var(--space-4);
+    align-content: center;
+    position: relative;
+  }
+
+  .panel__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .panel__num {
+    font-size: var(--text-xs);
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  .panel__title {
+    max-width: 16em;
+  }
+
+  .panel__link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Whole-panel link target, without changing DOM or tab order. */
+  .panel__link::after {
+    content: '';
+    position: absolute;
+    inset: calc(clamp(1.25rem, 1rem + 2vw, 2.25rem) * -1);
+    z-index: 1;
+    border-radius: var(--radius-lg);
+  }
+
+  .panel__link:focus-visible {
+    outline: none;
+  }
+
+  .panel__card:focus-within .panel__link::after {
+    outline: 2px solid var(--accent);
+    outline-offset: -4px;
+  }
+
+  .panel__card:hover .panel__title {
+    color: var(--accent-ink);
+  }
+
+  .panel__summary {
+    color: var(--ink-2);
+    line-height: var(--leading-relaxed);
+    max-width: 34em;
+    text-wrap: pretty;
+  }
+
+  .panel__metrics {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.6rem;
+  }
+
+  .panel__metrics li {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--ink-2);
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+  }
+
+  .panel__cta {
+    margin-top: var(--space-2);
+  }
+
+  .panel__card:hover .panel__cta :global(svg) {
+    transform: translateX(3px);
+  }
+
+  /* Typographic stand-in where a case study has no approved image yet. */
+  .panel__figures {
+    display: grid;
+    align-content: center;
+    gap: var(--space-4);
+    aspect-ratio: 16 / 9;
+    padding: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(15, 110, 99, 0.07), transparent 60%),
+      var(--bg);
+  }
+
+
+  .panel__figures-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .panel__figures-list li {
+    font-family: var(--font-serif);
+    font-size: clamp(1.15rem, 0.95rem + 1vw, 1.75rem);
+    line-height: 1.15;
+    color: var(--ink);
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .panel__figures-list li:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  /* ---- stacking, desktop only ---------------------------------------- */
+  @media (min-width: 60rem) {
+    .panels {
+      gap: clamp(3rem, 6vw, 6rem);
+    }
+
+    .panel {
+      position: sticky;
+      /* Each panel parks slightly lower so the stack edge stays visible. */
+      top: calc(6rem + var(--i) * 1.5rem);
+    }
+
+    .panel__card {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      gap: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+      align-items: center;
+      padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+      transform: scale(var(--recede, 1));
+      opacity: var(--dim, 1);
+      transform-origin: 50% 0%;
+      will-change: transform;
+      box-shadow: var(--shadow-md);
+    }
+
+    .panel:nth-child(even) .panel__media {
+      order: 2;
+    }
+  }
+
+  /* Reduced motion: a plain vertical sequence, no stacking or scaling. */
+  @media (prefers-reduced-motion: reduce) {
+    .panel {
+      position: static;
+    }
+
+    .panel__card {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+  }
+</style>

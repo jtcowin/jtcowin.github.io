@@ -1,56 +1,136 @@
 ---
+/**
+ * Asymmetrical editorial About: a short introductory statement that reveals
+ * phrase by phrase, the approved narrative as ordinary readable text, and the
+ * career snapshot as supporting structure on the opposite side.
+ */
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
-import { getAsset, isRenderable } from '@lib/assets';
+import { getAsset, isVisible } from '@lib/assets';
 import Media from './Media.astro';
 import Icon from './Icon.astro';
 
 const { about } = home;
 const headshot = getAsset(about.headshot);
-// The headshot is optional: it only renders once a file is supplied.
-const showHeadshot = isRenderable(headshot);
+const showHeadshot = isVisible(headshot);
 const resumeHref = withBase(site.resumePath);
+
+// Only the short opening statement reveals, and it does so by phrase rather
+// than by character.
+const introPhrases = about.intro.split(/,\s*/).map((p, i, arr) => (i < arr.length - 1 ? `${p},` : p));
 ---
 
 <section id="about" class="section about" aria-labelledby="about-heading">
-  <div class="container about__grid">
-    <div class="about__main">
+  <div class="container">
+    <div class="about__head">
       <p class="eyebrow">About</p>
-      <h2 id="about-heading" class="display display-lg">{about.heading}</h2>
-      <div class="prose about__prose">
-        {about.paragraphs.map((p) => <p>{p}</p>)}
-      </div>
+      <h2 id="about-heading" class="display display-lg about__heading">{about.heading}</h2>
+      <p class="about__intro" data-intro>
+        {introPhrases.map((phrase, i) => (
+          <span class="about__phrase" style={`--i: ${i}`}>{phrase}{' '}</span>
+        ))}
+      </p>
     </div>
 
-    <aside class="about__side" aria-labelledby="career-heading">
-      {
-        showHeadshot && (
-          <div class="about__headshot">
-            <Media id={about.headshot} sizes="(min-width: 60rem) 30vw, 60vw" />
-          </div>
-        )
-      }
-      <h3 id="career-heading" class="eyebrow eyebrow--muted">{about.career.heading}</h3>
-      <ol class="career">
+    <div class="about__grid">
+      <div class="about__main">
+        <div class="prose">
+          {about.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+
+      <aside class="about__side" aria-labelledby="career-heading">
         {
-          about.career.items.map((item) => (
-            <li class="career__item">
-              <span class="career__org">{item.org}</span>
-              {item.role && <span class="career__role">{item.role}</span>}
-              <span class="career__detail">{item.detail}</span>
-            </li>
-          ))
+          showHeadshot && (
+            <div class="about__headshot">
+              <Media id={about.headshot} sizes="(min-width: 60rem) 26vw, 60vw" />
+            </div>
+          )
         }
-      </ol>
-      <a href={resumeHref} class="arrow-link" download>
-        {about.career.link.label} <Icon name="download" size={14} />
-      </a>
-    </aside>
+        <h3 id="career-heading" class="eyebrow eyebrow--muted">{about.career.heading}</h3>
+        <ol class="career">
+          {
+            about.career.items.map((item) => (
+              <li class="career__item">
+                <span class="career__org">{item.org}</span>
+                {item.role && <span class="career__role">{item.role}</span>}
+                <span class="career__detail">{item.detail}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <a href={resumeHref} class="arrow-link" download>
+          {about.career.link.label} <Icon name="download" size={14} />
+        </a>
+      </aside>
+    </div>
   </div>
 </section>
 
+<script>
+  // Reveal the opening statement when it scrolls into view. Without JS, or with
+  // reduced motion, the CSS below leaves it fully visible.
+  const intro = document.querySelector<HTMLElement>('[data-intro]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (intro && !reduce.matches && 'IntersectionObserver' in window) {
+    intro.dataset.introPending = '';
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            intro.dataset.introIn = '';
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(intro);
+  }
+</script>
+
 <style>
+  .about__head {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 44rem;
+    margin-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  .about__heading {
+    max-width: 14em;
+  }
+
+  .about__intro {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-wrap: pretty;
+    margin-top: var(--space-2);
+  }
+
+  .about__phrase {
+    display: inline-block;
+  }
+
+  /* Hidden only once the script confirms it will reveal them. */
+  [data-intro-pending] .about__phrase {
+    opacity: 0;
+    transform: translateY(0.35em);
+  }
+
+  [data-intro-in] .about__phrase {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 620ms var(--ease-out),
+      transform 620ms var(--ease-out);
+    transition-delay: calc(var(--i) * 130ms);
+  }
+
   .about__grid {
     display: grid;
     gap: clamp(2.5rem, 2rem + 3vw, 5rem);
@@ -59,11 +139,6 @@ const resumeHref = withBase(site.resumePath);
   .about__main {
     display: grid;
     gap: var(--space-5);
-    max-width: 40rem;
-  }
-
-  .about__prose {
-    margin-top: var(--space-2);
   }
 
   .about__side {
@@ -112,14 +187,29 @@ const resumeHref = withBase(site.resumePath);
     text-wrap: pretty;
   }
 
+  /* Asymmetrical: the narrative is offset from the left edge and the snapshot
+     sits in a narrower column beside it. */
   @media (min-width: 60rem) {
     .about__grid {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
       align-items: start;
     }
 
+    .about__main {
+      padding-inline-start: clamp(0rem, 6vw, 5rem);
+      max-width: 38rem;
+    }
+
     .about__side {
-      padding-top: 2.5rem;
+      padding-top: 0.4rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about__phrase {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
     }
   }
 </style>

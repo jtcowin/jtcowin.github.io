@@ -5,8 +5,15 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Draft 1.** Layout, copy, motion, metadata, and deployment are complete. Media are labeled
-placeholders until real assets are approved and added (see [Replacing placeholders](#replacing-placeholders)).
+**Status: Version 1.2, live.** Layout, copy, motion, metadata, approved media, and deployment are
+complete. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
+approved and present, so an unresolved entry never reaches the public site (see
+[Replacing placeholders](#replacing-placeholders)).
+
+Version 1.2 replaced the homepage hero with a portrait-led editorial marquee, turned the selected work
+list into stacking panels followed by a visual rail, added the How I Work section, and consolidated the
+impressions figure into one aggregate. The three case studies, the design system, and the deployment
+setup are unchanged.
 
 ## Routes
 
@@ -122,9 +129,15 @@ there; until the file exists they return a 404. To rename it, change `resumePath
 
 The verify script fails the build check if any of these appear in the output: the `@johnboycrypto`
 handle, the unverified 524% Trezor lift claim, any mention of Sui Network negotiations, "17 unique
-creators," invented senior titles, raw internal links, or the word "client" (logo-bar organizations are
-employers, products, co-sponsors, and events, not clients). It also confirms the official title
-"Social Media Manager" and the word "approximate" on the 1.22M figure are present.
+creators," invented senior titles, raw internal links, the word "client" (logo-bar organizations are
+employers, products, co-sponsors, and events, not clients), em dashes, a location-level impressions
+figure, a published count of active workflows, or an NFT reference. It also confirms the official title
+"Social Media Manager", the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
+and the approved How I Work, contact, trust-bar, and footer lines are present.
+
+One aggregate impressions figure is published site-wide: approximately 1.25M across the three
+international creator activations. Per-activation impression figures were retired in Version 1.2 and
+must not be reintroduced.
 
 Before publishing new media, confirm permission for: Trezor testimonial and comparison, all logos,
 creator likenesses (names and handles only until approved), and any internal document recreations
@@ -144,7 +157,8 @@ src/
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
-  components/           Hero, Media (placeholder/real media), LogoBar, WorkCard, …
+  components/           Hero, Media, LogoBar, ProofStrip, WorkPanels, WorkRail, Capabilities,
+                        HowIWork, About, Contact, …
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
   pages/                index, work/[slug], 404, robots.txt, site.webmanifest
 ```

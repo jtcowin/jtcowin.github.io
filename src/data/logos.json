@@ -4,12 +4,12 @@
     "To add a logo: place a file in src/assets/logos/ and set `file` plus `permission`.",
     "`relationship` is shown as a small caption so no organization is mislabeled as a client."
   ],
-  "heading": "Selected companies, products & partners",
+  "heading": "Selected Companies, Products, and Partners",
   "logos": [
     {
       "id": "phi-labs",
       "name": "Phi Labs",
-      "relationship": "Employer",
+      "relationship": "Current Employer",
       "file": "phi-labs.svg",
       "permission": "approved",
       "url": null,
@@ -64,7 +64,7 @@
       "id": "sui-summit",
       "name": "Sui Summit",
       "relationship": "Sponsored event",
-      "file": "sui-summit.png",
+      "file": null,
       "permission": "approved",
       "url": null,
       "inBar": true

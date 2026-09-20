@@ -3,7 +3,19 @@
  * Minimal inline icon set. Stroke icons inherit currentColor.
  */
 interface Props {
-  name: 'arrow-right' | 'arrow-up-right' | 'download' | 'play' | 'mail' | 'menu' | 'close' | 'chevron-down';
+  name:
+    | 'arrow-right'
+    | 'arrow-up-right'
+    | 'download'
+    | 'play'
+    | 'mail'
+    | 'menu'
+    | 'close'
+    | 'chevron-down'
+    | 'target'
+    | 'file-text'
+    | 'users'
+    | 'camera';
   size?: number | string;
   class?: string;
   title?: string;
@@ -20,6 +32,10 @@ const paths: Record<Props['name'], string> = {
   menu: 'M2 4.5h12M2 8h12M2 11.5h12',
   close: 'M3.5 3.5l9 9m0-9l-9 9',
   'chevron-down': 'M4 6l4 4 4-4',
+  target: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zm0 3a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15',
+  'file-text': 'M9 1.5H4.5A1.5 1.5 0 003 3v10a1.5 1.5 0 001.5 1.5h7A1.5 1.5 0 0013 13V5.5L9 1.5zM9 1.5V5a.5.5 0 00.5.5H13M5.5 8.5h5M5.5 11h3.5',
+  users: 'M10.5 13.5v-1a2.5 2.5 0 00-2.5-2.5H4.5A2.5 2.5 0 002 12.5v1M6.25 7.5a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM14 13.5v-1a2.5 2.5 0 00-1.9-2.42M10.5 3.08a2.25 2.25 0 010 4.34',
+  camera: 'M14 12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1h2l1-1.5h4L11 5h2a1 1 0 011 1v6zM8 10.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z',
 };
 ---
 

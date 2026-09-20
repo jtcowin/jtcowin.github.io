@@ -96,6 +96,10 @@ const forbidden = [
   { re: /\u2014/, why: 'no em dashes in public-facing copy' },
   { re: /class="[^"]*\bph\b[^"]*"/, why: 'placeholder block rendered into the public build' },
   { re: /pending permission|pending confirmation/i, why: 'pending-permission UI rendered into the public build' },
+  // v1.2: one aggregate impressions figure only. Location-level figures are retired.
+  { re: /approximately\s+[\d,]+\s+impressions/i, why: 'location-level impression figures were retired in v1.2' },
+  { re: /\b\d+\s+(?:active\s+|automated\s+|governed\s+)*workflows\b/i, why: 'do not publish a count of active workflows' },
+  { re: /\bNFTs?\b/, why: 'the NFT motif is excluded from v1.2' },
 ];
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8');
@@ -109,6 +113,9 @@ const creator = fs.readFileSync(path.join(dist, 'work/creator-campaigns/index.ht
 if (!/Eight unique creators across 17 participations/.test(creator)) {
   failures.push('[claim] creator page must state "Eight unique creators across 17 participations"');
 }
+if (!/Approximately 1\.25 million impressions/.test(creator)) {
+  failures.push('[claim] creator page must use the 1.25 million aggregate impressions figure');
+}
 if (!/8\.7 times the account/i.test(creator)) {
   failures.push('[claim] creator page must use the approved 8.7x impressions benchmark');
 }
@@ -116,11 +123,18 @@ if (!/directional performance benchmarks, not Trezor-owned analytics/i.test(crea
   failures.push('[claim] creator page must carry the comparison methodology note');
 }
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-if (!/approximate impressions/i.test(home)) failures.push('[claim] homepage proof strip must keep "approximate" on the 1.22M figure');
+if (!/approximate impressions/i.test(home)) failures.push('[claim] homepage proof strip must keep "approximate" on the impressions figure');
+if (!/1\.25M/.test(home)) failures.push('[claim] homepage proof strip must use the 1.25M aggregate impressions figure');
 if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
 if (!/Web3 marketing consulting/.test(home)) failures.push('[claim] homepage must carry the consolidated consulting career row');
 if (!/clear market narratives/.test(home)) failures.push('[claim] homepage must use the approved hero supporting copy');
 if (!/globally distributed independent music project/.test(home)) failures.push('[claim] homepage must use the approved About copy');
+// v1.2 sections and copy.
+if (!/Governed by human judgment/.test(home)) failures.push('[claim] homepage must carry the How I Work heading');
+if (!/AI accelerates the work/.test(home)) failures.push('[claim] homepage must carry the How I Work accountability statement');
+if (!/Make the complex impossible to ignore/.test(home)) failures.push('[claim] homepage must use the approved contact headline');
+if (!/Web3 Marketing, Content/.test(home)) failures.push('[claim] footer must carry the approved role line');
+if (!/Selected Companies, Products, and Partners/.test(home)) failures.push('[claim] homepage must use the approved trust-bar heading');
 // The resume must actually exist for v1.1.
 if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
@@ -154,10 +168,16 @@ const idRefs = new Set();
 for (const f of srcFiles) {
   const s = fs.readFileSync(f, 'utf8');
   for (const m of s.matchAll(/<(?:Media|Gallery|Testimonial|LinkCard|ArticleCard|MetricMarker)\b[^>]*\bid=["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
-  for (const m of s.matchAll(/\b(?:heroAsset|ogAsset|asset|gallery|headshot)\s*[:=]\s*["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
+  for (const m of s.matchAll(/\b(?:heroAsset|ogAsset|asset|poster|gallery|headshot)"?\s*[:=]\s*["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/ids=\{\[([^\]]+)\]\}/g)) for (const id of m[1].matchAll(/["']([a-z0-9-]+)["']/g)) idRefs.add(id[1]);
   for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
 }
+// Ids referenced from home.json structures that the generic scan above cannot see
+// (the visual rail's list, and the hero portrait).
+const homeData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8'));
+for (const id of homeData.rail?.items ?? []) idRefs.add(id);
+if (homeData.hero?.portrait) idRefs.add(homeData.hero.portrait);
+
 for (const id of idRefs) {
   if (!ids.has(id) && !['context', 'role', 'main', 'top', 'work', 'about', 'contact', 'capabilities'].includes(id)) {
     // Section ids in MDX also match the pattern; only flag ids that look like asset ids.

@@ -12,78 +12,16 @@
       "page": "home",
       "section": "hero",
       "type": "image",
-      "aspect": "4:5",
+      "aspect": "1024:1326",
       "label": "John Cowin portrait",
-      "filename": "about/john-cowin-portrait.jpg",
-      "file": "about/john-cowin-portrait.jpg",
-      "alt": "Portrait of John Cowin outdoors, wearing a light blue shirt over a white t-shirt.",
-      "source": "Commissioned portrait, 2026.",
+      "filename": "about/john-cowin-cutout.png",
+      "file": "about/john-cowin-cutout.png",
+      "alt": "John Cowin, wearing a light blue shirt over a white t-shirt, looking to camera.",
+      "source": "Commissioned portrait, 2026. Background isolated for the hero composition.",
       "permission": "approved",
       "credit": null,
-      "variant": "light"
-    },
-    {
-      "id": "hero-doc-panel",
-      "page": "home",
-      "section": "hero",
-      "type": "image",
-      "aspect": "16:9",
-      "label": "Bolt Liquidity documentation",
-      "filename": "technical-marketing/bolt-docs-landing.png",
-      "file": "technical-marketing/bolt-docs-landing.png",
-      "alt": "Bolt Liquidity technical documentation home page, headed Route with Bolt.",
-      "source": "https://docs.boltliquidity.io/",
-      "permission": "approved",
-      "credit": "Documentation narrative, page structure, and MDX production led by John Cowin, developed with Phi Labs design and engineering.",
       "variant": "dark"
     },
-    {
-      "id": "hero-website-frame",
-      "page": "home",
-      "section": "hero",
-      "type": "image",
-      "aspect": "16:9",
-      "label": "Bolt Liquidity website hero",
-      "filename": "technical-marketing/bolt-website-hero.png",
-      "file": "technical-marketing/bolt-website-hero.png",
-      "alt": "Bolt Liquidity website hero section reading Real markets. Less capital.",
-      "source": null,
-      "permission": "approved",
-      "credit": "Website strategy, section layout, copy, and narrative sequencing led by John Cowin in collaboration with the Phi Labs design team.",
-      "variant": "dark"
-    },
-    {
-      "id": "hero-summit-still",
-      "page": "home",
-      "section": "hero",
-      "type": "image",
-      "aspect": "15:7",
-      "label": "Sui Summit presentation",
-      "filename": "events-video/sui-summit-presentation.png",
-      "file": "events-video/sui-summit-presentation.png",
-      "alt": "Sui Summit presentation slide beside a photograph of the speaker presenting on stage.",
-      "source": null,
-      "permission": "approved",
-      "credit": "Speaking opportunity arranged and live capture operated by John Cowin. On camera: Max McKendry.",
-      "variant": "dark"
-    },
-    {
-      "id": "hero-metric",
-      "page": "home",
-      "section": "hero",
-      "type": "metric",
-      "aspect": "auto",
-      "label": "Hero metric marker",
-      "value": "1.22M",
-      "metricLabel": "approx. campaign impressions",
-      "filename": null,
-      "file": null,
-      "alt": "Approximately 1.22 million impressions across three international creator activations.",
-      "source": "Internal campaign reporting, aggregated across creator posts.",
-      "permission": "approved",
-      "credit": null
-    },
-
     {
       "id": "card-creator-campaigns",
       "page": "home",
@@ -130,6 +68,21 @@
       "variant": "dark"
     },
     {
+      "id": "rail-explainer-still",
+      "page": "home",
+      "section": "rail",
+      "type": "image",
+      "aspect": "16:9",
+      "label": "Technical explainer",
+      "filename": "events-video/bolt-explainer-poster.jpg",
+      "file": "events-video/bolt-explainer-poster.jpg",
+      "alt": "Frame from the Bolt Liquidity technical explainer, showing the on camera subject beside branded yellow kinetic text.",
+      "source": null,
+      "permission": "approved",
+      "credit": "Conceptualized, staged, lit, recorded, and directed by John Cowin.",
+      "variant": "dark"
+    },
+    {
       "id": "about-headshot",
       "page": "home",
       "section": "about",
@@ -145,7 +98,6 @@
       "variant": "light",
       "optional": true
     },
-
     {
       "id": "cc-hero",
       "page": "work/creator-campaigns",
@@ -385,7 +337,6 @@
       "credit": null,
       "variant": "dark"
     },
-
     {
       "id": "tm-hero",
       "page": "work/technical-marketing",
@@ -542,7 +493,6 @@
       "permission": "pending",
       "credit": null
     },
-
     {
       "id": "ev-hero",
       "page": "work/events-video",
@@ -621,7 +571,6 @@
       "credit": null,
       "variant": "light"
     },
-
     {
       "id": "og-home",
       "page": "home",
