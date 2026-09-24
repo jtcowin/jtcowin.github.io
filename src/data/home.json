@@ -1,22 +1,31 @@
 {
   "_readme": "Homepage copy (Version 1.2). Case-study panels are drawn from each case study's frontmatter in src/content/work/.",
   "hero": {
-    "eyebrow": "John Cowin",
-    "headline": "Web3 marketing built from strategy through execution.",
-    "headlineLines": ["Web3 marketing", "built from strategy", "through execution."],
-    "marquee": "John Cowin",
-    "copy": "I turn complex products into clear market narratives and carry them through technical content, creator programs, events, and multimedia production.",
-    "primaryCta": { "label": "View selected work", "href": "/#work" },
-    "secondaryCta": { "label": "Download resume", "href": "resume" },
+    "_note": "Version 1.3 hero. Name and descriptor only; everything else lives in the sections below. The name renders uppercase through CSS so assistive technology reads it as a name rather than spelling it out.",
+    "nameFirst": "John",
+    "nameLast": "Cowin",
+    "descriptor": "Web3 marketing & strategy",
     "portrait": "hero-portrait"
   },
   "proof": {
     "_note": "Static figures. Do not animate as counters. Keep 'approximately' on the impressions figure. The 1.25M aggregate replaces all earlier aggregate calculations and all location-level figures.",
     "metrics": [
-      { "value": "1.25M", "label": "approximate impressions across three international creator activations" },
-      { "value": "80", "label": "creator-campaign content deliverables" },
-      { "value": "27", "label": "technical-documentation pages drafted in MDX" },
-      { "value": "16", "label": "documents in Bolt’s positioning and messaging foundation" }
+      {
+        "value": "1.25M",
+        "label": "approximate impressions across three international creator activations"
+      },
+      {
+        "value": "80",
+        "label": "creator-campaign content deliverables"
+      },
+      {
+        "value": "27",
+        "label": "technical-documentation pages drafted in MDX"
+      },
+      {
+        "value": "16",
+        "label": "documents in Bolt’s positioning and messaging foundation"
+      }
     ]
   },
   "work": {
@@ -82,10 +91,44 @@
     ],
     "accountability": "AI accelerates the work. I remain accountable for source verification, brand voice, disclosure standards, cross-functional review, and final approval.",
     "tools": [
-      { "group": "AI and building", "items": ["ChatGPT", "Claude CoWork", "Claude Code", "GitHub", "MDX"] },
-      { "group": "Systems and measurement", "items": ["Linear", "Mintlify", "GitBook", "Grafana", "Google Analytics"] },
-      { "group": "Creative and distribution", "items": ["Figma", "Photoshop", "Descript", "Typefully"] },
-      { "group": "Channels", "items": ["X", "LinkedIn", "Telegram", "Discord"] }
+      {
+        "group": "AI and building",
+        "items": [
+          "ChatGPT",
+          "Claude CoWork",
+          "Claude Code",
+          "GitHub",
+          "MDX"
+        ]
+      },
+      {
+        "group": "Systems and measurement",
+        "items": [
+          "Linear",
+          "Mintlify",
+          "GitBook",
+          "Grafana",
+          "Google Analytics"
+        ]
+      },
+      {
+        "group": "Creative and distribution",
+        "items": [
+          "Figma",
+          "Photoshop",
+          "Descript",
+          "Typefully"
+        ]
+      },
+      {
+        "group": "Channels",
+        "items": [
+          "X",
+          "LinkedIn",
+          "Telegram",
+          "Discord"
+        ]
+      }
     ]
   },
   "about": {
@@ -115,12 +158,18 @@
           "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performing 140-plus shows annually and securing global distribution, sponsorships, media appearances, and major-festival bookings"
         }
       ],
-      "link": { "label": "Read the full resume", "href": "resume" }
+      "link": {
+        "label": "Read the full resume",
+        "href": "resume"
+      }
     }
   },
   "contact": {
     "heading": "Make the complex impossible to ignore.",
     "copy": "I’m interested in remote Web3 marketing roles and open to the right opportunity in AI or technical products.",
-    "secondary": { "label": "Download resume", "href": "resume" }
+    "secondary": {
+      "label": "Download resume",
+      "href": "resume"
+    }
   }
 }

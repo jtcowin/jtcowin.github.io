@@ -83,19 +83,8 @@ for (const card of cards) {
   console.log('og  ', card.file);
 }
 
-// Icons from favicon.svg
-const svg = fs.readFileSync(path.join(root, 'public/favicon.svg'), 'utf8');
-for (const [name, size] of [
-  ['apple-touch-icon.png', 180],
-  ['icon-192.png', 192],
-  ['icon-512.png', 512],
-  ['favicon-32.png', 32],
-]) {
-  const p = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 });
-  await p.setContent(`<!doctype html><html><body style="margin:0;background:transparent">${svg.replace('width="64" height="64"', `width="${size}" height="${size}"`)}</body></html>`);
-  await p.screenshot({ path: path.join(root, 'public', name), omitBackground: true });
-  await p.close();
-  console.log('icon', name);
-}
+// Browser icons are not generated here: they are derived from the photographic
+// favicon master by scripts/icons.py, which keeps the circular crop and the
+// transparent exterior and crops tighter at 16 and 32 pixels.
 
 await browser.close();

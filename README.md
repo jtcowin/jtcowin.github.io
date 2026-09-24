@@ -5,15 +5,16 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.2, live.** Layout, copy, motion, metadata, approved media, and deployment are
+**Status: Version 1.3, live.** Layout, copy, motion, metadata, approved media, and deployment are
 complete. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
 approved and present, so an unresolved entry never reaches the public site (see
 [Replacing placeholders](#replacing-placeholders)).
 
-Version 1.2 replaced the homepage hero with a portrait-led editorial marquee, turned the selected work
-list into stacking panels followed by a visual rail, added the How I Work section, and consolidated the
-impressions figure into one aggregate. The three case studies, the design system, and the deployment
-setup are unchanged.
+Version 1.3 replaced the header and hero. The homepage now opens on one full-viewport photograph with
+the name set over it and the navigation laid directly on the image, and the browser icons are derived
+from a photographic favicon master. Everything below the hero is unchanged from Version 1.2, which
+turned the selected work list into stacking panels followed by a visual rail, added the How I Work
+section, and consolidated the impressions figure into one aggregate.
 
 ## Routes
 
@@ -42,9 +43,10 @@ Other scripts:
 npm run build      # production build into dist/
 npm run preview    # serve dist/ locally (same base path as production)
 npm run check      # TypeScript / Astro diagnostics
-npm run og         # regenerate social-preview images and PNG icons (needs Playwright's Chromium)
+npm run og         # regenerate social-preview images (needs Playwright's Chromium)
 npm run verify     # link, guardrail, manifest, and accessibility checks against dist/ (run preview first)
 npm run shots      # screenshots at 375 / 768 / 1280 px into .verify/ (run preview first)
+python3 scripts/icons.py   # regenerate the browser icons from the favicon master (needs Pillow)
 ```
 
 Playwright is only used by the `og`, `verify`, and `shots` scripts. If it complains about a missing
@@ -125,6 +127,26 @@ there; until the file exists they return a 404. To rename it, change `resumePath
 `npm run og`. Replace them with custom artwork at 1200×630 if preferred; the manifest entries
 (`og-home`, `og-creator-campaigns`, …) point at them.
 
+### Browser icons
+
+Every icon comes from one square photographic master at
+`src/assets/favicon/john-cowin-favicon-master.png`, which stays out of `public/` so the
+full-resolution file is never shipped to visitors. `python3 scripts/icons.py` masks it to the circle
+that the portrait sits in, makes everything outside that circle transparent, and writes
+`favicon-16/32/48.png`, `favicon.ico`, `apple-touch-icon.png`, and `icon-192/512.png`. The small sizes
+crop tighter to the head and are lightly sharpened, because a full head and shoulders is unreadable at
+16 pixels. To swap the portrait, replace the master and rerun the script; nothing else needs editing.
+
+### Hero photograph
+
+The homepage hero is the full frame at `src/assets/hero/john-cowin-portrait.png`, used full bleed with
+its own setting rather than cut out. Responsive derivatives stop at the source's own 1536px width
+rather than upscaling. `object-position` is set per breakpoint: tall viewports crop horizontally and
+hold the face at 34% across, wide viewports crop vertically and hold the frame high. Three gradients,
+not panels, carry the contrast for the name, the header, and the descriptor; their stops are tuned
+against measured contrast on the photograph itself, so changing the photograph means re-measuring
+them.
+
 ## Content guardrails
 
 The verify script fails the build check if any of these appear in the output: the `@johnboycrypto`
@@ -149,7 +171,8 @@ creator likenesses (names and handles only until approved), and any internal doc
 astro.config.mjs        Astro config (site/base from site.config.mjs, MDX, sitemap)
 site.config.mjs         Deployment target: user site, project site, or custom domain
 public/                 Static files copied as-is (favicons, OG images, resume, CNAME)
-scripts/                og.mjs (previews/icons), verify.mjs (checks), shots.mjs (screenshots)
+scripts/                og.mjs (social previews), icons.py (browser icons), verify.mjs (checks),
+                        shots.mjs (screenshots)
 src/
   content.config.ts     Case-study collection schema
   content/work/*.mdx    Case studies

@@ -4,6 +4,7 @@
 @import '@fontsource/instrument-serif/400.css';
 @import '@fontsource/instrument-serif/400-italic.css';
 @import '@fontsource-variable/jetbrains-mono/wght.css';
+@import '@fontsource-variable/archivo/wght.css';
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                        */
@@ -40,6 +41,8 @@
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Grotesk used only for the hero name, at a medium weight. */
+  --font-grotesk: 'Archivo Variable', Archivo, 'Helvetica Neue', Arial, sans-serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

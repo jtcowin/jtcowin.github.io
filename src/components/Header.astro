@@ -1,106 +1,90 @@
 ---
-import { getCollection } from 'astro:content';
+/**
+ * Site header.
+ *
+ * Two variants share one markup. On the homepage it overlays the full-bleed
+ * hero photograph with no background block of its own, using light controls
+ * over the hero's own top scrim. Everywhere else it is the ordinary sticky bar
+ * on the light page background.
+ *
+ * Hierarchy in both: Work and About are plain text links, Contact is the
+ * primary call to action, Resume is the quieter outline one. The mobile menu is
+ * a native <details> element, so it opens, closes, and takes keyboard input
+ * with no JavaScript at all; the script below only adds Escape and
+ * click-outside.
+ */
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
 import Icon from './Icon.astro';
 
 interface Props {
-  /** Current page path (site-relative) to mark the active nav item. */
+  /** Current page path (site-relative). */
   current?: string;
+  /** Lay the header over a full-bleed hero instead of on its own bar. */
+  overlay?: boolean;
 }
 
-const { current = '/' } = Astro.props;
-
-const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const { current = '/', overlay = false } = Astro.props;
 const resumeHref = withBase(site.resumePath);
+
+const links = [
+  { label: 'Work', href: '/#work' },
+  { label: 'About', href: '/#about' },
+];
 ---
 
-<header class="site-header" id="top">
+<header class:list={['site-header', overlay && 'site-header--overlay']} id="top">
   <div class="container site-header__inner">
-    <a href={withBase('/')} class="brand">
+    <a href={withBase('/')} class="brand" aria-current={current === '/' ? 'page' : undefined}>
       <img
         class="brand__mark"
         src={withBase('/icon-192.png')}
-        alt=""
-        width="32"
-        height="32"
+        alt={`${site.name}, home`}
+        width="44"
+        height="44"
         decoding="async"
       />
-      <span class="brand__name">{site.name}<span class="sr-only">, home</span></span>
     </a>
 
     <nav class="nav" aria-label="Primary">
       <ul class="nav__list">
-        <li class="nav__item nav__item--menu">
-          <details class="menu" data-menu>
-            <summary class="nav__link menu__summary" aria-haspopup="true">
-              Work <Icon name="chevron-down" size={12} />
-            </summary>
-            <div class="menu__panel">
-              <ul class="menu__list">
-                {
-                  work.map((entry) => (
-                    <li>
-                      <a
-                        href={withBase(`/work/${entry.id}/`)}
-                        class="menu__link"
-                        aria-current={current === `/work/${entry.id}/` ? 'page' : undefined}
-                      >
-                        <span class="menu__eyebrow">{entry.data.eyebrow}</span>
-                        <span class="menu__title">{entry.data.navLabel}</span>
-                      </a>
-                    </li>
-                  ))
-                }
-                <li class="menu__all">
-                  <a href={withBase('/#work')} class="menu__link menu__link--all">
-                    <span class="menu__title">All selected work <Icon name="arrow-right" size={12} /></span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </details>
+        {
+          links.map((l) => (
+            <li>
+              <a href={withBase(l.href)} class="nav__link">
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href={withBase('/#contact')} class="nav__cta nav__cta--primary">Contact</a>
         </li>
-        <li class="nav__item"><a href={withBase('/#about')} class="nav__link">About</a></li>
-        <li class="nav__item">
-          <a href={resumeHref} class="nav__link" download>Resume</a>
+        <li>
+          <a href={resumeHref} class="nav__cta nav__cta--ghost" download>Resume</a>
         </li>
-        <li class="nav__item"><a href={withBase('/#contact')} class="nav__link">Contact</a></li>
       </ul>
     </nav>
 
-    <a href={`mailto:${site.email}`} class="btn btn--secondary site-header__cta">
-      <Icon name="mail" size={14} /> Email
-    </a>
-
     <details class="mobile" data-menu>
-      <summary class="mobile__toggle" aria-label="Open menu">
+      <summary class="mobile__toggle" aria-label="Menu">
         <Icon name="menu" size={20} class="mobile__icon-open" />
         <Icon name="close" size={20} class="mobile__icon-close" />
       </summary>
-      <nav class="mobile__panel" aria-label="Mobile">
+      <nav class="mobile__panel" aria-label="Primary">
         <ul class="mobile__list">
-          <li class="mobile__group">
-            <a href={withBase('/#work')} class="mobile__link">Work</a>
-            <ul class="mobile__sub">
-              {
-                work.map((entry) => (
-                  <li>
-                    <a href={withBase(`/work/${entry.id}/`)} class="mobile__sublink">
-                      {entry.data.navLabel}
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </li>
-          <li><a href={withBase('/#about')} class="mobile__link">About</a></li>
-          <li><a href={resumeHref} class="mobile__link" download>Resume <Icon name="download" size={14} /></a></li>
-          <li><a href={withBase('/#contact')} class="mobile__link">Contact</a></li>
-          <li class="mobile__email">
-            <a href={`mailto:${site.email}`} class="btn btn--primary">
-              <Icon name="mail" size={14} /> {site.email}
-            </a>
+          {
+            links.map((l) => (
+              <li>
+                <a href={withBase(l.href)} class="mobile__link">
+                  {l.label}
+                </a>
+              </li>
+            ))
+          }
+          <li class="mobile__ctas">
+            <a href={withBase('/#contact')} class="nav__cta nav__cta--primary">Contact</a>
+            <a href={resumeHref} class="nav__cta nav__cta--ghost" download>Resume</a>
           </li>
         </ul>
       </nav>
@@ -109,36 +93,30 @@ const resumeHref = withBase(site.resumePath);
 </header>
 
 <script>
-  // Close any open <details data-menu> when clicking outside, pressing Escape,
-  // or following a link inside. Pure enhancement; menus work without JS.
+  // Escape and click-outside for the menu. The <details> element already opens,
+  // closes, and handles keyboard on its own, so this is enhancement only.
   const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details[data-menu]'));
 
-  function closeAll(except?: HTMLDetailsElement) {
-    for (const m of menus) if (m !== except && m.open) m.open = false;
+  function closeAll() {
+    for (const m of menus) if (m.open) m.open = false;
   }
 
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
-    const within = target.closest('details[data-menu]') as HTMLDetailsElement | null;
     if (target.closest('a')) {
       closeAll();
       return;
     }
-    closeAll(within ?? undefined);
+    if (!target.closest('details[data-menu]')) closeAll();
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAll();
+    if (e.key !== 'Escape') return;
+    const open = menus.find((m) => m.open);
+    if (!open) return;
+    open.open = false;
+    open.querySelector<HTMLElement>('summary')?.focus();
   });
-
-  for (const m of menus) {
-    m.addEventListener('toggle', () => {
-      if (m.open) closeAll(m);
-      if (m.classList.contains('mobile')) {
-        document.documentElement.classList.toggle('menu-open', m.open);
-      }
-    });
-  }
 </script>
 
 <style>
@@ -152,37 +130,55 @@ const resumeHref = withBase(site.resumePath);
     border-bottom: 1px solid var(--line);
   }
 
+  /* Over the hero the header contributes no surface of its own: no bar, no
+     border, no blur plane. The hero's top scrim is what carries the contrast. */
+  .site-header--overlay {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 0;
+  }
+
   .site-header__inner {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-5);
     min-height: 4.25rem;
+  }
+
+  .site-header--overlay .site-header__inner {
+    max-width: none;
+    min-height: clamp(4.5rem, 9vh, 6rem);
   }
 
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.7rem;
     text-decoration: none;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    margin-right: auto;
+    border-radius: 999px;
   }
 
   .brand__mark {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 7px;
+    width: 2.375rem;
+    height: 2.375rem;
+    border-radius: 999px;
     display: block;
-    transition: opacity var(--dur-fast) var(--ease-out);
+    transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+
+  .site-header--overlay .brand__mark {
+    width: clamp(2.5rem, 3.4vw, 3.25rem);
+    height: clamp(2.5rem, 3.4vw, 3.25rem);
+    box-shadow: 0 0 0 1px rgba(242, 241, 236, 0.35);
   }
 
   .brand:hover .brand__mark {
-    opacity: 0.85;
-  }
-
-  .brand:hover {
-    color: var(--ink);
+    opacity: 0.88;
+    transform: translateY(-1px);
   }
 
   .nav {
@@ -192,115 +188,107 @@ const resumeHref = withBase(site.resumePath);
   .nav__list {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
     list-style: none;
     padding: 0;
     margin: 0;
-  }
-
-  .nav__item {
-    position: relative;
   }
 
   .nav__link {
     display: inline-flex;
     align-items: center;
-    gap: 0.35em;
-    padding: 0.55rem 0.8rem;
+    padding: 0.55rem 0.85rem;
     font-size: var(--text-sm);
     font-weight: 500;
     color: var(--ink-2);
     text-decoration: none;
     border-radius: 999px;
-    cursor: pointer;
-    list-style: none;
     transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
   }
 
-  .nav__link:hover,
-  .menu[open] > .menu__summary {
+  .nav__link:hover {
     color: var(--ink);
     background: var(--bg-sunk);
   }
 
-  .menu__summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .menu__summary :global(svg) {
-    transition: transform var(--dur-fast) var(--ease-out);
-  }
-
-  .menu[open] > .menu__summary :global(svg) {
-    transform: rotate(180deg);
-  }
-
-  .menu__panel {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    min-width: 21rem;
-    padding: 0.4rem;
-    background: var(--bg-elev);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    animation: rise-in var(--dur) var(--ease-out) both;
-  }
-
-  .menu__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-  }
-
-  .menu__link {
-    display: grid;
-    gap: 0.15rem;
-    padding: 0.7rem 0.85rem;
-    border-radius: var(--radius);
-    text-decoration: none;
-    color: var(--ink);
-  }
-
-  .menu__link:hover,
-  .menu__link[aria-current='page'] {
-    background: var(--bg-sunk);
-    color: var(--ink);
-  }
-
-  .menu__eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-
-  .menu__title {
+  .nav__cta {
     display: inline-flex;
     align-items: center;
-    gap: 0.4em;
+    justify-content: center;
+    padding: 0.6rem 1.1rem;
     font-size: var(--text-sm);
-    font-weight: 500;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
   }
 
-  .menu__all {
-    margin-top: 0.3rem;
-    padding-top: 0.3rem;
-    border-top: 1px solid var(--line);
+  .nav__cta--primary {
+    background: var(--ink);
+    color: #fff;
   }
 
-  .menu__link--all .menu__title {
+  .nav__cta--primary:hover {
+    background: var(--accent-ink);
+    color: #fff;
+  }
+
+  .nav__cta--ghost {
+    border-color: var(--line-strong);
     color: var(--ink-2);
   }
 
-  .site-header__cta {
-    display: none;
+  .nav__cta--ghost:hover {
+    border-color: var(--ink);
+    color: var(--ink);
   }
 
-  /* ---- Mobile ---------------------------------------------------------- */
+  /* ---- overlay controls ------------------------------------------------ */
+  .site-header--overlay .nav__link {
+    color: #f2f1ec;
+    font-weight: 500;
+  }
+
+  .site-header--overlay .nav__link:hover {
+    color: #fff;
+    background: rgba(242, 241, 236, 0.16);
+  }
+
+  .site-header--overlay .nav__cta--primary {
+    background: #f4f3ee;
+    color: #16181a;
+  }
+
+  .site-header--overlay .nav__cta--primary:hover {
+    background: #fff;
+    color: #16181a;
+  }
+
+  .site-header--overlay .nav__cta--ghost {
+    color: #f2f1ec;
+    border-color: rgba(242, 241, 236, 0.55);
+    background: rgba(12, 14, 16, 0.28);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .site-header--overlay .nav__cta--ghost:hover {
+    border-color: #f2f1ec;
+    background: rgba(12, 14, 16, 0.45);
+    color: #fff;
+  }
+
+  .site-header--overlay :global(a:focus-visible),
+  .site-header--overlay :global(summary:focus-visible) {
+    outline: 2px solid #f2f1ec;
+    outline-offset: 3px;
+  }
+
+  /* ---- mobile ---------------------------------------------------------- */
   .mobile {
     position: relative;
   }
@@ -308,16 +296,25 @@ const resumeHref = withBase(site.resumePath);
   .mobile__toggle {
     display: grid;
     place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
+    color: var(--ink);
     cursor: pointer;
     list-style: none;
   }
 
   .mobile__toggle::-webkit-details-marker {
     display: none;
+  }
+
+  .site-header--overlay .mobile__toggle {
+    color: #f2f1ec;
+    border-color: rgba(242, 241, 236, 0.55);
+    background: rgba(12, 14, 16, 0.32);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 
   .mobile :global(.mobile__icon-close) {
@@ -336,8 +333,8 @@ const resumeHref = withBase(site.resumePath);
     position: absolute;
     top: calc(100% + 0.75rem);
     right: 0;
-    width: min(22rem, calc(100vw - 2 * var(--gutter)));
-    padding: 0.75rem;
+    width: min(18rem, calc(100vw - 2 * var(--gutter)));
+    padding: 0.6rem;
     background: var(--bg-elev);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
@@ -345,66 +342,63 @@ const resumeHref = withBase(site.resumePath);
     animation: rise-in var(--dur) var(--ease-out) both;
   }
 
-  .mobile__list,
-  .mobile__sub {
+  .site-header--overlay .mobile__panel {
+    background: rgba(14, 16, 18, 0.92);
+    border-color: rgba(242, 241, 236, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .mobile__list {
     list-style: none;
     margin: 0;
     padding: 0;
-  }
-
-  .mobile__link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.85rem 0.9rem;
-    font-size: var(--text-md);
-    font-weight: 500;
-    text-decoration: none;
-    border-radius: var(--radius);
-  }
-
-  .mobile__link:hover {
-    background: var(--bg-sunk);
-    color: var(--ink);
-  }
-
-  .mobile__sub {
-    padding: 0 0 0.5rem 0.9rem;
     display: grid;
     gap: 0.1rem;
   }
 
-  .mobile__sublink {
+  .mobile__link {
     display: block;
-    padding: 0.5rem 0.9rem;
-    font-size: var(--text-sm);
-    color: var(--ink-2);
+    padding: 0.8rem 0.85rem;
+    font-size: var(--text-md);
+    font-weight: 500;
     text-decoration: none;
-    border-left: 1px solid var(--line);
-  }
-
-  .mobile__sublink:hover {
+    border-radius: var(--radius);
     color: var(--ink);
-    border-left-color: var(--accent);
   }
 
-  .mobile__email {
+  .mobile__link:hover {
+    background: var(--bg-sunk);
+  }
+
+  .site-header--overlay .mobile__link {
+    color: #f2f1ec;
+  }
+
+  .site-header--overlay .mobile__link:hover {
+    background: rgba(242, 241, 236, 0.14);
+    color: #fff;
+  }
+
+  .mobile__ctas {
+    display: grid;
+    gap: 0.45rem;
     margin-top: 0.5rem;
-    padding: 0.5rem 0.4rem 0.2rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--line);
   }
 
-  .mobile__email .btn {
+  .site-header--overlay .mobile__ctas {
+    border-top-color: rgba(242, 241, 236, 0.18);
+  }
+
+  .mobile__ctas .nav__cta {
     width: 100%;
-    justify-content: center;
   }
 
   @media (min-width: 60rem) {
     .nav {
       display: block;
-    }
-
-    .site-header__cta {
-      display: inline-flex;
     }
 
     .mobile {

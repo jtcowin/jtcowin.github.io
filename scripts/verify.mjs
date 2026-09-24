@@ -127,7 +127,12 @@ if (!/approximate impressions/i.test(home)) failures.push('[claim] homepage proo
 if (!/1\.25M/.test(home)) failures.push('[claim] homepage proof strip must use the 1.25M aggregate impressions figure');
 if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
 if (!/Web3 marketing consulting/.test(home)) failures.push('[claim] homepage must carry the consolidated consulting career row');
-if (!/clear market narratives/.test(home)) failures.push('[claim] homepage must use the approved hero supporting copy');
+// v1.3 hero: name and descriptor only.
+if (!/Web3 marketing (?:&amp;|&#38;|&) strategy/i.test(home)) failures.push('[claim] hero must carry the approved descriptor');
+if (!/hero__name/.test(home)) failures.push('[claim] hero must render the name as live text');
+if (!/site-header--overlay/.test(home)) failures.push('[claim] homepage header must overlay the hero, not sit on its own bar');
+if (/site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
+if (/hero__(?:marquee|lede|actions)/.test(home)) failures.push('[claim] retired v1.2 hero elements are still in the build');
 if (!/globally distributed independent music project/.test(home)) failures.push('[claim] homepage must use the approved About copy');
 // v1.2 sections and copy.
 if (!/Governed by human judgment/.test(home)) failures.push('[claim] homepage must carry the How I Work heading');
