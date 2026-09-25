@@ -3,10 +3,13 @@
  * About: career context directly beneath the hero, closed by the trust bar.
  *
  * One wide chapter in four bands: a one-line headline across the canvas, three
- * narrative columns (foundation, Phi Labs, and a short present-day thesis), a
- * compact four-entry career row under a single NOW to EARLIER rule, and the
- * credibility bar. On small screens every band stacks in reading order and the
- * career row becomes an ordinary vertical list, so nothing scrolls sideways.
+ * narrative columns (foundation, Phi Labs, and a short present-day thesis), the
+ * career snapshot, and the credibility bar. The snapshot is a two-level list:
+ * each group is one primary heading (the employer or practice) with its
+ * secondary labels and descriptions beneath it, so Phi Labs Global reads as one
+ * company holding two scopes. On wide screens the groups sit in one row under a
+ * NOW to EARLIER rule; everywhere else they stack in reading order, so nothing
+ * scrolls sideways.
  *
  * Named companies and products are marked in the copy with double asterisks and
  * render as <strong>, so the emphasis is semantic rather than a font weight.
@@ -23,6 +26,11 @@ const resumeHref = withBase(site.resumePath);
 /** Split "a **b** c" into runs, where every odd run is emphasised. */
 function runs(text: string) {
   return text.split('**').map((t, i) => ({ text: t, strong: i % 2 === 1 }));
+}
+
+/** Keep numeric compounds such as "140-plus" on one line; odd runs are the compounds. */
+function compounds(text: string) {
+  return text.split(/(\d+-[a-z]+)/).map((t, i) => ({ text: t, keep: i % 2 === 1 }));
 }
 ---
 
@@ -51,11 +59,19 @@ function runs(text: string) {
 
       <ol class="career__list">
         {
-          about.career.items.map((item) => (
-            <li class:list={['career__item', item.current && 'career__item--current']}>
-              {item.label && <span class="career__label">{item.label}</span>}
-              <span class="career__employer">{item.employer}</span>
-              <span class="career__detail">{item.detail}</span>
+          about.career.groups.map((group) => (
+            <li class:list={['career__group', group.roles.length > 1 && 'career__group--wide']}>
+              <h4 class="career__employer">{group.employer}</h4>
+              <ol class="career__roles">
+                {group.roles.map((role) => (
+                  <li class:list={['career__role', role.current && 'career__role--current']}>
+                    <p class="career__label">{role.label}</p>
+                    <p class="career__detail">
+                      {compounds(role.detail).map((run) => (run.keep ? <span class="nobr">{run.text}</span> : run.text))}
+                    </p>
+                  </li>
+                ))}
+              </ol>
             </li>
           ))
         }
@@ -119,15 +135,19 @@ function runs(text: string) {
     border-top: 2px solid var(--accent);
   }
 
-  /* ---- career row -------------------------------------------------------- */
+  /* ---- career snapshot --------------------------------------------------
+     Spacing inside a group comes from margins rather than gaps, so the same
+     rules hold whether or not the group is a subgrid (see the wide queries). */
   .career {
     margin-top: clamp(2.5rem, 1.5rem + 3vw, 4rem);
     display: grid;
     gap: var(--space-5);
   }
 
+  /* The NOW to EARLIER rule only appears where the groups share one row, so
+     the axis always describes the layout beneath it. */
   .career__axis {
-    display: flex;
+    display: none;
     align-items: center;
     gap: var(--space-4);
     margin: 0;
@@ -147,21 +167,53 @@ function runs(text: string) {
     background: var(--line-strong);
   }
 
-  .career__list {
+  .career__list,
+  .career__roles {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+  }
+
+  .career__list {
+    gap: var(--space-7) var(--space-6);
+  }
+
+  .career__group {
+    display: grid;
+    align-content: start;
+    gap: 0;
+  }
+
+  /* Primary heading: the employer or practice, set in the display face with a
+     rule beneath it. On Phi Labs Global the rule spans both of its roles. */
+  .career__employer {
+    margin: 0 0 var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--line-strong);
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(1.25rem, 1.05rem + 0.45vw, 1.5rem);
+    line-height: 1.12;
+    letter-spacing: -0.005em;
+    color: var(--heading);
+    text-wrap: balance;
+  }
+
+  .career__roles {
     gap: var(--space-5) var(--space-6);
   }
 
-  .career__item {
+  .career__role {
     display: grid;
     align-content: start;
-    gap: 0.3rem;
+    gap: 0.4rem;
   }
 
+  /* Secondary label: compact metadata beneath the heading, never a title. */
   .career__label {
+    margin: 0;
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -169,22 +221,21 @@ function runs(text: string) {
     color: var(--ink-3);
   }
 
-  .career__item--current .career__label {
+  .career__role--current .career__label {
     color: var(--accent);
   }
 
-  .career__employer {
-    font-weight: 700;
-    font-size: var(--text-base);
-    letter-spacing: -0.005em;
-    color: var(--ink);
-  }
-
   .career__detail {
+    margin: 0;
+    max-width: 46ch;
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
     color: var(--ink-2);
     text-wrap: pretty;
+  }
+
+  .career__detail .nobr {
+    white-space: nowrap;
   }
 
   .career__link {
@@ -197,8 +248,44 @@ function runs(text: string) {
 
   /* ---- wide ------------------------------------------------------------- */
   @media (min-width: 48rem) {
+    /* Two columns: Phi Labs Global takes the first row with its two roles side
+       by side, and the two earlier groups share the second. The inner column
+       gap matches the outer one, so the roles land on the outer tracks. */
     .career__list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: 0;
+    }
+
+    .career__group--wide {
+      grid-column: 1 / -1;
+      margin-bottom: var(--space-7);
+    }
+
+    .career__group--wide .career__roles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-6);
+    }
+
+    /* Groups in the same row share their heading and role rows, so every rule
+       and every label starts on one line even when a heading wraps. */
+    @supports (grid-template-rows: subgrid) {
+      .career__group {
+        grid-row: span 2;
+        grid-template-rows: subgrid;
+      }
+
+      .career__employer {
+        align-self: end;
+      }
+    }
+  }
+
+  /* The smallest phones cannot fit "Operator discipline." at the 2.5rem floor,
+     which breaks the headline into four short lines; sizing it to the viewport
+     keeps the two-line reading every other phone gets. */
+  @media (max-width: 22rem) {
+    .about__heading {
+      font-size: 10.4vw;
     }
   }
 
@@ -215,21 +302,21 @@ function runs(text: string) {
       gap: clamp(2rem, 1rem + 2.5vw, 4rem);
       align-items: start;
     }
+  }
+
+  /* One row: Phi Labs Global spans two of four columns. */
+  @media (min-width: 72rem) {
+    .career__axis {
+      display: flex;
+    }
 
     .career__list {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-  }
 
-  /* ---- narrow: the axis becomes a vertical rule beside the entries ------- */
-  @media (max-width: 47.99rem) {
-    .career__axis {
-      display: none;
-    }
-
-    .career__list {
-      padding-inline-start: 1.25rem;
-      border-inline-start: 1px solid var(--line-strong);
+    .career__group--wide {
+      grid-column: span 2;
+      margin-bottom: 0;
     }
   }
 </style>

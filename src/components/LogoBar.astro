@@ -93,17 +93,23 @@ const Tag = embedded ? 'div' : 'section';
     min-width: 0;
   }
 
+  /* The slot spans its column, so a mark can never be wider than the cell it
+     sits in, and it is a size container so the text wordmark can fit itself. */
   .logobar__slot {
     display: flex;
     align-items: center;
+    width: 100%;
     height: 3rem;
     min-width: 0;
+    container-type: inline-size;
   }
 
   .logobar__wordmark {
     font-family: var(--font-sans);
     font-weight: 700;
-    font-size: clamp(0.95rem, 0.85rem + 0.3vw, 1.1rem);
+    /* "Ambur Marketplace" runs about 9.2 of its own ems; above ~10.5% of the
+       cell width it would break onto two lines in the narrow one-row layouts. */
+    font-size: min(clamp(0.95rem, 0.85rem + 0.3vw, 1.1rem), 10.5cqi);
     letter-spacing: -0.01em;
     line-height: 1.1;
     color: var(--ink);
@@ -122,7 +128,7 @@ const Tag = embedded ? 'div' : 'section';
   .logobar__item :global(.logobar__img) {
     height: 26px;
     width: auto;
-    max-width: 140px;
+    max-width: min(140px, 100%);
     object-fit: contain;
     filter: brightness(0);
     opacity: 0.78;
@@ -131,7 +137,7 @@ const Tag = embedded ? 'div' : 'section';
 
   .logobar__item :global(.logobar__img--mark) {
     height: 44px;
-    max-width: 64px;
+    max-width: min(64px, 100%);
   }
 
   .logobar__item:hover :global(.logobar__img) {

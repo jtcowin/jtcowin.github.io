@@ -1,4 +1,7 @@
 ---
+import fs from 'node:fs';
+import nodePath from 'node:path';
+import { createHash } from 'node:crypto';
 import '@styles/global.css';
 import site from '@data/site.json';
 import { withBase, absoluteUrl, pagePath } from '@lib/paths';
@@ -36,7 +39,18 @@ const {
 const fullTitle = title ? `${title} | ${site.name}` : site.browserTitle;
 const canonical = absoluteUrl(pagePath(path), Astro.site);
 const og = getAsset(ogAsset);
-const ogImage = og.file ? absoluteUrl(`/${og.file}`, Astro.site) : undefined;
+// Social platforms cache previews by URL, so the image URL carries a short hash
+// of the file: a regenerated card gets a new URL and is fetched fresh.
+function ogVersion(file: string) {
+  try {
+    const bytes = fs.readFileSync(nodePath.join(process.cwd(), 'public', file));
+    return createHash('sha1').update(bytes).digest('hex').slice(0, 10);
+  } catch {
+    return null;
+  }
+}
+const ogHash = og.file ? ogVersion(og.file) : null;
+const ogImage = og.file ? `${absoluteUrl(`/${og.file}`, Astro.site)}${ogHash ? `?v=${ogHash}` : ''}` : undefined;
 
 const personJsonLd = {
   '@context': 'https://schema.org',
@@ -57,7 +71,7 @@ const personJsonLd = {
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonical} />}
-    <meta name="theme-color" content="#fafaf8" />
+    <meta name="theme-color" content="#f3efe8" />
     <meta name="color-scheme" content="light" />
 
     <link rel="icon" href={withBase('/favicon.ico')} sizes="48x48 32x32 16x16" />

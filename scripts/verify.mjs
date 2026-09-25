@@ -132,7 +132,7 @@ const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 if (!/Approximately 1\.25M impressions/.test(home)) failures.push('[claim] the creator work card must carry "Approximately 1.25M impressions"');
 if (/class="proof[\s"]/.test(home)) failures.push('[claim] the standalone metrics strip was retired in v1.5');
 if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
-if (!/Web3 Marketing Consultant/.test(home)) failures.push('[claim] homepage must carry the consulting career entry');
+if (!/Web3 Marketing Consulting/.test(home)) failures.push('[claim] homepage must carry the consulting career entry');
 // v1.3 hero: name and descriptor only.
 if (!/hero__name/.test(home)) failures.push('[claim] hero must render the name as live text');
 if (!/<header class="[^"]*site-header--overlay/.test(home)) failures.push('[claim] homepage header must overlay the hero, not sit on its own bar');
@@ -150,19 +150,50 @@ if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About s
 for (const name of ['Phi Labs Global', 'Archway', 'Ambur Marketplace', 'Bolt Liquidity']) {
   if (!new RegExp(`<strong[^>]*>${name}</strong>`).test(home)) failures.push(`[claim] About copy must emphasise "${name}" semantically`);
 }
-if ((home.match(/Phi Labs Global/g) || []).length < 3) {
-  failures.push('[claim] both Phi Labs phases must name the employer alongside the About copy');
-}
-// v1.5 career row: no dates or phase labels, two separate Phi Labs entries.
-for (const retired of ['Late 2024 to present', 'Bolt Liquidity phase', 'Archway and Ambur Marketplace phase', 'career__pill']) {
-  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the career row in v1.5`);
+// Finalized career snapshot: three primary headings, each with its secondary
+// labels beneath it. Phi Labs Global is one parent holding two scopes.
+const retiredCareer = [
+  'Late 2024 to present',
+  'Bolt Liquidity phase',
+  'Archway and Ambur Marketplace phase',
+  'career__pill',
+  'Web3 Marketing Consultant',
+  'Independent Music and Marketing',
+  'Owns positioning',
+];
+for (const retired of retiredCareer) {
+  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the career snapshot`);
 }
 if (/securing global distribution/.test(home)) failures.push('[claim] the music entry must not repeat "securing global distribution"');
-const careerBlock = (home.match(/<ol class="career__list"[\s\S]*?<\/ol>/) || [''])[0];
-if ((careerBlock.match(/Phi Labs Global/g) || []).length !== 2) {
-  failures.push('[claim] the career row must show Phi Labs Global as exactly two separate entries');
+const careerBlock = (home.match(/<ol class="career__list"[\s\S]*?career__link/) || [''])[0];
+const careerTree = [
+  ['Phi Labs Global', ['Current scope', 'Original mandate']],
+  ['Web3 Marketing Consulting', ['Selected DeFi Projects']],
+  ['Independent Music and Business Operator', ['Global Music Project']],
+];
+const careerHeadings = [...careerBlock.matchAll(/<h4 class="career__employer"[^>]*>([^<]*)<\/h4>/g)].map((m) => m[1]);
+if (careerHeadings.join(' | ') !== careerTree.map(([h]) => h).join(' | ')) {
+  failures.push(`[claim] career snapshot headings must be ${careerTree.map(([h]) => h).join(', ')} in that order (found: ${careerHeadings.join(', ') || 'none'})`);
 }
-if ((careerBlock.match(/<li/g) || []).length !== 4) failures.push('[claim] the career row must have four entries');
+const careerGroups = careerBlock.split('<li class="career__group').slice(1);
+careerTree.forEach(([heading, labels], i) => {
+  const group = careerGroups[i] || '';
+  const headingAt = group.indexOf(`>${heading}</h4>`);
+  const found = [...group.matchAll(/<p class="career__label"[^>]*>([^<]*)<\/p>/g)].map((m) => m[1]);
+  if (found.join(' | ') !== labels.join(' | ')) {
+    failures.push(`[claim] "${heading}" must carry the labels ${labels.join(', ')} (found: ${found.join(', ') || 'none'})`);
+  }
+  for (const label of labels) {
+    if (headingAt < 0 || group.indexOf(`>${label}</p>`) < headingAt) failures.push(`[claim] "${label}" must sit beneath "${heading}"`);
+  }
+});
+if ((careerBlock.match(/Phi Labs Global/g) || []).length !== 1) {
+  failures.push('[claim] the career snapshot must name Phi Labs Global once, as the parent of both scopes');
+}
+if ((careerBlock.match(/<li class="career__role[ "]/g) || []).length !== 4) failures.push('[claim] the career snapshot must have four entries');
+if (!careerBlock.includes('Own positioning, content, community, technical documentation, creator partnerships, events, and production for Bolt Liquidity.')) {
+  failures.push('[claim] Current scope must use the approved description');
+}
 // Trust bar: closes About, seven entries in the approved order, no Sui Summit.
 const bar = (home.match(/class="logobar[ "][\s\S]*?<\/ul>/) || [''])[0];
 const barOrder = ['Phi Labs', 'Bolt Liquidity', 'Archway', 'Ambur Marketplace', 'Trezor', 'Bitrefill', 'Rayls Labs'];

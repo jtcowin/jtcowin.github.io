@@ -327,6 +327,9 @@ button {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
+  /* When a long label has to wrap on a phone, split it evenly rather than
+     leaving one word on its own line. */
+  text-wrap: balance;
 }
 
 .eyebrow--muted {

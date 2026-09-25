@@ -112,8 +112,7 @@
     ]
   },
   "about": {
-    "_note": "Version 1.5 layout: three narrative columns, a four-entry career row, then the trust bar. Double asterisks mark named companies and products, which render as <strong>. No eyebrow.",
-    "_status": "DRAFT, pending John's approval: the three-column split, the two Phi Labs framing labels, and the current Phi Labs description. Every column reuses approved v1.4 wording; only the paragraph break moved. The music title is unchanged because its replacement is still open.",
+    "_note": "Version 1.5 layout: three narrative columns, the career snapshot, then the trust bar. Double asterisks mark named companies and products, which render as <strong>. No eyebrow. Career snapshot: each group is one primary heading with its secondary labels beneath it.",
     "heading": "Creative instincts. Operator discipline.",
     "columns": [
       {
@@ -134,30 +133,41 @@
       "heading": "Career snapshot",
       "nowLabel": "Now",
       "earlierLabel": "Earlier",
-      "items": [
+      "groups": [
         {
-          "label": "Current scope",
           "employer": "Phi Labs Global",
-          "current": true,
-          "detail": "Owns positioning, content, community, technical documentation, creator partnerships, events, and production for Bolt Liquidity, a next-generation proprietary AMM."
+          "roles": [
+            {
+              "label": "Current scope",
+              "current": true,
+              "detail": "Own positioning, content, community, technical documentation, creator partnerships, events, and production for Bolt Liquidity."
+            },
+            {
+              "label": "Original mandate",
+              "current": false,
+              "detail": "Joined as Social Media Manager to support Phi Labs' product portfolio, including a Layer 1 blockchain and NFT marketplace."
+            }
+          ]
         },
         {
-          "label": "Original mandate",
-          "employer": "Phi Labs Global",
-          "current": false,
-          "detail": "Joined as Social Media Manager to support Phi Labs' product portfolio, including a Layer 1 blockchain and NFT marketplace."
+          "employer": "Web3 Marketing Consulting",
+          "roles": [
+            {
+              "label": "Selected DeFi Projects",
+              "current": false,
+              "detail": "Led social, community, content, and partner-facing marketing across emerging DeFi products."
+            }
+          ]
         },
         {
-          "label": "Selected DeFi projects",
-          "employer": "Web3 Marketing Consultant",
-          "current": false,
-          "detail": "Led social, community, content, and partner-facing marketing across emerging DeFi products."
-        },
-        {
-          "label": null,
-          "employer": "Independent Music and Marketing",
-          "current": false,
-          "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performed 140-plus shows annually, and secured sponsorships, media appearances, and major-festival bookings."
+          "employer": "Independent Music and Business Operator",
+          "roles": [
+            {
+              "label": "Global Music Project",
+              "current": false,
+              "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performed 140-plus shows annually, and secured sponsorships, media appearances, and major-festival bookings."
+            }
+          ]
         }
       ],
       "link": {

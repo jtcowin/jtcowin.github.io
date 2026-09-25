@@ -13,7 +13,7 @@ approved and present, so an unresolved entry never reaches the public site (see
 Version 1.5 introduced a visual system drawn from the hero portrait: a small palette of charcoal,
 cool stone, slate, bone and blue-teal; six numbered surfaces handed out by page position; a heavy
 semi-condensed display face with Manrope for everything read closely; and a wide editorial canvas.
-The homepage is now hero, About (with the career row and trust bar), Selected Work, What I Do, How I
+The homepage is now hero, About (with the career snapshot and trust bar), Selected Work, What I Do, How I
 Work, Contact. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
 introduced the full-viewport photograph and the photographic favicon.
 
@@ -84,7 +84,7 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
 ## Editing content
 
 - **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`
-- **Homepage copy** (hero, proof strip, capabilities, about, career snapshot, contact): `src/data/home.json`
+- **Homepage copy** (hero, about, career snapshot, capabilities, how I work, contact): `src/data/home.json`
 - **Case studies**: `src/content/work/*.mdx`. Frontmatter holds the page metadata, hero copy, results,
   and the homepage card; the body holds the narrative sections using the components in
   `src/components/casestudy/`. Section ordering, headings, and copy are all editable in the MDX.
@@ -217,8 +217,11 @@ each pill matches the ground it sits on and the switch happens exactly at the bo
   about three quarters the size and read as the loudest option.
 - Everything read closely, including navigation and labels: Manrope.
 - The hero name keeps its approved Archivo Medium 500 at normal width.
-- The serif and the monospace face are retired from the site. `scripts/og.mjs` still uses them to
-  render the social-preview cards, which have not been regenerated for the new system yet.
+- The serif and the monospace face are retired, and their packages were removed. `scripts/og.mjs`
+  renders the social-preview cards in Archivo and Manrope on the same palette: the home card echoes the
+  hero (name, rule, arrow and descriptor on the dark ground), and each case-study card uses the tone of
+  its panel in the work rail. Card titles come from the current page titles, so rerun `npm run og`
+  whenever a title changes.
 
 ## Content guardrails
 
@@ -226,9 +229,14 @@ The verify script fails the build check if any of these appear in the output: th
 handle, the unverified 524% Trezor lift claim, any mention of Sui Network negotiations, "17 unique
 creators," invented senior titles, raw internal links, the word "client" (logo-bar organizations are
 employers, products, co-sponsors, and events, not clients), em dashes, a location-level impressions
-figure, a published count of active workflows, or an NFT reference. It also confirms the official title
+figure, or a published count of active workflows. It also confirms the official title
 "Social Media Manager", the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
 and the approved How I Work, contact, trust-bar, and footer lines are present.
+
+The career snapshot is a two-level list and the check enforces its shape: three primary headings
+(Phi Labs Global, Web3 Marketing Consulting, Independent Music and Business Operator) in that order,
+each followed by its secondary labels (Current scope and Original mandate; Selected DeFi Projects;
+Global Music Project), with Phi Labs Global named once as the parent of both scopes.
 
 One aggregate impressions figure is published site-wide: approximately 1.25M across the three
 international creator activations. Per-activation impression figures were retired in Version 1.2 and
