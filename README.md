@@ -5,16 +5,18 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.3, live.** Layout, copy, motion, metadata, approved media, and deployment are
+**Status: Version 1.4.** Layout, copy, motion, metadata, approved media, and deployment are
 complete. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
 approved and present, so an unresolved entry never reaches the public site (see
 [Replacing placeholders](#replacing-placeholders)).
 
-Version 1.3 replaced the header and hero. The homepage now opens on one full-viewport photograph with
-the name set over it and the navigation laid directly on the image, and the browser icons are derived
-from a photographic favicon master. Everything below the hero is unchanged from Version 1.2, which
-turned the selected work list into stacking panels followed by a visual rail, added the How I Work
-section, and consolidated the impressions figure into one aggregate.
+Version 1.4 layered the hero: the name repeats as a moving stream that passes behind the subject, who
+is cut out of the same frame and layered in front of it, with a thin rule crossing the lower hero the
+same way. The header lost its mark and now follows the viewport, About moved directly beneath the hero
+with a wide editorial layout and a career timeline, and the browser tab carries the approved title.
+Version 1.3 introduced the full-viewport photograph and the photographic favicon; Version 1.2 turned
+the selected work list into stacking panels followed by a visual rail, added the How I Work section,
+and consolidated the impressions figure into one aggregate.
 
 ## Routes
 
@@ -137,10 +139,21 @@ that the portrait sits in, makes everything outside that circle transparent, and
 crop tighter to the head and are lightly sharpened, because a full head and shoulders is unreadable at
 16 pixels. To swap the portrait, replace the master and rerun the script; nothing else needs editing.
 
-### Hero photograph
+### Hero photograph and layering
 
 The homepage hero is the full frame at `src/assets/hero/john-cowin-portrait.png`, used full bleed with
-its own setting rather than cut out. Responsive derivatives stop at the source's own 1536px width
+its own setting rather than cut out.
+
+`src/assets/hero/john-cowin-foreground.png` is the same frame with its background removed, layered in
+front of the moving name and the rule so the subject occludes them. The two files must stay the same
+pixel dimensions and carry identical `object-fit` and `object-position` rules, or the subject will not
+register with the frame behind him. To change the photograph, replace both and re-derive the cutout.
+The moving name loops by duplicating its own track and translating it by exactly half, so the restart
+lands on identical pixels; changing the number of repeats per group keeps that true automatically.
+
+Below 75rem the subject spans the full width at the rule's height, so a rule behind him would be
+invisible end to end. At those widths the same rule is drawn in front instead. This is the one place
+the layering is relaxed, and it is a deliberate legibility decision. Responsive derivatives stop at the source's own 1536px width
 rather than upscaling. `object-position` is set per breakpoint: tall viewports crop horizontally and
 hold the face at 34% across, wide viewports crop vertically and hold the frame high. Three gradients,
 not panels, carry the contrast for the name, the header, and the descriptor; their stops are tuned

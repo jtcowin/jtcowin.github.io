@@ -1,215 +1,286 @@
 ---
 /**
- * Asymmetrical editorial About: a short introductory statement that reveals
- * phrase by phrase, the approved narrative as ordinary readable text, and the
- * career snapshot as supporting structure on the opposite side.
+ * About: a wide editorial section directly beneath the hero.
+ *
+ * The headline runs across the top, the approved narrative sits in two balanced
+ * reading columns, and the career snapshot runs along the bottom from the
+ * present on the left to the earliest work on the right. On small screens the
+ * snapshot becomes an ordinary vertical list in the same order, so nothing has
+ * to be scrolled sideways.
+ *
+ * Named companies and products are marked in the copy with double asterisks and
+ * render as <strong>, so the emphasis is semantic rather than a font weight.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
-import { getAsset, isVisible } from '@lib/assets';
-import Media from './Media.astro';
 import Icon from './Icon.astro';
 
 const { about } = home;
-const headshot = getAsset(about.headshot);
-const showHeadshot = isVisible(headshot);
 const resumeHref = withBase(site.resumePath);
 
-// Only the short opening statement reveals, and it does so by phrase rather
-// than by character.
-const introPhrases = about.intro.split(/,\s*/).map((p, i, arr) => (i < arr.length - 1 ? `${p},` : p));
+/** Split "a **b** c" into runs, where every odd run is emphasised. */
+function runs(text: string) {
+  return text.split('**').map((t, i) => ({ text: t, strong: i % 2 === 1 }));
+}
+
+const items = about.career.items;
+// The two Phi Labs phases are bracketed together so they read as one employer.
+const groupStart = items.findIndex((item) => item.group);
+const groupSize = items.filter((item) => item.group && item.group === items[groupStart]?.group).length;
 ---
 
 <section id="about" class="section about" aria-labelledby="about-heading">
   <div class="container">
-    <div class="about__head">
-      <p class="eyebrow">About</p>
-      <h2 id="about-heading" class="display display-lg about__heading">{about.heading}</h2>
-      <p class="about__intro" data-intro>
-        {introPhrases.map((phrase, i) => (
-          <span class="about__phrase" style={`--i: ${i}`}>{phrase}{' '}</span>
-        ))}
-      </p>
+    <h2 id="about-heading" class="about__heading display">{about.heading}</h2>
+
+    <div class="about__copy">
+      {
+        about.paragraphs.map((paragraph) => (
+          <p>
+            {runs(paragraph).map((run) => (run.strong ? <strong>{run.text}</strong> : run.text))}
+          </p>
+        ))
+      }
     </div>
 
-    <div class="about__grid">
-      <div class="about__main">
-        <div class="prose">
-          {about.paragraphs.map((p) => <p>{p}</p>)}
-        </div>
-      </div>
+    <div class="career">
+      <h3 class="sr-only">{about.career.heading}</h3>
 
-      <aside class="about__side" aria-labelledby="career-heading">
-        {
-          showHeadshot && (
-            <div class="about__headshot">
-              <Media id={about.headshot} sizes="(min-width: 60rem) 26vw, 60vw" />
-            </div>
-          )
-        }
-        <h3 id="career-heading" class="eyebrow eyebrow--muted">{about.career.heading}</h3>
-        <ol class="career">
+      <p class="career__ends" aria-hidden="true">
+        <span>{about.career.nowLabel}</span>
+        <span>{about.career.earlierLabel}</span>
+      </p>
+
+      <div class="career__track">
+        <span class="career__rule" aria-hidden="true"></span>
+        <ol class="career__list">
           {
-            about.career.items.map((item) => (
-              <li class="career__item">
-                <span class="career__org">{item.org}</span>
-                {item.role && <span class="career__role">{item.role}</span>}
+            items.map((item, i) => (
+              <li
+                class:list={[
+                  'career__item',
+                  item.current && 'career__item--current',
+                  item.group && 'career__item--grouped',
+                  i === groupStart && 'career__item--group-start',
+                ]}
+                style={i === groupStart ? `--group-size: ${groupSize}` : undefined}
+              >
+                <span class="career__pill mono">{item.period}</span>
+                <span class="career__employer">{item.employer}</span>
+                {item.phase && <span class="career__phase">{item.phase}</span>}
                 <span class="career__detail">{item.detail}</span>
               </li>
             ))
           }
         </ol>
-        <a href={resumeHref} class="arrow-link" download>
-          {about.career.link.label} <Icon name="download" size={14} />
-        </a>
-      </aside>
+      </div>
+
+      <a href={resumeHref} class="arrow-link career__link" download>
+        {about.career.link.label} <Icon name="download" size={14} />
+      </a>
     </div>
   </div>
 </section>
 
-<script>
-  // Reveal the opening statement when it scrolls into view. Without JS, or with
-  // reduced motion, the CSS below leaves it fully visible.
-  const intro = document.querySelector<HTMLElement>('[data-intro]');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  if (intro && !reduce.matches && 'IntersectionObserver' in window) {
-    intro.dataset.introPending = '';
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            intro.dataset.introIn = '';
-            io.disconnect();
-          }
-        }
-      },
-      { threshold: 0.35 },
-    );
-    io.observe(intro);
-  }
-</script>
-
 <style>
-  .about__head {
-    display: grid;
-    gap: var(--space-4);
-    max-width: 44rem;
-    margin-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
+  .about {
+    background: var(--bg-elev);
+    border-block-end: 1px solid var(--line);
   }
 
   .about__heading {
-    max-width: 14em;
+    font-size: var(--text-2xl);
+    max-width: 18ch;
+    margin: 0 0 clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    text-wrap: balance;
   }
 
-  .about__intro {
-    font-family: var(--font-serif);
-    font-size: var(--text-lg);
-    line-height: 1.35;
+  .about__copy {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 46rem;
+  }
+
+  .about__copy p {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
     color: var(--ink-2);
     text-wrap: pretty;
-    margin-top: var(--space-2);
   }
 
-  .about__phrase {
-    display: inline-block;
+  .about__copy strong {
+    font-weight: 600;
+    color: var(--ink);
   }
 
-  /* Hidden only once the script confirms it will reveal them. */
-  [data-intro-pending] .about__phrase {
-    opacity: 0;
-    transform: translateY(0.35em);
-  }
-
-  [data-intro-in] .about__phrase {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 620ms var(--ease-out),
-      transform 620ms var(--ease-out);
-    transition-delay: calc(var(--i) * 130ms);
-  }
-
-  .about__grid {
-    display: grid;
-    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
-  }
-
-  .about__main {
-    display: grid;
-    gap: var(--space-5);
-  }
-
-  .about__side {
-    display: grid;
-    gap: var(--space-5);
-    align-content: start;
-  }
-
-  .about__headshot {
-    max-width: 16rem;
-  }
-
+  /* ---- career snapshot -------------------------------------------------- */
   .career {
+    margin-top: clamp(3rem, 2rem + 4vw, 5.5rem);
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .career__ends {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .career__track {
+    position: relative;
+  }
+
+  .career__rule {
+    position: absolute;
+    inset-inline: 0;
+    top: 0.85rem;
+    height: 1px;
+    background: var(--line-strong);
+  }
+
+  .career__list {
+    position: relative;
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    gap: var(--space-6) var(--space-5);
   }
 
   .career__item {
     display: grid;
-    gap: 0.2rem;
-    padding-block: var(--space-4);
-    border-top: 1px solid var(--line);
+    gap: 0.3rem;
+    align-content: start;
   }
 
-  .career__item:last-child {
-    border-bottom: 1px solid var(--line);
+  /* The pill carries the section background so the rule appears to pass
+     behind it rather than through it. */
+  .career__pill {
+    justify-self: start;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+    white-space: nowrap;
   }
 
-  .career__org {
+  .career__item--current .career__pill {
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .career__employer {
+    margin-top: 0.35rem;
     font-weight: 600;
     letter-spacing: -0.005em;
+    color: var(--ink);
   }
 
-  .career__role {
+  .career__phase {
     font-size: var(--text-sm);
+    color: var(--ink-3);
+  }
+
+  .career__item--current .career__phase {
     color: var(--accent-ink);
-    font-weight: 500;
   }
 
   .career__detail {
+    margin-top: 0.15rem;
     font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
     color: var(--ink-3);
-    line-height: 1.5;
     text-wrap: pretty;
   }
 
-  /* Asymmetrical: the narrative is offset from the left edge and the snapshot
-     sits in a narrower column beside it. */
-  @media (min-width: 60rem) {
-    .about__grid {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
-      align-items: start;
-    }
+  .career__link {
+    justify-self: start;
+    margin-top: var(--space-3);
+  }
 
-    .about__main {
-      padding-inline-start: clamp(0rem, 6vw, 5rem);
-      max-width: 38rem;
-    }
-
-    .about__side {
-      padding-top: 0.4rem;
+  /* ---- wide: two reading columns and a horizontal snapshot -------------- */
+  @media (min-width: 48rem) {
+    .about__copy {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-6);
+      max-width: none;
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .about__phrase {
-      opacity: 1 !important;
-      transform: none !important;
-      transition: none !important;
+  @media (min-width: 60rem) {
+    .about__heading {
+      font-size: var(--text-3xl);
+    }
+
+    .career__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    /* A quiet bracket over the two phases of the same employer, so they read as
+       one company rather than two. */
+    .career__item--group-start {
+      position: relative;
+    }
+
+    .career__item--group-start::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      inline-size: calc(var(--group-size) * 100% + (var(--group-size) - 1) * var(--space-5));
+      block-size: 0.45rem;
+      inset-block-start: -1.1rem;
+      border: 1px solid var(--line-strong);
+      border-block-end: 0;
+      opacity: 0.85;
+    }
+  }
+
+  /* ---- small: an ordinary vertical timeline ----------------------------- */
+  @media (max-width: 59.99rem) {
+    .career__ends {
+      display: none;
+    }
+
+    .career__rule {
+      inset-inline: auto;
+      inset-block: 0.85rem 0;
+      inset-inline-start: 0.6rem;
+      width: 1px;
+      height: auto;
+    }
+
+    .career__list {
+      gap: var(--space-6);
+      padding-inline-start: 1.9rem;
+    }
+
+    .career__item {
+      position: relative;
+    }
+
+    .career__pill {
+      margin-inline-start: -1.9rem;
+    }
+
+    .career__item--grouped .career__employer::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: -1.3rem;
+      inset-block: 0.1rem 0;
+      width: 2px;
+      background: var(--line-strong);
+      opacity: 0.7;
     }
   }
 </style>

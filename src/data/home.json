@@ -1,11 +1,12 @@
 {
   "_readme": "Homepage copy (Version 1.2). Case-study panels are drawn from each case study's frontmatter in src/content/work/.",
   "hero": {
-    "_note": "Version 1.3 hero. Name and descriptor only; everything else lives in the sections below. The name renders uppercase through CSS so assistive technology reads it as a name rather than spelling it out.",
-    "nameFirst": "John",
-    "nameLast": "Cowin",
-    "descriptor": "Web3 marketing & strategy",
-    "portrait": "hero-portrait"
+    "_note": "Version 1.4 hero. The name is title case and repeats as a moving stream behind the subject; the separator between repeats is an em dash, which is deliberate typography and the one place an em dash is allowed on the site. The descriptor renders uppercase through CSS so assistive technology reads it as a sentence.",
+    "name": "John Cowin",
+    "separator": "—",
+    "descriptor": "Web3 marketing, strategy, & content",
+    "portrait": "hero-portrait",
+    "foreground": "hero-foreground"
   },
   "proof": {
     "_note": "Static figures. Do not animate as counters. Keep 'approximately' on the impressions figure. The 1.25M aggregate replaces all earlier aggregate calculations and all location-level figures.",
@@ -132,30 +133,49 @@
     ]
   },
   "about": {
-    "heading": "Strategy without losing the execution",
-    "intro": "I build the strategic foundation, then stay with the work until it ships.",
+    "_note": "Approved Version 1.4 copy. Two paragraphs, verbatim. Double asterisks mark the named companies and products, which render as <strong>. No eyebrow on this section.",
+    "heading": "Creative instincts. Operator discipline.",
     "paragraphs": [
-      "I joined Phi Labs Global to manage social media for Archway, a Layer 1 blockchain. Four months later, the company sunset the protocol and shifted its focus to Bolt Liquidity, a next-generation prop AMM. As the organization evolved, my remit expanded far beyond social: I took ownership across positioning, content, community, technical documentation, creator partnerships, events, and production.",
-      "That experience shaped how I work today. I can build the strategic foundation, translate a technical product, manage external relationships, and step directly into production or distribution when the work needs to ship. Before Web3, I spent more than a decade building audiences and managing the business behind a globally distributed independent music project."
+      "I entered DeFi full-time in 2021 after a decade of building audiences and managing the business operations of a globally distributed independent music project. That foundation developed my instincts for brand building, audience development, creative production, partnerships, and managing complex operations.",
+      "In 2024, I joined **Phi Labs Global**, a Web3 software development company, to manage social media across a product portfolio that has included **Archway**, a Layer 1 blockchain; **Ambur Marketplace**, an NFT marketplace; and **Bolt Liquidity**, a next-generation proprietary AMM. As the organization evolved, so did my role. What began in social expanded into ownership across positioning, content, community, technical documentation, creator partnerships, events, and production. Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore."
     ],
     "headshot": "about-headshot",
     "career": {
       "heading": "Career snapshot",
+      "nowLabel": "Now",
+      "earlierLabel": "Earlier",
       "items": [
         {
-          "org": "Phi Labs Global",
-          "role": "Social Media Manager",
-          "detail": "Expanded ownership across strategy, content, community, documentation, creators, events, and production"
+          "period": "Late 2024 to present",
+          "employer": "Phi Labs Global",
+          "phase": "Bolt Liquidity phase",
+          "group": "phi-labs",
+          "current": true,
+          "detail": "Expanded beyond social into ownership across positioning, content, community, technical documentation, creator partnerships, events, and production."
         },
         {
-          "org": "Web3 marketing consulting",
-          "role": "Selected DeFi projects",
-          "detail": "Social strategy, content, community operations, product education, and team leadership across early-stage DeFi projects"
+          "period": "2024",
+          "employer": "Phi Labs Global",
+          "phase": "Archway and Ambur Marketplace phase",
+          "group": "phi-labs",
+          "current": false,
+          "detail": "Joined as Social Media Manager to support Phi Labs' product portfolio, including a Layer 1 blockchain and NFT marketplace."
         },
         {
-          "org": "Independent music and marketing",
-          "role": null,
-          "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performing 140-plus shows annually and securing global distribution, sponsorships, media appearances, and major-festival bookings"
+          "period": "2021 to 2024",
+          "employer": "Web3 Marketing Consultant",
+          "phase": "Selected DeFi projects",
+          "group": null,
+          "current": false,
+          "detail": "Led social, community, content, and partner-facing marketing across emerging DeFi products."
+        },
+        {
+          "period": "2009 to 2020",
+          "employer": "Independent Music and Marketing",
+          "phase": null,
+          "group": null,
+          "current": false,
+          "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performing 140-plus shows annually and securing global distribution, sponsorships, media appearances, and major-festival bookings."
         }
       ],
       "link": {

@@ -1,18 +1,22 @@
 ---
 /**
- * Version 1.3 hero: one full-viewport photograph with the name over it.
+ * Version 1.4 hero: a layered composition in one full viewport.
  *
- * The photograph is full bleed and keeps its own setting; nothing is cut out.
- * Only two pieces of copy sit on it, the name and the descriptor, and the
- * header overlays the same frame, so the first viewport is the composition and
- * nothing of the next section shows above the fold.
+ * Layer order, back to front:
+ *   1. the full-bleed photograph, with a gradient that sits the background back
+ *   2. the moving name and the thin rule
+ *   3. the same photograph with its background removed, so the subject occludes
+ *      the two layers behind him
+ *   4. the navigation and the informational copy
  *
- * The name is written in normal case and uppercased in CSS, so assistive
- * technology announces "John Cowin" instead of spelling out capitals.
+ * Layers 1 and 3 are the same frame at the same size and object-position, so
+ * they register exactly and read as one photograph with type running through it.
  *
- * Motion is a single entrance: a slight scale correction on the photograph and
- * a clipped reveal per name line. Nothing loops, follows the pointer, or
- * scrolls. Under prefers-reduced-motion the finished state renders at once.
+ * The name is one accessible instance plus a repeating visual stream that is
+ * hidden from assistive technology, so the heading announces "John Cowin" once
+ * rather than repeating it. The loop is a duplicated track translated by half
+ * its own width, which has no seam. Under prefers-reduced-motion the stream
+ * renders as one static instance and nothing moves.
  */
 import { Picture } from 'astro:assets';
 import home from '@data/home.json';
@@ -21,17 +25,59 @@ import { getAsset, resolveImage } from '@lib/assets';
 const { hero } = home;
 const portrait = getAsset(hero.portrait);
 const portraitImg = resolveImage(portrait);
+const foreground = getAsset(hero.foreground);
+const foregroundImg = resolveImage(foreground);
+
+// One group is repeated twice to make the track; the animation moves exactly one
+// group width, so the restart lands on identical pixels. Three phrases per group
+// covers ultrawide viewports without the track running short.
+const PHRASES_PER_GROUP = 3;
+const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${hero.separator}`);
 ---
 
 <section class="hero" aria-labelledby="hero-title">
   {
     portraitImg && (
-      <div class="hero__media">
-        {/* Decorative: the name and role are already live text below, so repeating
-            them in alt text would only duplicate what is announced. Widths stop at
-            the source's own 1536px rather than upscaling it. */}
+      <div class="hero__photo">
+        {/* Decorative: the name and the role are live text in this same section,
+            so alt text here would only repeat what is already announced. */}
         <Picture
           src={portraitImg}
+          alt=""
+          widths={[640, 960, 1280, 1536]}
+          sizes="100vw"
+          formats={['avif', 'webp']}
+          loading="eager"
+          fetchpriority="high"
+          class="hero__img"
+        />
+        <div class="hero__grade"></div>
+      </div>
+    )
+  }
+
+  <div class="hero__behind">
+    <h1 class="hero__name" id="hero-title">
+      <span class="sr-only">{hero.name}</span>
+      <span class="stream" aria-hidden="true">
+        <span class="stream__track">
+          <span class="stream__group">
+            {group.map((phrase) => <span class="stream__phrase">{phrase}</span>)}
+          </span>
+          <span class="stream__group">
+            {group.map((phrase) => <span class="stream__phrase">{phrase}</span>)}
+          </span>
+        </span>
+      </span>
+    </h1>
+    <div class="hero__rule hero__rule--behind"></div>
+  </div>
+
+  {
+    foregroundImg && (
+      <div class="hero__subject" aria-hidden="true">
+        <Picture
+          src={foregroundImg}
           alt=""
           widths={[640, 960, 1280, 1536]}
           sizes="100vw"
@@ -44,14 +90,16 @@ const portraitImg = resolveImage(portrait);
     )
   }
 
-  <div class="hero__scrim" aria-hidden="true"></div>
+  <div class="hero__veil" aria-hidden="true"></div>
 
-  <div class="hero__content">
+  <div class="hero__rule hero__rule--front" aria-hidden="true"></div>
+
+  <div class="hero__info">
+    <svg class="hero__arrow" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+      <path d="M6 6 L20 20" />
+      <path d="M20 12 L20 20 L12 20" />
+    </svg>
     <p class="hero__descriptor">{hero.descriptor}</p>
-    <h1 class="hero__name" id="hero-title">
-      <span class="hero__line"><span class="hero__word">{hero.nameFirst}</span></span>
-      <span class="hero__line hero__line--last"><span class="hero__word">{hero.nameLast}</span></span>
-    </h1>
   </div>
 </section>
 
@@ -63,143 +111,223 @@ const portraitImg = resolveImage(portrait);
     min-height: 100svh;
     overflow: hidden;
     background: #16181a;
+
+    /* One set of offsets keeps the rule, the stream and the information block
+       related to each other instead of each floating on its own. */
+    --info-bottom: clamp(1.75rem, 4.5vh, 3.25rem);
+    /* Reserves the height the arrow and the descriptor actually occupy, so the
+       rule always sits above them. Narrow screens wrap the descriptor onto
+       three lines and need the taller reservation. */
+    --info-block: clamp(7rem, 6rem + 6vw, 8.5rem);
+    --rule-bottom: calc(var(--info-bottom) + var(--info-block));
   }
 
-  /* ---- photograph ----------------------------------------------------- */
-  .hero__media {
+  /* ---- 1. photograph --------------------------------------------------- */
+  .hero__photo,
+  .hero__subject {
     position: absolute;
     inset: 0;
+  }
+
+  .hero__photo {
     z-index: 0;
   }
 
-  .hero__media :global(picture),
+  .hero__photo :global(picture),
+  .hero__subject :global(picture),
   .hero__img {
     display: block;
     width: 100%;
     height: 100%;
   }
 
+  /* Both layers must share these exactly or the subject will not register with
+     the frame behind him. */
   .hero__img {
     object-fit: cover;
-    /* Tall viewports crop horizontally, so the face has to be held near 34%
-       across; wide viewports crop vertically, so the top of the head is held
-       just inside the frame. */
     object-position: 34% 50%;
+  }
+
+  .hero__photo .hero__img {
     animation: hero-settle 1400ms var(--ease-out) both;
   }
 
-  /* ---- legibility ----------------------------------------------------- */
-  .hero__scrim {
+  /* Sits the background back so the moving name reads against it. The subject
+     layer deliberately does not carry this, which is what gives the composition
+     its depth. */
+  .hero__grade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgba(8, 10, 12, 0.5) 0%, rgba(8, 10, 12, 0) 34%),
+      linear-gradient(to bottom, rgba(8, 10, 12, 0.34) 0%, rgba(8, 10, 12, 0) 30%),
+      linear-gradient(to left, rgba(8, 10, 12, 0.3) 0%, rgba(8, 10, 12, 0) 38%),
+      linear-gradient(rgba(8, 10, 12, 0.48), rgba(8, 10, 12, 0.48));
+  }
+
+  /* ---- 2. moving name and rule ----------------------------------------- */
+  .hero__behind {
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    /* Three gradients, no panels. The bottom one carries the name, the top one
-       the header, and the right one the descriptor sitting in the photograph's
-       open side. Stop values are tuned against measured contrast on the actual
-       photograph rather than by eye. */
-    background:
-      linear-gradient(
-        to top,
-        rgba(8, 10, 12, 0.84) 0%,
-        rgba(8, 10, 12, 0.68) 20%,
-        rgba(8, 10, 12, 0.54) 44%,
-        rgba(8, 10, 12, 0.24) 62%,
-        rgba(8, 10, 12, 0) 78%
-      ),
-      linear-gradient(to bottom, rgba(8, 10, 12, 0.52) 0%, rgba(8, 10, 12, 0) 26%),
-      linear-gradient(to left, rgba(8, 10, 12, 0.52) 0%, rgba(8, 10, 12, 0) 34%);
   }
 
-  /* ---- copy ------------------------------------------------------------ */
-  .hero__content {
+  /* Placed so the stream runs through the subject's head and shoulders, which
+     is what makes the occlusion read. */
+  .hero__name {
+    position: absolute;
+    inset-inline: 0;
+    top: 31%;
+    margin: 0;
+    font-family: var(--font-grotesk);
+    font-weight: 500;
+    font-size: clamp(3.25rem, 17vw, 16rem);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: #f2f1ec;
+  }
+
+  .stream {
+    display: block;
+    overflow: hidden;
+  }
+
+  .stream__track {
+    display: flex;
+    width: max-content;
+    animation: stream-move 48s linear infinite;
+  }
+
+  .stream__group {
+    display: flex;
+    flex: 0 0 auto;
+  }
+
+  .stream__phrase {
+    display: block;
+    flex: 0 0 auto;
+    padding-inline-end: 0.28em;
+    white-space: nowrap;
+  }
+
+  /* The rule belongs behind the subject, and on wide screens roughly forty per
+     cent of its length falls on open background, so the occlusion reads. Below
+     75rem the crop is tight enough that the subject spans the whole width at
+     that height and a rule behind him would be invisible from end to end, so
+     narrow screens draw the same rule in front instead of losing it. Exactly
+     one of the two is ever displayed. */
+  .hero__rule {
+    position: absolute;
+    inset-inline: var(--gutter);
+    bottom: var(--rule-bottom);
+    height: 1px;
+    background: rgba(242, 241, 236, 0.85);
+  }
+
+  /* Sits above the subject, unlike the grade, because on narrow screens the
+     descriptor falls on his forearm rather than on background. Confined to the
+     bottom band so it never reaches the moving name. */
+  .hero__veil {
     position: absolute;
     inset: 0;
-    z-index: 2;
-    display: grid;
-    grid-template-rows: 1fr auto;
-    gap: clamp(1.25rem, 2vw, 2rem);
-    padding-inline: var(--gutter);
-    padding-block-end: clamp(2rem, 1rem + 4vh, 4rem);
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(8, 10, 12, 0.84) 0%,
+      rgba(8, 10, 12, 0.68) 10%,
+      rgba(8, 10, 12, 0.36) 20%,
+      rgba(8, 10, 12, 0) 34%
+    );
   }
 
-  .hero__descriptor {
-    align-self: end;
-    font-family: var(--font-mono);
-    font-size: clamp(0.8125rem, 0.7rem + 0.4vw, 1rem);
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #f2f1ec;
-    margin: 0;
-    max-width: 26ch;
+  .hero__rule--front {
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .hero__rule--behind {
+    display: none;
+  }
+
+  @media (min-width: 75rem) {
+    .hero__rule--behind {
+      display: block;
+    }
+
+    .hero__rule--front {
+      display: none;
+    }
+
+    .hero__veil {
+      background: linear-gradient(to top, rgba(8, 10, 12, 0.34) 0%, rgba(8, 10, 12, 0) 16%);
+    }
+
+    /* One line of descriptor at this width, so the block is shorter. */
+    .hero {
+      --info-block: clamp(4.5rem, 3.5rem + 2vw, 5.5rem);
+    }
+  }
+
+  /* ---- 3. subject ------------------------------------------------------ */
+  .hero__subject {
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .hero__subject .hero__img {
+    animation: hero-settle 1400ms var(--ease-out) both;
+  }
+
+  /* ---- 4. information -------------------------------------------------- */
+  .hero__info {
+    position: absolute;
+    z-index: 4;
+    right: var(--gutter);
+    bottom: var(--info-bottom);
+    display: grid;
+    justify-items: end;
+    gap: clamp(0.6rem, 1.4vh, 1rem);
+    text-align: right;
     animation: hero-fade 700ms var(--ease-out) 620ms both;
   }
 
-  .hero__name {
-    font-family: var(--font-grotesk);
-    /* Medium, not black: the name stays the dominant element through scale and
-       placement rather than through sheer weight. Tracking opens slightly to
-       match, which a heavy weight could not carry. */
+  .hero__arrow {
+    width: clamp(1.6rem, 2.6vw, 2.25rem);
+    height: clamp(1.6rem, 2.6vw, 2.25rem);
+    fill: none;
+    stroke: #f2f1ec;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .hero__descriptor {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(0.75rem, 0.66rem + 0.35vw, 0.9375rem);
     font-weight: 500;
-    font-size: clamp(3.25rem, 19vw, 16rem);
-    line-height: 0.86;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: #f2f1ec;
-    margin: 0;
-    display: grid;
-    justify-items: start;
-  }
-
-  /* Each line clips its own word so the reveal reads as type rising into
-     place rather than the whole block sliding. */
-  .hero__line {
-    display: block;
-    overflow: hidden;
-    padding-block-end: 0.06em;
-  }
-
-  .hero__word {
-    display: block;
-    animation: hero-rise 900ms var(--ease-out) both;
-  }
-
-  .hero__line--last .hero__word {
-    animation-delay: 140ms;
+    line-height: 1.7;
+    max-width: 22ch;
   }
 
   /* ---- wide screens ---------------------------------------------------- */
   @media (min-width: 60rem) {
-    .hero__name {
-      font-size: clamp(7rem, 13.5vw, 16rem);
-    }
-
     .hero__img {
-      /* Wide viewports crop top and bottom; hold the frame high so the top of
-         the head stays in and the lower body carries the name. */
       object-position: 50% 16%;
     }
 
-    .hero__content {
-      padding-block: clamp(6rem, 13vh, 9rem) clamp(2.5rem, 6vh, 5rem);
+    .hero__name {
+      top: 24%;
+      font-size: clamp(7rem, 13.5vw, 16rem);
     }
 
     .hero__descriptor {
-      justify-self: end;
-      text-align: right;
-      align-self: end;
-      max-width: 20ch;
-      line-height: 1.8;
-      padding-block-end: clamp(1.5rem, 5vh, 4rem);
-    }
-
-    /* The two words read as one name but sit as two placed blocks, the second
-       carried right across the lower half of the photograph. */
-    /* Expressed in em so the offset stays proportional to the name at every
-       size instead of drifting with the viewport. */
-    .hero__line--last {
-      margin-inline-start: 1.6em;
+      max-width: none;
     }
   }
 
@@ -219,15 +347,6 @@ const portraitImg = resolveImage(portrait);
     }
   }
 
-  @keyframes hero-rise {
-    from {
-      transform: translate3d(0, 105%, 0);
-    }
-    to {
-      transform: none;
-    }
-  }
-
   @keyframes hero-fade {
     from {
       opacity: 0;
@@ -237,11 +356,26 @@ const portraitImg = resolveImage(portrait);
     }
   }
 
+  /* Exactly one group width, so the restart is invisible. */
+  @keyframes stream-move {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .hero__img,
-    .hero__word,
-    .hero__descriptor {
+    .hero__photo .hero__img,
+    .hero__subject .hero__img,
+    .hero__info {
       animation: none !important;
+    }
+
+    /* One static instance of the name behind the subject, no travel. */
+    .stream__track {
+      animation: none;
     }
   }
 </style>

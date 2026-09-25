@@ -4,8 +4,16 @@
  *
  * Two variants share one markup. On the homepage it overlays the full-bleed
  * hero photograph with no background block of its own, using light controls
- * over the hero's own top scrim. Everywhere else it is the ordinary sticky bar
- * on the light page background.
+ * over the hero's own gradient, and carries no brand mark because the name is
+ * already the largest thing on the screen. Everywhere else it is the ordinary
+ * sticky bar with a text home link.
+ *
+ * Over the hero the header follows the viewport, and once the hero has scrolled
+ * past it takes a restrained translucent plate so the controls stay readable on
+ * the light sections. Both states share the same geometry and transition their
+ * colours, so nothing jumps at the handover. Following the viewport is a
+ * progressive enhancement: without JavaScript the header simply scrolls away
+ * with the hero, which is always legible.
  *
  * Hierarchy in both: Work and About are plain text links, Contact is the
  * primary call to action, Resume is the quieter outline one. The mobile menu is
@@ -33,18 +41,19 @@ const links = [
 ];
 ---
 
-<header class:list={['site-header', overlay && 'site-header--overlay']} id="top">
+<header class:list={['site-header', overlay && 'site-header--overlay']} id="top" data-header>
   <div class="container site-header__inner">
-    <a href={withBase('/')} class="brand" aria-current={current === '/' ? 'page' : undefined}>
-      <img
-        class="brand__mark"
-        src={withBase('/icon-192.png')}
-        alt={`${site.name}, home`}
-        width="44"
-        height="44"
-        decoding="async"
-      />
-    </a>
+    {
+      /* No mark over the hero: the name is already the composition. Inner pages
+         still need a way home, so they get a plain text link. */
+      overlay ? (
+        <span class="brand brand--empty" aria-hidden="true" />
+      ) : (
+        <a href={withBase('/')} class="brand" aria-current={current === '/' ? 'page' : undefined}>
+          {site.name}
+        </a>
+      )
+    }
 
     <nav class="nav" aria-label="Primary">
       <ul class="nav__list">
@@ -117,6 +126,26 @@ const links = [
     open.open = false;
     open.querySelector<HTMLElement>('summary')?.focus();
   });
+
+  // Over the hero, let the header follow the viewport and swap to a readable
+  // plate once the hero has passed. Enhancement only: the CSS keys the fixed
+  // behaviour off the attribute this sets, so with no JavaScript the header
+  // stays with the hero and never ends up light-on-light.
+  const header = document.querySelector<HTMLElement>('[data-header].site-header--overlay');
+  const hero = document.querySelector('.hero');
+
+  if (header && hero && 'IntersectionObserver' in window) {
+    header.dataset.follow = '';
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        header.toggleAttribute('data-past-hero', !entry.isIntersecting);
+      },
+      // The strip the header itself occupies: once the hero no longer reaches
+      // into it, the controls are over ordinary page background.
+      { rootMargin: '-72px 0px 0px 0px', threshold: 0 },
+    );
+    io.observe(hero);
+  }
 </script>
 
 <style>
@@ -131,7 +160,7 @@ const links = [
   }
 
   /* Over the hero the header contributes no surface of its own: no bar, no
-     border, no blur plane. The hero's top scrim is what carries the contrast. */
+     border, no blur plane. The hero's own gradient carries the contrast. */
   .site-header--overlay {
     position: absolute;
     inset-block-start: 0;
@@ -140,6 +169,24 @@ const links = [
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-bottom: 0;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  /* Set by the script, so this never applies without JavaScript. */
+  .site-header--overlay[data-follow] {
+    position: fixed;
+  }
+
+  /* Past the hero: a translucent plate rather than a solid band, and the
+     controls change colour over the same duration so the handover reads as a
+     fade rather than a switch. */
+  .site-header--overlay[data-past-hero] {
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: saturate(150%) blur(12px);
+    -webkit-backdrop-filter: saturate(150%) blur(12px);
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
   }
 
   .site-header__inner {
@@ -158,27 +205,20 @@ const links = [
   .brand {
     display: inline-flex;
     align-items: center;
+    font-weight: 600;
+    letter-spacing: -0.005em;
     text-decoration: none;
-    border-radius: 999px;
+    color: var(--ink);
+    border-radius: var(--radius);
   }
 
-  .brand__mark {
-    width: 2.375rem;
-    height: 2.375rem;
-    border-radius: 999px;
-    display: block;
-    transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  .brand:hover {
+    color: var(--accent-ink);
   }
 
-  .site-header--overlay .brand__mark {
-    width: clamp(2.5rem, 3.4vw, 3.25rem);
-    height: clamp(2.5rem, 3.4vw, 3.25rem);
-    box-shadow: 0 0 0 1px rgba(242, 241, 236, 0.35);
-  }
-
-  .brand:hover .brand__mark {
-    opacity: 0.88;
-    transform: translateY(-1px);
+  /* Holds the left side of the row so the navigation stays right-aligned. */
+  .brand--empty {
+    width: 0;
   }
 
   .nav {
@@ -286,6 +326,84 @@ const links = [
   .site-header--overlay :global(summary:focus-visible) {
     outline: 2px solid #f2f1ec;
     outline-offset: 3px;
+  }
+
+  /* ---- controls once the hero has passed -------------------------------- */
+  .site-header--overlay .nav__link,
+  .site-header--overlay .nav__cta,
+  .site-header--overlay .mobile__toggle {
+    transition:
+      color var(--dur) var(--ease-out),
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  .site-header--overlay[data-past-hero] .nav__link {
+    color: var(--ink-2);
+  }
+
+  .site-header--overlay[data-past-hero] .nav__link:hover {
+    color: var(--ink);
+    background: var(--bg-sunk);
+  }
+
+  .site-header--overlay[data-past-hero] .nav__cta--primary {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .site-header--overlay[data-past-hero] .nav__cta--ghost {
+    color: var(--ink-2);
+    border-color: var(--line-strong);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .site-header--overlay[data-past-hero] .nav__cta--ghost:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .site-header--overlay[data-past-hero] .mobile__toggle {
+    color: var(--ink);
+    border-color: var(--line-strong);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .site-header--overlay[data-past-hero] :global(a:focus-visible),
+  .site-header--overlay[data-past-hero] :global(summary:focus-visible) {
+    outline-color: var(--accent);
+  }
+
+  .site-header--overlay[data-past-hero] .mobile__panel {
+    background: var(--bg-elev);
+    border-color: var(--line);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .site-header--overlay[data-past-hero] .mobile__link {
+    color: var(--ink);
+  }
+
+  .site-header--overlay[data-past-hero] .mobile__link:hover {
+    background: var(--bg-sunk);
+  }
+
+  .site-header--overlay[data-past-hero] .mobile__ctas {
+    border-top-color: var(--line);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header--overlay,
+    .site-header--overlay .nav__link,
+    .site-header--overlay .nav__cta,
+    .site-header--overlay .mobile__toggle {
+      transition: none;
+    }
   }
 
   /* ---- mobile ---------------------------------------------------------- */

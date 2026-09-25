@@ -17,6 +17,7 @@ const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.
 
 <BaseLayout path="/" ogAsset="og-home">
   <Hero />
+  <About />
   <LogoBar />
   <ProofStrip />
 
@@ -33,7 +34,6 @@ const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.
   <WorkRail />
   <Capabilities />
   <HowIWork />
-  <About />
   <Contact />
 </BaseLayout>
 

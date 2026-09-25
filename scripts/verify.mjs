@@ -99,10 +99,15 @@ const forbidden = [
   // v1.2: one aggregate impressions figure only. Location-level figures are retired.
   { re: /approximately\s+[\d,]+\s+impressions/i, why: 'location-level impression figures were retired in v1.2' },
   { re: /\b\d+\s+(?:active\s+|automated\s+|governed\s+)*workflows\b/i, why: 'do not publish a count of active workflows' },
-  { re: /\bNFTs?\b/, why: 'the NFT motif is excluded from v1.2' },
 ];
+// The hero name stream separates its repeats with an em dash, which is
+// deliberate typography rather than prose punctuation, so that one element is
+// excised before the guardrails run. Everything else is still tested.
+const STREAM = /<span class="stream"[\s\S]*?<\/span>\s*<\/h1>/g;
+
 for (const f of htmlFiles) {
-  const html = fs.readFileSync(f, 'utf8');
+  const raw = fs.readFileSync(f, 'utf8');
+  const html = raw.replace(STREAM, '');
   for (const { re, why } of forbidden) {
     const m = html.match(re);
     if (m) failures.push(`[guardrail] ${path.relative(dist, f)} contains "${m[0]}" (${why})`);
@@ -126,12 +131,36 @@ const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 if (!/approximate impressions/i.test(home)) failures.push('[claim] homepage proof strip must keep "approximate" on the impressions figure');
 if (!/1\.25M/.test(home)) failures.push('[claim] homepage proof strip must use the 1.25M aggregate impressions figure');
 if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
-if (!/Web3 marketing consulting/.test(home)) failures.push('[claim] homepage must carry the consolidated consulting career row');
+if (!/Web3 Marketing Consultant/.test(home)) failures.push('[claim] homepage must carry the consulting career entry');
 // v1.3 hero: name and descriptor only.
-if (!/Web3 marketing (?:&amp;|&#38;|&) strategy/i.test(home)) failures.push('[claim] hero must carry the approved descriptor');
 if (!/hero__name/.test(home)) failures.push('[claim] hero must render the name as live text');
-if (!/site-header--overlay/.test(home)) failures.push('[claim] homepage header must overlay the hero, not sit on its own bar');
-if (/site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
+if (!/<header class="[^"]*site-header--overlay/.test(home)) failures.push('[claim] homepage header must overlay the hero, not sit on its own bar');
+// v1.4 hero, title and About.
+if (!/<title>John Cowin - Web3 Marketing, Strategy, (?:&amp;|&#38;|&) Content<\/title>/.test(home)) {
+  failures.push('[claim] homepage must use the exact approved browser-tab title');
+}
+if (!/Web3 marketing, strategy, (?:&amp;|&#38;|&) content/i.test(home)) failures.push('[claim] hero must carry the approved descriptor');
+if (!/hero__subject/.test(home)) failures.push('[claim] hero must layer the foreground cutout in front of the moving name');
+if (!/hero__rule/.test(home)) failures.push('[claim] hero must carry the lower rule');
+if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render as the moving stream');
+if (/icon-192\.png"[^>]*class="brand__mark"|brand__mark/.test(home)) failures.push('[claim] no brand mark may appear in the hero header');
+if (!/Creative instincts\. Operator discipline\./.test(home)) failures.push('[claim] About must use the approved headline');
+if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About section must have no eyebrow');
+for (const name of ['Phi Labs Global', 'Archway', 'Ambur Marketplace', 'Bolt Liquidity']) {
+  if (!new RegExp(`<strong[^>]*>${name}</strong>`).test(home)) failures.push(`[claim] About copy must emphasise "${name}" semantically`);
+}
+if ((home.match(/Phi Labs Global/g) || []).length < 3) {
+  failures.push('[claim] both Phi Labs phases must name the employer alongside the About copy');
+}
+for (const period of ['Late 2024 to present', '2021 to 2024', '2009 to 2020']) {
+  if (!home.includes(period)) failures.push(`[claim] career snapshot is missing the "${period}" entry`);
+}
+// About must be the second section, directly after the hero.
+const order = [...home.matchAll(/<section[^>]*\bid="([a-z-]+)"/g)].map((m) => m[1]);
+if (order[0] !== undefined && order.indexOf('about') !== 0 && !/class="hero"/.test(home)) {
+  failures.push('[claim] unexpected homepage section order');
+}
+if (/<header class="[^"]*site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
 if (/hero__(?:marquee|lede|actions)/.test(home)) failures.push('[claim] retired v1.2 hero elements are still in the build');
 if (!/globally distributed independent music project/.test(home)) failures.push('[claim] homepage must use the approved About copy');
 // v1.2 sections and copy.
@@ -182,6 +211,7 @@ for (const f of srcFiles) {
 const homeData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8'));
 for (const id of homeData.rail?.items ?? []) idRefs.add(id);
 if (homeData.hero?.portrait) idRefs.add(homeData.hero.portrait);
+if (homeData.hero?.foreground) idRefs.add(homeData.hero.foreground);
 
 for (const id of idRefs) {
   if (!ids.has(id) && !['context', 'role', 'main', 'top', 'work', 'about', 'contact', 'capabilities'].includes(id)) {

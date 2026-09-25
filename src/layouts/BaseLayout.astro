@@ -28,7 +28,9 @@ const {
   noindex = false,
 } = Astro.props;
 
-const fullTitle = title ? `${title} | ${site.name}` : `${site.name}: ${site.tagline}`;
+// The homepage uses the exact approved browser-tab string; inner pages keep the
+// page name plus the site name.
+const fullTitle = title ? `${title} | ${site.name}` : site.browserTitle;
 const canonical = absoluteUrl(pagePath(path), Astro.site);
 const og = getAsset(ogAsset);
 const ogImage = og.file ? absoluteUrl(`/${og.file}`, Astro.site) : undefined;
