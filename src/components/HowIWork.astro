@@ -116,12 +116,12 @@ const approved = 'M 626 100 L 1240 100';
 
   .sig {
     fill: none;
-    stroke: rgba(22, 24, 26, 0.1);
+    stroke: color-mix(in srgb, var(--ink) 16%, transparent);
     stroke-width: 1;
   }
 
   .sig--pulse {
-    stroke: rgba(22, 24, 26, 0.24);
+    stroke: color-mix(in srgb, var(--ink) 38%, transparent);
     stroke-dasharray: 26 660;
     stroke-linecap: round;
     animation: signal-flow 7.5s linear infinite;
@@ -236,7 +236,7 @@ const approved = 'M 626 100 L 1240 100';
     color: var(--ink);
     text-wrap: pretty;
     max-width: 44em;
-    background: linear-gradient(90deg, rgba(15, 110, 99, 0.05), rgba(15, 110, 99, 0) 70%);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
   }
 
   /* ---- Tools --------------------------------------------------------- */

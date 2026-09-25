@@ -1,11 +1,22 @@
 ---
 /**
- * Restrained monochrome credibility bar. Renders approved logo files when
- * present; otherwise accessible text wordmarks. Relationship captions keep
- * employers, products, co-sponsors, and events clearly distinguished.
+ * Monochrome credibility bar. Renders approved logo files when present,
+ * otherwise a text wordmark in the same slot, so a later logo swap does not
+ * reflow the band. Relationship captions keep employers, products and
+ * co-sponsors clearly distinguished.
+ *
+ * In Version 1.5 the bar closes the About section rather than standing alone,
+ * so it is rendered `embedded`: no section of its own, no background, just a
+ * rule above it and the entries on the surrounding surface.
  */
 import { Image } from 'astro:assets';
 import { logos, resolveLogoImage } from '@lib/assets';
+
+interface Props {
+  embedded?: boolean;
+}
+
+const { embedded = false } = Astro.props;
 
 // Wordmarks and square marks need different heights to read at the same weight,
 // so each logo is measured at build time rather than forced to one height.
@@ -15,44 +26,52 @@ const items = logos.logos
     const img = resolveLogoImage(l);
     return { logo: l, img, isMark: img ? img.width / img.height < 1.6 : false };
   });
+
+const Tag = embedded ? 'div' : 'section';
 ---
 
-<section class="logobar" aria-labelledby="logobar-heading">
-  <div class="container">
-    <h2 id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</h2>
-    <ul class="logobar__list">
+<Tag class:list={['logobar', embedded && 'logobar--embedded']} aria-labelledby="logobar-heading">
+  <div class:list={[!embedded && 'container']}>
+    <h3 id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</h3>
+    <ul class="logobar__list" style={`--count: ${items.length}`}>
       {
         items.map(({ logo, img, isMark }) => (
           <li class="logobar__item">
-            {img ? (
-              <Image
-                src={img}
-                alt={logo.name}
-                height={isMark ? 46 : 26}
-                class:list={['logobar__img', isMark && 'logobar__img--mark']}
-                loading="lazy"
-              />
-            ) : (
-              <span class="logobar__wordmark">{logo.name}</span>
-            )}
+            <span class="logobar__slot">
+              {img ? (
+                <Image
+                  src={img}
+                  alt={logo.name}
+                  height={isMark ? 46 : 26}
+                  class:list={['logobar__img', isMark && 'logobar__img--mark']}
+                  loading="lazy"
+                />
+              ) : (
+                <span class="logobar__wordmark">{logo.name}</span>
+              )}
+            </span>
             <span class="logobar__rel">{logo.relationship}</span>
           </li>
         ))
       }
     </ul>
   </div>
-</section>
+</Tag>
 
 <style>
   .logobar {
     border-block: 1px solid var(--line);
     padding-block: var(--space-6);
-    background: var(--bg-elev);
+  }
+
+  .logobar--embedded {
+    border-block: 0;
+    border-top: 1px solid var(--line);
+    padding-block: clamp(1.5rem, 1rem + 1.5vw, 2.25rem) 0;
   }
 
   .logobar__heading {
-    margin-bottom: var(--space-5);
-    text-align: center;
+    margin-bottom: clamp(1rem, 0.75rem + 1vw, 1.5rem);
   }
 
   .logobar__list {
@@ -61,7 +80,7 @@ const items = logos.logos
     padding: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-4) var(--space-3);
+    gap: var(--space-5) var(--space-4);
   }
 
   /* Two fixed rows so every relationship label sits on the same baseline,
@@ -69,58 +88,61 @@ const items = logos.logos
   .logobar__item {
     display: grid;
     grid-template-rows: 3rem auto;
-    justify-items: center;
+    justify-items: start;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .logobar__slot {
+    display: flex;
     align-items: center;
-    gap: 0.55rem;
-    padding: 0.85rem 0.5rem;
-    text-align: center;
+    height: 3rem;
     min-width: 0;
   }
 
   .logobar__wordmark {
-    align-self: center;
     font-family: var(--font-sans);
-    font-weight: 620;
-    font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.15rem);
+    font-weight: 700;
+    font-size: clamp(0.95rem, 0.85rem + 0.3vw, 1.1rem);
     letter-spacing: -0.01em;
-    color: var(--ink-2);
-    white-space: nowrap;
-    filter: grayscale(1);
-    transition: color var(--dur-fast) var(--ease-out);
+    line-height: 1.1;
+    color: var(--ink);
+    opacity: 0.8;
+    transition: opacity var(--dur-fast) var(--ease-out);
   }
 
   .logobar__item:hover .logobar__wordmark {
-    color: var(--ink);
+    opacity: 1;
   }
 
   /* Supplied logos arrive in their own brand colours, several of them white
-     artwork that would be invisible on this background. brightness(0) flattens
+     artwork that would be invisible on a light ground. brightness(0) flattens
      every mark to one silhouette, which keeps the bar monochrome and legible
      without editing each file. */
   .logobar__item :global(.logobar__img) {
     height: 26px;
     width: auto;
-    max-width: 130px;
+    max-width: 140px;
     object-fit: contain;
     filter: brightness(0);
-    opacity: 0.55;
+    opacity: 0.78;
     transition: opacity var(--dur-fast) var(--ease-out);
   }
 
   .logobar__item :global(.logobar__img--mark) {
-    height: 46px;
+    height: 44px;
     max-width: 64px;
   }
 
   .logobar__item:hover :global(.logobar__img) {
-    opacity: 0.92;
+    opacity: 1;
   }
 
   .logobar__rel {
-    align-self: start;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
+    font-family: var(--font-sans);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-3);
   }
@@ -131,14 +153,11 @@ const items = logos.logos
     }
   }
 
-  @media (min-width: 64rem) {
+  /* One row of all entries once each has at least ~9rem to breathe. */
+  @media (min-width: 72rem) {
     .logobar__list {
-      grid-template-columns: repeat(8, minmax(0, 1fr));
-      gap: var(--space-2);
-    }
-
-    .logobar__item {
-      padding-inline: 0.25rem;
+      grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+      gap: var(--space-4);
     }
   }
 </style>

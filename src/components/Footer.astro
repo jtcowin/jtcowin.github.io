@@ -2,10 +2,17 @@
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
 
+interface Props {
+  /** The surface of the chapter above, so the footer closes it rather than
+      starting a new band. */
+  surface?: string;
+}
+
+const { surface = 'light' } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" data-surface={surface}>
   <div class="container site-footer__inner">
     <p class="site-footer__line">{site.footer.line}</p>
     <ul class="site-footer__links">

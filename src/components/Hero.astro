@@ -35,7 +35,7 @@ const PHRASES_PER_GROUP = 3;
 const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${hero.separator}`);
 ---
 
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero" aria-labelledby="hero-title" data-surface="image">
   {
     portraitImg && (
       <div class="hero__photo">
@@ -152,17 +152,44 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     animation: hero-settle 1400ms var(--ease-out) both;
   }
 
-  /* Sits the background back so the moving name reads against it. The subject
-     layer deliberately does not carry this, which is what gives the composition
-     its depth. */
+  /* The photograph is a graded derivative (see the asset manifest), so this
+     layer no longer darkens the whole frame. It lays down only what the white
+     type needs, where the type is: a soft band behind the moving name, a band
+     under the rule and descriptor, and a little weight under the navigation.
+     The subject layer does not carry any of it, so his skin and clothing keep
+     their natural colour and he reads in front of the grade. */
   .hero__grade {
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(to top, rgba(8, 10, 12, 0.5) 0%, rgba(8, 10, 12, 0) 34%),
-      linear-gradient(to bottom, rgba(8, 10, 12, 0.34) 0%, rgba(8, 10, 12, 0) 30%),
-      linear-gradient(to left, rgba(8, 10, 12, 0.3) 0%, rgba(8, 10, 12, 0) 38%),
-      linear-gradient(rgba(8, 10, 12, 0.48), rgba(8, 10, 12, 0.48));
+      linear-gradient(
+        to bottom,
+        rgba(8, 10, 12, 0) 12%,
+        rgba(8, 10, 12, 0.44) 22%,
+        rgba(8, 10, 12, 0.5) 34%,
+        rgba(8, 10, 12, 0.44) 46%,
+        rgba(8, 10, 12, 0.14) 58%,
+        rgba(8, 10, 12, 0) 66%
+      ),
+      linear-gradient(to top, rgba(8, 10, 12, 0.58) 0%, rgba(8, 10, 12, 0.2) 22%, rgba(8, 10, 12, 0) 36%),
+      linear-gradient(to bottom, rgba(8, 10, 12, 0.3) 0%, rgba(8, 10, 12, 0) 14%);
+  }
+
+  @media (max-width: 59.99rem) {
+    /* The name sits lower on tall screens, so its band moves with it. */
+    .hero__grade {
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(8, 10, 12, 0) 18%,
+          rgba(8, 10, 12, 0.46) 27%,
+          rgba(8, 10, 12, 0.5) 36%,
+          rgba(8, 10, 12, 0.4) 44%,
+          rgba(8, 10, 12, 0) 56%
+        ),
+        linear-gradient(to top, rgba(8, 10, 12, 0.58) 0%, rgba(8, 10, 12, 0.2) 22%, rgba(8, 10, 12, 0) 36%),
+        linear-gradient(to bottom, rgba(8, 10, 12, 0.3) 0%, rgba(8, 10, 12, 0) 14%);
+    }
   }
 
   /* ---- 2. moving name and rule ----------------------------------------- */
@@ -180,8 +207,9 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     inset-inline: 0;
     top: 31%;
     margin: 0;
-    font-family: var(--font-grotesk);
+    font-family: var(--font-display);
     font-weight: 500;
+    font-stretch: 100%;
     font-size: clamp(3.25rem, 17vw, 16rem);
     line-height: 1;
     letter-spacing: 0.01em;
@@ -305,9 +333,9 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
 
   .hero__descriptor {
     margin: 0;
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: clamp(0.75rem, 0.66rem + 0.35vw, 0.9375rem);
-    font-weight: 500;
+    font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: #f2f1ec;

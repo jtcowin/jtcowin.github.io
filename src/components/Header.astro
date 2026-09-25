@@ -2,24 +2,23 @@
 /**
  * Site header.
  *
- * Two variants share one markup. On the homepage it overlays the full-bleed
- * hero photograph with no background block of its own, using light controls
- * over the hero's own gradient, and carries no brand mark because the name is
- * already the largest thing on the screen. Everywhere else it is the ordinary
- * sticky bar with a text home link.
+ * The header has no surface of its own: no bar, no border, no blur, and it
+ * never fades the content passing beneath it. Each control carries its own
+ * contrast instead, and takes it from whichever numbered surface is under the
+ * header at that moment. A small script finds that surface and copies its
+ * background, text, rule and focus tokens onto the header, so the pills always
+ * match the ground they sit on and the switch happens exactly where one surface
+ * meets the next.
  *
- * Over the hero the header follows the viewport, and once the hero has scrolled
- * past it takes a restrained translucent plate so the controls stay readable on
- * the light sections. Both states share the same geometry and transition their
- * colours, so nothing jumps at the handover. Following the viewport is a
- * progressive enhancement: without JavaScript the header simply scrolls away
- * with the hero, which is always legible.
+ * On the homepage the header follows the viewport over the full-bleed hero.
+ * That is a progressive enhancement: without JavaScript it stays in the hero
+ * and scrolls away with it, in its hero colours, which are always legible
+ * there. Inner pages keep an ordinary sticky header with a text home link.
  *
- * Hierarchy in both: Work and About are plain text links, Contact is the
- * primary call to action, Resume is the quieter outline one. The mobile menu is
- * a native <details> element, so it opens, closes, and takes keyboard input
- * with no JavaScript at all; the script below only adds Escape and
- * click-outside.
+ * Hierarchy: Work and About are the lightest controls, Contact is the filled
+ * call to action, Resume is the outlined one. The mobile menu is a native
+ * <details> element, so it works with no JavaScript; the script only adds
+ * Escape and click-outside.
  */
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
@@ -28,7 +27,7 @@ import Icon from './Icon.astro';
 interface Props {
   /** Current page path (site-relative). */
   current?: string;
-  /** Lay the header over a full-bleed hero instead of on its own bar. */
+  /** Lay the header over a full-bleed hero instead of on its own row. */
   overlay?: boolean;
 }
 
@@ -41,7 +40,12 @@ const links = [
 ];
 ---
 
-<header class:list={['site-header', overlay && 'site-header--overlay']} id="top" data-header>
+<header
+  class:list={['site-header', overlay && 'site-header--overlay']}
+  id="top"
+  data-header
+  data-mode={overlay ? 'image' : 'light'}
+>
   <div class="container site-header__inner">
     {
       /* No mark over the hero: the name is already the composition. Inner pages
@@ -102,8 +106,7 @@ const links = [
 </header>
 
 <script>
-  // Escape and click-outside for the menu. The <details> element already opens,
-  // closes, and handles keyboard on its own, so this is enhancement only.
+  // ---- Menu: Escape and click-outside. <details> already does the rest. ----
   const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details[data-menu]'));
 
   function closeAll() {
@@ -127,51 +130,94 @@ const links = [
     open.querySelector<HTMLElement>('summary')?.focus();
   });
 
-  // Over the hero, let the header follow the viewport and swap to a readable
-  // plate once the hero has passed. Enhancement only: the CSS keys the fixed
-  // behaviour off the attribute this sets, so with no JavaScript the header
-  // stays with the hero and never ends up light-on-light.
-  const header = document.querySelector<HTMLElement>('[data-header].site-header--overlay');
-  const hero = document.querySelector('.hero');
+  // ---- Surface tracking ----------------------------------------------------
+  // Watch a one-pixel line through the middle of the header. Whichever
+  // [data-surface] section crosses that line is the ground the controls sit on,
+  // so its tokens are copied onto the header. The switch therefore happens at
+  // the exact moment a surface boundary passes behind the controls: no early
+  // flip, no late contrast.
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const surfaces = Array.from(document.querySelectorAll<HTMLElement>('[data-surface]'));
 
-  if (header && hero && 'IntersectionObserver' in window) {
-    header.dataset.follow = '';
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        header.toggleAttribute('data-past-hero', !entry.isIntersecting);
-      },
-      // The strip the header itself occupies: once the hero no longer reaches
-      // into it, the controls are over ordinary page background.
-      { rootMargin: '-72px 0px 0px 0px', threshold: 0 },
-    );
-    io.observe(hero);
+  const TOKENS: Array<[string, string]> = [
+    ['--bg', '--nav-bg'],
+    ['--ink', '--nav-ink'],
+    ['--ink-2', '--nav-ink-2'],
+    ['--line-strong', '--nav-line'],
+    ['--focus', '--nav-focus'],
+  ];
+
+  function adopt(surface: HTMLElement) {
+    if (!header) return;
+    const cs = getComputedStyle(surface);
+    for (const [from, to] of TOKENS) {
+      const v = cs.getPropertyValue(from).trim();
+      if (v) header.style.setProperty(to, v);
+    }
+    header.dataset.mode = surface.dataset.surface === 'image' ? 'image' : 'surface';
+  }
+
+  if (header && surfaces.length && 'IntersectionObserver' in window) {
+    if (header.classList.contains('site-header--overlay')) header.dataset.follow = '';
+
+    let io: IntersectionObserver | null = null;
+
+    const watch = () => {
+      io?.disconnect();
+      const mid = Math.round(header.getBoundingClientRect().height / 2);
+      const bottom = Math.max(0, window.innerHeight - mid - 1);
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) adopt(entry.target as HTMLElement);
+          }
+        },
+        { rootMargin: `-${mid}px 0px -${bottom}px 0px`, threshold: 0 },
+      );
+      for (const s of surfaces) io.observe(s);
+    };
+
+    watch();
+    let t = 0;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(t);
+      t = window.setTimeout(watch, 150);
+    });
   }
 </script>
 
 <style>
+  /* ---- Tokens -----------------------------------------------------------
+     Defaults describe the ground the header starts on before any script runs:
+     the light page for inner pages, the photograph for the homepage. The
+     script overwrites them from the live surface. */
   .site-header {
+    --nav-bg: var(--c-bone);
+    --nav-ink: var(--c-ink);
+    --nav-ink-2: var(--c-ink-2);
+    --nav-line: var(--c-steel-deep);
+    --nav-focus: var(--c-teal);
+    /* How much of the surface colour a pill carries: enough that text or
+       imagery scrolling beneath never undermines a label. */
+    --nav-pill-alpha: 90%;
+
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    backdrop-filter: saturate(140%) blur(10px);
-    -webkit-backdrop-filter: saturate(140%) blur(10px);
-    border-bottom: 1px solid var(--line);
+    background: none;
+    border: 0;
   }
 
-  /* Over the hero the header contributes no surface of its own: no bar, no
-     border, no blur plane. The hero's own gradient carries the contrast. */
   .site-header--overlay {
+    --nav-bg: var(--c-ink);
+    --nav-ink: var(--c-fog);
+    --nav-ink-2: var(--c-fog-2);
+    --nav-line: rgba(237, 240, 239, 0.55);
+    --nav-focus: var(--c-fog);
+
     position: absolute;
     inset-block-start: 0;
     inset-inline: 0;
-    background: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border-bottom: 0;
-    transition:
-      background-color var(--dur) var(--ease-out),
-      border-color var(--dur) var(--ease-out);
   }
 
   /* Set by the script, so this never applies without JavaScript. */
@@ -179,14 +225,12 @@ const links = [
     position: fixed;
   }
 
-  /* Past the hero: a translucent plate rather than a solid band, and the
-     controls change colour over the same duration so the handover reads as a
-     fade rather than a switch. */
-  .site-header--overlay[data-past-hero] {
-    background: color-mix(in srgb, var(--bg) 86%, transparent);
-    backdrop-filter: saturate(150%) blur(12px);
-    -webkit-backdrop-filter: saturate(150%) blur(12px);
-    border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  /* Over the photograph the pills must hold their own contrast even when the
+     white moving name passes directly beneath them, which it does once the
+     hero starts to scroll. At 72% ink the worst case, a pill over pure white,
+     still gives the link text better than 5:1. */
+  .site-header[data-mode='image'] {
+    --nav-pill-alpha: 72%;
   }
 
   .site-header__inner {
@@ -205,22 +249,30 @@ const links = [
   .brand {
     display: inline-flex;
     align-items: center;
-    font-weight: 600;
+    padding: 0.45rem 0.8rem;
+    margin-inline-start: -0.8rem;
+    font-weight: 700;
     letter-spacing: -0.005em;
     text-decoration: none;
-    color: var(--ink);
-    border-radius: var(--radius);
+    color: var(--nav-ink);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--nav-bg) var(--nav-pill-alpha), transparent);
   }
 
   .brand:hover {
-    color: var(--accent-ink);
+    color: var(--nav-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--nav-line);
   }
 
-  /* Holds the left side of the row so the navigation stays right-aligned. */
   .brand--empty {
     width: 0;
+    padding: 0;
+    margin: 0;
+    background: none;
   }
 
+  /* ---- Controls ---------------------------------------------------------- */
   .nav {
     display: none;
   }
@@ -228,185 +280,80 @@ const links = [
   .nav__list {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.4rem;
     list-style: none;
     padding: 0;
     margin: 0;
   }
 
+  .nav__link,
+  .nav__cta,
+  .mobile__toggle {
+    transition:
+      color 180ms var(--ease-out),
+      background-color 180ms var(--ease-out),
+      border-color 180ms var(--ease-out);
+  }
+
   .nav__link {
     display: inline-flex;
     align-items: center;
-    padding: 0.55rem 0.85rem;
+    padding: 0.55rem 0.95rem;
     font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--ink-2);
+    font-weight: 600;
+    color: var(--nav-ink-2);
     text-decoration: none;
     border-radius: 999px;
-    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+    background: color-mix(in srgb, var(--nav-bg) var(--nav-pill-alpha), transparent);
   }
 
   .nav__link:hover {
-    color: var(--ink);
-    background: var(--bg-sunk);
+    color: var(--nav-ink);
+    background: color-mix(in srgb, var(--nav-bg) 100%, transparent);
   }
 
   .nav__cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.6rem 1.1rem;
+    padding: 0.6rem 1.15rem;
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     border-radius: 999px;
     border: 1px solid transparent;
-    transition:
-      background-color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out);
   }
 
   .nav__cta--primary {
-    background: var(--ink);
-    color: #fff;
+    background: var(--nav-ink);
+    color: var(--nav-bg);
+    border-color: var(--nav-ink);
   }
 
   .nav__cta--primary:hover {
-    background: var(--accent-ink);
-    color: #fff;
+    background: var(--nav-ink-2);
+    border-color: var(--nav-ink-2);
+    color: var(--nav-bg);
   }
 
   .nav__cta--ghost {
-    border-color: var(--line-strong);
-    color: var(--ink-2);
+    color: var(--nav-ink);
+    border-color: var(--nav-line);
+    background: color-mix(in srgb, var(--nav-bg) var(--nav-pill-alpha), transparent);
   }
 
   .nav__cta--ghost:hover {
-    border-color: var(--ink);
-    color: var(--ink);
+    border-color: var(--nav-ink);
+    color: var(--nav-ink);
   }
 
-  /* ---- overlay controls ------------------------------------------------ */
-  .site-header--overlay .nav__link {
-    color: #f2f1ec;
-    font-weight: 500;
-  }
-
-  .site-header--overlay .nav__link:hover {
-    color: #fff;
-    background: rgba(242, 241, 236, 0.16);
-  }
-
-  .site-header--overlay .nav__cta--primary {
-    background: #f4f3ee;
-    color: #16181a;
-  }
-
-  .site-header--overlay .nav__cta--primary:hover {
-    background: #fff;
-    color: #16181a;
-  }
-
-  .site-header--overlay .nav__cta--ghost {
-    color: #f2f1ec;
-    border-color: rgba(242, 241, 236, 0.55);
-    background: rgba(12, 14, 16, 0.28);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-
-  .site-header--overlay .nav__cta--ghost:hover {
-    border-color: #f2f1ec;
-    background: rgba(12, 14, 16, 0.45);
-    color: #fff;
-  }
-
-  .site-header--overlay :global(a:focus-visible),
-  .site-header--overlay :global(summary:focus-visible) {
-    outline: 2px solid #f2f1ec;
+  .site-header :global(a:focus-visible),
+  .site-header :global(summary:focus-visible) {
+    outline: 2px solid var(--nav-focus);
     outline-offset: 3px;
   }
 
-  /* ---- controls once the hero has passed -------------------------------- */
-  .site-header--overlay .nav__link,
-  .site-header--overlay .nav__cta,
-  .site-header--overlay .mobile__toggle {
-    transition:
-      color var(--dur) var(--ease-out),
-      background-color var(--dur) var(--ease-out),
-      border-color var(--dur) var(--ease-out);
-  }
-
-  .site-header--overlay[data-past-hero] .nav__link {
-    color: var(--ink-2);
-  }
-
-  .site-header--overlay[data-past-hero] .nav__link:hover {
-    color: var(--ink);
-    background: var(--bg-sunk);
-  }
-
-  .site-header--overlay[data-past-hero] .nav__cta--primary {
-    background: var(--ink);
-    color: #fff;
-  }
-
-  .site-header--overlay[data-past-hero] .nav__cta--ghost {
-    color: var(--ink-2);
-    border-color: var(--line-strong);
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .site-header--overlay[data-past-hero] .nav__cta--ghost:hover {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-
-  .site-header--overlay[data-past-hero] .mobile__toggle {
-    color: var(--ink);
-    border-color: var(--line-strong);
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .site-header--overlay[data-past-hero] :global(a:focus-visible),
-  .site-header--overlay[data-past-hero] :global(summary:focus-visible) {
-    outline-color: var(--accent);
-  }
-
-  .site-header--overlay[data-past-hero] .mobile__panel {
-    background: var(--bg-elev);
-    border-color: var(--line);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .site-header--overlay[data-past-hero] .mobile__link {
-    color: var(--ink);
-  }
-
-  .site-header--overlay[data-past-hero] .mobile__link:hover {
-    background: var(--bg-sunk);
-  }
-
-  .site-header--overlay[data-past-hero] .mobile__ctas {
-    border-top-color: var(--line);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .site-header--overlay,
-    .site-header--overlay .nav__link,
-    .site-header--overlay .nav__cta,
-    .site-header--overlay .mobile__toggle {
-      transition: none;
-    }
-  }
-
-  /* ---- mobile ---------------------------------------------------------- */
+  /* ---- Mobile ------------------------------------------------------------ */
   .mobile {
     position: relative;
   }
@@ -417,22 +364,15 @@ const links = [
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 999px;
-    border: 1px solid var(--line-strong);
-    color: var(--ink);
+    border: 1px solid var(--nav-line);
+    color: var(--nav-ink);
+    background: color-mix(in srgb, var(--nav-bg) var(--nav-pill-alpha), transparent);
     cursor: pointer;
     list-style: none;
   }
 
   .mobile__toggle::-webkit-details-marker {
     display: none;
-  }
-
-  .site-header--overlay .mobile__toggle {
-    color: #f2f1ec;
-    border-color: rgba(242, 241, 236, 0.55);
-    background: rgba(12, 14, 16, 0.32);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
   }
 
   .mobile :global(.mobile__icon-close) {
@@ -447,24 +387,22 @@ const links = [
     display: block;
   }
 
+  /* The open menu is a panel, not a page-wide band, so it may be solid. */
   .mobile__panel {
     position: absolute;
     top: calc(100% + 0.75rem);
     right: 0;
     width: min(18rem, calc(100vw - 2 * var(--gutter)));
     padding: 0.6rem;
-    background: var(--bg-elev);
-    border: 1px solid var(--line);
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     animation: rise-in var(--dur) var(--ease-out) both;
   }
 
-  .site-header--overlay .mobile__panel {
-    background: rgba(14, 16, 18, 0.92);
-    border-color: rgba(242, 241, 236, 0.18);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+  .site-header[data-mode='image'] .mobile__panel {
+    background: rgba(13, 15, 16, 0.94);
   }
 
   .mobile__list {
@@ -479,23 +417,15 @@ const links = [
     display: block;
     padding: 0.8rem 0.85rem;
     font-size: var(--text-md);
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
     border-radius: var(--radius);
-    color: var(--ink);
+    color: var(--nav-ink);
   }
 
   .mobile__link:hover {
-    background: var(--bg-sunk);
-  }
-
-  .site-header--overlay .mobile__link {
-    color: #f2f1ec;
-  }
-
-  .site-header--overlay .mobile__link:hover {
-    background: rgba(242, 241, 236, 0.14);
-    color: #fff;
+    color: var(--nav-ink);
+    background: color-mix(in srgb, var(--nav-ink) 8%, transparent);
   }
 
   .mobile__ctas {
@@ -503,11 +433,7 @@ const links = [
     gap: 0.45rem;
     margin-top: 0.5rem;
     padding-top: 0.6rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .site-header--overlay .mobile__ctas {
-    border-top-color: rgba(242, 241, 236, 0.18);
+    border-top: 1px solid color-mix(in srgb, var(--nav-line) 60%, transparent);
   }
 
   .mobile__ctas .nav__cta {
@@ -521,6 +447,14 @@ const links = [
 
     .mobile {
       display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav__link,
+    .nav__cta,
+    .mobile__toggle {
+      transition: none;
     }
   }
 </style>

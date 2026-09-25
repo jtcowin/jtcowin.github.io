@@ -8,27 +8,6 @@
     "portrait": "hero-portrait",
     "foreground": "hero-foreground"
   },
-  "proof": {
-    "_note": "Static figures. Do not animate as counters. Keep 'approximately' on the impressions figure. The 1.25M aggregate replaces all earlier aggregate calculations and all location-level figures.",
-    "metrics": [
-      {
-        "value": "1.25M",
-        "label": "approximate impressions across three international creator activations"
-      },
-      {
-        "value": "80",
-        "label": "creator-campaign content deliverables"
-      },
-      {
-        "value": "27",
-        "label": "technical-documentation pages drafted in MDX"
-      },
-      {
-        "value": "16",
-        "label": "documents in Bolt’s positioning and messaging foundation"
-      }
-    ]
-  },
   "work": {
     "heading": "Selected work",
     "copy": "These case studies represent only part of my range. My work spans product positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, multimedia production, campaign operations, and distribution. The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship."
@@ -133,11 +112,22 @@
     ]
   },
   "about": {
-    "_note": "Approved Version 1.4 copy. Two paragraphs, verbatim. Double asterisks mark the named companies and products, which render as <strong>. No eyebrow on this section.",
+    "_note": "Version 1.5 layout: three narrative columns, a four-entry career row, then the trust bar. Double asterisks mark named companies and products, which render as <strong>. No eyebrow.",
+    "_status": "DRAFT, pending John's approval: the three-column split, the two Phi Labs framing labels, and the current Phi Labs description. Every column reuses approved v1.4 wording; only the paragraph break moved. The music title is unchanged because its replacement is still open.",
     "heading": "Creative instincts. Operator discipline.",
-    "paragraphs": [
-      "I entered DeFi full-time in 2021 after a decade of building audiences and managing the business operations of a globally distributed independent music project. That foundation developed my instincts for brand building, audience development, creative production, partnerships, and managing complex operations.",
-      "In 2024, I joined **Phi Labs Global**, a Web3 software development company, to manage social media across a product portfolio that has included **Archway**, a Layer 1 blockchain; **Ambur Marketplace**, an NFT marketplace; and **Bolt Liquidity**, a next-generation proprietary AMM. As the organization evolved, so did my role. What began in social expanded into ownership across positioning, content, community, technical documentation, creator partnerships, events, and production. Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore."
+    "columns": [
+      {
+        "role": "foundation",
+        "text": "I entered DeFi full-time in 2021 after a decade of building audiences and managing the business operations of a globally distributed independent music project. That foundation developed my instincts for brand building, audience development, creative production, partnerships, and managing complex operations."
+      },
+      {
+        "role": "phi-labs",
+        "text": "In 2024, I joined **Phi Labs Global**, a Web3 software development company, to manage social media across a product portfolio that has included **Archway**, a Layer 1 blockchain; **Ambur Marketplace**, an NFT marketplace; and **Bolt Liquidity**, a next-generation proprietary AMM. As the organization evolved, so did my role. What began in social expanded into ownership across positioning, content, community, technical documentation, creator partnerships, events, and production."
+      },
+      {
+        "role": "thesis",
+        "text": "Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore."
+      }
     ],
     "headshot": "about-headshot",
     "career": {
@@ -146,36 +136,28 @@
       "earlierLabel": "Earlier",
       "items": [
         {
-          "period": "Late 2024 to present",
+          "label": "Current scope",
           "employer": "Phi Labs Global",
-          "phase": "Bolt Liquidity phase",
-          "group": "phi-labs",
           "current": true,
-          "detail": "Expanded beyond social into ownership across positioning, content, community, technical documentation, creator partnerships, events, and production."
+          "detail": "Owns positioning, content, community, technical documentation, creator partnerships, events, and production for Bolt Liquidity, a next-generation proprietary AMM."
         },
         {
-          "period": "2024",
+          "label": "Original mandate",
           "employer": "Phi Labs Global",
-          "phase": "Archway and Ambur Marketplace phase",
-          "group": "phi-labs",
           "current": false,
           "detail": "Joined as Social Media Manager to support Phi Labs' product portfolio, including a Layer 1 blockchain and NFT marketplace."
         },
         {
-          "period": "2021 to 2024",
+          "label": "Selected DeFi projects",
           "employer": "Web3 Marketing Consultant",
-          "phase": "Selected DeFi projects",
-          "group": null,
           "current": false,
           "detail": "Led social, community, content, and partner-facing marketing across emerging DeFi products."
         },
         {
-          "period": "2009 to 2020",
+          "label": null,
           "employer": "Independent Music and Marketing",
-          "phase": null,
-          "group": null,
           "current": false,
-          "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performing 140-plus shows annually and securing global distribution, sponsorships, media appearances, and major-festival bookings."
+          "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performed 140-plus shows annually, and secured sponsorships, media appearances, and major-festival bookings."
         }
       ],
       "link": {

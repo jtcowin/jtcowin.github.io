@@ -5,18 +5,17 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.4.** Layout, copy, motion, metadata, approved media, and deployment are
+**Status: Version 1.5.** Layout, copy, motion, metadata, approved media, and deployment are
 complete. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
 approved and present, so an unresolved entry never reaches the public site (see
 [Replacing placeholders](#replacing-placeholders)).
 
-Version 1.4 layered the hero: the name repeats as a moving stream that passes behind the subject, who
-is cut out of the same frame and layered in front of it, with a thin rule crossing the lower hero the
-same way. The header lost its mark and now follows the viewport, About moved directly beneath the hero
-with a wide editorial layout and a career timeline, and the browser tab carries the approved title.
-Version 1.3 introduced the full-viewport photograph and the photographic favicon; Version 1.2 turned
-the selected work list into stacking panels followed by a visual rail, added the How I Work section,
-and consolidated the impressions figure into one aggregate.
+Version 1.5 introduced a visual system drawn from the hero portrait: a small palette of charcoal,
+cool stone, slate, bone and blue-teal; six numbered surfaces handed out by page position; a heavy
+semi-condensed display face with Manrope for everything read closely; and a wide editorial canvas.
+The homepage is now hero, About (with the career row and trust bar), Selected Work, What I Do, How I
+Work, Contact. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
+introduced the full-viewport photograph and the photographic favicon.
 
 ## Routes
 
@@ -159,6 +158,67 @@ hold the face at 34% across, wide viewports crop vertically and hold the frame h
 not panels, carry the contrast for the name, the header, and the descriptor; their stops are tuned
 against measured contrast on the photograph itself, so changing the photograph means re-measuring
 them.
+
+## Visual system
+
+### Palette
+
+Built from the hero portrait, not an external reference. Components never use these values directly;
+they use semantic tokens (`--bg`, `--ink`, `--ink-2`, `--ink-3`, `--heading`, `--accent`, `--focus`,
+`--line`) that each surface redefines.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| Ink | `#0D0F10` | Dark surface, primary text on light |
+| Warm bone | `#F3EFE8` | Main light surface |
+| Fog | `#EDF0EF` | Cool light surface, text on dark |
+| Deep slate | `#25313A` | Headings on light surfaces |
+| Steel | `#7E8995` | Secondary text on dark surfaces only |
+| Pale slate | `#DDE2E3` | Soft surface |
+| Blue-teal | `#1F4546` | Brand surface, links and details on light |
+| Muted aqua | `#4F918A` | Focus and accents on dark surfaces |
+
+Five pairings the palette suggests fail WCAG, so the site routes around them rather than shipping them:
+
+| Pairing | Ratio | Instead |
+| --- | --- | --- |
+| Steel text on warm bone | 3.1:1 | Deepened steel `#4E5862`, 6.3:1 |
+| Muted aqua text on warm bone | 3.2:1 | Blue-teal for links, 9.2:1 |
+| Muted aqua focus ring on pale slate | 2.8:1 | Blue-teal focus on all light surfaces |
+| Steel text on blue-teal | 3.0:1 | Light slate `#C3CACB`, 6.3:1 |
+| Muted aqua focus ring on blue-teal | 2.9:1 | Light aqua `#9FC9C3`, 5.8:1 |
+
+Every other text and control pairing clears 4.5:1 for text and 3:1 for focus and control borders on
+every surface and on all three work cards.
+
+### Numbered surfaces
+
+A section's colour comes from its position, not its identity. `src/pages/index.astro` hands each
+chapter the next surface from one ordered list; reorder the chapters and their colours follow.
+
+| # | Surface | Currently |
+| --- | --- | --- |
+| 01 | Image | Hero |
+| 02 | Light (warm bone) | About, career, trust bar |
+| 03 | Dark (ink) | Selected Work and the visual rail |
+| 04 | Soft (pale slate) | What I Do |
+| 05 | Brand (blue-teal) | How I Work |
+| 06 | Light return (fog) | Contact and the footer |
+
+Past six, the sequence continues from dark, soft and light rather than starting another photograph.
+
+The header has no surface of its own. A script watches a one-pixel line through its middle, and
+whichever surface crosses that line lends the header its background, text, rule and focus tokens, so
+each pill matches the ground it sits on and the switch happens exactly at the boundary.
+
+### Type
+
+- Display: Archivo at 700 and 86% width. Archivo Black was tested first; fitted to one line it came out
+  about three quarters the size and read as the loudest option.
+- Everything read closely, including navigation and labels: Manrope.
+- The hero name keeps its approved Archivo Medium 500 at normal width.
+- The serif and the monospace face are retired from the site. `scripts/og.mjs` still uses them to
+  render the social-preview cards, which have not been regenerated for the new system yet.
 
 ## Content guardrails
 

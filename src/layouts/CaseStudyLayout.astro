@@ -76,10 +76,12 @@ const next = all[(idx + 1) % all.length];
     padding-top: clamp(2.5rem, 2rem + 3vw, 5rem);
   }
 
+  /* Wide, left-aligned hero on the v1.5 canvas: the headline gets the
+     horizontal room a heavy display face needs, and the intro keeps its own
+     reading measure inside it. */
   .cs-hero__inner {
     display: grid;
     gap: var(--space-5);
-    max-width: 56rem;
     margin-bottom: clamp(2.5rem, 2rem + 2.5vw, 4rem);
   }
 
@@ -100,11 +102,12 @@ const next = all[(idx + 1) % all.length];
   }
 
   .cs-hero__title {
-    max-width: 16em;
+    max-width: 22ch;
+    font-size: clamp(2.5rem, 1.2rem + 4.4vw, 5.5rem);
   }
 
   .cs-hero__intro {
-    max-width: 40em;
+    max-width: var(--measure);
   }
 
   .cs-hero__media :global(.media__frame) {

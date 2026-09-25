@@ -1,10 +1,9 @@
 /* Self-hosted fonts (fontsource). Subsets are split by unicode-range so browsers
-   only fetch what the page uses. */
-@import '@fontsource-variable/inter/wght.css';
-@import '@fontsource/instrument-serif/400.css';
-@import '@fontsource/instrument-serif/400-italic.css';
-@import '@fontsource-variable/jetbrains-mono/wght.css';
-@import '@fontsource-variable/archivo/wght.css';
+   only fetch what the page uses. Version 1.5 narrows the type system to two
+   families: Archivo for display (with its width axis, so headlines can run
+   condensed) and Manrope for everything that is read closely. */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/manrope/wght.css';
 
 /* ------------------------------------------------------------------ */
 /* Design tokens                                                        */
@@ -12,37 +11,70 @@
 :root {
   color-scheme: light;
 
-  /* Surfaces */
-  --bg: #fafaf8;
-  --bg-elev: #ffffff;
-  --bg-sunk: #f1f1ee;
-  --line: #e2e3de;
-  --line-strong: #c9cbc4;
+  /* ---- Palette ------------------------------------------------------
+     Built from the hero portrait rather than an external reference: its
+     charcoal clothing, cool stone and slate wall, soft white highlights and
+     warm skin. Components never use these directly; they use the semantic
+     tokens below, which each surface redefines. */
+  --c-ink: #0d0f10;
+  --c-bone: #f3efe8;
+  --c-fog: #edf0ef;
+  --c-slate: #25313a;
+  --c-steel: #7e8995;
+  --c-pale: #dde2e3;
+  --c-teal: #1f4546;
+  --c-aqua: #4f918a;
 
-  /* Ink */
-  --ink: #16181a;
-  --ink-2: #3b3f43;
-  --ink-3: #5f646b;
+  /* Derived for accessibility. Steel reads at 3.1:1 on the light surfaces and
+     muted aqua at 3.2:1, both below the 4.5:1 body-text line, so light surfaces
+     use a deepened steel for secondary copy and blue-teal for links. Muted aqua
+     is kept for the dark surfaces, where it clears 5.3:1. See the README. */
+  --c-steel-deep: #4e5862;
+  --c-ink-2: #1e252b;
+  --c-fog-2: #c3cacb;
+  --c-bone-2: #d5d9d4;
+  --c-aqua-light: #9fc9c3;
 
-  /* Accent: deep teal. One token; change here to retheme. */
-  --accent: #0f6e63;
-  --accent-ink: #0b544b;
-  --accent-soft: #e2f0ed;
-  --accent-line: #b9d9d3;
+  /* ---- Semantic tokens (defaults are the light surface) -------------- */
+  --bg: var(--c-bone);
+  --bg-elev: #faf8f4;
+  --bg-sunk: #e9e4da;
+  --line: #ddd6ca;
+  --line-strong: #bdb5a7;
+
+  --heading: var(--c-slate);
+  --ink: var(--c-ink);
+  --ink-2: var(--c-ink-2);
+  --ink-3: var(--c-steel-deep);
+
+  --accent: var(--c-teal);
+  --accent-ink: var(--c-teal);
+  --accent-soft: #dfe7e4;
+  --accent-line: #b3c6c2;
+  --focus: var(--c-teal);
 
   /* Dark media treatment (video stills, code panels) */
-  --dark: #141618;
-  --dark-2: #1c1f22;
-  --dark-line: #2c3034;
-  --dark-text: #e9eae6;
-  --dark-text-2: #a7abb0;
+  --dark: var(--c-ink);
+  --dark-2: #161a1c;
+  --dark-line: #2a3136;
+  --dark-text: var(--c-fog);
+  --dark-text-2: var(--c-fog-2);
 
   /* Type */
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  /* Grotesk used only for the hero name, at a medium weight. */
-  --font-grotesk: 'Archivo Variable', Archivo, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Manrope Variable', Manrope, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Archivo Variable', Archivo, 'Helvetica Neue', Arial, sans-serif;
+  /* Kept as aliases so older component styles resolve; both now point at the
+     two families above. The serif and the monospace face are retired. */
+  --font-grotesk: var(--font-display);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-sans);
+
+  /* Display type: Archivo at 700 and 86% width. Archivo Black was tested first
+     and fitted one line at roughly three quarters of the size, and read as the
+     loudest of the four options; the semi-condensed cut gets the scale without
+     the shout. */
+  --display-weight: 700;
+  --display-stretch: 86%;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -51,7 +83,8 @@
   --text-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
   --text-xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
   --text-2xl: clamp(2.25rem, 1.6rem + 2.6vw, 3.75rem);
-  --text-3xl: clamp(2.75rem, 1.8rem + 4vw, 5.25rem);
+  --text-3xl: clamp(2.75rem, 1.6rem + 4.4vw, 6.25rem);
+  --text-4xl: clamp(3rem, 1.4rem + 5.6vw, 8rem);
 
   --leading-tight: 1.05;
   --leading-snug: 1.2;
@@ -71,22 +104,117 @@
   --space-10: 8rem;
 
   --section-y: clamp(4rem, 3rem + 5vw, 8rem);
-  --gutter: clamp(1.25rem, 4vw, 3rem);
-  --container: 76rem;
+  /* A wide editorial canvas: fluid gutters that scale with the viewport and a
+     ceiling near 1,560px, with paragraph measures held separately. */
+  --gutter: clamp(1.25rem, 4.5vw, 5.5rem);
+  --container: 97.5rem;
   --container-narrow: 46rem;
+  --measure: 64ch;
 
   --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 14px;
 
-  --shadow-sm: 0 1px 2px rgba(22, 24, 26, 0.06), 0 1px 1px rgba(22, 24, 26, 0.04);
-  --shadow-md: 0 8px 24px -8px rgba(22, 24, 26, 0.18), 0 2px 6px rgba(22, 24, 26, 0.06);
-  --shadow-lg: 0 24px 48px -16px rgba(22, 24, 26, 0.28), 0 6px 14px -6px rgba(22, 24, 26, 0.1);
+  --shadow-sm: 0 1px 2px rgba(13, 15, 16, 0.06), 0 1px 1px rgba(13, 15, 16, 0.04);
+  --shadow-md: 0 8px 24px -8px rgba(13, 15, 16, 0.18), 0 2px 6px rgba(13, 15, 16, 0.06);
+  --shadow-lg: 0 24px 48px -16px rgba(13, 15, 16, 0.28), 0 6px 14px -6px rgba(13, 15, 16, 0.1);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 160ms;
   --dur: 260ms;
   --dur-slow: 700ms;
+}
+
+/* ------------------------------------------------------------------ */
+/* Numbered surfaces                                                    */
+/* ------------------------------------------------------------------ */
+/* A section's colour comes from its position on the page, not its identity.
+   index.astro hands each section a surface from one ordered list, and each
+   surface redefines the semantic tokens locally, so every component inside it
+   adapts without knowing where it sits. Reordering sections reassigns
+   surfaces; nothing else needs to change.
+
+     01 image         full-bleed photography, light type
+     02 light         warm bone
+     03 dark          ink
+     04 soft          pale slate
+     05 brand         blue-teal
+     06 light-return  fog
+
+   The header reads the surface beneath it from data-surface to pick its
+   light or dark control mode. */
+[data-surface] {
+  background: var(--bg);
+  color: var(--ink-2);
+}
+
+[data-surface='light'] {
+  --bg: var(--c-bone);
+  --bg-elev: #faf8f4;
+  --bg-sunk: #e9e4da;
+  --line: #ddd6ca;
+  --line-strong: #bdb5a7;
+}
+
+[data-surface='soft'] {
+  --bg: var(--c-pale);
+  --bg-elev: #e9edee;
+  --bg-sunk: #d1d8d9;
+  --line: #c6cecf;
+  --line-strong: #a9b3b5;
+  --heading: var(--c-ink);
+  --accent-soft: #cfdbd9;
+  --accent-line: #9fb7b3;
+}
+
+[data-surface='light-return'] {
+  --bg: var(--c-fog);
+  --bg-elev: #f7f8f8;
+  --bg-sunk: #e2e7e6;
+  --line: #d6dcdb;
+  --line-strong: #b8c1c1;
+}
+
+[data-surface='dark'],
+[data-surface='image'] {
+  --bg: var(--c-ink);
+  --bg-elev: #161a1c;
+  --bg-sunk: #1c2124;
+  --line: #242a2e;
+  --line-strong: #3a4349;
+  --heading: var(--c-fog);
+  --ink: var(--c-fog);
+  --ink-2: var(--c-fog-2);
+  --ink-3: var(--c-steel);
+  --accent: var(--c-aqua);
+  --accent-ink: var(--c-aqua-light);
+  --accent-soft: #15292a;
+  --accent-line: #2f5654;
+  --focus: var(--c-aqua);
+}
+
+/* Over photography, rules and focus need to read against a mid-tone image
+   rather than flat ink. */
+[data-surface='image'] {
+  --line-strong: rgba(237, 240, 239, 0.55);
+  --focus: var(--c-fog);
+}
+
+[data-surface='brand'] {
+  --bg: var(--c-teal);
+  --bg-elev: #25504f;
+  --bg-sunk: #2a5756;
+  --line: rgba(243, 239, 232, 0.16);
+  --line-strong: rgba(243, 239, 232, 0.34);
+  --heading: var(--c-bone);
+  --ink: var(--c-bone);
+  --ink-2: var(--c-bone-2);
+  --ink-3: var(--c-fog-2);
+  --accent: var(--c-aqua-light);
+  --accent-ink: var(--c-aqua-light);
+  --accent-soft: #2c5a58;
+  --accent-line: #4c7c78;
+  --focus: var(--c-aqua-light);
 }
 
 /* ------------------------------------------------------------------ */
@@ -115,7 +243,7 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-feature-settings: 'cv11', 'ss01', 'calt';
+  font-feature-settings: 'calt', 'kern';
   overflow-x: clip;
 }
 
@@ -172,7 +300,7 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
   border-radius: 2px;
 }
@@ -186,16 +314,17 @@ button {
 /* Typography utilities                                                 */
 /* ------------------------------------------------------------------ */
 .serif {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
 }
 
+/* Uppercase tracking is for compact metadata only: dates, categories, labels. */
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -205,10 +334,12 @@ button {
 }
 
 .display {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  line-height: var(--leading-tight);
-  letter-spacing: -0.015em;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  line-height: 0.98;
+  letter-spacing: -0.012em;
+  color: var(--heading);
   text-wrap: balance;
 }
 
@@ -229,7 +360,7 @@ button {
   line-height: var(--leading-normal);
   color: var(--ink-2);
   text-wrap: pretty;
-  max-width: 38em;
+  max-width: var(--measure);
 }
 
 .prose {
@@ -237,6 +368,7 @@ button {
   font-size: var(--text-md);
   line-height: var(--leading-relaxed);
   text-wrap: pretty;
+  max-width: var(--measure);
 }
 
 .prose > * + * {
@@ -245,7 +377,7 @@ button {
 
 .prose strong {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .prose a {
@@ -266,9 +398,11 @@ button {
   margin-top: 0.4em;
 }
 
+/* Tabular figures for dates and counters, in the body face. */
 .mono {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .muted {
@@ -349,16 +483,17 @@ button {
   transform: translateY(1px);
 }
 
+/* Surface-relative: ink on light grounds, the light tone on dark ones. */
 .btn--primary {
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--ink);
 }
 
 .btn--primary:hover {
   background: var(--accent-ink);
   border-color: var(--accent-ink);
-  color: #fff;
+  color: var(--bg);
 }
 
 .btn--secondary {
@@ -375,14 +510,14 @@ button {
 
 .btn--accent {
   background: var(--accent);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--accent);
 }
 
 .btn--accent:hover {
   background: var(--accent-ink);
   border-color: var(--accent-ink);
-  color: #fff;
+  color: var(--bg);
 }
 
 .btn svg {
@@ -477,8 +612,8 @@ button {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(to right, rgba(22, 24, 26, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(22, 24, 26, 0.045) 1px, transparent 1px);
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse at 70% 30%, #000 0%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse at 70% 30%, #000 0%, transparent 70%);

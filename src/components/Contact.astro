@@ -34,9 +34,9 @@ const resumeHref = withBase(site.resumePath);
 </section>
 
 <style>
+  /* Colour comes from the numbered surface this section is placed on. */
   .contact {
-    background: var(--ink);
-    color: var(--dark-text);
+    color: var(--ink-2);
   }
 
   .contact--compact {
@@ -48,18 +48,20 @@ const resumeHref = withBase(site.resumePath);
     gap: clamp(2rem, 1.5rem + 2vw, 3.5rem);
   }
 
+  /* Wider than before, so the headline breaks into two or three confident
+     lines on the new canvas instead of four narrow ones. */
   .contact__copy {
     display: grid;
     gap: var(--space-5);
-    max-width: 40rem;
+    max-width: 58rem;
   }
 
   .contact__eyebrow {
-    color: #7fc8bd;
+    color: var(--accent);
   }
 
   .contact__lede {
-    color: var(--dark-text-2);
+    color: var(--ink-2);
   }
 
   .contact__actions {
@@ -73,13 +75,15 @@ const resumeHref = withBase(site.resumePath);
     display: inline-flex;
     align-items: baseline;
     gap: 0.4rem;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
     font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.75rem);
     line-height: 1.1;
     letter-spacing: -0.01em;
-    color: #fff;
+    color: var(--heading);
     text-decoration: none;
-    border-bottom: 1px solid var(--dark-line);
+    border-bottom: 1px solid var(--line-strong);
     padding-bottom: 0.25rem;
     transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
     overflow-wrap: anywhere;
@@ -92,28 +96,15 @@ const resumeHref = withBase(site.resumePath);
   }
 
   .contact__email:hover {
-    color: #fff;
-    border-color: #7fc8bd;
+    color: var(--accent-ink);
+    border-color: var(--accent);
   }
 
   .contact__email:hover :global(svg) {
     transform: translate(2px, -2px);
   }
 
-  .contact .btn--secondary {
-    color: var(--dark-text);
-    border-color: var(--dark-line);
-  }
 
-  .contact .btn--secondary:hover {
-    background: var(--dark-2);
-    border-color: var(--dark-text-2);
-    color: #fff;
-  }
-
-  .contact :focus-visible {
-    outline-color: #7fc8bd;
-  }
 
   @media (min-width: 60rem) {
     .contact__inner {

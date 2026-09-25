@@ -1,8 +1,8 @@
 {
   "_readme": [
     "Credibility bar and inline logo marks. A logo renders only when it has a file and `permission` is `approved`.",
-    "To add a logo: place a file in src/assets/logos/ and set `file` plus `permission`.",
-    "`relationship` is shown as a small caption so no organization is mislabeled as a client."
+    "To add a logo: place a file in src/assets/logos/ and set `file` plus `permission`. Entries without a file render as a text wordmark in the same slot, so a later logo swap does not reflow the band.",
+    "`relationship` is shown as a small caption so no organization is mislabeled as a client. Order here is display order."
   ],
   "heading": "Selected Companies, Products, and Partners",
   "logos": [
@@ -19,7 +19,7 @@
       "id": "bolt-liquidity",
       "name": "Bolt Liquidity",
       "relationship": "Product",
-      "file": "bolt-liquidity.png",
+      "file": "bolt-liquidity.svg",
       "permission": "approved",
       "url": null,
       "inBar": true
@@ -29,6 +29,15 @@
       "name": "Archway",
       "relationship": "Product",
       "file": "archway.svg",
+      "permission": "approved",
+      "url": null,
+      "inBar": true
+    },
+    {
+      "id": "ambur-marketplace",
+      "name": "Ambur Marketplace",
+      "relationship": "Product",
+      "file": null,
       "permission": "approved",
       "url": null,
       "inBar": true
@@ -56,15 +65,6 @@
       "name": "Rayls Labs",
       "relationship": "Co-sponsor",
       "file": "rayls-labs.svg",
-      "permission": "approved",
-      "url": null,
-      "inBar": true
-    },
-    {
-      "id": "sui-summit",
-      "name": "Sui Summit",
-      "relationship": "Sponsored event",
-      "file": null,
       "permission": "approved",
       "url": null,
       "inBar": true

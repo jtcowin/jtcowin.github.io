@@ -14,13 +14,14 @@
       "type": "image",
       "aspect": "1536:1024",
       "label": "John Cowin hero portrait",
-      "filename": "hero/john-cowin-portrait.png",
-      "file": "hero/john-cowin-portrait.png",
+      "filename": "hero/john-cowin-portrait-graded.png",
+      "file": "hero/john-cowin-portrait-graded.png",
       "alt": "John Cowin seated against a plain gray wall, looking to camera.",
-      "source": "Commissioned portrait, 2026. Full frame, used full bleed behind the hero.",
+      "source": "Commissioned portrait, 2026. Displayed as a graded derivative: the wall only, masked by the foreground cutout, with the bright left-side highlight compressed and a 10% neutral-cool desaturation. John is untouched. The original is kept at sourceFile.",
       "permission": "approved",
       "credit": null,
-      "variant": "dark"
+      "variant": "dark",
+      "sourceFile": "hero/john-cowin-portrait.png"
     },
     {
       "id": "hero-foreground",

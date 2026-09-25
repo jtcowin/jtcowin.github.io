@@ -17,6 +17,8 @@ interface Props {
   ogType?: 'website' | 'article';
   /** Prevent indexing (used by the 404 page). */
   noindex?: boolean;
+  /** Surface the footer continues, so it reads as part of the last chapter. */
+  footerSurface?: string;
 }
 
 const {
@@ -26,6 +28,7 @@ const {
   ogAsset = site.ogDefault,
   ogType = 'website',
   noindex = false,
+  footerSurface = 'light',
 } = Astro.props;
 
 // The homepage uses the exact approved browser-tab string; inner pages keep the
@@ -91,7 +94,7 @@ const personJsonLd = {
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    <Footer />
+    <Footer surface={footerSurface} />
   </body>
 </html>
 

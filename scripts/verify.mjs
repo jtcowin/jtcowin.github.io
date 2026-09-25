@@ -128,8 +128,9 @@ if (!/directional performance benchmarks, not Trezor-owned analytics/i.test(crea
   failures.push('[claim] creator page must carry the comparison methodology note');
 }
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-if (!/approximate impressions/i.test(home)) failures.push('[claim] homepage proof strip must keep "approximate" on the impressions figure');
-if (!/1\.25M/.test(home)) failures.push('[claim] homepage proof strip must use the 1.25M aggregate impressions figure');
+// v1.5: the standalone metrics strip is gone; figures live with the work they describe.
+if (!/Approximately 1\.25M impressions/.test(home)) failures.push('[claim] the creator work card must carry "Approximately 1.25M impressions"');
+if (/class="proof[\s"]/.test(home)) failures.push('[claim] the standalone metrics strip was retired in v1.5');
 if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
 if (!/Web3 Marketing Consultant/.test(home)) failures.push('[claim] homepage must carry the consulting career entry');
 // v1.3 hero: name and descriptor only.
@@ -152,8 +153,37 @@ for (const name of ['Phi Labs Global', 'Archway', 'Ambur Marketplace', 'Bolt Liq
 if ((home.match(/Phi Labs Global/g) || []).length < 3) {
   failures.push('[claim] both Phi Labs phases must name the employer alongside the About copy');
 }
-for (const period of ['Late 2024 to present', '2021 to 2024', '2009 to 2020']) {
-  if (!home.includes(period)) failures.push(`[claim] career snapshot is missing the "${period}" entry`);
+// v1.5 career row: no dates or phase labels, two separate Phi Labs entries.
+for (const retired of ['Late 2024 to present', 'Bolt Liquidity phase', 'Archway and Ambur Marketplace phase', 'career__pill']) {
+  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the career row in v1.5`);
+}
+if (/securing global distribution/.test(home)) failures.push('[claim] the music entry must not repeat "securing global distribution"');
+const careerBlock = (home.match(/<ol class="career__list"[\s\S]*?<\/ol>/) || [''])[0];
+if ((careerBlock.match(/Phi Labs Global/g) || []).length !== 2) {
+  failures.push('[claim] the career row must show Phi Labs Global as exactly two separate entries');
+}
+if ((careerBlock.match(/<li/g) || []).length !== 4) failures.push('[claim] the career row must have four entries');
+// Trust bar: closes About, seven entries in the approved order, no Sui Summit.
+const bar = (home.match(/class="logobar[ "][\s\S]*?<\/ul>/) || [''])[0];
+const barOrder = ['Phi Labs', 'Bolt Liquidity', 'Archway', 'Ambur Marketplace', 'Trezor', 'Bitrefill', 'Rayls Labs'];
+const positions = barOrder.map((n) => bar.indexOf(n));
+if (positions.some((x) => x < 0) || positions.some((x, i) => i > 0 && x < positions[i - 1])) {
+  failures.push('[claim] trust bar must list its seven entries in the approved order');
+}
+if (/Sui Summit/.test(bar)) failures.push('[claim] Sui Summit was removed from the trust bar');
+const aboutEnd = home.indexOf('</section>', home.indexOf('id="about"'));
+if (!(home.indexOf('class="logobar') > home.indexOf('id="about"') && home.indexOf('class="logobar') < aboutEnd)) {
+  failures.push('[claim] the trust bar must sit inside the About section');
+}
+// Homepage order and surfaces.
+const sectionIds = [...home.matchAll(/<section[^>]*\bid="([a-z-]+)"/g)].map((m) => m[1]);
+const expected = ['about', 'work', 'capabilities', 'how-i-work', 'contact'];
+if (expected.some((id, i) => sectionIds.indexOf(id) < 0 || (i > 0 && sectionIds.indexOf(id) < sectionIds.indexOf(expected[i - 1])))) {
+  failures.push(`[claim] homepage order must be hero, about, work, capabilities, how-i-work, contact (got ${sectionIds.join(', ')})`);
+}
+const surfaceOrder = [...home.matchAll(/class="chapter"[^>]*data-surface="([a-z-]+)"|data-surface="([a-z-]+)"[^>]*class="chapter"/g)].map((m) => m[1] || m[2]);
+if (surfaceOrder.join(',') !== 'light,dark,soft,brand,light-return') {
+  failures.push(`[claim] chapters must take surfaces 02 to 06 in order (got ${surfaceOrder.join(', ')})`);
 }
 // About must be the second section, directly after the hero.
 const order = [...home.matchAll(/<section[^>]*\bid="([a-z-]+)"/g)].map((m) => m[1]);

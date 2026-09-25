@@ -2,47 +2,78 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/Hero.astro';
-import LogoBar from '@components/LogoBar.astro';
-import ProofStrip from '@components/ProofStrip.astro';
+import About from '@components/About.astro';
 import WorkPanels from '@components/WorkPanels.astro';
 import WorkRail from '@components/WorkRail.astro';
 import Capabilities from '@components/Capabilities.astro';
 import HowIWork from '@components/HowIWork.astro';
-import About from '@components/About.astro';
 import Contact from '@components/Contact.astro';
 import home from '@data/home.json';
 
 const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+
+/**
+ * Surfaces are handed out by position, not by section. The hero is surface 01
+ * (image); every chapter after it takes the next surface in this list, in the
+ * order the chapters appear below. Reorder the chapters and their colours
+ * follow automatically; nothing in the components changes.
+ *
+ * Past the sixth surface the sequence continues from dark, soft and light
+ * rather than restarting on another photograph.
+ */
+const SEQUENCE = ['light', 'dark', 'soft', 'brand', 'light-return'];
+const OVERFLOW = ['dark', 'soft', 'light'];
+let position = 0;
+const surface = () => {
+  const s = position < SEQUENCE.length ? SEQUENCE[position] : OVERFLOW[(position - SEQUENCE.length) % OVERFLOW.length];
+  position += 1;
+  return s;
+};
+
+// Evaluated in document order, so these match the chapters below.
+const S = { about: surface(), work: surface(), capabilities: surface(), how: surface(), contact: surface() };
 ---
 
-<BaseLayout path="/" ogAsset="og-home">
+<BaseLayout path="/" ogAsset="og-home" footerSurface={S.contact}>
   <Hero />
-  <About />
-  <LogoBar />
-  <ProofStrip />
 
-  <section id="work" class="section work" aria-labelledby="work-heading">
-    <div class="container">
-      <div class="section-head work__head">
-        <h2 id="work-heading" class="display display-lg">{home.work.heading}</h2>
-        <p class="lede">{home.work.copy}</p>
+  <div class="chapter" data-surface={S.about}>
+    <About />
+  </div>
+
+  {/* One chapter: the case-study panels and the visual rail belong together. */}
+  <div class="chapter" data-surface={S.work}>
+    <section id="work" class="section work" aria-labelledby="work-heading">
+      <div class="container">
+        <div class="section-head work__head">
+          <h2 id="work-heading" class="display display-lg">{home.work.heading}</h2>
+          <p class="lede">{home.work.copy}</p>
+        </div>
+        <WorkPanels entries={work} />
       </div>
-      <WorkPanels entries={work} />
-    </div>
-  </section>
+    </section>
+    <WorkRail />
+  </div>
 
-  <WorkRail />
-  <Capabilities />
-  <HowIWork />
-  <Contact />
+  <div class="chapter" data-surface={S.capabilities}>
+    <Capabilities />
+  </div>
+
+  <div class="chapter" data-surface={S.how}>
+    <HowIWork />
+  </div>
+
+  <div class="chapter" data-surface={S.contact}>
+    <Contact />
+  </div>
 </BaseLayout>
 
 <style>
   .work {
-    padding-top: calc(var(--section-y) * 0.6);
+    padding-top: var(--section-y);
   }
 
   .work__head {
-    max-width: 48rem;
+    max-width: 56rem;
   }
 </style>
