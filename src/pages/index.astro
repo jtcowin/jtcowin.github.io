@@ -15,7 +15,7 @@ const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.
 /**
  * Surfaces are handed out by position, not by section. The hero is surface 01
  * (image); every chapter after it takes the next surface in this list, in the
- * order the chapters appear below. Reorder the chapters and their colours
+ * order the chapters appear below. Reorder the chapters and their colors
  * follow automatically; nothing in the components changes.
  *
  * Past the sixth surface the sequence continues from dark, soft and light

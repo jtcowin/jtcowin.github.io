@@ -3,16 +3,25 @@
  * About: career context directly beneath the hero, closed by the trust bar.
  *
  * One wide chapter in four bands: a one-line headline across the canvas, three
- * narrative columns (foundation, Phi Labs, and a short present-day thesis), the
- * career snapshot, and the credibility bar. The snapshot is a two-level list:
- * each group is one primary heading (the employer or practice) with its
- * secondary labels and descriptions beneath it, so Phi Labs Global reads as one
- * company holding two scopes. On wide screens the groups sit in one row under a
- * NOW to EARLIER rule; everywhere else they stack in reading order, so nothing
- * scrolls sideways.
+ * narrative columns (foundation, Phi Labs, and a short present-day thesis with
+ * the resume action beneath it), the career timeline, and the credibility bar.
  *
- * Named companies and products are marked in the copy with double asterisks and
- * render as <strong>, so the emphasis is semantic rather than a font weight.
+ * The timeline reads NOW to EARLIER. On wide screens it is a horizontal rule
+ * with four nodes, a stem from each node down to its entry, and four aligned
+ * entries; below 72rem it turns vertical, top to bottom in the same order.
+ * Each entry is a numbered marker, the primary heading, the secondary label as
+ * a flat pill, and one balanced description. The current node is filled; the
+ * earlier ones are outlined and recede in tone without dropping below the
+ * contrast they need.
+ *
+ * Motion: the first time the timeline enters the viewport the rule draws once,
+ * then the nodes and entries appear from current to earliest. The inline script
+ * arms that only when IntersectionObserver exists and reduced motion is off, so
+ * without JavaScript, with reduced motion, or in print the timeline is simply
+ * complete and static.
+ *
+ * Named companies are marked in the copy with double asterisks and render as
+ * <strong>, so the emphasis is semantic rather than a font weight.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
@@ -23,15 +32,18 @@ import LogoBar from './LogoBar.astro';
 const { about } = home;
 const resumeHref = withBase(site.resumePath);
 
-/** Split "a **b** c" into runs, where every odd run is emphasised. */
+/** Split "a **b** c" into runs, where every odd run is emphasized. */
 function runs(text: string) {
   return text.split('**').map((t, i) => ({ text: t, strong: i % 2 === 1 }));
 }
 
-/** Keep numeric compounds such as "140-plus" on one line; odd runs are the compounds. */
+/** Keep hyphenated compounds such as "five-person" or "major-festival" on one
+ *  line, so a description never breaks mid-compound; odd runs are the compounds. */
 function compounds(text: string) {
-  return text.split(/(\d+-[a-z]+)/).map((t, i) => ({ text: t, keep: i % 2 === 1 }));
+  return text.split(/([A-Za-z0-9]+-[A-Za-z0-9]+)/).map((t, i) => ({ text: t, keep: i % 2 === 1 }));
 }
+
+const marker = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
 <section id="about" class="section about" aria-labelledby="about-heading">
@@ -40,47 +52,68 @@ function compounds(text: string) {
 
     <div class="about__cols">
       {
-        about.columns.map((col) => (
-          <p class:list={['about__col', `about__col--${col.role}`]}>
-            {runs(col.text).map((run) => (run.strong ? <strong>{run.text}</strong> : run.text))}
-          </p>
-        ))
+        about.columns.map((col) =>
+          col.role === 'thesis' ? (
+            <div class="about__col about__col--thesis">
+              <p class="about__thesis">{runs(col.text).map((run) => (run.strong ? <strong>{run.text}</strong> : run.text))}</p>
+              <a href={resumeHref} class="btn btn--secondary about__resume" download>
+                {about.resumeLink.label} <Icon name="download" size={16} />
+              </a>
+            </div>
+          ) : (
+            <p class:list={['about__col', `about__col--${col.role}`]}>
+              {runs(col.text).map((run) => (run.strong ? <strong>{run.text}</strong> : run.text))}
+            </p>
+          ),
+        )
       }
     </div>
 
-    <div class="career">
-      <h3 class="sr-only">{about.career.heading}</h3>
+    <div class="timeline" data-timeline>
+      <h3 class="sr-only">{about.career.heading}, most recent first</h3>
+      <p class="timeline__end timeline__end--now" aria-hidden="true">{about.career.nowLabel}</p>
+      <p class="timeline__end timeline__end--earlier" aria-hidden="true">{about.career.earlierLabel}</p>
 
-      <p class="career__axis" aria-hidden="true">
-        <span class="career__end">{about.career.nowLabel}</span>
-        <span class="career__rule"></span>
-        <span class="career__end">{about.career.earlierLabel}</span>
-      </p>
-
-      <ol class="career__list">
+      <ol class="timeline__list">
         {
-          about.career.groups.map((group) => (
-            <li class:list={['career__group', group.roles.length > 1 && 'career__group--wide']}>
-              <h4 class="career__employer">{group.employer}</h4>
-              <ol class="career__roles">
-                {group.roles.map((role) => (
-                  <li class:list={['career__role', role.current && 'career__role--current']}>
-                    <p class="career__label">{role.label}</p>
-                    <p class="career__detail">
-                      {compounds(role.detail).map((run) => (run.keep ? <span class="nobr">{run.text}</span> : run.text))}
-                    </p>
-                  </li>
-                ))}
-              </ol>
+          about.career.entries.map((entry, i) => (
+            <li class:list={['timeline__entry', entry.current && 'timeline__entry--current']} style={`--i: ${i}`}>
+              <span class="timeline__node" aria-hidden="true" />
+              <span class="timeline__stem" aria-hidden="true" />
+              <p class="timeline__marker" aria-hidden="true">{marker(i)}</p>
+              <h4 class="timeline__heading">{entry.heading}</h4>
+              <p class="timeline__label">
+                <span class="timeline__pill">{entry.label}</span>
+              </p>
+              <p class="timeline__detail">
+                {compounds(entry.detail).map((run) => (run.keep ? <span class="nobr">{run.text}</span> : run.text))}
+              </p>
             </li>
           ))
         }
       </ol>
-
-      <a href={resumeHref} class="arrow-link career__link" download>
-        {about.career.link.label} <Icon name="download" size={14} />
-      </a>
     </div>
+    <script is:inline>
+      (function () {
+        var tl = document.querySelector('[data-timeline]');
+        if (!tl || !('IntersectionObserver' in window)) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        tl.classList.add('is-armed');
+        var io = new IntersectionObserver(
+          function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+              if (entries[i].isIntersecting) {
+                tl.classList.add('is-playing');
+                io.disconnect();
+                return;
+              }
+            }
+          },
+          { rootMargin: '0px 0px -12% 0px' },
+        );
+        io.observe(tl);
+      })();
+    </script>
 
     <LogoBar embedded />
   </div>
@@ -121,9 +154,20 @@ function compounds(text: string) {
     color: var(--ink);
   }
 
-  /* The third column is a thesis, not a third paragraph, so it is set as a
-     statement and its shorter length reads as intentional. */
+  /* The third column is a thesis, not a third paragraph, set as a statement
+     with the resume action beneath it. The gap keeps the button reading as
+     the column's action rather than the end of the sentence. */
   .about__col--thesis {
+    display: grid;
+    justify-items: start;
+    align-content: start;
+    gap: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--accent);
+  }
+
+  .about__thesis {
+    margin: 0;
     font-family: var(--font-display);
     font-weight: 600;
     font-stretch: 92%;
@@ -131,29 +175,31 @@ function compounds(text: string) {
     line-height: 1.3;
     letter-spacing: -0.005em;
     color: var(--heading);
-    padding-top: var(--space-4);
-    border-top: 2px solid var(--accent);
+    text-wrap: pretty;
   }
 
-  /* ---- career snapshot --------------------------------------------------
-     Spacing inside a group comes from margins rather than gaps, so the same
-     rules hold whether or not the group is a subgrid (see the wide queries). */
-  .career {
-    margin-top: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+  /* ---- career timeline ---------------------------------------------------
+     Tones recede from the current entry toward EARLIER. Every marker tone
+     stays at or above 4.5:1 on the light surface, and every node outline at or
+     above 3:1: teal 9.2, slate 11.6, steel 6.3, the steel mix 5.0. The rule
+     fades from blue-teal to pale slate; it is a connector, and the nodes and
+     the NOW and EARLIER labels carry the reading order. */
+  .timeline {
+    --node: 0.875rem;
+    --stem: 1.5rem;
+    --inset: calc(var(--node) + 1.25rem);
+    --rule-from: var(--accent);
+    --rule-to: var(--c-pale);
+    --tone: var(--heading);
+
+    margin-top: clamp(2.75rem, 1.5rem + 3.5vw, 4.5rem);
     display: grid;
-    gap: var(--space-5);
+    grid-template-areas: 'now' 'list' 'earlier';
+    row-gap: var(--space-4);
   }
 
-  /* The NOW to EARLIER rule only appears where the groups share one row, so
-     the axis always describes the layout beneath it. */
-  .career__axis {
-    display: none;
-    align-items: center;
-    gap: var(--space-4);
+  .timeline__end {
     margin: 0;
-  }
-
-  .career__end {
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.14em;
@@ -161,36 +207,102 @@ function compounds(text: string) {
     color: var(--ink-3);
   }
 
-  .career__rule {
-    flex: 1;
-    height: 1px;
-    background: var(--line-strong);
+  .timeline__end--now {
+    grid-area: now;
   }
 
-  .career__list,
-  .career__roles {
+  .timeline__end--earlier {
+    grid-area: earlier;
+  }
+
+  .timeline__list {
+    grid-area: list;
+    position: relative;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 0 0 var(--inset);
     display: grid;
+    gap: var(--space-7);
   }
 
-  .career__list {
-    gap: var(--space-7) var(--space-6);
+  /* The rule. Vertical by default, horizontal on wide screens. */
+  .timeline__list::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--node) / 2 - 1px);
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--rule-from), var(--rule-to));
+    transform-origin: top center;
   }
 
-  .career__group {
+  .timeline__entry {
+    position: relative;
     display: grid;
     align-content: start;
-    gap: 0;
   }
 
-  /* Primary heading: the employer or practice, set in the display face with a
-     rule beneath it. On Phi Labs Global the rule spans both of its roles. */
-  .career__employer {
-    margin: 0 0 var(--space-4);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--line-strong);
+  .timeline__entry:nth-child(1) {
+    --tone: var(--accent);
+  }
+
+  .timeline__entry:nth-child(2) {
+    --tone: var(--heading);
+  }
+
+  .timeline__entry:nth-child(3) {
+    --tone: var(--ink-3);
+  }
+
+  .timeline__entry:nth-child(n + 4) {
+    --tone: color-mix(in srgb, var(--ink-3) 90%, var(--bg));
+  }
+
+  .timeline__node {
+    position: absolute;
+    left: calc(-1 * var(--inset));
+    top: 0.2rem;
+    width: var(--node);
+    height: var(--node);
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid var(--tone);
+    background: var(--bg);
+  }
+
+  /* The active node: filled, with a narrow halo rather than a glow. */
+  .timeline__entry--current .timeline__node {
+    background: var(--tone);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 16%, transparent);
+  }
+
+  /* On the vertical timeline the stem runs from the node across to the
+     entry; on the horizontal one it drops from the node to the marker. */
+  .timeline__stem {
+    position: absolute;
+    left: calc(-1 * var(--inset) + var(--node));
+    top: calc(0.2rem + var(--node) / 2);
+    width: calc(var(--inset) - var(--node) - 0.45rem);
+    height: 1px;
+    background: var(--tone);
+    opacity: 0.55;
+  }
+
+  .timeline__marker {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-stretch: 86%;
+    font-size: var(--text-sm);
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    color: var(--tone);
+  }
+
+  .timeline__heading {
+    margin: 0 0 0.8rem;
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
@@ -201,31 +313,31 @@ function compounds(text: string) {
     text-wrap: balance;
   }
 
-  .career__roles {
-    gap: var(--space-5) var(--space-6);
+  /* Secondary label: a flat tint, no border, no shadow, so it reads as a tag
+     beneath the heading rather than a control. */
+  .timeline__label {
+    margin: 0 0 0.85rem;
   }
 
-  .career__role {
-    display: grid;
-    align-content: start;
-    gap: 0.4rem;
-  }
-
-  /* Secondary label: compact metadata beneath the heading, never a title. */
-  .career__label {
-    margin: 0;
+  .timeline__pill {
+    display: inline-block;
+    padding: 0.32rem 0.66rem 0.3rem;
+    border-radius: 999px;
+    background: var(--bg-sunk);
+    color: var(--ink-3);
     font-size: var(--text-xs);
     font-weight: 700;
+    line-height: 1.2;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--ink-3);
   }
 
-  .career__role--current .career__label {
+  .timeline__entry--current .timeline__pill {
+    background: var(--accent-soft);
     color: var(--accent);
   }
 
-  .career__detail {
+  .timeline__detail {
     margin: 0;
     max-width: 46ch;
     font-size: var(--text-sm);
@@ -234,52 +346,169 @@ function compounds(text: string) {
     text-wrap: pretty;
   }
 
-  .career__detail .nobr {
+  .timeline__detail .nobr {
     white-space: nowrap;
   }
 
-  .career__link {
-    justify-self: start;
-  }
-
-  .about :global(.logobar--embedded) {
-    margin-top: clamp(2rem, 1.25rem + 2vw, 3rem);
-  }
-
-  /* ---- wide ------------------------------------------------------------- */
-  @media (min-width: 48rem) {
-    /* Two columns: Phi Labs Global takes the first row with its two roles side
-       by side, and the two earlier groups share the second. The inner column
-       gap matches the outer one, so the roles land on the outer tracks. */
-    .career__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      row-gap: 0;
-    }
-
-    .career__group--wide {
-      grid-column: 1 / -1;
-      margin-bottom: var(--space-7);
-    }
-
-    .career__group--wide .career__roles {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Tablet: still vertical, with each entry split into its heading block and
+     its description so the lines stay a comfortable length. */
+  @media (min-width: 48rem) and (max-width: 71.99rem) {
+    .timeline__entry {
+      grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
       column-gap: var(--space-6);
     }
 
-    /* Groups in the same row share their heading and role rows, so every rule
-       and every label starts on one line even when a heading wraps. */
-    @supports (grid-template-rows: subgrid) {
-      .career__group {
-        grid-row: span 2;
-        grid-template-rows: subgrid;
-      }
+    .timeline__marker {
+      grid-column: 1;
+      grid-row: 1;
+    }
 
-      .career__employer {
-        align-self: end;
-      }
+    .timeline__heading {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .timeline__label {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    .timeline__detail {
+      grid-column: 2;
+      grid-row: 2 / span 2;
     }
   }
 
+  /* Wide: one horizontal rule, NOW at its left end and EARLIER at its right,
+     four nodes on it and four aligned columns beneath. The entries share
+     their rows (subgrid), so markers, headings, labels and descriptions each
+     start on one line even when a heading wraps. */
+  @media (min-width: 72rem) {
+    .timeline {
+      grid-template-areas: 'now earlier' 'list list';
+      grid-template-columns: 1fr auto;
+      row-gap: var(--space-4);
+    }
+
+    .timeline__end--earlier {
+      justify-self: end;
+    }
+
+    .timeline__list {
+      padding: 0;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: var(--space-6);
+      row-gap: 0;
+    }
+
+    .timeline__list::before {
+      left: 0;
+      right: 0;
+      top: calc(var(--node) / 2 - 1px);
+      bottom: auto;
+      width: auto;
+      height: 2px;
+      background: linear-gradient(90deg, var(--rule-from), var(--rule-to));
+      transform-origin: center left;
+    }
+
+    .timeline__entry {
+      padding-top: calc(var(--node) + var(--stem) + 0.6rem);
+    }
+
+    @supports (grid-template-rows: subgrid) {
+      .timeline__entry {
+        grid-row: span 4;
+        grid-template-rows: subgrid;
+        row-gap: 0;
+      }
+    }
+
+    .timeline__node {
+      left: 0;
+      top: 0;
+    }
+
+    .timeline__stem {
+      left: calc(var(--node) / 2 - 0.5px);
+      top: calc(var(--node) + 0.2rem);
+      width: 1px;
+      height: var(--stem);
+    }
+  }
+
+  /* ---- entrance, once --------------------------------------------------- */
+  .timeline.is-armed .timeline__list::before {
+    transform: scaleY(0);
+  }
+
+  .timeline.is-armed .timeline__node {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  .timeline.is-armed .timeline__stem {
+    opacity: 0;
+  }
+
+  .timeline.is-armed .timeline__entry > :not(.timeline__node, .timeline__stem) {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  .timeline.is-playing .timeline__list::before {
+    transform: none;
+    transition: transform 900ms var(--ease-out);
+  }
+
+  .timeline.is-playing .timeline__node {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 320ms var(--ease-out),
+      transform 460ms var(--ease-out);
+    transition-delay: calc(620ms + var(--i) * 170ms);
+  }
+
+  .timeline.is-playing .timeline__stem {
+    opacity: 0.55;
+    transition: opacity 360ms var(--ease-out);
+    transition-delay: calc(740ms + var(--i) * 170ms);
+  }
+
+  .timeline.is-playing .timeline__entry > :not(.timeline__node, .timeline__stem) {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 520ms var(--ease-out),
+      transform 620ms var(--ease-out);
+    transition-delay: calc(820ms + var(--i) * 170ms);
+  }
+
+  @media (min-width: 72rem) {
+    .timeline.is-armed .timeline__list::before {
+      transform: scaleX(0);
+    }
+
+    .timeline.is-playing .timeline__list::before {
+      transform: none;
+    }
+  }
+
+  @media print {
+    .timeline.is-armed .timeline__list::before,
+    .timeline.is-armed .timeline__node,
+    .timeline.is-armed .timeline__entry > * {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
+  .about :global(.logobar--embedded) {
+    margin-top: clamp(2.5rem, 1.5rem + 2.5vw, 3.75rem);
+  }
+
+  /* ---- headline sizes --------------------------------------------------- */
   /* The smallest phones cannot fit "Operator discipline." at the 2.5rem floor,
      which breaks the headline into four short lines; sizing it to the viewport
      keeps the two-line reading every other phone gets. */
@@ -301,22 +530,6 @@ function compounds(text: string) {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.9fr);
       gap: clamp(2rem, 1rem + 2.5vw, 4rem);
       align-items: start;
-    }
-  }
-
-  /* One row: Phi Labs Global spans two of four columns. */
-  @media (min-width: 72rem) {
-    .career__axis {
-      display: flex;
-    }
-
-    .career__list {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .career__group--wide {
-      grid-column: span 2;
-      margin-bottom: 0;
     }
   }
 </style>

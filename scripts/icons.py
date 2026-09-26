@@ -3,7 +3,7 @@
 
 The master (src/assets/favicon/john-cowin-favicon-master.png) is a square portrait with the
 subject inside an inscribed circle. Everything outside that circle becomes
-transparent, so the icon reads as a circular portrait on any tab colour and
+transparent, so the icon reads as a circular portrait on any tab color and
 never sits in a colored box.
 
 The master lives outside public/ so the full-resolution file is not shipped to
@@ -27,7 +27,7 @@ OUT = ROOT / "public"
 # Geometry of the circle inside the master, measured from the source.
 CENTER = (623, 623)
 RADIUS = 619
-# The head sits slightly above the circle's centre, so tight crops recentre here.
+# The head sits slightly above the circle's center, so tight crops recenter here.
 FOCUS = (627, 560)
 
 # name, pixel size, crop factor (share of the circle's diameter kept), sharpen

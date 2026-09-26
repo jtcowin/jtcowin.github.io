@@ -128,7 +128,7 @@
 /* ------------------------------------------------------------------ */
 /* Numbered surfaces                                                    */
 /* ------------------------------------------------------------------ */
-/* A section's colour comes from its position on the page, not its identity.
+/* A section's color comes from its position on the page, not its identity.
    index.astro hands each section a surface from one ordered list, and each
    surface redefines the semantic tokens locally, so every component inside it
    adapts without knowing where it sits. Reordering sections reassigns

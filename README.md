@@ -13,8 +13,10 @@ approved and present, so an unresolved entry never reaches the public site (see
 Version 1.5 introduced a visual system drawn from the hero portrait: a small palette of charcoal,
 cool stone, slate, bone and blue-teal; six numbered surfaces handed out by page position; a heavy
 semi-condensed display face with Manrope for everything read closely; and a wide editorial canvas.
-The homepage is now hero, About (with the career snapshot and trust bar), Selected Work, What I Do, How I
-Work, Contact. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
+The homepage is now hero, About (with the career timeline and trust bar), Selected Work, What I Do, How I
+Work, Contact. Version 1.6 reworked About: the narrative names the company but no individual products,
+the resume button sits beneath the thesis, the career snapshot became a horizontal timeline, and the
+trust bar is centered. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
 introduced the full-viewport photograph and the photographic favicon.
 
 ## Routes
@@ -193,13 +195,13 @@ every surface and on all three work cards.
 
 ### Numbered surfaces
 
-A section's colour comes from its position, not its identity. `src/pages/index.astro` hands each
-chapter the next surface from one ordered list; reorder the chapters and their colours follow.
+A section's color comes from its position, not its identity. `src/pages/index.astro` hands each
+chapter the next surface from one ordered list; reorder the chapters and their colors follow.
 
 | # | Surface | Currently |
 | --- | --- | --- |
 | 01 | Image | Hero |
-| 02 | Light (warm bone) | About, career, trust bar |
+| 02 | Light (warm bone) | About, career timeline, trust bar |
 | 03 | Dark (ink) | Selected Work and the visual rail |
 | 04 | Soft (pale slate) | What I Do |
 | 05 | Brand (blue-teal) | How I Work |
@@ -229,14 +231,36 @@ The verify script fails the build check if any of these appear in the output: th
 handle, the unverified 524% Trezor lift claim, any mention of Sui Network negotiations, "17 unique
 creators," invented senior titles, raw internal links, the word "client" (logo-bar organizations are
 employers, products, co-sponsors, and events, not clients), em dashes, a location-level impressions
-figure, or a published count of active workflows. It also confirms the official title
-"Social Media Manager", the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
+figure, or a published count of active workflows. (Since Version 1.6 the homepage states no formal
+title; the only formal title for the Phi Labs role is still "Social Media Manager", on the resume.) It
+also confirms the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
 and the approved How I Work, contact, trust-bar, and footer lines are present.
 
-The career snapshot is a two-level list and the check enforces its shape: three primary headings
-(Phi Labs Global, Web3 Marketing Consulting, Independent Music and Business Operator) in that order,
-each followed by its secondary labels (Current scope and Original mandate; Selected DeFi Projects;
-Global Music Project), with Phi Labs Global named once as the parent of both scopes.
+The About checks (Version 1.6): the narrative columns name Phi Labs Global but no individual product,
+and the resume button sits in the third column beneath the thesis. The career timeline has four
+entries, NOW to EARLIER, numbered 01 to 04, each with its primary heading and its label beneath it:
+Phi Labs Global (Current scope), Phi Labs Global (Original mandate), Web3 Marketing Consulting (Select
+DeFi Projects), and Independent Music and Business Operator (Global Music Project). Each description
+must match the approved copy, the four must stay within a similar length, Current scope must not say
+"production", the music entry must not say "independent", and only the first entry is current. The
+trust-bar heading reads "Select Companies, Products, and Partners".
+
+### Career timeline
+
+- Wide screens (72rem and up): one horizontal rule from NOW to EARLIER, four nodes on it, a stem from
+  each node down to its entry, and four equal columns. The entries share their rows, so markers,
+  headings, labels and descriptions line up even when a heading wraps.
+- Narrower screens: the same order top to bottom on a vertical rule. Tablets split each entry into its
+  heading block and its description.
+- The current node is filled blue-teal with a narrow halo. Earlier nodes are outlined and recede from
+  deep slate through steel; every marker tone stays at or above 4.5:1 on the light surface and every
+  outline at or above 3:1. The rule fades from blue-teal to pale slate.
+- Markers are the typographic 01 to 04, not icons or logos (the trust bar already carries the brands).
+  Labels are flat tinted pills with no border or shadow.
+- Motion runs once: the first time the timeline enters the viewport, the rule draws, then the nodes and
+  entries appear from current to earliest. A small inline script arms it only when
+  IntersectionObserver exists and reduced motion is off, so without JavaScript, with reduced motion, or
+  in print the timeline is complete and static.
 
 One aggregate impressions figure is published site-wide: approximately 1.25M across the three
 international creator activations. Per-activation impression figures were retired in Version 1.2 and

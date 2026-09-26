@@ -4,7 +4,7 @@
     "To add a logo: place a file in src/assets/logos/ and set `file` plus `permission`. Entries without a file render as a text wordmark in the same slot, so a later logo swap does not reflow the band.",
     "`relationship` is shown as a small caption so no organization is mislabeled as a client. Order here is display order."
   ],
-  "heading": "Selected Companies, Products, and Partners",
+  "heading": "Select Companies, Products, and Partners",
   "logos": [
     {
       "id": "phi-labs",

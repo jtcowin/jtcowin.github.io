@@ -112,68 +112,57 @@
     ]
   },
   "about": {
-    "_note": "Version 1.5 layout: three narrative columns, the career snapshot, then the trust bar. Double asterisks mark named companies and products, which render as <strong>. No eyebrow. Career snapshot: each group is one primary heading with its secondary labels beneath it.",
+    "_note": "Version 1.6 About: three narrative columns (the narrative names no individual products; the resume action sits beneath the thesis), the career timeline, then the trust bar. Double asterisks mark named companies, which render as <strong>. No eyebrow. Timeline entries are listed NOW to EARLIER; markers 01 to 04 come from the order.",
     "heading": "Creative instincts. Operator discipline.",
     "columns": [
       {
         "role": "foundation",
-        "text": "I entered DeFi full-time in 2021 after a decade of building audiences and managing the business operations of a globally distributed independent music project. That foundation developed my instincts for brand building, audience development, creative production, partnerships, and managing complex operations."
+        "text": "I entered DeFi full-time in 2021 after a decade of building audiences and managing the business behind a globally distributed music project."
       },
       {
         "role": "phi-labs",
-        "text": "In 2024, I joined **Phi Labs Global**, a Web3 software development company, to manage social media across a product portfolio that has included **Archway**, a Layer 1 blockchain; **Ambur Marketplace**, an NFT marketplace; and **Bolt Liquidity**, a next-generation proprietary AMM. As the organization evolved, so did my role. What began in social expanded into ownership across positioning, content, community, technical documentation, creator partnerships, events, and production."
+        "text": "In 2024, I joined **Phi Labs Global** to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and a proprietary AMM. As the organization evolved, my role expanded far beyond social."
       },
       {
         "role": "thesis",
         "text": "Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore."
       }
     ],
+    "resumeLink": {
+      "label": "Read the full resume",
+      "href": "resume"
+    },
     "headshot": "about-headshot",
     "career": {
       "heading": "Career snapshot",
       "nowLabel": "Now",
       "earlierLabel": "Earlier",
-      "groups": [
+      "entries": [
         {
-          "employer": "Phi Labs Global",
-          "roles": [
-            {
-              "label": "Current scope",
-              "current": true,
-              "detail": "Own positioning, content, community, technical documentation, creator partnerships, events, and production for Bolt Liquidity."
-            },
-            {
-              "label": "Original mandate",
-              "current": false,
-              "detail": "Joined as Social Media Manager to support Phi Labs' product portfolio, including a Layer 1 blockchain and NFT marketplace."
-            }
-          ]
+          "heading": "Phi Labs Global",
+          "label": "Current scope",
+          "current": true,
+          "detail": "Own positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, campaign operations, and distribution."
         },
         {
-          "employer": "Web3 Marketing Consulting",
-          "roles": [
-            {
-              "label": "Selected DeFi Projects",
-              "current": false,
-              "detail": "Led social, community, content, and partner-facing marketing across emerging DeFi products."
-            }
-          ]
+          "heading": "Phi Labs Global",
+          "label": "Original mandate",
+          "current": false,
+          "detail": "Manage social channels, community engagement, campaigns, and product education across a portfolio with a combined audience of more than 200,000, including a Layer 1 blockchain and NFT marketplace."
         },
         {
-          "employer": "Independent Music and Business Operator",
-          "roles": [
-            {
-              "label": "Global Music Project",
-              "current": false,
-              "detail": "Built and managed a globally distributed independent music project streamed in more than 80 countries, performed 140-plus shows annually, and secured sponsorships, media appearances, and major-festival bookings."
-            }
-          ]
+          "heading": "Web3 Marketing Consulting",
+          "label": "Select DeFi Projects",
+          "current": false,
+          "detail": "Led social, community, content, and partner marketing for DeFi startups across Avalanche and Ethereum, managing audiences of up to 40,000 and a five-person moderator team."
+        },
+        {
+          "heading": "Independent Music and Business Operator",
+          "label": "Global Music Project",
+          "current": false,
+          "detail": "Built a globally distributed music project streamed in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings."
         }
-      ],
-      "link": {
-        "label": "Read the full resume",
-        "href": "resume"
-      }
+      ]
     }
   },
   "contact": {

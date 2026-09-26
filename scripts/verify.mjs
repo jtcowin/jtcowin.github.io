@@ -131,7 +131,9 @@ const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 // v1.5: the standalone metrics strip is gone; figures live with the work they describe.
 if (!/Approximately 1\.25M impressions/.test(home)) failures.push('[claim] the creator work card must carry "Approximately 1.25M impressions"');
 if (/class="proof[\s"]/.test(home)) failures.push('[claim] the standalone metrics strip was retired in v1.5');
-if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
+// Version 1.6 copy no longer states a formal title on the homepage. The only
+// formal title for the Phi Labs role remains "Social Media Manager" (resume);
+// the invented-title check elsewhere keeps any other title from appearing.
 if (!/Web3 Marketing Consulting/.test(home)) failures.push('[claim] homepage must carry the consulting career entry');
 // v1.3 hero: name and descriptor only.
 if (!/hero__name/.test(home)) failures.push('[claim] hero must render the name as live text');
@@ -147,53 +149,79 @@ if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render a
 if (/icon-192\.png"[^>]*class="brand__mark"|brand__mark/.test(home)) failures.push('[claim] no brand mark may appear in the hero header');
 if (!/Creative instincts\. Operator discipline\./.test(home)) failures.push('[claim] About must use the approved headline');
 if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About section must have no eyebrow');
-for (const name of ['Phi Labs Global', 'Archway', 'Ambur Marketplace', 'Bolt Liquidity']) {
-  if (!new RegExp(`<strong[^>]*>${name}</strong>`).test(home)) failures.push(`[claim] About copy must emphasise "${name}" semantically`);
+// v1.6 About narrative: the company is named, individual products are not, and
+// the resume action sits in the third column beneath the thesis.
+const decode = (t) => t.replace(/&#39;|&#x27;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+const textOf = (html) => decode(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+const aboutCols = (home.match(/<div class="about__cols"[\s\S]*?<div class="timeline"/) || [''])[0];
+if (!aboutCols) failures.push('[claim] About narrative columns not found');
+if (!/<strong[^>]*>Phi Labs Global<\/strong>/.test(aboutCols)) failures.push('[claim] About copy must emphasize "Phi Labs Global" semantically');
+for (const product of ['Archway', 'Ambur', 'Bolt']) {
+  if (aboutCols.includes(product)) failures.push(`[claim] the About narrative must not name individual products (found "${product}")`);
 }
-// Finalized career snapshot: three primary headings, each with its secondary
-// labels beneath it. Phi Labs Global is one parent holding two scopes.
+if (!textOf(aboutCols).includes('to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and a proprietary AMM.')) {
+  failures.push('[claim] the Phi Labs column must use the approved Version 1.6 copy');
+}
+const thesisCol = (aboutCols.match(/<div class="about__col about__col--thesis"[\s\S]*?<\/div>/) || [''])[0];
+const thesisAt = thesisCol.indexOf('difficult to ignore.');
+const resumeAt = thesisCol.indexOf('about__resume');
+if (thesisAt < 0 || resumeAt < thesisAt || !/Read the full resume/.test(thesisCol)) {
+  failures.push('[claim] the "Read the full resume" button must sit in the third column, beneath the thesis');
+}
+// v1.6 career timeline: four entries NOW to EARLIER, numbered 01 to 04, each
+// label beneath its heading, the approved balanced copy, one current node.
 const retiredCareer = [
   'Late 2024 to present',
   'Bolt Liquidity phase',
   'Archway and Ambur Marketplace phase',
-  'career__pill',
   'Web3 Marketing Consultant',
   'Independent Music and Marketing',
   'Owns positioning',
+  'Selected DeFi',
+  'Selected Companies',
 ];
 for (const retired of retiredCareer) {
-  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the career snapshot`);
+  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
 }
 if (/securing global distribution/.test(home)) failures.push('[claim] the music entry must not repeat "securing global distribution"');
-const careerBlock = (home.match(/<ol class="career__list"[\s\S]*?career__link/) || [''])[0];
-const careerTree = [
-  ['Phi Labs Global', ['Current scope', 'Original mandate']],
-  ['Web3 Marketing Consulting', ['Selected DeFi Projects']],
-  ['Independent Music and Business Operator', ['Global Music Project']],
+const timeline = (home.match(/<ol class="timeline__list"[\s\S]*?<\/ol>/) || [''])[0];
+const timelineEntries = timeline.split('<li class="timeline__entry').slice(1);
+const timelineSpec = [
+  ['Phi Labs Global', 'Current scope', 'Own positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, campaign operations, and distribution.'],
+  ['Phi Labs Global', 'Original mandate', 'Manage social channels, community engagement, campaigns, and product education across a portfolio with a combined audience of more than 200,000, including a Layer 1 blockchain and NFT marketplace.'],
+  ['Web3 Marketing Consulting', 'Select DeFi Projects', 'Led social, community, content, and partner marketing for DeFi startups across Avalanche and Ethereum, managing audiences of up to 40,000 and a five-person moderator team.'],
+  ['Independent Music and Business Operator', 'Global Music Project', 'Built a globally distributed music project streamed in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings.'],
 ];
-const careerHeadings = [...careerBlock.matchAll(/<h4 class="career__employer"[^>]*>([^<]*)<\/h4>/g)].map((m) => m[1]);
-if (careerHeadings.join(' | ') !== careerTree.map(([h]) => h).join(' | ')) {
-  failures.push(`[claim] career snapshot headings must be ${careerTree.map(([h]) => h).join(', ')} in that order (found: ${careerHeadings.join(', ') || 'none'})`);
-}
-const careerGroups = careerBlock.split('<li class="career__group').slice(1);
-careerTree.forEach(([heading, labels], i) => {
-  const group = careerGroups[i] || '';
-  const headingAt = group.indexOf(`>${heading}</h4>`);
-  const found = [...group.matchAll(/<p class="career__label"[^>]*>([^<]*)<\/p>/g)].map((m) => m[1]);
-  if (found.join(' | ') !== labels.join(' | ')) {
-    failures.push(`[claim] "${heading}" must carry the labels ${labels.join(', ')} (found: ${found.join(', ') || 'none'})`);
-  }
-  for (const label of labels) {
-    if (headingAt < 0 || group.indexOf(`>${label}</p>`) < headingAt) failures.push(`[claim] "${label}" must sit beneath "${heading}"`);
-  }
+if (timelineEntries.length !== timelineSpec.length) failures.push(`[claim] the career timeline must have four entries (found ${timelineEntries.length})`);
+const details = [];
+timelineSpec.forEach(([heading, label, copy], i) => {
+  const e = timelineEntries[i] || '';
+  const want = String(i + 1).padStart(2, '0');
+  const marker = (e.match(/class="timeline__marker"[^>]*>([^<]*)</) || [])[1];
+  const h = (e.match(/<h4 class="timeline__heading"[^>]*>([^<]*)<\/h4>/) || [])[1];
+  const l = (e.match(/class="timeline__pill"[^>]*>([^<]*)</) || [])[1];
+  const d = textOf((e.match(/<p class="timeline__detail"[^>]*>([\s\S]*?)<\/p>/) || ['', ''])[1]);
+  details.push(d);
+  if (marker !== want) failures.push(`[claim] timeline entry ${i + 1} must carry the typographic marker ${want} (found ${marker || 'none'})`);
+  if (h !== heading) failures.push(`[claim] timeline entry ${want} must be headed "${heading}" (found ${h || 'none'})`);
+  if (l !== label) failures.push(`[claim] timeline entry ${want} must carry the label "${label}" (found ${l || 'none'})`);
+  if (e.indexOf('timeline__pill') < e.indexOf('timeline__heading')) failures.push(`[claim] "${label}" must sit beneath "${heading}"`);
+  if (d !== copy) failures.push(`[claim] timeline entry ${want} must use the approved description`);
+  if (/<img|<svg/.test(e)) failures.push(`[claim] timeline entry ${want} must not use icons or logos`);
 });
-if ((careerBlock.match(/Phi Labs Global/g) || []).length !== 1) {
-  failures.push('[claim] the career snapshot must name Phi Labs Global once, as the parent of both scopes');
+if (/production/i.test(details[0] || '')) failures.push('[claim] the Current scope description must not include "production"');
+if (/\bindependent\b/i.test(details[3] || '')) failures.push('[claim] the music description must not include "independent"');
+const lengths = details.filter(Boolean).map((d) => d.length);
+if (lengths.length === 4 && Math.max(...lengths) / Math.min(...lengths) > 1.3) {
+  failures.push(`[claim] timeline descriptions must stay within a similar range (lengths ${lengths.join(', ')})`);
 }
-if ((careerBlock.match(/<li class="career__role[ "]/g) || []).length !== 4) failures.push('[claim] the career snapshot must have four entries');
-if (!careerBlock.includes('Own positioning, content, community, technical documentation, creator partnerships, events, and production for Bolt Liquidity.')) {
-  failures.push('[claim] Current scope must use the approved description');
+if (!(timelineEntries[0] || '').startsWith(' timeline__entry--current') || timelineEntries.slice(1).some((e) => e.startsWith(' timeline__entry--current'))) {
+  failures.push('[claim] only the first timeline entry may be marked current');
 }
+if (!/data-timeline/.test(home) || !/prefers-reduced-motion: reduce/.test(home)) {
+  failures.push('[claim] the timeline entrance must be armed by script and skipped for reduced motion');
+}
+if (!/Select Companies, Products, and Partners/.test(home)) failures.push('[claim] trust-bar heading must read "Select Companies, Products, and Partners"');
 // Trust bar: closes About, seven entries in the approved order, no Sui Summit.
 const bar = (home.match(/class="logobar[ "][\s\S]*?<\/ul>/) || [''])[0];
 const barOrder = ['Phi Labs', 'Bolt Liquidity', 'Archway', 'Ambur Marketplace', 'Trezor', 'Bitrefill', 'Rayls Labs'];
@@ -223,13 +251,15 @@ if (order[0] !== undefined && order.indexOf('about') !== 0 && !/class="hero"/.te
 }
 if (/<header class="[^"]*site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
 if (/hero__(?:marquee|lede|actions)/.test(home)) failures.push('[claim] retired v1.2 hero elements are still in the build');
-if (!/globally distributed independent music project/.test(home)) failures.push('[claim] homepage must use the approved About copy');
+if (!textOf(aboutCols).includes('I entered DeFi full-time in 2021 after a decade of building audiences and managing the business behind a globally distributed music project.')) {
+  failures.push('[claim] homepage must use the approved About copy');
+}
+if (!textOf(aboutCols).includes('As the organization evolved, my role expanded far beyond social.')) failures.push('[claim] the Phi Labs column must close with the approved line');
 // v1.2 sections and copy.
 if (!/Governed by human judgment/.test(home)) failures.push('[claim] homepage must carry the How I Work heading');
 if (!/AI accelerates the work/.test(home)) failures.push('[claim] homepage must carry the How I Work accountability statement');
 if (!/Make the complex impossible to ignore/.test(home)) failures.push('[claim] homepage must use the approved contact headline');
 if (!/Web3 Marketing, Content/.test(home)) failures.push('[claim] footer must carry the approved role line');
-if (!/Selected Companies, Products, and Partners/.test(home)) failures.push('[claim] homepage must use the approved trust-bar heading');
 // The resume must actually exist for v1.1.
 if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
