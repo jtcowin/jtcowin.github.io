@@ -1,33 +1,36 @@
 ---
 /**
- * About: career context directly beneath the hero, closed by the trust bar.
+ * About: career context directly beneath the hero.
  *
- * One wide chapter in four bands: a one-line headline across the canvas, three
- * narrative columns (foundation, Phi Labs, and a short present-day thesis with
- * the resume action beneath it), the career timeline, and the credibility bar.
+ * Three bands: a one-line headline across the canvas, three narrative columns
+ * (foundation, Phi Labs, and a short present-day thesis with the resume action
+ * beneath it), and the career timeline. The trust bar follows as its own band
+ * (see index.astro), so it reads as a transition rather than part of About.
  *
- * The timeline reads NOW to EARLIER. On wide screens it is a horizontal rule
- * with four nodes, a stem from each node down to its entry, and four aligned
- * entries; below 72rem it turns vertical, top to bottom in the same order.
- * Each entry is a numbered marker, the primary heading, the secondary label as
- * a flat pill, and one balanced description. The current node is filled; the
- * earlier ones are outlined and recede in tone without dropping below the
- * contrast they need.
+ * The timeline reads NOW to EARLIER in three chapters, numbered 01 to 03. On
+ * wide screens it is a horizontal rule with a node and stem for each chapter
+ * and four aligned columns: Phi Labs Global spans the first two and holds its
+ * two phases, Current scope and Original mandate, side by side; the other two
+ * chapters take one column each. Below 72rem the timeline turns vertical in
+ * the same order.
+ *
+ * Progressive disclosure: with JavaScript, each phase shows its heading, label
+ * and marker at rest and its description on demand. On the wide layout the
+ * description row keeps its height, so hovering or keyboard focus can preview a
+ * description without moving anything, and a click or tap pins it open. Below
+ * 72rem each phase is an accordion opened by click, tap, Enter or Space. The
+ * toggles are real buttons with aria-expanded and aria-controls, and Escape
+ * closes the focused one. Without JavaScript every description is visible;
+ * with reduced motion nothing animates.
  *
  * Motion: the first time the timeline enters the viewport the rule draws once,
- * then the nodes and entries appear from current to earliest. The inline script
- * arms that only when IntersectionObserver exists and reduced motion is off, so
- * without JavaScript, with reduced motion, or in print the timeline is simply
- * complete and static.
- *
- * Named companies are marked in the copy with double asterisks and render as
- * <strong>, so the emphasis is semantic rather than a font weight.
+ * then the chapters appear from current to earliest (skipped for reduced
+ * motion, without IntersectionObserver, and in print).
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
 import Icon from './Icon.astro';
-import LogoBar from './LogoBar.astro';
 
 const { about } = home;
 const resumeHref = withBase(site.resumePath);
@@ -43,7 +46,12 @@ function compounds(text: string) {
   return text.split(/([A-Za-z0-9]+-[A-Za-z0-9]+)/).map((t, i) => ({ text: t, keep: i % 2 === 1 }));
 }
 
-const marker = (i: number) => String(i + 1).padStart(2, '0');
+let detailCount = 0;
+const chapters = about.career.chapters.map((chapter, i) => ({
+  ...chapter,
+  marker: String(i + 1).padStart(2, '0'),
+  phases: chapter.phases.map((phase) => ({ ...phase, id: `timeline-detail-${++detailCount}` })),
+}));
 ---
 
 <section id="about" class="section about" aria-labelledby="about-heading">
@@ -76,18 +84,35 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
 
       <ol class="timeline__list">
         {
-          about.career.entries.map((entry, i) => (
-            <li class:list={['timeline__entry', entry.current && 'timeline__entry--current']} style={`--i: ${i}`}>
+          chapters.map((chapter, i) => (
+            <li
+              class:list={[
+                'timeline__chapter',
+                chapter.current && 'timeline__chapter--current',
+                chapter.phases.length > 1 && 'timeline__chapter--wide',
+              ]}
+              style={`--i: ${i}`}
+            >
               <span class="timeline__node" aria-hidden="true" />
               <span class="timeline__stem" aria-hidden="true" />
-              <p class="timeline__marker" aria-hidden="true">{marker(i)}</p>
-              <h4 class="timeline__heading">{entry.heading}</h4>
-              <p class="timeline__label">
-                <span class="timeline__pill">{entry.label}</span>
-              </p>
-              <p class="timeline__detail">
-                {compounds(entry.detail).map((run) => (run.keep ? <span class="nobr">{run.text}</span> : run.text))}
-              </p>
+              <p class="timeline__marker" aria-hidden="true">{chapter.marker}</p>
+              <h4 class="timeline__heading">{chapter.heading}</h4>
+              <div class="timeline__phases">
+                {chapter.phases.map((phase) => (
+                  <div class:list={['timeline__phase', phase.current && 'timeline__phase--current']} data-phase>
+                    <p class="timeline__label">
+                      <span class="timeline__pill">{phase.label}</span>
+                    </p>
+                    <div class="timeline__detail" id={phase.id}>
+                      <div class="timeline__clip">
+                        <p class="timeline__copy">
+                          {compounds(phase.detail).map((run) => (run.keep ? <span class="nobr">{run.text}</span> : run.text))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </li>
           ))
         }
@@ -96,8 +121,124 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     <script is:inline>
       (function () {
         var tl = document.querySelector('[data-timeline]');
-        if (!tl || !('IntersectionObserver' in window)) return;
-        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!tl) return;
+
+        /* Progressive disclosure. Descriptions start closed and open on hover
+           or keyboard focus (wide layout only, where their row keeps its
+           height), or on click, tap, Enter or Space (every layout), which pins
+           them. Without this script every description stays visible. */
+        var wide = window.matchMedia('(min-width: 72rem)');
+        var items = [];
+
+        function render(s) {
+          var open = s.pinned || (wide.matches && (s.hover || s.focus) && !s.quiet);
+          s.el.classList.toggle('is-open', open);
+          s.el.classList.toggle('is-pinned', s.pinned);
+          s.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        function pin(s, on) {
+          s.pinned = on;
+          s.quiet = !on;
+          render(s);
+        }
+
+        var phases = tl.querySelectorAll('[data-phase]');
+        for (var n = 0; n < phases.length; n++) {
+          (function (el) {
+            var chapter = el.closest('.timeline__chapter');
+            var single = chapter.querySelectorAll('[data-phase]').length === 1;
+            var label = el.querySelector('.timeline__label');
+            var detail = el.querySelector('.timeline__detail');
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'timeline__toggle';
+            btn.setAttribute('aria-controls', detail.id);
+            var extra = document.createElement('span');
+            extra.className = 'sr-only';
+            extra.textContent = ', ' + chapter.querySelector('.timeline__heading').textContent.trim() + ', details';
+            var cue = document.createElement('span');
+            cue.className = 'timeline__cue';
+            cue.setAttribute('aria-hidden', 'true');
+            btn.appendChild(label.querySelector('.timeline__pill'));
+            btn.appendChild(extra);
+            btn.appendChild(cue);
+            label.appendChild(btn);
+
+            var s = { el: el, btn: btn, pinned: false, hover: false, focus: false, quiet: false };
+            items.push(s);
+            render(s);
+
+            btn.addEventListener('click', function () {
+              pin(s, !s.pinned);
+            });
+            btn.addEventListener('focus', function () {
+              var keyboard = true;
+              try {
+                keyboard = btn.matches(':focus-visible');
+              } catch (e) {}
+              s.focus = keyboard;
+              render(s);
+            });
+            btn.addEventListener('blur', function () {
+              s.focus = false;
+              if (!s.hover) s.quiet = false;
+              render(s);
+            });
+            el.addEventListener('keydown', function (e) {
+              if (e.key === 'Escape' && el.classList.contains('is-open')) pin(s, false);
+            });
+
+            /* A chapter with one phase is one entry: its marker and heading
+               preview and toggle it too. Phi Labs Global holds two phases, so
+               each phase is its own entry there. */
+            var zone = single ? chapter : el;
+            zone.addEventListener('pointerenter', function (e) {
+              if (e.pointerType === 'touch') return;
+              s.hover = true;
+              render(s);
+            });
+            zone.addEventListener('pointerleave', function (e) {
+              if (e.pointerType === 'touch') return;
+              s.hover = false;
+              if (!s.focus) s.quiet = false;
+              render(s);
+            });
+            zone.addEventListener('click', function (e) {
+              if (btn.contains(e.target)) return;
+              var sel = window.getSelection ? window.getSelection() : null;
+              if (sel && !sel.isCollapsed) return;
+              /* Clicking an open description pins it; it never closes it, so
+                 the text can be selected. The label closes a pinned entry. */
+              if (detail.contains(e.target)) {
+                if (!s.pinned) pin(s, true);
+                return;
+              }
+              pin(s, !s.pinned);
+            });
+          })(phases[n]);
+        }
+
+        function renderAll() {
+          for (var i = 0; i < items.length; i++) render(items[i]);
+        }
+        if (wide.addEventListener) wide.addEventListener('change', renderAll);
+
+        var hint = document.createElement('p');
+        hint.className = 'timeline__hint';
+        var hintCue = document.createElement('span');
+        hintCue.className = 'timeline__cue';
+        hintCue.setAttribute('aria-hidden', 'true');
+        hint.appendChild(hintCue);
+        hint.appendChild(document.createTextNode('Select an entry for details'));
+        tl.insertBefore(hint, tl.querySelector('.timeline__list'));
+        tl.classList.add('is-disclosure');
+        var about = tl.closest('.about');
+        if (about) about.classList.add('has-disclosure');
+
+        /* Entrance, once. */
+        if (!('IntersectionObserver' in window)) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         tl.classList.add('is-armed');
         var io = new IntersectionObserver(
           function (entries) {
@@ -114,8 +255,6 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
         io.observe(tl);
       })();
     </script>
-
-    <LogoBar embedded />
   </div>
 </section>
 
@@ -149,11 +288,6 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     text-wrap: pretty;
   }
 
-  .about__col strong {
-    font-weight: 700;
-    color: var(--ink);
-  }
-
   /* The third column is a thesis, not a third paragraph, set as a statement
      with the resume action beneath it. The gap keeps the button reading as
      the column's action rather than the end of the sentence. */
@@ -179,22 +313,26 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
   }
 
   /* ---- career timeline ---------------------------------------------------
-     Tones recede from the current entry toward EARLIER. Every marker tone
-     stays at or above 4.5:1 on the light surface, and every node outline at or
-     above 3:1: teal 9.2, slate 11.6, steel 6.3, the steel mix 5.0. The rule
-     fades from blue-teal to pale slate; it is a connector, and the nodes and
-     the NOW and EARLIER labels carry the reading order. */
+     Tones recede from the current chapter toward EARLIER. Every marker tone
+     stays at or above 4.5:1 on the light surface and every node outline at or
+     above 3:1: teal 9.2, slate 11.6, the steel mix 5.0. The rule fades from
+     blue-teal to pale slate; it is a connector, and the nodes and the NOW and
+     EARLIER labels carry the reading order. */
   .timeline {
     --node: 0.875rem;
     --stem: 1.5rem;
     --inset: calc(var(--node) + 1.25rem);
+    --gap: var(--space-6);
     --rule-from: var(--accent);
     --rule-to: var(--c-pale);
     --tone: var(--heading);
 
     margin-top: clamp(2.75rem, 1.5rem + 3.5vw, 4.5rem);
     display: grid;
-    grid-template-areas: 'now' 'list' 'earlier';
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'now hint' 'list list' 'earlier earlier';
+    align-items: center;
+    column-gap: var(--space-4);
     row-gap: var(--space-4);
   }
 
@@ -213,6 +351,20 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
 
   .timeline__end--earlier {
     grid-area: earlier;
+  }
+
+  /* Written by the script, so it only appears when entries can be opened.
+     Elements the script creates carry no scoping attribute, so their rules are
+     written as :global() under .timeline. */
+  .timeline :global(.timeline__hint) {
+    grid-area: hint;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--ink-3);
   }
 
   .timeline__list {
@@ -237,25 +389,21 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     transform-origin: top center;
   }
 
-  .timeline__entry {
+  .timeline__chapter {
     position: relative;
     display: grid;
     align-content: start;
   }
 
-  .timeline__entry:nth-child(1) {
+  .timeline__chapter:nth-child(1) {
     --tone: var(--accent);
   }
 
-  .timeline__entry:nth-child(2) {
+  .timeline__chapter:nth-child(2) {
     --tone: var(--heading);
   }
 
-  .timeline__entry:nth-child(3) {
-    --tone: var(--ink-3);
-  }
-
-  .timeline__entry:nth-child(n + 4) {
+  .timeline__chapter:nth-child(n + 3) {
     --tone: color-mix(in srgb, var(--ink-3) 90%, var(--bg));
   }
 
@@ -272,7 +420,7 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
   }
 
   /* The active node: filled, with a narrow halo rather than a glow. */
-  .timeline__entry--current .timeline__node {
+  .timeline__chapter--current .timeline__node {
     background: var(--tone);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 16%, transparent);
   }
@@ -313,12 +461,43 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     text-wrap: balance;
   }
 
-  /* Secondary label: a flat tint, no border, no shadow, so it reads as a tag
-     beneath the heading rather than a control. */
-  .timeline__label {
-    margin: 0 0 0.85rem;
+  .timeline__phases {
+    display: grid;
+    row-gap: 1.1rem;
   }
 
+  .timeline__phase {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Stacked, a phase is no wider than its text needs, so an open entry's tint
+     hugs its description instead of running the full width of a tablet. */
+  @media (max-width: 71.99rem) {
+    .timeline__phase {
+      max-width: 34rem;
+    }
+  }
+
+  /* Two phases of one company: a hairline between them, horizontal when they
+     stack and vertical when they sit side by side. */
+  .timeline__phase + .timeline__phase::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -0.55rem;
+    height: 1px;
+    background: var(--line);
+    pointer-events: none;
+  }
+
+  .timeline__label {
+    margin: 0;
+  }
+
+  /* Secondary label: a flat tint, no border, no shadow, so it reads as a tag
+     beneath the heading rather than a control. */
   .timeline__pill {
     display: inline-block;
     padding: 0.32rem 0.66rem 0.3rem;
@@ -332,13 +511,14 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     text-transform: uppercase;
   }
 
-  .timeline__entry--current .timeline__pill {
+  .timeline__phase--current .timeline__pill {
     background: var(--accent-soft);
     color: var(--accent);
   }
 
-  .timeline__detail {
+  .timeline__copy {
     margin: 0;
+    padding-top: 0.75rem;
     max-width: 46ch;
     font-size: var(--text-sm);
     line-height: var(--leading-relaxed);
@@ -346,48 +526,151 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     text-wrap: pretty;
   }
 
-  .timeline__detail .nobr {
+  .timeline__copy .nobr {
     white-space: nowrap;
   }
 
-  /* Tablet: still vertical, with each entry split into its heading block and
-     its description so the lines stay a comfortable length. */
-  @media (min-width: 48rem) and (max-width: 71.99rem) {
-    .timeline__entry {
-      grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
-      column-gap: var(--space-6);
-    }
-
-    .timeline__marker {
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    .timeline__heading {
-      grid-column: 1;
-      grid-row: 2;
-    }
-
-    .timeline__label {
-      grid-column: 1;
-      grid-row: 3;
-    }
-
-    .timeline__detail {
-      grid-column: 2;
-      grid-row: 2 / span 2;
-    }
+  /* ---- progressive disclosure (only once the script has run) ------------ */
+  .timeline :global(.timeline__toggle) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: -0.3rem -0.4rem;
+    padding: 0.3rem 0.4rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Wide: one horizontal rule, NOW at its left end and EARLIER at its right,
-     four nodes on it and four aligned columns beneath. The entries share
-     their rows (subgrid), so markers, headings, labels and descriptions each
-     start on one line even when a heading wraps. */
+  /* The affordance: a small ringed plus beside each label, turning to a minus
+     while the entry is pinned open. */
+  .timeline :global(.timeline__cue) {
+    position: relative;
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    color: var(--ink-3);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  .timeline :global(.timeline__cue)::before,
+  .timeline :global(.timeline__cue)::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.5rem;
+    height: 1.5px;
+    margin: -0.75px 0 0 -0.25rem;
+    border-radius: 1px;
+    background: currentColor;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .timeline :global(.timeline__cue)::after {
+    transform: rotate(90deg);
+  }
+
+  .timeline__phase.is-pinned :global(.timeline__cue)::after {
+    transform: rotate(0deg);
+  }
+
+  .timeline.is-disclosure .timeline__phase:not(.is-pinned) {
+    cursor: pointer;
+  }
+
+  /* A single-phase chapter is one entry, so its heading is clickable too. */
+  .timeline.is-disclosure .timeline__chapter:not(.timeline__chapter--wide):not(:has(.is-pinned)) {
+    cursor: pointer;
+  }
+
+  .timeline.is-disclosure .timeline__phase:hover :global(.timeline__cue),
+  .timeline :global(.timeline__toggle:focus-visible .timeline__cue) {
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink-3);
+  }
+
+  .timeline.is-disclosure .timeline__chapter:not(.timeline__chapter--wide):hover :global(.timeline__cue) {
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink-3);
+  }
+
+  /* The tint behind an open entry. Drawn by a pseudo-element outside the
+     layout, so it never changes a measurement. */
+  .timeline.is-disclosure .timeline__phase::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem -0.75rem;
+    z-index: -1;
+    border-radius: 0.85rem;
+    background: var(--bg-elev);
+    box-shadow: inset 0 0 0 1px var(--line);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+
+  .timeline.is-disclosure .timeline__phase.is-open::before {
+    opacity: 1;
+  }
+
+  .timeline.is-disclosure .timeline__phase.is-pinned::before {
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+
+  /* Closed: an accordion row of no height. Opening grows it (the tapped or
+     clicked label stays where it is; only what follows moves down). */
+  .timeline.is-disclosure .timeline__detail {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      grid-template-rows 300ms var(--ease-out),
+      opacity 180ms var(--ease-out),
+      visibility 0s linear 300ms;
+  }
+
+  .timeline.is-disclosure .timeline__phase.is-open .timeline__detail {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    opacity: 1;
+    transition:
+      grid-template-rows 320ms var(--ease-out),
+      opacity 260ms var(--ease-out) 60ms,
+      visibility 0s;
+  }
+
+  .timeline.is-disclosure .timeline__clip {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ---- wide: the horizontal timeline ------------------------------------
+     One rule from NOW to EARLIER, a node and stem for each chapter, and four
+     equal columns. Phi Labs Global spans two of them with a rule under its
+     heading across both phases. The chapters, their phases and the list
+     share rows (nested subgrid), so markers, headings, labels and
+     descriptions each start on one line even when a heading wraps. */
   @media (min-width: 72rem) {
     .timeline {
-      grid-template-areas: 'now earlier' 'list list';
-      grid-template-columns: 1fr auto;
-      row-gap: var(--space-4);
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'now hint earlier' 'list list list';
+    }
+
+    .timeline :global(.timeline__hint) {
+      justify-self: center;
     }
 
     .timeline__end--earlier {
@@ -397,7 +680,7 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     .timeline__list {
       padding: 0;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      column-gap: var(--space-6);
+      column-gap: var(--gap);
       row-gap: 0;
     }
 
@@ -412,16 +695,73 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
       transform-origin: center left;
     }
 
-    .timeline__entry {
+    .timeline__chapter {
       padding-top: calc(var(--node) + var(--stem) + 0.6rem);
     }
 
+    .timeline__chapter--wide {
+      grid-column: span 2;
+    }
+
+    .timeline__chapter--wide .timeline__phases {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--gap);
+    }
+
+    .timeline__chapter--wide .timeline__heading {
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--line);
+    }
+
     @supports (grid-template-rows: subgrid) {
-      .timeline__entry {
+      .timeline__chapter {
         grid-row: span 4;
+        grid-template-rows: subgrid;
+        grid-template-columns: subgrid;
+        row-gap: 0;
+      }
+
+      .timeline__marker,
+      .timeline__heading {
+        grid-column: 1 / -1;
+      }
+
+      .timeline__phases,
+      .timeline__chapter--wide .timeline__phases {
+        grid-column: 1 / -1;
+        grid-row: span 2;
+        grid-template-rows: subgrid;
+        grid-template-columns: subgrid;
+        row-gap: 0;
+      }
+
+      .timeline__phase {
+        grid-row: span 2;
+        display: grid;
         grid-template-rows: subgrid;
         row-gap: 0;
       }
+    }
+
+    .timeline__phase + .timeline__phase::after {
+      left: calc(var(--gap) / -2);
+      right: auto;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      height: auto;
+    }
+
+    /* At rest the hairline only divides the two labels; it runs the full
+       height once either Phi Labs phase is open. */
+    .timeline.is-disclosure .timeline__phase + .timeline__phase::after {
+      bottom: auto;
+      height: 1.6rem;
+      transition: height var(--dur) var(--ease-out);
+    }
+
+    .timeline.is-disclosure .timeline__chapter--wide:has(.is-open) .timeline__phase + .timeline__phase::after {
+      height: 100%;
     }
 
     .timeline__node {
@@ -434,6 +774,31 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
       top: calc(var(--node) + 0.2rem);
       width: 1px;
       height: var(--stem);
+    }
+
+    /* The description row keeps its height at rest, so a hover or focus
+       preview reveals it in place (a clip from the top and a fade) and
+       nothing on the page moves. */
+    .timeline.is-disclosure .timeline__detail {
+      grid-template-rows: 1fr;
+      clip-path: inset(0 0 100% 0);
+      transition:
+        clip-path 300ms var(--ease-out),
+        opacity 200ms var(--ease-out),
+        visibility 0s linear 300ms;
+    }
+
+    .timeline.is-disclosure .timeline__phase.is-open .timeline__detail {
+      clip-path: inset(0 0 0 0);
+      transition:
+        clip-path 360ms var(--ease-out),
+        opacity 260ms var(--ease-out),
+        visibility 0s;
+    }
+
+    /* That reserved row already gives the section its closing space. */
+    .about.has-disclosure {
+      padding-bottom: clamp(2rem, 1rem + 1.5vw, 3rem);
     }
   }
 
@@ -451,7 +816,7 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     opacity: 0;
   }
 
-  .timeline.is-armed .timeline__entry > :not(.timeline__node, .timeline__stem) {
+  .timeline.is-armed .timeline__chapter > :not(.timeline__node, .timeline__stem) {
     opacity: 0;
     transform: translate3d(0, 10px, 0);
   }
@@ -467,22 +832,22 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     transition:
       opacity 320ms var(--ease-out),
       transform 460ms var(--ease-out);
-    transition-delay: calc(620ms + var(--i) * 170ms);
+    transition-delay: calc(620ms + var(--i) * 190ms);
   }
 
   .timeline.is-playing .timeline__stem {
     opacity: 0.55;
     transition: opacity 360ms var(--ease-out);
-    transition-delay: calc(740ms + var(--i) * 170ms);
+    transition-delay: calc(740ms + var(--i) * 190ms);
   }
 
-  .timeline.is-playing .timeline__entry > :not(.timeline__node, .timeline__stem) {
+  .timeline.is-playing .timeline__chapter > :not(.timeline__node, .timeline__stem) {
     opacity: 1;
     transform: none;
     transition:
       opacity 520ms var(--ease-out),
       transform 620ms var(--ease-out);
-    transition-delay: calc(820ms + var(--i) * 170ms);
+    transition-delay: calc(820ms + var(--i) * 190ms);
   }
 
   @media (min-width: 72rem) {
@@ -495,17 +860,36 @@ const marker = (i: number) => String(i + 1).padStart(2, '0');
     }
   }
 
-  @media print {
-    .timeline.is-armed .timeline__list::before,
-    .timeline.is-armed .timeline__node,
-    .timeline.is-armed .timeline__entry > * {
-      opacity: 1 !important;
-      transform: none !important;
+  /* Reduced motion: every state change is immediate. */
+  @media (prefers-reduced-motion: reduce) {
+    .timeline__detail,
+    .timeline__phase::before,
+    .timeline :global(.timeline__cue),
+    .timeline :global(.timeline__cue)::before,
+    .timeline :global(.timeline__cue)::after {
+      transition: none !important;
     }
   }
 
-  .about :global(.logobar--embedded) {
-    margin-top: clamp(2.5rem, 1.5rem + 2.5vw, 3.75rem);
+  @media print {
+    .timeline.is-armed .timeline__list::before,
+    .timeline.is-armed .timeline__node,
+    .timeline.is-armed .timeline__chapter > * {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .timeline.is-disclosure .timeline__detail {
+      grid-template-rows: 1fr !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      clip-path: none !important;
+    }
+
+    .timeline :global(.timeline__hint),
+    .timeline :global(.timeline__cue) {
+      display: none !important;
+    }
   }
 
   /* ---- headline sizes --------------------------------------------------- */

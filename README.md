@@ -13,10 +13,11 @@ approved and present, so an unresolved entry never reaches the public site (see
 Version 1.5 introduced a visual system drawn from the hero portrait: a small palette of charcoal,
 cool stone, slate, bone and blue-teal; six numbered surfaces handed out by page position; a heavy
 semi-condensed display face with Manrope for everything read closely; and a wide editorial canvas.
-The homepage is now hero, About (with the career timeline and trust bar), Selected Work, What I Do, How I
+The homepage is now hero, About (with the career timeline), the trust band, Selected Work, What I Do, How I
 Work, Contact. Version 1.6 reworked About: the narrative names the company but no individual products,
-the resume button sits beneath the thesis, the career snapshot became a horizontal timeline, and the
-trust bar is centered. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
+the resume button sits beneath the thesis, the career snapshot became a horizontal timeline of three
+chapters whose descriptions open on demand, and the trust bar became its own centered band between
+About and Selected Work. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
 introduced the full-viewport photograph and the photographic favicon.
 
 ## Routes
@@ -201,13 +202,17 @@ chapter the next surface from one ordered list; reorder the chapters and their c
 | # | Surface | Currently |
 | --- | --- | --- |
 | 01 | Image | Hero |
-| 02 | Light (warm bone) | About, career timeline, trust bar |
+| 02 | Light (warm bone) | About and the career timeline |
 | 03 | Dark (ink) | Selected Work and the visual rail |
 | 04 | Soft (pale slate) | What I Do |
 | 05 | Brand (blue-teal) | How I Work |
 | 06 | Light return (fog) | Contact and the footer |
 
 Past six, the sequence continues from dark, soft and light rather than starting another photograph.
+
+The trust bar between About and Selected Work is a transition band rather than a chapter. It keeps its
+own `band` surface (the pale slate tokens), so it reads apart from the warm About above it and the ink
+work chapter below it, and it is not counted in the sequence.
 
 The header has no surface of its own. A script watches a one-pixel line through its middle, and
 whichever surface crosses that line lends the header its background, text, rule and focus tokens, so
@@ -236,39 +241,42 @@ title; the only formal title for the Phi Labs role is still "Social Media Manage
 also confirms the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
 and the approved How I Work, contact, trust-bar, and footer lines are present.
 
-The About checks (Version 1.6): the narrative columns name Phi Labs Global but no individual product,
-and the resume button sits in the third column beneath the thesis. The career timeline has four
-entries, NOW to EARLIER, numbered 01 to 04, each with its primary heading and its label beneath it:
-Phi Labs Global (Current scope), Phi Labs Global (Original mandate), Web3 Marketing Consulting (Select
-DeFi Projects), and Independent Music and Business Operator (Global Music Project). Each description
-must match the approved copy, the four must stay within a similar length, Current scope must not say
-"production", the music entry must not say "independent", and only the first entry is current. The
-trust-bar heading reads "Select Companies, Products, and Partners".
+The About checks (Version 1.6): the narrative columns name Phi Labs Global, in plain text, and no
+individual product, and the resume button sits in the third column beneath the thesis. The career
+timeline has three chapters and three nodes, NOW to EARLIER, numbered 01 to 03: Phi Labs Global (one
+heading, marked current and spanning two columns, holding Current scope and Original mandate), Web3
+Marketing Consulting (Select DeFi Projects), and Independent Music and Business Operator (Global Music
+Project). Every label sits beneath its heading, every description matches the approved copy and has an
+id for its toggle, Original mandate opens with the official title, Current scope does not say
+"production", the music entry does not say "independent", and nothing says "publishing calendars". The
+trust bar is its own band after About and reads "Select Companies, Products, and Partners".
 
 ### Career timeline
 
-- Wide screens (72rem and up): one horizontal rule from NOW to EARLIER, four nodes on it, a stem from
-  each node down to its entry, and four equal columns. The entries share their rows, so markers,
-  headings, labels and descriptions line up even when a heading wraps.
-- Narrower screens: the same order top to bottom on a vertical rule. Tablets split each entry into its
-  heading block and its description.
+- Three chapters, NOW to EARLIER. Wide screens (72rem and up) draw one horizontal rule with a node and
+  a stem for each chapter over four equal columns: Phi Labs Global spans the first two, with a rule under
+  its heading across both of its phases and a hairline between them; the other chapters take one column
+  each. The chapters, phases and list share rows (nested subgrid), so markers, headings, labels and
+  descriptions line up even when a heading wraps. Narrower screens stack the same order on a vertical
+  rule.
 - The current node is filled blue-teal with a narrow halo. Earlier nodes are outlined and recede from
-  deep slate through steel; every marker tone stays at or above 4.5:1 on the light surface and every
-  outline at or above 3:1. The rule fades from blue-teal to pale slate.
-- Markers are the typographic 01 to 04, not icons or logos (the trust bar already carries the brands).
-  Labels are flat tinted pills with no border or shadow.
-- Motion runs once: the first time the timeline enters the viewport, the rule draws, then the nodes and
-  entries appear from current to earliest. A small inline script arms it only when
-  IntersectionObserver exists and reduced motion is off, so without JavaScript, with reduced motion, or
-  in print the timeline is complete and static.
-
-One aggregate impressions figure is published site-wide: approximately 1.25M across the three
-international creator activations. Per-activation impression figures were retired in Version 1.2 and
-must not be reintroduced.
-
-Before publishing new media, confirm permission for: Trezor testimonial and comparison, all logos,
-creator likenesses (names and handles only until approved), and any internal document recreations
-(redacted only).
+  deep slate to steel; marker tones stay at or above 4.5:1 on the light surface and outlines at or above
+  3:1. The rule fades from blue-teal to pale slate. Markers are the typographic 01 to 03, never icons or
+  logos. Labels are flat tinted pills.
+- Progressive disclosure. The HTML carries every description, so without JavaScript all of them are
+  visible. The inline script then turns each label into a button (`aria-expanded`, `aria-controls`, a
+  ringed plus as the cue, and an accessible name that includes the chapter) and closes the descriptions:
+  - Wide screens keep the description row's height at rest, so hovering an entry or reaching its button
+    by keyboard previews the description in place (a clip from the top and a fade) without moving
+    anything. Clicking or tapping the entry, or pressing Enter or Space, pins it open; the cue turns to a
+    minus and the tint firms up. Clicking the label again, or Escape, closes it.
+  - Below 72rem each phase is an accordion: tap, click, Enter or Space opens and closes it. Only the
+    content after the tapped label moves; entries open independently, so nothing above ever collapses.
+  - Open entries sit on a light tint drawn by a pseudo-element, outside the layout. With reduced motion
+    every change is immediate. In print every description is shown.
+- Motion runs once: the first time the timeline enters the viewport the rule draws, then the chapters
+  appear from current to earliest. It is armed only when IntersectionObserver exists and reduced motion
+  is off, so without JavaScript, with reduced motion, or in print the timeline is complete and static.
 
 ## Project structure
 

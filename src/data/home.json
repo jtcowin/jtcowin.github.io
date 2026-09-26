@@ -112,7 +112,7 @@
     ]
   },
   "about": {
-    "_note": "Version 1.6 About: three narrative columns (the narrative names no individual products; the resume action sits beneath the thesis), the career timeline, then the trust bar. Double asterisks mark named companies, which render as <strong>. No eyebrow. Timeline entries are listed NOW to EARLIER; markers 01 to 04 come from the order.",
+    "_note": "Version 1.6 About: three narrative columns in plain text (the narrative names the company, no individual products, and nothing is bolded; the resume action sits beneath the thesis), then the career timeline. The timeline has three chapters, NOW to EARLIER, numbered 01 to 03 from their order; Phi Labs Global holds two phases. Descriptions are collapsed at rest when JavaScript runs and always visible without it. The trust bar is its own band after About (see index.astro).",
     "heading": "Creative instincts. Operator discipline.",
     "columns": [
       {
@@ -121,7 +121,7 @@
       },
       {
         "role": "phi-labs",
-        "text": "In 2024, I joined **Phi Labs Global** to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and a proprietary AMM. As the organization evolved, my role expanded far beyond social."
+        "text": "In 2024, I joined Phi Labs Global to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and a proprietary AMM. As the organization evolved, my role expanded far beyond social."
       },
       {
         "role": "thesis",
@@ -137,30 +137,44 @@
       "heading": "Career snapshot",
       "nowLabel": "Now",
       "earlierLabel": "Earlier",
-      "entries": [
+      "chapters": [
         {
           "heading": "Phi Labs Global",
-          "label": "Current scope",
           "current": true,
-          "detail": "Own positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, campaign operations, and distribution."
-        },
-        {
-          "heading": "Phi Labs Global",
-          "label": "Original mandate",
-          "current": false,
-          "detail": "Manage social channels, community engagement, campaigns, and product education across a portfolio with a combined audience of more than 200,000, including a Layer 1 blockchain and NFT marketplace."
+          "phases": [
+            {
+              "label": "Current scope",
+              "current": true,
+              "detail": "Own positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, campaign operations, and distribution."
+            },
+            {
+              "label": "Original mandate",
+              "current": false,
+              "detail": "Joined as Social Media Manager to manage social channels, community engagement, campaigns, and product education across a portfolio with a combined audience of more than 200,000, including a Layer 1 blockchain and NFT marketplace."
+            }
+          ]
         },
         {
           "heading": "Web3 Marketing Consulting",
-          "label": "Select DeFi Projects",
           "current": false,
-          "detail": "Led social, community, content, and partner marketing for DeFi startups across Avalanche and Ethereum, managing audiences of up to 40,000 and a five-person moderator team."
+          "phases": [
+            {
+              "label": "Select DeFi Projects",
+              "current": false,
+              "detail": "Led social, community, content, and partner marketing for DeFi startups across Avalanche and Ethereum, managing audiences of up to 40,000 and a five-person moderator team."
+            }
+          ]
         },
         {
           "heading": "Independent Music and Business Operator",
-          "label": "Global Music Project",
           "current": false,
-          "detail": "Built a globally distributed music project streamed in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings."
+          "phases": [
+            {
+              "label": "Global Music Project",
+              "current": false,
+              "detail": "Built a globally distributed music project streamed in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings."
+            }
+          ]
         }
       ]
     }

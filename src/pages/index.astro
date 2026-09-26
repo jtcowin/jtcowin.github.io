@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/Hero.astro';
 import About from '@components/About.astro';
+import LogoBar from '@components/LogoBar.astro';
 import WorkPanels from '@components/WorkPanels.astro';
 import WorkRail from '@components/WorkRail.astro';
 import Capabilities from '@components/Capabilities.astro';
@@ -20,6 +21,9 @@ const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.
  *
  * Past the sixth surface the sequence continues from dark, soft and light
  * rather than restarting on another photograph.
+ *
+ * The trust bar between About and Selected Work is a transition band, not a
+ * chapter: it keeps its own `band` surface wherever the chapters move.
  */
 const SEQUENCE = ['light', 'dark', 'soft', 'brand', 'light-return'];
 const OVERFLOW = ['dark', 'soft', 'light'];
@@ -40,6 +44,8 @@ const S = { about: surface(), work: surface(), capabilities: surface(), how: sur
   <div class="chapter" data-surface={S.about}>
     <About />
   </div>
+
+  <LogoBar band />
 
   {/* One chapter: the case-study panels and the visual rail belong together. */}
   <div class="chapter" data-surface={S.work}>

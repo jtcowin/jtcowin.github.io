@@ -9,7 +9,10 @@
  * so it is rendered `embedded`: no section of its own, no background, just a
  * rule above it and the entries on the surrounding surface.
  *
- * Version 1.6 centers the composition: the heading, each mark within its
+ * Version 1.6 moves it out of About into its own compact band between About
+ * and Selected Work (`band`): a full-width section on the pale slate surface,
+ * so it reads as a transition rather than another layer of About. It also
+ * centers the composition: the heading, each mark within its
  * slot, and each relationship label beneath its mark. Desktop keeps every
  * entry in one row; narrower screens wrap into rows of four or two with the
  * short last row centered, so the grid stays balanced.
@@ -18,10 +21,13 @@ import { Image } from 'astro:assets';
 import { logos, resolveLogoImage } from '@lib/assets';
 
 interface Props {
+  /** Rendered inside another section: no section of its own, just a rule above. */
   embedded?: boolean;
+  /** Its own full-width transition band on the `band` surface. */
+  band?: boolean;
 }
 
-const { embedded = false } = Astro.props;
+const { embedded = false, band = false } = Astro.props;
 
 // Wordmarks and square marks need different heights to read at the same weight,
 // so each logo is measured at build time rather than forced to one height.
@@ -33,11 +39,17 @@ const items = logos.logos
   });
 
 const Tag = embedded ? 'div' : 'section';
+// As its own section the heading is a section heading; inside another it is one level down.
+const Heading = embedded ? 'h3' : 'h2';
 ---
 
-<Tag class:list={['logobar', embedded && 'logobar--embedded']} aria-labelledby="logobar-heading">
+<Tag
+  class:list={['logobar', embedded && 'logobar--embedded', band && 'logobar--band']}
+  data-surface={band ? 'band' : undefined}
+  aria-labelledby="logobar-heading"
+>
   <div class:list={[!embedded && 'container']}>
-    <h3 id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</h3>
+    <Heading id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</Heading>
     <ul class="logobar__list" style={`--count: ${items.length}`}>
       {
         items.map(({ logo, img, isMark }) => (
@@ -67,6 +79,12 @@ const Tag = embedded ? 'div' : 'section';
   .logobar {
     border-block: 1px solid var(--line);
     padding-block: var(--space-6);
+  }
+
+  /* Compact: the band is a pause between two chapters, not a chapter. */
+  .logobar--band {
+    border-block: 0;
+    padding-block: clamp(1.75rem, 1.1rem + 1.8vw, 2.9rem);
   }
 
   .logobar--embedded {
