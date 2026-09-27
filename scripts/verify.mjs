@@ -3,12 +3,14 @@
 //   1. Internal link check: every href/src in dist resolves to a built file (base-path aware).
 //   2. Content guardrails: strings that must never appear in the public build.
 //   3. Asset manifest integrity: every asset id used in content exists; every `file` exists on disk.
-//   4. Accessibility: axe-core scan of each page (requires the preview server, see PREVIEW_URL).
+//   4. Repository hygiene: no .DS_Store shipped or tracked, and no oversized file in dist.
+//   5. Accessibility: axe-core scan of each page (requires the preview server, see PREVIEW_URL).
 //
 // Exits non-zero on any failure so it can gate a PR.
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolveSite } from '../site.config.mjs';
 
@@ -133,7 +135,6 @@ const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 // v1.5: the standalone metrics strip is gone; v1.7 moves the figures to the
 // case-study pages (see Select Work below).
 if (/class="proof[\s"]/.test(home)) failures.push('[claim] the standalone metrics strip was retired in v1.5');
-const release = process.argv.includes('--release') || process.env.RELEASE === '1';
 // The About redesign states no formal title on the homepage. The only formal
 // title for the Phi Labs role is still "Social Media Manager" (resume); the
 // invented-title check above keeps any other title from appearing.
@@ -144,7 +145,11 @@ if (!/<header class="[^"]*site-header--overlay/.test(home)) failures.push('[clai
 if (!/<title>John Cowin - Web3 Marketing, Strategy, (?:&amp;|&#38;|&) Content<\/title>/.test(home)) {
   failures.push('[claim] homepage must use the exact approved browser-tab title');
 }
-if (!/Web3 marketing, strategy, (?:&amp;|&#38;|&) content/i.test(home)) failures.push('[claim] hero must carry the approved descriptor');
+// v1.8: the hero and the footer carry the same descriptor, exactly (the hero
+// sets it in capitals through CSS only).
+const DESCRIPTOR = 'Web3 Marketing, Strategy, & Content';
+const heroDescriptor = (home.match(/<p class="hero__descriptor"[^>]*>([\s\S]*?)<\/p>/) || [])[1];
+if (heroDescriptor === undefined || heroDescriptor.replace(/&amp;|&#38;/g, '&').trim() !== DESCRIPTOR) failures.push(`[claim] the hero descriptor must read exactly "${DESCRIPTOR}"`);
 if (!/hero__subject/.test(home)) failures.push('[claim] hero must layer the foreground cutout in front of the moving name');
 if (!/hero__rule/.test(home)) failures.push('[claim] hero must carry the lower rule');
 if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render as the moving stream');
@@ -314,26 +319,60 @@ for (const video of workHtml.match(/<video\b[^>]*>/g) || []) {
   if (!/data-card-toggle/.test(workHtml)) failures.push('[claim] a card loop needs its pause control');
 }
 
-// The work reel (v1.7): no visible title or paragraph, a visually hidden
-// heading, three rows moving right, left, right. Placeholder frames are
-// allowed for review builds only.
+// The work reel (v1.8): a purely visual transition between Select Work and
+// the combined section. No heading, label, caption, badge, tooltip or text of
+// any kind: the whole reel is hidden from assistive technology and every
+// image has empty alt text. Three rows of eight, moving right, left, right,
+// dealt from the approved 24-piece pool, each piece once. The HTML carries a
+// fixed mixed order; the inline script shuffles once per visit and keeps that
+// order for the browser session. No video.
+const REEL_POOL = [
+  'ambur-1', 'ambur-2',
+  'archway-1', 'archway-2', 'archway-3', 'archway-4', 'archway-5', 'archway-6', 'archway-7',
+  'bolt-1', 'bolt-2', 'bolt-3', 'bolt-4', 'bolt-5', 'bolt-6', 'bolt-7', 'bolt-8', 'bolt-9', 'bolt-10', 'bolt-11',
+  // the four approved screenshots, renamed for what they show
+  'bolt-explainer-opaque-logic', 'bolt-explainer-composition', 'archway-under-the-arch', 'archway-jackal-outpost',
+];
 const reelAt = at('data-reel');
-const reelHtml = reelAt < 0 ? '' : home.slice(home.lastIndexOf('<section', reelAt), home.indexOf('</section>', reelAt));
-if (!/<h2 id="reel-heading" class="sr-only"[^>]*>[^<]+<\/h2>/.test(reelHtml)) failures.push('[claim] the reel must be named by a visually hidden heading');
-if (textOf(reelHtml.replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<[^>]*\balt="[^"]*"[^>]*>/g, '')) !== '') failures.push('[claim] the reel must carry no visible text');
+const reelOpen = reelAt < 0 ? -1 : home.lastIndexOf('<div', reelAt);
+const reelHtml = reelOpen < 0 ? '' : home.slice(reelOpen, home.indexOf('<script', reelAt));
+const reelTag = reelOpen < 0 ? '' : home.slice(reelOpen, home.indexOf('>', reelAt) + 1);
+if (!reelHtml) failures.push('[claim] the work reel was not found');
+if (!/\baria-hidden="true"/.test(reelTag)) failures.push('[claim] the reel must be hidden from assistive technology (aria-hidden="true" on the reel)');
+if (/<h[1-6][\s>]/.test(reelHtml)) failures.push('[claim] the reel must carry no heading, visible or hidden');
+if (/\b(?:aria-label|aria-labelledby|aria-describedby|title)=/.test(reelHtml) || /<(?:figcaption|figure|video|audio|iframe)\b/.test(reelHtml)) {
+  failures.push('[claim] the reel must carry no label, caption, tooltip or video');
+}
+if (textOf(reelHtml) !== '') failures.push(`[claim] the reel must carry no text (found "${textOf(reelHtml).slice(0, 60)}")`);
+const reelImgs = reelHtml.match(/<img\b[^>]*>/g) || [];
+if (!reelImgs.length || reelImgs.some((t) => !/\salt(?:="")?(?=[\s>])/.test(t))) failures.push('[claim] every reel image must have empty alt text');
 const reelDirs = [...reelHtml.matchAll(/data-reel-row data-direction="(left|right)"/g)].map((m) => m[1]).join(',');
 if (reelDirs !== 'right,left,right') failures.push(`[claim] the reel rows must move right, left, right (found ${reelDirs || 'none'})`);
-const reelFrames = (reelHtml.match(/<li class="reel__frame/g) || []).length;
-const reelPlaceholders = (reelHtml.match(/<li class="reel__frame reel__frame--t\d/g) || []).length;
-if (reelPlaceholders) {
-  // Each row is laid out twice for the seamless loop, so a slot is two frames.
-  const msg = `[reel] ${reelPlaceholders / 2} of ${reelFrames / 2} reel slots are placeholders; replace them with approved stills before pushing`;
-  if (release) failures.push(msg);
-  else notes.push(msg + ' (fails with --release)');
+const reelRuns = [...reelHtml.matchAll(/<ul class="reel__run" data-reel-run[^>]*>([\s\S]*?)<\/ul>/g)].map((m) => [...m[1].matchAll(/data-reel-id="reel-([a-z0-9-]+)"/g)].map((x) => x[1]));
+const reelIds = reelRuns.flat();
+if (reelRuns.length !== 3 || reelRuns.some((r) => r.length !== 8)) failures.push(`[claim] the reel must deal three rows of eight (found ${reelRuns.map((r) => r.length).join('/') || 'none'})`);
+if (new Set(reelIds).size !== reelIds.length || reelIds.length !== REEL_POOL.length || REEL_POOL.some((id) => !reelIds.includes(id))) {
+  failures.push(`[claim] the reel must use the approved 24-piece pool, each piece once (found ${reelIds.length} pieces, ${new Set(reelIds).size} unique)`);
 }
+if (reelIds.join() === REEL_POOL.join()) failures.push('[claim] the reel HTML must carry a mixed order, not the pool order');
+for (const token of ['jc-reel-order', 'sessionStorage', 'getRandomValues', 'data-reel-clone']) {
+  if (!home.includes(token)) failures.push(`[claim] the reel's per-visit shuffle or repeat logic is missing "${token}"`);
+}
+// The approved files, and only those, sit in src/assets/reel: the excluded
+// screenshots (2:53 PM and 2:59 PM), Discord.jpeg and Educational.jpeg never
+// enter the repository, and the originals stay outside it.
+const reelDir = path.join(root, 'src/assets/reel');
+const reelFiles = fs.existsSync(reelDir) ? fs.readdirSync(reelDir).filter((f) => f !== '.DS_Store') : [];
+const reelStems = reelFiles.map((f) => f.replace(/\.(jpe?g|png|webp|avif)$/i, ''));
+const strayReel = reelStems.filter((st) => !REEL_POOL.includes(st));
+if (strayReel.length || REEL_POOL.some((st) => !reelStems.includes(st))) {
+  failures.push(`[asset] src/assets/reel must hold exactly the 24 approved pieces (extra: ${strayReel.join(', ') || 'none'}; missing: ${REEL_POOL.filter((st) => !reelStems.includes(st)).join(', ') || 'none'})`);
+}
+if (reelFiles.some((f) => /discord|educational|screenshot/i.test(f))) failures.push('[asset] an excluded or unrenamed screenshot is in src/assets/reel');
 
-// From positioning to production (v1.7): What I Do and How I Work in one
-// frame. AI appears only as an enabler, in a short working-style statement.
+// From positioning to production (v1.7, Stack rebuilt in v1.8): What I Do and
+// How I Work in one frame. AI appears only as an enabler, in a short
+// working-style statement.
 const prHtml = sectionAt(at('id="capabilities"'));
 if (!/<h2 id="practice-heading"[^>]*>From positioning to production\.<\/h2>/.test(prHtml)) failures.push('[claim] the combined section must be headed "From positioning to production."');
 const prLabels = [...prHtml.matchAll(/<h3 class="practice__label"[^>]*>([^<]+)<\/h3>/g)].map((m) => m[1].trim()).join(', ');
@@ -344,8 +383,47 @@ if (prCaps !== 'Positioning and messaging | Technical content and websites | Par
 }
 const prGroups = [...prHtml.matchAll(/<h4 class="stack__name"[^>]*>([^<]+)<\/h4>/g)].map((m) => m[1]).join(' | ');
 if (prGroups !== 'AI and building | Systems and measurement | Creative and distribution') failures.push(`[claim] the Stack groups must be the approved three, in order (found ${prGroups})`);
+// The Stack (v1.8): the approved 18 tools in their groups and order, each
+// with its own brand artwork in a neutral tile (decorative, since the name is
+// set beside it) and a readable name. ChatGPT appears once.
+const STACK = [
+  ['ChatGPT', 'Google Gemini', 'Claude Cowork', 'Claude Code', 'GitHub', 'MDX'],
+  ['Linear', 'Mintlify', 'GitBook', 'Grafana', 'Google Analytics', 'Slack', 'Microsoft Teams'],
+  ['Figma', 'Photoshop', 'Descript', 'Typefully', 'Grammarly'],
+];
+const prGroupHtml = [...prHtml.matchAll(/<div class="stack__group"[\s\S]*?<\/ul>/g)].map((m) => m[0]);
+const prToolNames = prGroupHtml.map((g) => [...g.matchAll(/<span class="tool__name"[^>]*>([^<]+)<\/span>/g)].map((m) => m[1].trim()));
+if (JSON.stringify(prToolNames) !== JSON.stringify(STACK)) {
+  failures.push(`[claim] the Stack must show the approved 18 tools in their groups and order (found ${prToolNames.map((g) => g.join(', ')).join(' | ')})`);
+}
 const prTools = (prHtml.match(/<li class="tool[ "]/g) || []).length;
-if (prTools < 12 || prTools > 15) failures.push(`[claim] the Stack should show about 12 to 15 primary tools (found ${prTools})`);
+const prLogos = [...prHtml.matchAll(/<img\b[^>]*class="tool__logo"[^>]*>/g)].map((m) => m[0]);
+if (prLogos.length !== prTools || prLogos.some((t) => !/\salt(?:="")?(?=[\s>])/.test(t))) {
+  failures.push(`[claim] every Stack tool needs its logo, with empty alt text beside the visible name (${prLogos.length} logos for ${prTools} tools)`);
+}
+if ((prHtml.match(/>ChatGPT</g) || []).length !== 1) failures.push('[claim] ChatGPT must appear once in the Stack');
+// The logo files: exactly the approved SVGs, lower-case names, the selected
+// ChatGPT file only, and nothing that could run or fetch anything.
+const STACK_FILES = ['chatgpt', 'gemini', 'claude-cowork', 'claude-code', 'github', 'mdx', 'linear', 'mintlify', 'gitbook', 'grafana', 'google-analytics', 'slack', 'microsoft-teams', 'figma', 'photoshop', 'descript', 'typefully', 'grammarly'].map((n) => `${n}.svg`);
+const stackDir = path.join(root, 'src/assets/stack');
+const stackFiles = fs.existsSync(stackDir) ? fs.readdirSync(stackDir).filter((f) => f !== '.DS_Store') : [];
+if (JSON.stringify([...stackFiles].sort()) !== JSON.stringify([...STACK_FILES].sort())) {
+  failures.push(`[asset] src/assets/stack must hold exactly the 18 approved logos (found ${stackFiles.join(', ') || 'none'})`);
+}
+for (const f of stackFiles) {
+  const svg = fs.readFileSync(path.join(stackDir, f), 'utf8');
+  if (/<script|<foreignObject|<image\b|\son[a-z]+\s*=|(?:xlink:)?href\s*=\s*["'](?!#)|url\(\s*["']?(?!#)/i.test(svg)) failures.push(`[asset] src/assets/stack/${f} carries a script, event handler, embedded image or external reference`);
+}
+const homeJson = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8'));
+for (const g of homeJson.practice?.stack?.groups ?? []) {
+  for (const t of g.tools ?? []) {
+    if (!t.logo || !fs.existsSync(path.join(root, 'src/assets', t.logo))) failures.push(`[asset] Stack tool "${t.name}" has no logo file (src/assets/${t.logo})`);
+  }
+}
+// The capability rows answer the pointer and the keyboard alike.
+const capRows = prHtml.match(/<li class="cap"[^>]*>/g) || [];
+if (capRows.length !== 4 || capRows.some((t) => !/tabindex="0"/.test(t))) failures.push('[claim] the four capability rows must be reachable by keyboard');
+for (const m of prHtml.matchAll(/--tilt:\s*(-?[\d.]+)deg/g)) if (Math.abs(+m[1]) > 2) failures.push(`[claim] a capability icon tilts ${m[1]} degrees (2 at most)`);
 if (/certificat/i.test(prHtml)) failures.push('[claim] the Stack has no certificate column');
 const prStatement = textOf((prHtml.match(/<p class="practice__statement"[\s\S]*?<\/p>/) || [''])[0]);
 if (!prStatement || prStatement.split(' ').length > 60) failures.push(`[claim] the How I Work statement must be short (${prStatement.split(' ').length} words)`);
@@ -359,11 +437,35 @@ if (order[0] !== undefined && order.indexOf('about') !== 0 && !/class="hero"/.te
 }
 if (/<header class="[^"]*site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
 if (/hero__(?:marquee|lede|actions)/.test(home)) failures.push('[claim] retired v1.2 hero elements are still in the build');
-// Contact and footer.
-if (!/Make the complex impossible to ignore/.test(home)) failures.push('[claim] homepage must use the approved contact headline');
+// Contact (v1.8): the approved headline and subline, then the email and
+// resume actions and nothing else. Apostrophes may be typographic.
+const plain = (t) => textOf(t).replace(/[‘’]/g, "'");
 for (const f of htmlFiles) {
-  const line = (fs.readFileSync(f, 'utf8').match(/<p class="site-footer__line"[^>]*>([\s\S]*?)<\/p>/) || [])[1];
-  if (!line || textOf(line) !== 'Web3 Marketing, Strategy, & Content') failures.push(`[claim] ${path.relative(dist, f)}: the footer must carry the approved line "Web3 Marketing, Strategy, & Content"`);
+  const html = fs.readFileSync(f, 'utf8');
+  const rel = path.relative(dist, f);
+  const contactHtml = (html.match(/<section id="contact"[\s\S]*?<\/section>/) || [''])[0];
+  if (contactHtml) {
+    const heading = plain((contactHtml.match(/<h2 id="contact-heading"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1]);
+    if (heading !== "Your product is complex. Its story shouldn't be.") failures.push(`[claim] ${rel}: the Contact headline must read "Your product is complex. Its story shouldn't be." (found "${heading}")`);
+    const paras = [...contactHtml.matchAll(/<p class="(?!eyebrow)[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => plain(m[1]));
+    if (paras.length !== 1 || paras[0] !== "If you need someone who can carry its story from positioning through execution, let's talk.") {
+      failures.push(`[claim] ${rel}: Contact must carry only the approved subline (found ${paras.length} paragraph(s))`);
+    }
+    const actions = [...contactHtml.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((m) => m[1]);
+    if (actions.length !== 2 || !actions[0].startsWith('mailto:') || !/John-Cowin-Resume\.pdf$/.test(actions[1])) failures.push(`[claim] ${rel}: Contact keeps exactly the email and resume actions (found ${actions.join(', ')})`);
+  }
+  // Footer (v1.8): the descriptor, identical to the hero's, and one compact
+  // credit that names John once: "© <year> John Cowin. Built end to end."
+  const footer = (html.match(/<footer[\s\S]*?<\/footer>/) || [''])[0];
+  const line = (footer.match(/<p class="site-footer__line"[^>]*>([\s\S]*?)<\/p>/) || [])[1];
+  if (!line || textOf(line) !== DESCRIPTOR) failures.push(`[claim] ${rel}: the footer must carry the descriptor "${DESCRIPTOR}" exactly`);
+  const credit = textOf((footer.match(/<p class="site-footer__meta[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]);
+  const year = new Date().getFullYear();
+  if (credit !== `© ${year} John Cowin. Built end to end.`) failures.push(`[claim] ${rel}: the footer credit must read "© ${year} John Cowin. Built end to end." (found "${credit}")`);
+  if ((textOf(footer).match(/John Cowin/g) || []).length !== 1) failures.push(`[claim] ${rel}: John's name must appear once in the footer`);
+}
+for (const retired of ['Make the complex impossible to ignore', 'Site by John Cowin']) {
+  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired in Version 1.8`);
 }
 // The resume must actually exist for v1.1.
 if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
@@ -378,7 +480,10 @@ for (const d of dupes) failures.push(`[manifest] duplicate asset id "${d}"`);
 const perms = new Set(['pending', 'approved', 'redacted', 'private-only']);
 for (const a of manifest.assets) {
   if (!perms.has(a.permission)) failures.push(`[manifest] ${a.id}: invalid permission "${a.permission}"`);
-  if (!a.alt) failures.push(`[manifest] ${a.id}: missing alt text`);
+  // Decorative entries (the reel) carry empty alt text on purpose.
+  if (a.decorative) {
+    if (a.alt !== '') failures.push(`[manifest] ${a.id}: a decorative entry must have empty alt text`);
+  } else if (!a.alt) failures.push(`[manifest] ${a.id}: missing alt text`);
   if (a.file && a.type !== 'video' && a.type !== 'og') {
     if (!fs.existsSync(path.join(root, 'src/assets', a.file))) failures.push(`[manifest] ${a.id}: file src/assets/${a.file} not found`);
   }
@@ -408,22 +513,44 @@ for (const f of srcFiles) {
   }
 }
 // Ids referenced from home.json structures that the generic scan above cannot see
-// (the reel's frames, and the hero portrait).
+// (the reel's pool, and the hero portrait).
 const homeData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8'));
-for (const row of homeData.reel?.rows ?? []) for (const fr of row.frames ?? []) if (fr.asset) idRefs.add(fr.asset);
+for (const id of homeData.reel?.pool ?? []) {
+  idRefs.add(id);
+  const a = manifest.assets.find((x) => x.id === id);
+  if (a && (a.permission !== 'approved' || !a.decorative || a.type !== 'image')) failures.push(`[manifest] reel piece ${id} must be an approved, decorative image`);
+}
+if ((homeData.reel?.pool ?? []).length !== (homeData.reel?.perRow ?? 0) * 3) failures.push('[claim] the reel pool must fill three rows of reel.perRow pieces');
 if (homeData.hero?.portrait) idRefs.add(homeData.hero.portrait);
 if (homeData.hero?.foreground) idRefs.add(homeData.hero.foreground);
 
 for (const id of idRefs) {
   if (!ids.has(id) && !['context', 'role', 'main', 'top', 'work', 'about', 'contact', 'capabilities'].includes(id)) {
     // Section ids in MDX also match the pattern; only flag ids that look like asset ids.
-    if (/^(hero|card|about|cc|tm|ev|og|rail)-/.test(id)) failures.push(`[manifest] referenced asset id "${id}" is not in assets.json`);
+    if (/^(hero|card|about|cc|tm|ev|og|rail|reel)-/.test(id)) failures.push(`[manifest] referenced asset id "${id}" is not in assets.json`);
   }
 }
 const unused = [...ids].filter((id) => !idRefs.has(id));
 if (unused.length) notes.push(`[manifest] unreferenced asset ids (fine, but tidy up if unneeded): ${unused.join(', ')}`);
 
-// ------------------------------------------------------------- 4. axe
+// ------------------------------------------------------ 4. hygiene
+// No Finder metadata ships or is tracked, and nothing oversized (such as the
+// full-length explainer video) reaches dist.
+for (const f of files) {
+  const rel = path.relative(dist, f);
+  if (path.basename(f) === '.DS_Store') failures.push(`[hygiene] dist/${rel} must not ship`);
+  const mb = fs.statSync(f).size / 1048576;
+  if (mb > 25) failures.push(`[hygiene] dist/${rel} is ${mb.toFixed(0)} MB; nothing over 25 MB belongs on the site`);
+}
+try {
+  const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n');
+  for (const t of tracked.filter((x) => /(^|\/)\.DS_Store$/.test(x))) failures.push(`[hygiene] ${t} is tracked by git`);
+  for (const t of tracked.filter((x) => /chatgpt #2/i.test(x) || /(^|\/)ChatGPT\.svg$/.test(x))) failures.push(`[hygiene] ${t}: only the normalized chatgpt.svg belongs in the repository`);
+} catch {
+  notes.push('[hygiene] git not available; skipped the tracked-file check');
+}
+
+// ------------------------------------------------------------- 5. axe
 let axeRan = false;
 try {
   const { chromium } = await import('playwright');

@@ -1,10 +1,10 @@
 {
   "_readme": "Homepage copy (Version 1.7). Select Work cards are drawn from each case study's frontmatter in src/content/work/.",
   "hero": {
-    "_note": "Version 1.4 hero. The name is title case and repeats as a moving stream behind the subject; the separator between repeats is an em dash, which is deliberate typography and the one place an em dash is allowed on the site. The descriptor renders uppercase through CSS so assistive technology reads it as a sentence.",
+    "_note": "Version 1.4 hero. The name is title case and repeats as a moving stream behind the subject; the separator between repeats is an em dash, which is deliberate typography and the one place an em dash is allowed on the site. The descriptor uses exactly the wording, punctuation and capitalization of the footer line and renders uppercase through CSS.",
     "name": "John Cowin",
     "separator": "—",
-    "descriptor": "Web3 marketing, strategy, & content",
+    "descriptor": "Web3 Marketing, Strategy, & Content",
     "portrait": "hero-portrait",
     "foreground": "hero-foreground"
   },
@@ -13,121 +13,37 @@
     "copy": "The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship."
   },
   "reel": {
-    "_note": "Wordless transition after Select Work (Version 1.7): three rows of frames that move sideways with the scroll, the top and bottom rows to the right and the middle row to the left, at slightly different rates. Every frame is a placeholder until the content pull; replace a { \"ratio\": \"16:9\" } frame with { \"asset\": \"<manifest id>\" } to show that approved image in the same frame. The label is for screen readers only.",
-    "label": "More of the work",
-    "rows": [
-      {
-        "direction": "right",
-        "speed": 1,
-        "frames": [
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          }
-        ]
-      },
-      {
-        "direction": "left",
-        "speed": 0.8,
-        "frames": [
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          }
-        ]
-      },
-      {
-        "direction": "right",
-        "speed": 1.2,
-        "frames": [
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          },
-          {
-            "ratio": "16:9"
-          },
-          {
-            "ratio": "1:1"
-          }
-        ]
-      }
+    "_note": "Version 1.8: a purely visual transition after Select Work. The 24 approved pieces in `pool` are shuffled on each fresh visit (kept for the rest of the browser session) and dealt into three rows of `perRow`; a row is repeated only as far as it takes to leave no blank edge. The images are decorative: empty alt text, no captions or labels. Excluded by decision: the 2:53 PM screenshot (financial comparison claims), the 2:59 PM screenshot (live figures that age), Discord.jpeg and Educational.jpeg.",
+    "perRow": 8,
+    "pool": [
+      "reel-ambur-1",
+      "reel-ambur-2",
+      "reel-archway-1",
+      "reel-archway-2",
+      "reel-archway-3",
+      "reel-archway-4",
+      "reel-archway-5",
+      "reel-archway-6",
+      "reel-archway-7",
+      "reel-bolt-1",
+      "reel-bolt-2",
+      "reel-bolt-3",
+      "reel-bolt-4",
+      "reel-bolt-5",
+      "reel-bolt-6",
+      "reel-bolt-7",
+      "reel-bolt-8",
+      "reel-bolt-9",
+      "reel-bolt-10",
+      "reel-bolt-11",
+      "reel-bolt-explainer-opaque-logic",
+      "reel-bolt-explainer-composition",
+      "reel-archway-under-the-arch",
+      "reel-archway-jackal-outpost"
     ]
   },
   "practice": {
-    "_note": "Version 1.7: What I Do and How I Work combined into one section. The How I Work statement is temporary copy awaiting approval. Stack tools show their mark from stack-icons.json (Simple Icons) when one exists and their name only otherwise.",
+    "_note": "What I Do and How I Work in one section (Version 1.7), kept in Version 1.8 with the approved How I Work statement, the four capability groups and an 18-tool Stack drawn from the approved brand SVGs in src/assets/stack. `tilt` sets the small rotation a capability icon takes on hover and keyboard focus, for the symbols that suit one.",
     "heading": "From positioning to production.",
     "how": {
       "label": "How I Work",
@@ -142,7 +58,8 @@
         },
         {
           "title": "Technical content and websites",
-          "icon": "file-text"
+          "icon": "file-text",
+          "tilt": -1.5
         },
         {
           "title": "Partnerships and KOL programs",
@@ -150,34 +67,47 @@
         },
         {
           "title": "Campaigns and distribution",
-          "icon": "send"
+          "icon": "send",
+          "tilt": -2
         }
       ]
     },
     "stack": {
       "label": "Stack",
+      "_note": "Version 1.8: 18 tools, each shown with its approved brand SVG from src/assets/stack in the same neutral tile. `scale` nudges a mark that reads large or small at the shared size; `shape: wide` sets the MDX wordmark across rather than in a square. Microsoft Teams and Grammarly are the first to move off the homepage if the Stack ever needs to thin.",
       "groups": [
         {
           "group": "AI and building",
           "tools": [
             {
-              "name": "ChatGPT"
+              "name": "ChatGPT",
+              "logo": "stack/chatgpt.svg",
+              "scale": 0.9
+            },
+            {
+              "name": "Google Gemini",
+              "logo": "stack/gemini.svg",
+              "scale": 1.04
             },
             {
               "name": "Claude Cowork",
-              "icon": "claude"
+              "logo": "stack/claude-cowork.svg",
+              "scale": 0.94
             },
             {
               "name": "Claude Code",
-              "icon": "claude"
+              "logo": "stack/claude-code.svg",
+              "scale": 1.02
             },
             {
               "name": "GitHub",
-              "icon": "github"
+              "logo": "stack/github.svg",
+              "scale": 0.88
             },
             {
               "name": "MDX",
-              "icon": "mdx"
+              "logo": "stack/mdx.svg",
+              "shape": "wide"
             }
           ]
         },
@@ -186,23 +116,38 @@
           "tools": [
             {
               "name": "Linear",
-              "icon": "linear"
+              "logo": "stack/linear.svg",
+              "scale": 0.88
             },
             {
               "name": "Mintlify",
-              "icon": "mintlify"
+              "logo": "stack/mintlify.svg",
+              "scale": 0.9
             },
             {
               "name": "GitBook",
-              "icon": "gitbook"
+              "logo": "stack/gitbook.svg",
+              "scale": 0.94
             },
             {
               "name": "Grafana",
-              "icon": "grafana"
+              "logo": "stack/grafana.svg",
+              "scale": 0.94
             },
             {
               "name": "Google Analytics",
-              "icon": "googleanalytics"
+              "logo": "stack/google-analytics.svg",
+              "scale": 0.86
+            },
+            {
+              "name": "Slack",
+              "logo": "stack/slack.svg",
+              "scale": 0.86
+            },
+            {
+              "name": "Microsoft Teams",
+              "logo": "stack/microsoft-teams.svg",
+              "scale": 0.94
             }
           ]
         },
@@ -211,16 +156,28 @@
           "tools": [
             {
               "name": "Figma",
-              "icon": "figma"
+              "logo": "stack/figma.svg",
+              "scale": 0.96
             },
             {
-              "name": "Photoshop"
+              "name": "Photoshop",
+              "logo": "stack/photoshop.svg",
+              "scale": 0.84
             },
             {
-              "name": "Descript"
+              "name": "Descript",
+              "logo": "stack/descript.svg",
+              "scale": 0.9
             },
             {
-              "name": "Typefully"
+              "name": "Typefully",
+              "logo": "stack/typefully.svg",
+              "scale": 0.88
+            },
+            {
+              "name": "Grammarly",
+              "logo": "stack/grammarly.svg",
+              "scale": 0.88
             }
           ]
         }
@@ -248,8 +205,8 @@
     "headshot": "about-headshot"
   },
   "contact": {
-    "heading": "Make the complex impossible to ignore.",
-    "copy": "I’m interested in remote Web3 marketing roles and open to the right opportunity in AI or technical products.",
+    "heading": "Your product is complex. Its story shouldn’t be.",
+    "copy": "If you need someone who can carry its story from positioning through execution, let’s talk.",
     "secondary": {
       "label": "Download resume",
       "href": "resume"

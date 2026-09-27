@@ -5,12 +5,19 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.7, in review.** Version 1.7 is committed locally and not pushed: the About
-spacing, the Select Work card template, the reel's behavior and the combined section are to be
-reviewed together first, and the reel still shows placeholder frames (`npm run verify -- --release`
-fails until they are replaced). Otherwise placeholders render only in `npm run dev`; production builds
-hide any asset that is not both approved and present, so an unresolved entry never reaches the public
-site (see [Replacing placeholders](#replacing-placeholders)).
+**Status: Version 1.8, in review.** Version 1.8 is committed locally and not pushed until it has been
+reviewed. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
+approved and present, so an unresolved entry never reaches the public site (see
+[Replacing placeholders](#replacing-placeholders)).
+
+Version 1.8 refines spacing and interaction and fills the reel and the Stack with approved work. About
+reads as three vertical zones: the headline at the top, the story and resume action centered in the
+room below it, and the trust bar anchored at the foot with room around its rule. In the combined
+section the How I Work statement sets in four even lines and the Stack sits lower, clearly separated
+from the upper composition, with 18 tools shown in their own brand artwork on neutral tiles. The
+capability icons lift slightly when their row is hovered or focused. Contact takes the approved
+headline and subline, and the footer carries the hero's descriptor and one compact credit. The reel
+shows 24 approved pieces in three rows of eight, shuffled once per visit and kept for the session.
 
 Version 1.7 orders the homepage as hero, About with the trust bar, Select Work, a wordless three-row
 work reel, From positioning to production (What I Do and How I Work in one frame), and Contact. About
@@ -41,7 +48,7 @@ introduced the full-viewport photograph and the photographic favicon.
 | `/work/creator-campaigns/` | `src/content/work/creator-campaigns.mdx` |
 | `/work/technical-marketing/` | `src/content/work/technical-marketing.mdx` |
 | `/work/events-video/` | `src/content/work/events-video.mdx` |
-| `/resume/John-Cowin-Resume.pdf` | `public/resume/John-Cowin-Resume.pdf` (**not yet added**, see below) |
+| `/resume/John-Cowin-Resume.pdf` | `public/resume/John-Cowin-Resume.pdf` |
 | `/404.html` | `src/pages/404.astro` |
 | `/robots.txt`, `/sitemap-index.xml`, `/site.webmanifest` | generated at build time |
 
@@ -100,9 +107,13 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
 ## Editing content
 
 - **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`
-- **Homepage copy** (hero, About, the Select Work title and intro, the reel's frames, the combined
+- **Homepage copy** (hero, About, the Select Work title and intro, the reel's pool, the combined
   section's headline, How I Work statement, capability groups and Stack, contact): `src/data/home.json`.
-  The Stack's tool marks: `src/data/stack-icons.json`.
+  Each Stack tool is `{ "name", "logo", "scale", "shape" }`: `logo` is an SVG under
+  `src/assets/stack/`, `scale` (optional, around 0.84 to 1.04) nudges a mark that reads large or small
+  so every tile looks the same size, and `"shape": "wide"` sets a horizontal wordmark (MDX) wide
+  instead of squeezing it into a square. Capability items take an optional `tilt` in degrees (2 at
+  most) for the icon's hover and focus state.
 - **Case studies**: `src/content/work/*.mdx`. Frontmatter holds the page metadata, hero copy, results,
   and the homepage card; the body holds the narrative sections using the components in
   `src/components/casestudy/`. Section ordering, headings, and copy are all editable in the MDX. The
@@ -139,10 +150,12 @@ To replace a placeholder with a real asset:
    `cosponsors`, drawn only from approved facts) or a quiet empty tone, and the real image replaces
    it as soon as the manifest entry has a file. `focus` sets the `object-position` for each slot, in
    the order main, first side, second side, for an image its panel has to crop.
-9. **Reel frames**: in `home.json` under `reel.rows[].frames`, replace a `{ "ratio": "16:9" }` or
-   `{ "ratio": "1:1" }` placeholder with `{ "asset": "<id>" }` for an approved still of that shape.
-   Keep each row's pattern of wide and square frames so the rows stay balanced.
-   `npm run verify -- --release` fails while any placeholder frame remains.
+9. **Reel pieces**: the reel draws on `reel.pool` in `home.json`, 24 ids dealt into three rows of
+   `reel.perRow` (8). To change a piece, put the optimized image under `src/assets/reel/` with a
+   descriptive lower-case name, add a manifest entry with `"section": "reel"`, `"alt": ""`,
+   `"decorative": true` and `"permission": "approved"`, and swap its id into the pool. Keep the pool at
+   three times `perRow`. Stills only (no video), and the originals stay outside the repository.
+   `verify.mjs` holds the approved list, so update `REEL_POOL` there when the approved set changes.
 
 Set `permission` to `private-only` on anything that must never render even if a file is present.
 The build will crop real media to the entry's aspect ratio with `object-fit: cover`.
@@ -151,8 +164,8 @@ Optional entries (`about-headshot`, `tm-website-before-after`) render only once 
 
 ### Resume
 
-Add the PDF at exactly `public/resume/John-Cowin-Resume.pdf`. All "Download resume" links already point
-there; until the file exists they return a 404. To rename it, change `resumePath` in `src/data/site.json`.
+The PDF lives at exactly `public/resume/John-Cowin-Resume.pdf`, and every "Download resume" link points
+there. To replace it, overwrite that file; to rename it, change `resumePath` in `src/data/site.json`.
 
 ### Social-preview images
 
@@ -265,18 +278,30 @@ figure, a published count of active workflows, or "community strategy" (John did
 function in this B2B role, so the portfolio does not imply one). (Since Version 1.6 the homepage states
 no formal title; the only formal title for the Phi Labs role is still "Social Media Manager", on the
 resume.) It also confirms the approved creator-page claims and the approved contact, trust-bar and
-footer lines.
+footer lines, and it fails if a `.DS_Store` file ships in `dist/` or is tracked by git, or if any file
+in `dist/` is larger than 25 MB (the full-length explainer video never belongs on the site).
 
 The Version 1.7 checks: the homepage order (hero, About, Select Work, the reel, the combined section,
 Contact) and its four surfaces; "Select Work" and its intro; three cards in the approved order, each
 with its number and category, the approved title and subline (one sentence, 95 to 130 characters, 12
 to 16 words), one dominant and two supporting panels, exactly one link, and no metric other than the
 creator stand-in's "Approximately 1.25M impressions"; a card loop that is muted, inline, looping, has
-a poster, loads nothing up front and carries its pause control; a reel with no visible text, a hidden
-heading, and rows moving right, left, right (placeholder frames are noted, and fail with `--release`);
-and the combined section's headline, labels, four capability groups, three Stack groups, 12 to 15
-tools, no certificate column, a How I Work statement of 60 words at most, and none of the retired
-AI-centered copy.
+a poster, loads nothing up front and carries its pause control; and the combined section's headline,
+labels, four capability groups, three Stack groups, no certificate column, a How I Work statement of
+60 words at most, and none of the retired AI-centered copy.
+
+The Version 1.8 checks: the reel is hidden from assistive technology and carries no heading, label,
+caption, tooltip, video or text of any kind, every reel image has empty alt text, its rows move right,
+left, right and hold three rows of eight dealt from the approved 24-piece pool (each piece once, in a
+mixed order in the HTML, with the per-visit shuffle present), `src/assets/reel/` holds exactly those 24
+files and none of the four excluded ones, and every reel manifest entry is an approved, decorative
+image; the Stack shows the approved 18 tools in their groups and order, ChatGPT once, each with its logo
+(empty alt text, since the name is set beside it), and `src/assets/stack/` holds exactly the 18
+approved SVGs with nothing in them that could run a script or load another file; the four capability
+rows are keyboard reachable and no icon tilts more than 2 degrees; Contact reads "Your product is
+complex. Its story shouldn't be." with the approved subline and keeps exactly the email and resume
+actions; the hero and footer descriptor is exactly "Web3 Marketing, Strategy, & Content"; and the
+footer credit reads "© <year> John Cowin. Built end to end." with John's name once in the footer.
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -290,17 +315,17 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 
 ### About narrative and motion
 
-- One frame: from 64rem the complete section (headline, three paragraphs, resume button, trust-bar
-  title and every logo and label) fits one screen when About is aligned to the top, as it is after a
-  click on the About link. Type and spacing scale with the smaller of the viewport's width and its
-  height read as a 16:9 frame (`--fit`), the section is one screen tall, and its top padding reserves
-  the floating header's height (`--nav-h`, shared with the header). Spare height is shared evenly
-  above and below the content, which is then drawn up by `--about-lift`, so the headline sits about
-  20px higher than in Version 1.6's centered frame wherever there is room (at 1280x720 and 1366x768 it
-  already sat directly under the header, and stays there). About
-  cancels the usual in-page link offset (`--scroll-pad`) so it lands flush with the top. Checked at
-  1280x720, 1440x900 and 1920x1080, and at common laptop windows such as 1366x768, 1536x730 and
-  1440x790. Phones and tablets stack and scroll naturally.
+- One frame, three zones: from 64rem the complete section (headline, three paragraphs, resume
+  button, trust-bar title and every logo and label) fits one screen when About is aligned to the top,
+  as it is after a click on the About link. The headline holds the upper zone, the story and the resume
+  action sit centered in the room between it and the trust bar (`margin-block: auto` in a full-height
+  column), and the rule and trust bar close the foot of the frame, with `clamp()` spacing above and
+  below the rule so the trust bar reads as a quiet closing element. Type and spacing scale with the
+  smaller of the viewport's width and its height read as a 16:9 frame (`--fit`), and the top padding
+  reserves the floating header's height (`--nav-h`, shared with the header). About cancels the usual
+  in-page link offset (`--scroll-pad`) so it lands flush with the top. Checked from 1024x768 to
+  2560x1440, including 1280x720, 1366x768, 1536x864, 1728x970 and common laptop windows such as
+  1536x730 and 1440x790. Phones and tablets stack and scroll naturally, with no forced full height.
 - Type: paragraphs are Archivo at 440 on a 44em desktop measure, about the headline's width, so they
   take two, three and two lines with the same breaks at every desktop size (36em below 64rem);
   the concluding paragraph is a step larger at 560 in the heading color, with the resume button at the
@@ -344,25 +369,58 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 
 ### Work reel
 
-- A wordless transition between Select Work and the combined section: three rows of frames that move
-  sideways with the scroll, right, left, right, at related speeds (1, 0.8 and 1.2). The travel is
-  short (16% of the width across the whole pass, 10% on phones, where the frames are also larger
-  relative to the screen) and nothing moves on its own; each row is laid out twice end to end, so no
-  track edge ever shows. A visually hidden heading names it; there is no visible title or text.
-- Frames keep one height and a fixed ratio (16:9 or 1:1), so nothing shifts as images load. Reduced
-  motion and no JavaScript show the same rows as a still collage. The frames are placeholders until
-  the asset mix is approved (see [Replacing placeholders](#replacing-placeholders)).
+- A purely visual transition between Select Work and the combined section: three rows of John's
+  creative work that move sideways with the scroll, right, left, right, at related speeds (1, 0.8 and
+  1.2). The travel is short (16% of the width across the whole pass, 10% on phones) and nothing moves
+  on its own. There is no title, caption, label, badge, tooltip or text of any kind, and no hidden
+  heading either (none is needed for the document outline): the reel is `aria-hidden`, and every image
+  is decorative with empty alt text, so screen readers pass over it rather than announcing 24
+  unrelated pictures.
+- The pieces: 24 approved stills in `src/assets/reel/` (Ambur 1 and 2, Archway 1 to 7, Bolt 1 to 11,
+  and four screenshots renamed for what they show: `bolt-explainer-opaque-logic`,
+  `bolt-explainer-composition`, `archway-under-the-arch` and `archway-jackal-outpost`), including the
+  meme, billboard and gallery concepts. The 2:53 PM and 2:59 PM screenshots, `Discord.jpeg` and
+  `Educational.jpeg` are excluded, and the originals stay in the source folder outside the repository.
+  The screenshots were converted from their display profile to sRGB and saved as 1600px JPEGs; the
+  build serves every piece as responsive AVIF and WebP.
+- Order: on each fresh visit an inline script shuffles all 24 (Fisher-Yates on
+  `crypto.getRandomValues`) and deals them into three rows of eight before the reel is ever on
+  screen. The order is kept in `sessionStorage` (`jc-reel-order`), so reloads, resizes, scrolling,
+  reduced motion and returning from a case study never reshuffle it; a new visit may bring a new
+  order, and occasional clusters are left as they fall. Without JavaScript the HTML's own fixed,
+  seeded shuffle is shown.
+- Repeats: a row repeats its complete eight-piece sequence only as many times as it takes to cover the
+  screen at every point of its travel (at most desktop widths, not at all), recalculated on resize.
+- Frames keep each image's own proportions at one row height, so nothing is cropped and nothing shifts
+  as images load. Reduced motion and no JavaScript show the same rows, in the same order, as a still
+  collage.
 
 ### From positioning to production
 
 - What I Do and How I Work in one desktop frame: the headline and the How I Work statement on the
-  left, the four capability groups on the right, level with the foot of the statement, and the Stack
-  full width below it. The Stack shows 14 tools in three groups, each with its name and, where an
-  authentic single-color mark is available (from Simple Icons, CC0; the marks remain their owners'
-  trademarks), that mark. Tools without one (ChatGPT, Photoshop, Descript, Typefully) show their
-  names only, never a generic icon.
-- From 64rem the section scales with `--fit`, as About does, is one screen tall, and keeps its spare
-  height mostly below the content. Checked from 1024x768 to 2560x1440; phones and tablets stack.
+  left, set in four even lines on a 36em measure, the four capability groups on the right, level with
+  the foot of the statement, and then, clearly separated, the Stack full width below.
+- The Stack: 18 tools in three compact groups (AI and building; Systems and measurement; Creative and
+  distribution). Each shows its own brand artwork and colors in the same neutral tile, with its name
+  beneath. The artwork is about 42px on a 1280x720 frame, 48px at 1440x900 and 56px on large screens
+  (`--mark`), with per-logo `scale` for optical balance; the MDX wordmark is sized across the tile
+  rather than cropped square, and GitBook uses its mark in dark ink so it stays legible on the light
+  tile. ChatGPT uses the normalized `chatgpt.svg`, and Claude Cowork and Claude Code stay separate. The
+  logos are the approved SVGs in `src/assets/stack/`, served as images so each keeps its own colors
+  and internal ids; the marks remain their owners' trademarks. Phones and tablets wrap the tiles into
+  a grid of comfortable touch targets, and a long name wraps onto two balanced lines rather than
+  shrinking.
+- The capability rows respond to hover and keyboard focus alike: the icon lifts 3.5px, grows 6% and,
+  where the symbol suits it, tilts a degree or two (`tilt`), while its circle takes a little more teal
+  and a faint ring, over 220ms with an ease-out curve. Only the icon moves; the text never shifts, and
+  focus also draws the site's focus ring. Hover applies only where a fine pointer can hover, so a tap
+  never leaves an icon raised, and with reduced motion the state is shown by color alone. Nothing moves
+  without interaction.
+- From 64rem the section scales with `--fit`, as About does, and is one screen tall. Spare height is
+  shared out: one part above the content, one part between the upper composition and the Stack (up to
+  2rem more than its own margin), and two parts below, so the Stack sits lower wherever there is room
+  and never rests against the lower edge. Checked from 1024x768 to 2560x1440, including 16:9 laptop
+  frames and windows such as 1536x730 and 1440x790; phones and tablets stack.
 
 ## Project structure
 
@@ -375,7 +433,8 @@ scripts/                og.mjs (social previews), icons.py (browser icons), veri
 src/
   content.config.ts     Case-study collection schema
   content/work/*.mdx    Case studies
-  data/                 site.json, home.json, logos.json, assets.json, stack-icons.json
+  data/                 site.json, home.json, logos.json, assets.json
+  assets/               images by page and section; reel/ (the 24 reel stills), stack/ (the 18 logos)
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout

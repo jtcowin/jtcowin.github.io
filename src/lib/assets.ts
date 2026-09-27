@@ -42,6 +42,8 @@ export interface AssetEntry {
   credit?: string | null;
   variant?: 'light' | 'dark';
   optional?: boolean;
+  /** Decorative imagery (the work reel): rendered with empty alt text. */
+  decorative?: boolean;
   // metric
   value?: string;
   metricLabel?: string;
@@ -90,6 +92,11 @@ function findImage(file: string | null | undefined): ImageMetadata | null {
   if (!file) return null;
   const key = `/src/assets/${file.replace(/^\/+/, '')}`;
   return imageModules[key]?.default ?? null;
+}
+
+/** An image under src/assets by its relative path (for example the Stack's logos). */
+export function resolveAssetFile(file: string | null | undefined): ImageMetadata | null {
+  return findImage(file);
 }
 
 export function getAsset(id: string): AssetEntry {

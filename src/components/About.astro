@@ -6,7 +6,9 @@
  * Layout. The headline is static. Beneath it the story runs in one wide
  * column: where it began, what it grew into and, as the conclusion, where it
  * stands today, set a step larger and heavier on its own row with the resume
- * button. A thin rule and the trust bar close the frame. From 64rem the type
+ * button. A thin rule and the trust bar close the frame. On desktop the frame
+ * reads as three zones: the headline at the top, the story centered in the
+ * room below it, and the trust bar anchored at the foot. From 64rem the type
  * and spacing scale with the smaller of the viewport's width and its height
  * (read as a 16:9 frame), the section is one screen tall, and the floating
  * header's height is reserved at the top, so the whole section is visible
@@ -490,14 +492,13 @@ const leading = paragraphs.slice(0, -1);
       /* The frame unit: one percent of the width, unless the screen is
          shorter than 16:9, where its height decides instead. */
       --fit: min(1vw, 1.8vh);
-      --about-lift: min(calc(2.5 * var(--fit) + 1.75rem), 4.5rem);
       --logobar-slot: 2.25rem;
       --logobar-label-gap: 0.4rem;
       --logobar-head-gap: calc(1.15 * var(--fit));
       display: flex;
       flex-direction: column;
       min-height: min(100vh, 62.5vw);
-      padding-block: calc(var(--nav-h) + 1.1 * var(--fit)) calc(1.8 * var(--fit));
+      padding-block: calc(var(--nav-h) + clamp(0.75rem, 2 * var(--fit), 2.5rem)) clamp(1.5rem, 3.2 * var(--fit), 3.5rem);
       /* In-page links normally stop short of the header. About lands flush
          with the top of the screen, where its own padding clears the header,
          so the whole frame shows. */
@@ -511,32 +512,25 @@ const leading = paragraphs.slice(0, -1);
       }
     }
 
-    /* Any height the frame has to spare is shared evenly above and below the
-       content, and the content is then drawn up by --about-lift, but never
-       closer to the header than the padding allows: the spacer above holds
-       the lift in reserve, so with little room to spare the headline simply
-       starts under the header. The lift is set against Version 1.6, whose
-       frame was centered: it puts the headline about 20px higher than it was
-       there wherever the frame has the room (the content itself is shorter
-       now, which is why the lift is more than 20px). */
-    .about::before,
-    .about::after {
-      content: '';
-      flex: 1 1 0;
-    }
-
-    .about::before {
-      min-height: var(--about-lift);
-    }
-
+    /* Three zones in one frame: the headline at the top, the story (the two
+       paragraphs, the thesis and the resume action) centered in the room
+       below it, and the trust bar anchored at the foot. The frame's spare
+       height is shared equally above and below the story; the headline's
+       margin and the divider's keep the zones apart when there is little to
+       share, as on short laptop screens. */
     .about > .container {
-      position: relative;
-      top: calc(-1 * var(--about-lift));
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .flow {
+      margin-block: auto;
     }
 
     .about__heading {
       font-size: min(calc(5 * var(--fit)), 5.5rem);
-      margin-bottom: calc(2.5 * var(--fit));
+      margin-bottom: clamp(1.5rem, 2.6 * var(--fit), 3rem);
     }
 
     /* The desktop measure is about the headline's width, so each paragraph
@@ -569,12 +563,14 @@ const leading = paragraphs.slice(0, -1);
       line-height: 1.18;
     }
 
+    /* Room on both sides of the divider, so the trust bar reads as a quiet
+       close rather than one more block of copy. */
     .about__rule {
-      margin-top: calc(2.3 * var(--fit));
+      margin-top: clamp(1.75rem, 3 * var(--fit), 3.25rem);
     }
 
     .about :global(.logobar--embedded) {
-      margin-top: calc(1.9 * var(--fit));
+      margin-top: clamp(1.5rem, 2.5 * var(--fit), 2.75rem);
     }
   }
 

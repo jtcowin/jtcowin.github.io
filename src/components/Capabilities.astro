@@ -3,35 +3,49 @@
  * From positioning to production: what John does, how he works, and the tools
  * he works with, in one section that fits one desktop frame.
  *
- * Left, the headline and a short working-style statement (How I Work). Right,
- * the four capability groups, level with the foot of the statement. Beneath,
- * full width, the Stack: tools in three groups, each shown as its authentic
- * mark beside its name, so recognition never depends on the mark alone. A tool
- * with no approved mark appears as its name only, never as a generic icon. The
- * marks are single color and sized to one height, and the Stack stays visually
- * secondary to the capabilities and the statement.
+ * The upper composition: the headline and the short working-style statement
+ * (How I Work) on the left, the four capability groups on the right, their
+ * last rule level with the foot of the statement. Then, clearly separated and
+ * full width, the Stack: 18 tools in three compact groups. Every tool shows
+ * its own brand artwork in the same neutral tile, sized to one optical scale
+ * (`scale` in home.json nudges marks that read large or small, and the MDX
+ * wordmark is set wide rather than squeezed into a square), with its name
+ * beneath. The files are the approved SVGs in src/assets/stack, shown as
+ * images, so each keeps its own colors and its internal ids cannot collide.
+ *
+ * The capability rows respond to the pointer and to keyboard focus: the icon
+ * lifts a few pixels, grows very slightly and, where the symbol suits it,
+ * tilts a degree or two, while its circle picks up a little more teal. Only
+ * the icon moves; the text never shifts. With reduced motion the same state
+ * is shown by color alone. Nothing on the rows depends on hover.
  *
  * From 64rem the type and spacing scale with the smaller of the viewport's
- * width and its height (read as a 16:9 frame), as in About. The section is one
- * screen tall, its top padding reserves the floating header's height, and any
- * height it has to spare collects mostly below the content, as in About, so
- * aligned to the top of the screen the section fills the frame on its own.
- * Phones and tablets stack and scroll.
+ * width and its height (read as a 16:9 frame), as in About, and the Stack's
+ * tiles scale with the frame's height, so the section fits one screen from
+ * 16:9 laptops to large desktops. Spare height is shared out: a little above
+ * the content, a little more between the upper composition and the Stack, the
+ * rest below. Phones and tablets stack and scroll.
  */
+import { Image } from 'astro:assets';
 import home from '@data/home.json';
-import stackIcons from '@data/stack-icons.json';
+import { resolveAssetFile } from '@lib/assets';
 import Icon from './Icon.astro';
 
-type Tool = { name: string; icon?: string };
+type Tool = { name: string; logo: string; scale?: number; shape?: 'wide' };
 const { practice } = home as unknown as {
   practice: {
     heading: string;
     how: { label: string; copy: string };
-    capabilities: { label: string; items: { title: string; icon: string }[] };
+    capabilities: { label: string; items: { title: string; icon: string; tilt?: number }[] };
     stack: { label: string; groups: { group: string; tools: Tool[] }[] };
   };
 };
-const icons = (stackIcons as { icons: Record<string, { title: string; path: string }> }).icons;
+
+const groups = practice.stack.groups.map((g) => ({
+  ...g,
+  cols: Math.ceil(g.tools.length / 2),
+  tools: g.tools.map((t) => ({ ...t, img: resolveAssetFile(t.logo) })),
+}));
 ---
 
 <section id="capabilities" class="section practice" aria-labelledby="practice-heading">
@@ -48,7 +62,7 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
         <ol class="caps">
           {
             practice.capabilities.items.map((item, i) => (
-              <li class="cap">
+              <li class="cap" tabindex="0" style={item.tilt ? `--tilt: ${item.tilt}deg` : undefined}>
                 <span class="cap__icon" aria-hidden="true">
                   <Icon name={item.icon as any} size={18} />
                 </span>
@@ -67,23 +81,18 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
       <h3 class="practice__label">{practice.stack.label}</h3>
       <div class="stack">
         {
-          practice.stack.groups.map((g) => (
-            <div class="stack__group">
+          groups.map((g) => (
+            <div class="stack__group" style={`--cols: ${g.cols}`}>
               <h4 class="stack__name">{g.group}</h4>
               <ul class="stack__tools">
-                {g.tools.map((t) => {
-                  const mark = t.icon ? icons[t.icon] : undefined;
-                  return (
-                    <li class:list={['tool', !mark && 'tool--text']}>
-                      {mark && (
-                        <svg class="tool__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                          <path d={mark.path} />
-                        </svg>
-                      )}
-                      <span class="tool__name">{t.name}</span>
-                    </li>
-                  );
-                })}
+                {g.tools.map((t) => (
+                  <li class:list={['tool', t.shape === 'wide' && 'tool--wide']} style={t.scale ? `--s: ${t.scale}` : undefined}>
+                    <span class="tool__tile" aria-hidden="true">
+                      {t.img && <Image src={t.img} alt="" class="tool__logo" loading="lazy" decoding="async" />}
+                    </span>
+                    <span class="tool__name">{t.name}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           ))
@@ -95,6 +104,9 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
 
 <style>
   .practice {
+    /* Brand artwork size inside each neutral tile, and the tile around it. */
+    --mark: 2.5rem;
+    --tile: calc(var(--mark) * 1.4);
     padding-block: clamp(4rem, 3rem + 4vw, 7rem);
   }
 
@@ -142,12 +154,21 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
   }
 
   .cap {
+    position: relative;
     display: grid;
     grid-template-columns: auto auto minmax(0, 1fr);
     align-items: center;
     column-gap: 0.85rem;
     padding-block: clamp(0.9rem, 0.7rem + 0.6vw, 1.25rem);
     border-bottom: 1px solid var(--line-strong);
+    border-radius: 2px;
+  }
+
+  /* Keyboard focus: the same response as the pointer, plus the site's focus
+     ring, set a little wider so the raised icon never touches it. */
+  .cap:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
   }
 
   .cap__icon {
@@ -158,6 +179,26 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
     border-radius: 50%;
     color: var(--accent);
     background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+    box-shadow: 0 0 0 1px transparent;
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .cap:focus-visible .cap__icon {
+    transform: translateY(-3.5px) scale(1.06) rotate(var(--tilt, 0deg));
+    background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  /* Hover only where hover is real, so a tap never leaves a row raised. */
+  @media (hover: hover) and (pointer: fine) {
+    .cap:hover .cap__icon {
+      transform: translateY(-3.5px) scale(1.06) rotate(var(--tilt, 0deg));
+      background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+    }
   }
 
   .cap__num {
@@ -180,23 +221,25 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
 
   /* ---- stack ------------------------------------------------------------ */
   .practice__stack {
-    margin-top: clamp(2.5rem, 2rem + 2vw, 3.75rem);
+    margin-top: clamp(2.75rem, 2rem + 3vw, 4.5rem);
   }
 
   .stack {
     display: grid;
-    gap: var(--space-4);
+    gap: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
   }
 
   .stack__group {
-    padding: clamp(1rem, 0.8rem + 0.6vw, 1.35rem);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--bg-elev);
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    min-width: 0;
   }
 
   .stack__name {
-    margin: 0 0 0.85rem;
+    margin: 0;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line-strong);
     font-family: var(--font-sans);
     font-size: 0.8125rem;
     font-weight: 700;
@@ -208,65 +251,80 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+    gap: 1rem 0.5rem;
   }
 
   .tool {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.75rem 0.45rem 0.6rem;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 0.45rem;
+    min-width: 0;
+    text-align: center;
+  }
+
+  /* One neutral tile for every tool, whatever the mark's own shape. */
+  .tool__tile {
+    display: grid;
+    place-items: center;
+    width: var(--tile);
+    height: var(--tile);
     border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--bg);
-    color: var(--ink-2);
+    border-radius: calc(var(--tile) * 0.24);
+    background: color-mix(in srgb, var(--bg-elev) 40%, #ffffff);
   }
 
-  .tool--text {
-    padding-left: 0.75rem;
+  .tool__tile :global(.tool__logo) {
+    display: block;
+    width: calc(var(--mark) * var(--s, 1));
+    height: calc(var(--mark) * var(--s, 1));
+    object-fit: contain;
   }
 
-  .tool__mark {
-    width: 1.05rem;
-    height: 1.05rem;
-    flex: none;
-    fill: currentColor;
-    color: var(--ink);
+  /* The MDX badge is a wide bar drawn across the middle of a square canvas,
+     so its box grows until the bar spans most of the tile's width. */
+  .tool--wide .tool__tile :global(.tool__logo) {
+    width: calc(var(--mark) * 1.2);
+    height: calc(var(--mark) * 1.2);
   }
 
   .tool__name {
-    font-size: var(--text-sm);
+    max-width: 100%;
+    font-size: 0.8125rem;
     font-weight: 600;
-    line-height: 1.1;
-    white-space: nowrap;
-  }
-
-  @media (min-width: 48rem) {
-    .stack {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+    line-height: 1.2;
+    color: var(--ink-2);
+    text-wrap: balance;
   }
 
   /* ---- desktop: the whole section in one frame ------------------------- */
   @media (min-width: 64rem) {
     .practice {
       --fit: min(1vw, 1.8vh);
+      --view-h: 100vh;
+      /* Icon artwork: about 42px on a 1280 x 720 frame, 48px at 1440 x 900,
+         56px from 1080px tall. */
+      --mark: clamp(2.5rem, calc(1rem + 3.6 * var(--view-h) / 100), 3.5rem);
+      --tile: calc(var(--mark) * 1.38);
       display: flex;
       flex-direction: column;
       min-height: min(100vh, 62.5vw);
-      padding-block: calc(var(--nav-h) + 1.4 * var(--fit)) calc(3 * var(--fit));
+      padding-block: calc(var(--nav-h) + 1.4 * var(--fit)) clamp(1.25rem, calc(3 * var(--view-h) / 100), 3rem);
     }
 
     @supports (height: 1svh) {
       .practice {
         --fit: min(1vw, 1.8svh);
+        --view-h: 100svh;
         min-height: min(100svh, 62.5vw);
       }
     }
 
-    /* Spare height: one part above the content, five below, as in About. */
+    /* Spare height: one part above the content, one more between the upper
+       composition and the Stack (at most 2rem of it), two below. A tight
+       frame keeps only the Stack's own margin. */
     .practice::before,
     .practice::after {
       content: '';
@@ -277,7 +335,13 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
     }
 
     .practice::after {
-      flex: 5 1 0;
+      flex: 2 1 0;
+    }
+
+    .practice__frame {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .practice__heading {
@@ -289,13 +353,14 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
     /* The headline and statement on the left; the capabilities on the right,
        their last rule level with the foot of the statement. */
     .practice__top {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      column-gap: calc(6 * var(--fit));
+      grid-template-columns: minmax(0, 7.6fr) minmax(0, 4.4fr);
+      column-gap: min(5 * var(--fit), 5.5rem);
       align-items: end;
     }
 
+    /* A measure wide enough to set the statement in four even lines. */
     .practice__statement {
-      max-width: 33em;
+      max-width: 36em;
       font-size: clamp(1.0625rem, calc(0.35rem + 1.1 * var(--fit)), 1.5rem);
     }
 
@@ -311,8 +376,57 @@ const icons = (stackIcons as { icons: Record<string, { title: string; path: stri
       font-size: clamp(1.1rem, calc(0.35rem + 1.15 * var(--fit)), 1.625rem);
     }
 
+    /* A clear break between the upper composition and the Stack, which
+       grows by the Stack's share of any spare height. */
     .practice__stack {
-      margin-top: calc(3.4 * var(--fit));
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      margin-top: clamp(2.75rem, calc(7 * var(--view-h) / 100), 6rem);
+    }
+
+    .practice__stack::before {
+      content: '';
+      flex: 1 1 0;
+      max-height: 2rem;
+    }
+
+    /* The groups sit side by side, each two rows deep, so every tile keeps
+       the same width across the three groups. */
+    .stack {
+      grid-template-columns: 3fr 4fr 3fr;
+      column-gap: calc(3 * var(--fit));
+    }
+
+    .stack__group {
+      gap: calc(0.9 * var(--fit));
+    }
+
+    .stack__tools {
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      gap: calc(1 * var(--fit)) calc(0.5 * var(--fit));
+    }
+
+    .tool {
+      gap: calc(0.45 * var(--fit));
+    }
+
+    .tool__name {
+      font-size: clamp(0.75rem, calc(0.9 * var(--fit)), 0.875rem);
+    }
+  }
+
+  /* Reduced motion: the active row is shown by color alone. */
+  @media (prefers-reduced-motion: reduce) {
+    .cap__icon {
+      transition:
+        background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .cap:focus-visible .cap__icon,
+    .cap:hover .cap__icon {
+      transform: none !important;
     }
   }
 </style>

@@ -1,93 +1,190 @@
 ---
 /**
- * The work reel: a wordless transition after Select Work.
+ * The work reel: a purely visual transition after Select Work.
  *
- * Three rows of frames move sideways as the page scrolls, the top and bottom
- * rows to the right and the middle row to the left, each at a slightly
- * different rate, so the motion reads as one gesture rather than three tickers.
- * The travel is short and tied to how far the reel has crossed the screen;
- * nothing moves on its own. Every row is laid out twice end to end, so no edge
- * of a track can come into view. The section has no visible title; a hidden
- * heading names it for screen readers.
+ * Three rows of John's creative work move sideways as the page scrolls, the
+ * top and bottom rows to the right and the middle row to the left, each at a
+ * slightly different rate, so the motion reads as one gesture rather than
+ * three tickers. The travel is short and tied to how far the reel has crossed
+ * the screen; nothing moves on its own.
  *
- * Frames keep a fixed height and a fixed aspect ratio, so nothing shifts as
- * images load. A frame is either `{ "ratio": "16:9" }`, a placeholder until
- * the content pull, or `{ "asset": "<manifest id>" }`, which renders that
- * approved image in the same frame.
+ * The pieces come from `reel.pool` in home.json (24 approved images, listed in
+ * the asset manifest as decorative). On each fresh visit they are shuffled and
+ * dealt into three rows of `reel.perRow`, and that order is kept for the rest
+ * of the browser session, so scrolling, resizing and returning to the page
+ * never reshuffle it. The HTML carries its own fixed shuffle, so the rows are
+ * mixed even without JavaScript. A row is repeated only as far as it takes to
+ * leave no blank edge at any point of its travel.
  *
- * Reduced motion, no JavaScript: the same three rows as a still collage.
- * Phones: taller frames relative to the screen, so fewer show at once, and a
- * shorter travel.
+ * Nothing here is text: no title, caption, label or tooltip, and every image
+ * has empty alt text. The whole reel is hidden from assistive technology, so
+ * screen readers pass over it rather than announcing 24 unrelated pictures.
+ *
+ * Every frame keeps its image's own proportions at one row height, so nothing
+ * is cropped and nothing shifts as images load. Reduced motion and no
+ * JavaScript show the same rows, in the same order, as a still collage.
+ * Phones get a shorter travel.
  */
 import type { ImageMetadata } from 'astro';
 import { Picture } from 'astro:assets';
 import home from '@data/home.json';
-import { getAsset, hasAsset, isIdVisible, resolveImage, aspectToCss } from '@lib/assets';
+import { getAsset, hasAsset, isIdVisible, resolveImage } from '@lib/assets';
 
-const { reel } = home as unknown as {
-  reel: { label: string; rows: { direction: 'left' | 'right'; speed: number; frames: { ratio?: string; asset?: string }[] }[] };
-};
+const { reel } = home as unknown as { reel: { perRow: number; pool: string[] } };
 
-type Frame = { ratio: string; img: ImageMetadata | null; alt: string; tone: number };
+type Piece = { id: string; img: ImageMetadata };
+const pieces: Piece[] = reel.pool
+  .filter((id) => hasAsset(id) && isIdVisible(id))
+  .map((id) => ({ id, img: resolveImage(getAsset(id)) }))
+  .filter((p): p is Piece => Boolean(p.img));
 
-const TONES = 6;
-const rows = reel.rows.map((row, r) => {
-  const frames: Frame[] = row.frames.map((f, i) => {
-    const entry = f.asset && hasAsset(f.asset) && isIdVisible(f.asset) ? getAsset(f.asset) : null;
-    const img = entry ? resolveImage(entry) : null;
-    return {
-      ratio: aspectToCss(f.ratio ?? entry?.aspect ?? '16:9'),
-      img,
-      alt: entry?.alt ?? '',
-      tone: (i * 5 + r * 2) % TONES,
-    };
-  });
-  return { ...row, frames, real: frames.some((f) => f.img) };
-});
+// A fixed shuffle for the HTML (the visit's own shuffle replaces it on load).
+function seeded(seed: number) {
+  let a = seed;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = seeded(1808);
+const order = [...pieces];
+for (let i = order.length - 1; i > 0; i -= 1) {
+  const j = Math.floor(rand() * (i + 1));
+  [order[i], order[j]] = [order[j], order[i]];
+}
+
+const perRow = reel.perRow;
+const ROWS = [
+  { direction: 'right', speed: 1 },
+  { direction: 'left', speed: 0.8 },
+  { direction: 'right', speed: 1.2 },
+];
+const rows = ROWS.map((r, i) => ({ ...r, pieces: order.slice(i * perRow, (i + 1) * perRow) }));
+
+// Frames are one row height wide times their ratio; the height caps at 15rem.
+const sizes = (ratio: number) => `(min-width: 130rem) ${Math.round(240 * ratio)}px, calc((4.6rem + 8vw) * ${ratio.toFixed(3)})`;
 ---
 
-<section class="reel" aria-labelledby="reel-heading" data-reel>
-  <h2 id="reel-heading" class="sr-only">{reel.label}</h2>
+<div class="reel" data-reel aria-hidden="true">
   <div class="reel__rows">
     {
       rows.map((row) => (
         <div class="reel__row" data-reel-row data-direction={row.direction} data-speed={row.speed}>
-          {[0, 1].map((copy) => (
-            <ul class="reel__run" aria-hidden={copy === 1 || !row.real ? 'true' : undefined}>
-              {row.frames.map((f) => (
-                <li class:list={['reel__frame', !f.img && `reel__frame--t${f.tone}`]} style={`aspect-ratio: ${f.ratio}`}>
-                  {f.img && (
-                    <Picture
-                      src={f.img}
-                      alt={copy === 0 ? f.alt : ''}
-                      widths={[320, 480, 720]}
-                      sizes="(min-width: 60rem) 28rem, 60vw"
-                      formats={['avif', 'webp']}
-                      loading="lazy"
-                      class="reel__img"
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          ))}
+          <ul class="reel__run" data-reel-run>
+            {row.pieces.map((p) => (
+              <li class="reel__frame" data-reel-id={p.id} style={`aspect-ratio: ${p.img.width} / ${p.img.height}`}>
+                <Picture
+                  src={p.img}
+                  alt=""
+                  widths={[240, 360, 480, 720, 960]}
+                  sizes={sizes(p.img.width / p.img.height)}
+                  formats={['avif', 'webp']}
+                  loading="lazy"
+                  decoding="async"
+                  class="reel__img"
+                />
+              </li>
+            ))}
+          </ul>
         </div>
       ))
     }
   </div>
-</section>
+</div>
+
+<script is:inline>
+  // This visit's order: shuffled once, kept for the browser session, dealt
+  // into the rows before the reel is ever on screen.
+  (function () {
+    var reel = document.querySelector('[data-reel]');
+    if (!reel) return;
+    var runs = reel.querySelectorAll('[data-reel-run]');
+    var frames = [].slice.call(reel.querySelectorAll('[data-reel-id]'));
+    var ids = frames.map(function (f) {
+      return f.getAttribute('data-reel-id');
+    });
+    var KEY = 'jc-reel-order';
+    var order = null;
+    function random() {
+      if (window.crypto && window.crypto.getRandomValues) {
+        var n = new Uint32Array(1);
+        window.crypto.getRandomValues(n);
+        return n[0] / 4294967296;
+      }
+      return Math.random();
+    }
+    try {
+      var saved = JSON.parse(window.sessionStorage.getItem(KEY) || 'null');
+      if (
+        Array.isArray(saved) &&
+        saved.length === ids.length &&
+        ids.every(function (id) {
+          return saved.indexOf(id) > -1;
+        })
+      )
+        order = saved;
+    } catch (e) {}
+    if (!order) {
+      order = ids.slice();
+      for (var i = order.length - 1; i > 0; i--) {
+        var j = Math.floor(random() * (i + 1));
+        var t = order[i];
+        order[i] = order[j];
+        order[j] = t;
+      }
+      try {
+        window.sessionStorage.setItem(KEY, JSON.stringify(order));
+      } catch (e) {}
+    }
+    var byId = {};
+    frames.forEach(function (f) {
+      byId[f.getAttribute('data-reel-id')] = f;
+    });
+    var per = Math.ceil(order.length / runs.length);
+    for (var r = 0; r < runs.length; r++) {
+      for (var k = r * per; k < Math.min(order.length, (r + 1) * per); k++) runs[r].appendChild(byId[order[k]]);
+    }
+  })();
+</script>
 
 <script>
-  // Tie each row's sideways offset to how far the reel has crossed the screen:
-  // 0 as it enters at the bottom, 1 as it leaves at the top, still at 0.5.
+  // Each row's sideways offset follows how far the reel has crossed the
+  // screen: 0 as it enters at the bottom, 1 as it leaves at the top, still at
+  // 0.5. A row is repeated only as far as it takes to cover the screen at
+  // every point of that travel.
   const reel = document.querySelector<HTMLElement>('[data-reel]');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (reel && 'IntersectionObserver' in window) {
+  if (reel) {
     const rows = Array.from(reel.querySelectorAll<HTMLElement>('[data-reel-row]'));
-    let raf = 0;
-    let listening = false;
+    const travelShare = () => (reduce.matches ? 0 : parseFloat(getComputedStyle(reel).getPropertyValue('--travel')) || 0.16);
 
+    const fill = () => {
+      const width = reel.clientWidth;
+      const share = travelShare();
+      for (const row of rows) {
+        const run = row.querySelector<HTMLElement>('[data-reel-run]');
+        if (!run) continue;
+        const runW = run.getBoundingClientRect().width;
+        if (!runW) continue;
+        const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+        const speed = parseFloat(row.dataset.speed || '1') || 1;
+        const need = width + share * width * speed + 4;
+        const copies = Math.max(1, Math.ceil((need + gap) / (runW + gap)));
+        const clones = row.querySelectorAll('[data-reel-clone]');
+        for (let i = clones.length + 1; i < copies; i += 1) {
+          const copy = run.cloneNode(true) as HTMLElement;
+          copy.removeAttribute('data-reel-run');
+          copy.setAttribute('data-reel-clone', '');
+          row.appendChild(copy);
+        }
+        for (let i = clones.length; i > copies - 1; i -= 1) clones[i - 1].remove();
+      }
+    };
+
+    let raf = 0;
     const place = () => {
       raf = 0;
       if (reduce.matches) {
@@ -97,7 +194,7 @@ const rows = reel.rows.map((row, r) => {
       const rect = reel.getBoundingClientRect();
       const vh = window.innerHeight;
       const progress = Math.min(1, Math.max(0, (vh - rect.top) / (vh + rect.height)));
-      const travel = reel.clientWidth * (parseFloat(getComputedStyle(reel).getPropertyValue('--travel')) || 0.16);
+      const travel = reel.clientWidth * travelShare();
       for (const row of rows) {
         const dir = row.dataset.direction === 'left' ? -1 : 1;
         const speed = parseFloat(row.dataset.speed || '1') || 1;
@@ -109,25 +206,34 @@ const rows = reel.rows.map((row, r) => {
       if (!raf) raf = requestAnimationFrame(place);
     };
 
-    // Only listen while the reel is near the screen.
-    new IntersectionObserver(
-      (entries) => {
-        const near = entries.some((e) => e.isIntersecting);
-        if (near && !listening) {
-          addEventListener('scroll', onScroll, { passive: true });
-          addEventListener('resize', onScroll, { passive: true });
-          listening = true;
-          place();
-        } else if (!near && listening) {
-          removeEventListener('scroll', onScroll);
-          removeEventListener('resize', onScroll);
-          listening = false;
-        }
-      },
-      { rootMargin: '25% 0px' },
-    ).observe(reel);
+    fill();
+    addEventListener('resize', () => {
+      fill();
+      onScroll();
+    }, { passive: true });
+    reduce.addEventListener?.('change', () => {
+      fill();
+      onScroll();
+    });
 
-    reduce.addEventListener?.('change', onScroll);
+    // Only follow the scroll while the reel is near the screen.
+    if ('IntersectionObserver' in window) {
+      let listening = false;
+      new IntersectionObserver(
+        (entries) => {
+          const near = entries.some((e) => e.isIntersecting);
+          if (near && !listening) {
+            addEventListener('scroll', onScroll, { passive: true });
+            listening = true;
+            place();
+          } else if (!near && listening) {
+            removeEventListener('scroll', onScroll);
+            listening = false;
+          }
+        },
+        { rootMargin: '25% 0px' },
+      ).observe(reel);
+    }
   }
 </script>
 
@@ -187,39 +293,6 @@ const rows = reel.rows.map((row, r) => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  /* Placeholder frames: quiet tones from the palette, lit from one corner, so
-     the rhythm of formats reads before the real frames arrive. */
-  .reel__frame[class*='reel__frame--t'] {
-    background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 55%),
-      var(--tone);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
-  .reel__frame--t0 {
-    --tone: #1b2225;
-  }
-
-  .reel__frame--t1 {
-    --tone: #25343a;
-  }
-
-  .reel__frame--t2 {
-    --tone: #1f3d3d;
-  }
-
-  .reel__frame--t3 {
-    --tone: #cfd6d5;
-  }
-
-  .reel__frame--t4 {
-    --tone: #2e3a3e;
-  }
-
-  .reel__frame--t5 {
-    --tone: #3d5654;
   }
 
   @media (max-width: 47.99rem) {
