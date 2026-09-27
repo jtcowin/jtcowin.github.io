@@ -372,6 +372,13 @@ const groups = practice.stack.groups.map((g) => ({
       padding-block: calc(0.95 * var(--fit));
     }
 
+    /* On short windows the icon circles give up a few pixels, so the rows and
+       the Stack still fit the browser window of a 1366 x 768 laptop. */
+    .cap__icon {
+      width: clamp(2rem, calc(4.9 * var(--view-h) / 100), 2.25rem);
+      height: clamp(2rem, calc(4.9 * var(--view-h) / 100), 2.25rem);
+    }
+
     .cap__title {
       font-size: clamp(1.1rem, calc(0.35rem + 1.15 * var(--fit)), 1.625rem);
     }
