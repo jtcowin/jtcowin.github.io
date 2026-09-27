@@ -1,266 +1,403 @@
 ---
 /**
- * About: career context directly beneath the hero.
+ * About: a typography-led narrative directly beneath the hero.
  *
- * Three bands: a one-line headline across the canvas, three narrative columns
- * (foundation, Phi Labs, and a short present-day thesis with the resume action
- * beneath it), and the career timeline. The trust bar follows as its own band
- * (see index.astro), so it reads as a transition rather than part of About.
+ * The headline stays as it was and is visible from the start. Beneath it,
+ * three large editorial statements step across the canvas on a diagonal (left,
+ * further in, then toward the right and lower), each in its own row so the
+ * reading order is always top to bottom. The resume action sits under the
+ * third statement. A thin rule then closes the narrative and the trust bar
+ * follows on the same background.
  *
- * The timeline reads NOW to EARLIER in three chapters, numbered 01 to 03. On
- * wide screens it is a horizontal rule with a node and stem for each chapter
- * and four aligned columns: Phi Labs Global spans the first two and holds its
- * two phases, Current scope and Original mandate, side by side; the other two
- * chapters take one column each. Below 72rem the timeline turns vertical in
- * the same order.
+ * Emphasis: only the three approved phrases are marked (double asterisks in
+ * home.json) and render as <strong> in blue-teal at a slightly heavier weight.
  *
- * Progressive disclosure: with JavaScript, each phase shows its heading, label
- * and marker at rest and its description on demand. On the wide layout the
- * description row keeps its height, so hovering or keyboard focus can preview a
- * description without moving anything, and a click or tap pins it open. Below
- * 72rem each phase is an accordion opened by click, tap, Enter or Space. The
- * toggles are real buttons with aria-expanded and aria-controls, and Escape
- * closes the focused one. Without JavaScript every description is visible;
- * with reduced motion nothing animates.
- *
- * Motion: the first time the timeline enters the viewport the rule draws once,
- * then the chapters appear from current to earliest (skipped for reduced
- * motion, without IntersectionObserver, and in print).
+ * Motion, once: when the statements meaningfully enter the viewport, a caret
+ * types them on line by line (a soft-edged wipe led by the caret, about three
+ * seconds for all three, resting briefly after each), the resume button
+ * appears, the caret leaves, the rule draws, and the trust bar fades up. The
+ * text is laid out in its final place before anything moves: the wipe is a set
+ * of background-colored masks drawn over each finished line, so nothing wraps
+ * or shifts. Phones reveal each statement as a block instead. The complete
+ * text is in the HTML throughout; without JavaScript, with reduced motion,
+ * without IntersectionObserver, or in print, everything is simply shown.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
 import Icon from './Icon.astro';
+import LogoBar from './LogoBar.astro';
 
 const { about } = home;
 const resumeHref = withBase(site.resumePath);
 
-/** Split "a **b** c" into runs, where every odd run is emphasized. */
+/** Split "a **b** c" into runs; the odd runs are the approved emphases. */
 function runs(text: string) {
-  return text.split('**').map((t, i) => ({ text: t, strong: i % 2 === 1 }));
+  return text.split('**').map((t, i) => ({ text: t, mark: i % 2 === 1 }));
 }
 
-/** Keep hyphenated compounds such as "five-person" or "major-festival" on one
- *  line, so a description never breaks mid-compound; odd runs are the compounds. */
+/** Keep hyphenated compounds such as "major-festival" on one line; odd pieces
+ *  are the compounds. */
 function compounds(text: string) {
   return text.split(/([A-Za-z0-9]+-[A-Za-z0-9]+)/).map((t, i) => ({ text: t, keep: i % 2 === 1 }));
 }
 
-let detailCount = 0;
-const chapters = about.career.chapters.map((chapter, i) => ({
-  ...chapter,
-  marker: String(i + 1).padStart(2, '0'),
-  phases: chapter.phases.map((phase) => ({ ...phase, id: `timeline-detail-${++detailCount}` })),
-}));
+const ORDER = ['one', 'two', 'three'];
+const statements = about.statements.map((s, i) => ({ runs: runs(s.text), key: ORDER[i] }));
+const closing = statements[statements.length - 1];
+const leading = statements.slice(0, -1);
 ---
 
-<section id="about" class="section about" aria-labelledby="about-heading">
+<section id="about" class="section about" aria-labelledby="about-heading" data-about>
   <div class="container">
     <h2 id="about-heading" class="about__heading display">{about.heading}</h2>
 
-    <div class="about__cols">
+    <div class="story" data-story>
       {
-        about.columns.map((col) =>
-          col.role === 'thesis' ? (
-            <div class="about__col about__col--thesis">
-              <p class="about__thesis">{runs(col.text).map((run) => (run.strong ? <strong>{run.text}</strong> : run.text))}</p>
-              <a href={resumeHref} class="btn btn--secondary about__resume" download>
-                {about.resumeLink.label} <Icon name="download" size={16} />
-              </a>
-            </div>
-          ) : (
-            <p class:list={['about__col', `about__col--${col.role}`]}>
-              {runs(col.text).map((run) => (run.strong ? <strong>{run.text}</strong> : run.text))}
-            </p>
-          ),
-        )
+        leading.map((s) => (
+          <p class:list={['story__statement', `story__statement--${s.key}`]}>
+            {s.runs.map((run) =>
+              run.mark ? (
+                <strong class="story__mark">{run.text}</strong>
+              ) : (
+                compounds(run.text).map((piece) => (piece.keep ? <span class="nobr">{piece.text}</span> : piece.text))
+              ),
+            )}
+          </p>
+        ))
       }
+      <div class="story__close">
+        <p class:list={['story__statement', `story__statement--${closing.key}`]}>
+          {closing.runs.map((run) =>
+            run.mark ? (
+              <strong class="story__mark">{run.text}</strong>
+            ) : (
+              compounds(run.text).map((piece) => (piece.keep ? <span class="nobr">{piece.text}</span> : piece.text))
+            ),
+          )}
+        </p>
+        <a href={resumeHref} class="btn btn--secondary story__resume" download>
+          {about.resumeLink.label} <Icon name="download" size={16} />
+        </a>
+      </div>
     </div>
 
-    <div class="timeline" data-timeline>
-      <h3 class="sr-only">{about.career.heading}, most recent first</h3>
-      <p class="timeline__end timeline__end--now" aria-hidden="true">{about.career.nowLabel}</p>
-      <p class="timeline__end timeline__end--earlier" aria-hidden="true">{about.career.earlierLabel}</p>
+    <hr class="about__rule" />
 
-      <ol class="timeline__list">
-        {
-          chapters.map((chapter, i) => (
-            <li
-              class:list={[
-                'timeline__chapter',
-                chapter.current && 'timeline__chapter--current',
-                chapter.phases.length > 1 && 'timeline__chapter--wide',
-              ]}
-              style={`--i: ${i}`}
-            >
-              <span class="timeline__node" aria-hidden="true" />
-              <span class="timeline__stem" aria-hidden="true" />
-              <p class="timeline__marker" aria-hidden="true">{chapter.marker}</p>
-              <h4 class="timeline__heading">{chapter.heading}</h4>
-              <div class="timeline__phases">
-                {chapter.phases.map((phase) => (
-                  <div class:list={['timeline__phase', phase.current && 'timeline__phase--current']} data-phase>
-                    <p class="timeline__label">
-                      <span class="timeline__pill">{phase.label}</span>
-                    </p>
-                    <div class="timeline__detail" id={phase.id}>
-                      <div class="timeline__clip">
-                        <p class="timeline__copy">
-                          {compounds(phase.detail).map((run) => (run.keep ? <span class="nobr">{run.text}</span> : run.text))}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-    <script is:inline>
-      (function () {
-        var tl = document.querySelector('[data-timeline]');
-        if (!tl) return;
-
-        /* Progressive disclosure. Descriptions start closed and open on hover
-           or keyboard focus (wide layout only, where their row keeps its
-           height), or on click, tap, Enter or Space (every layout), which pins
-           them. Without this script every description stays visible. */
-        var wide = window.matchMedia('(min-width: 72rem)');
-        var items = [];
-
-        function render(s) {
-          var open = s.pinned || (wide.matches && (s.hover || s.focus) && !s.quiet);
-          s.el.classList.toggle('is-open', open);
-          s.el.classList.toggle('is-pinned', s.pinned);
-          s.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        }
-
-        function pin(s, on) {
-          s.pinned = on;
-          s.quiet = !on;
-          render(s);
-        }
-
-        var phases = tl.querySelectorAll('[data-phase]');
-        for (var n = 0; n < phases.length; n++) {
-          (function (el) {
-            var chapter = el.closest('.timeline__chapter');
-            var single = chapter.querySelectorAll('[data-phase]').length === 1;
-            var label = el.querySelector('.timeline__label');
-            var detail = el.querySelector('.timeline__detail');
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'timeline__toggle';
-            btn.setAttribute('aria-controls', detail.id);
-            var extra = document.createElement('span');
-            extra.className = 'sr-only';
-            extra.textContent = ', ' + chapter.querySelector('.timeline__heading').textContent.trim() + ', details';
-            var cue = document.createElement('span');
-            cue.className = 'timeline__cue';
-            cue.setAttribute('aria-hidden', 'true');
-            btn.appendChild(label.querySelector('.timeline__pill'));
-            btn.appendChild(extra);
-            btn.appendChild(cue);
-            label.appendChild(btn);
-
-            var s = { el: el, btn: btn, pinned: false, hover: false, focus: false, quiet: false };
-            items.push(s);
-            render(s);
-
-            btn.addEventListener('click', function () {
-              pin(s, !s.pinned);
-            });
-            btn.addEventListener('focus', function () {
-              var keyboard = true;
-              try {
-                keyboard = btn.matches(':focus-visible');
-              } catch (e) {}
-              s.focus = keyboard;
-              render(s);
-            });
-            btn.addEventListener('blur', function () {
-              s.focus = false;
-              if (!s.hover) s.quiet = false;
-              render(s);
-            });
-            el.addEventListener('keydown', function (e) {
-              if (e.key === 'Escape' && el.classList.contains('is-open')) pin(s, false);
-            });
-
-            /* A chapter with one phase is one entry: its marker and heading
-               preview and toggle it too. Phi Labs Global holds two phases, so
-               each phase is its own entry there. */
-            var zone = single ? chapter : el;
-            zone.addEventListener('pointerenter', function (e) {
-              if (e.pointerType === 'touch') return;
-              s.hover = true;
-              render(s);
-            });
-            zone.addEventListener('pointerleave', function (e) {
-              if (e.pointerType === 'touch') return;
-              s.hover = false;
-              if (!s.focus) s.quiet = false;
-              render(s);
-            });
-            zone.addEventListener('click', function (e) {
-              if (btn.contains(e.target)) return;
-              var sel = window.getSelection ? window.getSelection() : null;
-              if (sel && !sel.isCollapsed) return;
-              /* Clicking an open description pins it; it never closes it, so
-                 the text can be selected. The label closes a pinned entry. */
-              if (detail.contains(e.target)) {
-                if (!s.pinned) pin(s, true);
-                return;
-              }
-              pin(s, !s.pinned);
-            });
-          })(phases[n]);
-        }
-
-        function renderAll() {
-          for (var i = 0; i < items.length; i++) render(items[i]);
-        }
-        if (wide.addEventListener) wide.addEventListener('change', renderAll);
-
-        var hint = document.createElement('p');
-        hint.className = 'timeline__hint';
-        var hintCue = document.createElement('span');
-        hintCue.className = 'timeline__cue';
-        hintCue.setAttribute('aria-hidden', 'true');
-        hint.appendChild(hintCue);
-        hint.appendChild(document.createTextNode('Select an entry for details'));
-        tl.insertBefore(hint, tl.querySelector('.timeline__list'));
-        tl.classList.add('is-disclosure');
-        var about = tl.closest('.about');
-        if (about) about.classList.add('has-disclosure');
-
-        /* Entrance, once. */
-        if (!('IntersectionObserver' in window)) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        tl.classList.add('is-armed');
-        var io = new IntersectionObserver(
-          function (entries) {
-            for (var i = 0; i < entries.length; i++) {
-              if (entries[i].isIntersecting) {
-                tl.classList.add('is-playing');
-                io.disconnect();
-                return;
-              }
-            }
-          },
-          { rootMargin: '0px 0px -12% 0px' },
-        );
-        io.observe(tl);
-      })();
-    </script>
+    <LogoBar embedded />
   </div>
+
+  <script is:inline>
+    (function () {
+      var about = document.querySelector('[data-about]');
+      if (!about) return;
+      var story = about.querySelector('[data-story]');
+      var statements = [].slice.call(story.querySelectorAll('.story__statement'));
+      var rule = about.querySelector('.about__rule');
+      if (!statements.length || !rule) return;
+      if (!('IntersectionObserver' in window) || !window.requestAnimationFrame || !window.Promise) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      /* Armed before first paint: the statements, button, rule and trust bar
+         wait (in their final positions) until the sequence reaches them. */
+      about.classList.add('is-armed');
+
+      var finished = false;
+      var veil = null;
+      var caret = null;
+      var width0 = window.innerWidth;
+
+      /* Only a real width change re-wraps the lines; mobile toolbars that
+         collapse on scroll change the height alone. */
+      function onResize() {
+        if (Math.abs(window.innerWidth - width0) > 1) finish();
+      }
+
+      function finish() {
+        if (finished) return;
+        finished = true;
+        if (veil) veil.remove();
+        about.classList.remove('is-armed', 'is-resume', 'is-rule', 'is-trust');
+        for (var i = 0; i < statements.length; i++) statements[i].classList.remove('is-shown', 'is-veiled');
+        about.classList.add('is-told');
+        window.removeEventListener('resize', onResize);
+      }
+
+      function wait(ms) {
+        return new Promise(function (resolve) {
+          setTimeout(resolve, ms);
+        });
+      }
+
+      /* Resolves once any of els is meaningfully in view: at least `ratio` of
+         it, or (for anything taller than the screen) at least `share` of the
+         viewport, above the bottom `margin` of the screen. */
+      function inView(els, ratio, share, margin) {
+        return new Promise(function (resolve) {
+          var io = new IntersectionObserver(
+            function (entries) {
+              for (var i = 0; i < entries.length; i++) {
+                var e = entries[i];
+                if (!e.isIntersecting) continue;
+                var room = e.rootBounds ? e.rootBounds.height : window.innerHeight;
+                if (e.intersectionRatio >= ratio || e.intersectionRect.height >= room * share) {
+                  io.disconnect();
+                  resolve();
+                  return;
+                }
+              }
+            },
+            { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1], rootMargin: '0px 0px -' + margin + '% 0px' },
+          );
+          for (var j = 0; j < els.length; j++) io.observe(els[j]);
+        });
+      }
+
+      function fontsReady() {
+        if (!document.fonts || !document.fonts.ready) return Promise.resolve();
+        return Promise.race([document.fonts.ready, wait(1500)]);
+      }
+
+      /* Line boxes of one statement, relative to the story. */
+      function linesOf(p, base) {
+        var range = document.createRange();
+        range.selectNodeContents(p);
+        var rects = [].slice.call(range.getClientRects());
+        var lines = [];
+        for (var i = 0; i < rects.length; i++) {
+          var r = rects[i];
+          if (r.width < 0.5 || r.height < 0.5) continue;
+          var cy = (r.top + r.bottom) / 2;
+          var line = null;
+          for (var k = 0; k < lines.length; k++) {
+            if (Math.abs(lines[k].cy - cy) < r.height * 0.45) {
+              line = lines[k];
+              break;
+            }
+          }
+          if (!line) lines.push({ cy: cy, top: r.top, bottom: r.bottom, left: r.left, right: r.right });
+          else {
+            line.top = Math.min(line.top, r.top);
+            line.bottom = Math.max(line.bottom, r.bottom);
+            line.left = Math.min(line.left, r.left);
+            line.right = Math.max(line.right, r.right);
+          }
+        }
+        lines.sort(function (a, b) {
+          return a.top - b.top;
+        });
+        return lines.map(function (l) {
+          return { top: l.top - base.top, bottom: l.bottom - base.top, left: l.left - base.left, right: l.right - base.left };
+        });
+      }
+
+      /* Desktop and tablet: a caret types each statement on, line by line.
+         Masks cover every finished line; each slides away at a steady speed
+         with a soft leading edge, and the caret rides that edge. */
+      function typeOn() {
+        for (var s = 0; s < statements.length; s++) statements[s].classList.add('is-veiled');
+        var base = story.getBoundingClientRect();
+        var size = parseFloat(getComputedStyle(statements[0]).fontSize) || 32;
+        var edge = Math.round(size * 0.9);
+        var pad = 6;
+        veil = document.createElement('div');
+        veil.className = 'story__veil';
+        veil.setAttribute('aria-hidden', 'true');
+        veil.style.cssText = 'left:' + -edge + 'px;right:0;top:' + -pad + 'px;bottom:' + -pad + 'px;--edge:' + edge + 'px';
+        var segs = [];
+        var total = 0;
+        var groups = statements.map(function (p) {
+          return linesOf(p, base);
+        });
+        groups.forEach(function (lines, g) {
+          lines.forEach(function (l, i) {
+            var prev = lines[i - 1];
+            var next = lines[i + 1];
+            var top = prev ? (prev.bottom + l.top) / 2 : l.top - 4;
+            var bottom = next ? (l.bottom + next.top) / 2 : l.bottom + 4;
+            var mask = document.createElement('span');
+            mask.className = 'story__mask';
+            /* In veil coordinates (the veil starts one edge to the left of
+               the story), the mask's soft edge sits just before the line. */
+            mask.style.cssText = 'left:' + l.left + 'px;top:' + (top + pad) + 'px;height:' + (bottom - top) + 'px';
+            veil.appendChild(mask);
+            var w = l.right - l.left;
+            total += w;
+            segs.push({ mask: mask, w: w, left: l.left + edge, right: l.right + edge, top: l.top + pad, h: l.bottom - l.top, group: g, last: i === lines.length - 1 });
+          });
+        });
+        caret = document.createElement('span');
+        caret.className = 'story__caret';
+        veil.appendChild(caret);
+        story.appendChild(veil);
+
+        /* About three seconds of typing for all three statements, including
+           a short rest after the first two. Each statement starts once the one
+           before it has finished and it is itself on screen, so on a tall
+           screen the three run straight through, and on a shorter one the
+           caret waits, blinking, instead of typing below the fold. */
+        var REST = 240;
+        var GAP = 16;
+        var budget = 3000 - REST * (groups.length - 1) - GAP * Math.max(0, segs.length - groups.length);
+        var speed = total / Math.max(budget, 900);
+        var plan = groups.map(function () {
+          return [];
+        });
+        segs.forEach(function (sg) {
+          plan[sg.group].push(sg);
+        });
+        plan.forEach(function (lines) {
+          var t = 0;
+          lines.forEach(function (sg) {
+            sg.dur = Math.max(70, sg.w / speed);
+            sg.dist = sg.w + edge + 6;
+            sg.start = t;
+            t += sg.dur + (sg.last ? 0 : GAP);
+          });
+          lines.end = t;
+        });
+
+        function place(sg) {
+          var edgeX = sg.left - edge + sg.k * sg.dist + edge * 0.35;
+          var x = Math.max(sg.left - 2, Math.min(edgeX, sg.right + 3));
+          caret.style.height = Math.round(sg.h * 0.78) + 'px';
+          caret.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + (sg.top + sg.h * 0.11).toFixed(1) + 'px,0)';
+          /* It blinks only while it rests at the end of a statement, not in
+             the short step between two lines. */
+          caret.classList.toggle('is-resting', sg.k >= 1 && sg.last);
+        }
+
+        function run(lines) {
+          return new Promise(function (resolve) {
+            var t0 = null;
+            function frame(now) {
+              if (finished) return resolve();
+              if (t0 === null) t0 = now;
+              var el = now - t0;
+              var active = null;
+              for (var i = 0; i < lines.length; i++) {
+                var sg = lines[i];
+                var k = Math.min(1, Math.max(0, (el - sg.start) / sg.dur));
+                if (k !== sg.k) {
+                  sg.k = k;
+                  sg.mask.style.transform = 'translate3d(' + (k * sg.dist).toFixed(1) + 'px,0,0)';
+                  /* Only a moving mask carries the soft edge; a finished one
+                     is put away. */
+                  var state = k >= 1 ? 'is-done' : 'is-live';
+                  if (state !== sg.state) {
+                    sg.state = state;
+                    sg.mask.className = 'story__mask ' + state;
+                  }
+                }
+                if (el >= sg.start) active = sg;
+              }
+              if (active) place(active);
+              if (el < lines.end) requestAnimationFrame(frame);
+              else resolve();
+            }
+            requestAnimationFrame(frame);
+          });
+        }
+
+        segs.forEach(function (sg) {
+          sg.k = 0;
+        });
+        place(segs[0]);
+        var chain = Promise.resolve();
+        plan.forEach(function (lines, g) {
+          chain = chain.then(function () {
+            if (finished) return;
+            var go = g === 0 ? Promise.resolve() : Promise.all([wait(REST), inView([statements[g]], 0.35, 0.3, 10)]);
+            return go.then(function () {
+              if (finished) return;
+              return run(lines);
+            });
+          });
+        });
+        return chain;
+      }
+
+      /* Phones: each statement arrives as a block, in order, as it is reached. */
+      function blocks() {
+        var chain = Promise.resolve();
+        statements.forEach(function (p, i) {
+          chain = chain
+            .then(function () {
+              return inView([p], 0.2, 0.2, 8);
+            })
+            .then(function () {
+              if (finished) return;
+              p.classList.add('is-shown');
+              if (i === statements.length - 1) about.classList.add('is-resume');
+              return wait(360);
+            });
+        });
+        return chain;
+      }
+
+      function step(fn) {
+        return function (v) {
+          return finished ? v : fn(v);
+        };
+      }
+
+      /* A keyboard user reaching the button, or a resize that would re-wrap
+         the lines, ends the sequence at once. */
+      about.addEventListener('focusin', finish);
+
+      /* Start once a statement is about half on screen within the top three
+         quarters, so the typing happens where the reader is looking. */
+      inView(statements, 0.5, 0.3, 25)
+        .then(step(fontsReady))
+        .then(
+          step(function () {
+            if (window.matchMedia('(min-width: 48rem)').matches) {
+              window.addEventListener('resize', onResize);
+              return typeOn().then(
+                step(function () {
+                  about.classList.add('is-resume');
+                  return wait(520);
+                }),
+              );
+            }
+            return blocks();
+          }),
+        )
+        .then(
+          step(function () {
+            if (caret) caret.classList.add('is-leaving');
+            return wait(caret ? 260 : 0);
+          }),
+        )
+        .then(
+          step(function () {
+            window.removeEventListener('resize', onResize);
+            if (veil) veil.remove();
+            veil = null;
+            caret = null;
+            return inView([rule], 0.01, 0, 12);
+          }),
+        )
+        .then(
+          step(function () {
+            about.classList.add('is-rule');
+            return wait(720);
+          }),
+        )
+        .then(
+          step(function () {
+            about.classList.add('is-trust');
+            return wait(1500);
+          }),
+        )
+        .then(finish, finish);
+    })();
+  </script>
 </section>
 
 <style>
   .about {
-    padding-block: clamp(3.5rem, 2rem + 4vw, 6rem);
+    padding-block: clamp(3.5rem, 2rem + 4vw, 6rem) clamp(4rem, 2.5rem + 4vw, 7rem);
   }
 
   /* One line across the canvas on wide screens. The size is fitted to the
@@ -269,630 +406,128 @@ const chapters = about.career.chapters.map((chapter, i) => ({
      canvas stops growing. */
   .about__heading {
     font-size: clamp(2.5rem, 1rem + 6vw, 4rem);
-    margin: 0 0 clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    margin: 0 0 clamp(3rem, 1.5rem + 5vw, 7rem);
     max-width: none;
     text-wrap: balance;
   }
 
-  .about__cols {
+  /* ---- the narrative ----------------------------------------------------
+     Three statements, one per row, stepping across the canvas. A measure of
+     19.5em keeps lines near 38 to 48 characters at every desktop and tablet
+     size; phones simply use the full width. */
+  .story {
+    position: relative;
     display: grid;
-    gap: var(--space-5);
+    row-gap: clamp(3rem, 1.5rem + 5vw, 8rem);
   }
 
-  .about__col {
+  .story__statement {
     margin: 0;
-    max-width: var(--measure);
-    font-size: var(--text-md);
-    line-height: var(--leading-relaxed);
+    max-width: 19.5em;
+    font-family: var(--font-display);
+    font-weight: 440;
+    font-stretch: 96%;
+    font-size: clamp(1.375rem, 0.95rem + 1.45vw, 2.375rem);
+    line-height: 1.26;
+    letter-spacing: -0.011em;
     color: var(--ink-2);
-    text-wrap: pretty;
+    /* Plain wrapping, not text-wrap: pretty: Chrome can settle "pretty"
+       lines a moment after first layout, which would move text under the
+       type-on masks. */
+    text-wrap: wrap;
   }
 
-  /* The third column is a thesis, not a third paragraph, set as a statement
-     with the resume action beneath it. The gap keeps the button reading as
-     the column's action rather than the end of the sentence. */
-  .about__col--thesis {
-    display: grid;
-    justify-items: start;
-    align-content: start;
-    gap: var(--space-6);
-    padding-top: var(--space-4);
-    border-top: 2px solid var(--accent);
-  }
-
-  .about__thesis {
-    margin: 0;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-stretch: 92%;
-    font-size: var(--text-lg);
-    line-height: 1.3;
-    letter-spacing: -0.005em;
-    color: var(--heading);
-    text-wrap: pretty;
-  }
-
-  /* ---- career timeline ---------------------------------------------------
-     Tones recede from the current chapter toward EARLIER. Every marker tone
-     stays at or above 4.5:1 on the light surface and every node outline at or
-     above 3:1: teal 9.2, slate 11.6, the steel mix 5.0. The rule fades from
-     blue-teal to pale slate; it is a connector, and the nodes and the NOW and
-     EARLIER labels carry the reading order. */
-  .timeline {
-    --node: 0.875rem;
-    --stem: 1.5rem;
-    --inset: calc(var(--node) + 1.25rem);
-    --gap: var(--space-6);
-    --rule-from: var(--accent);
-    --rule-to: var(--c-pale);
-    --tone: var(--heading);
-
-    margin-top: clamp(2.75rem, 1.5rem + 3.5vw, 4.5rem);
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas: 'now hint' 'list list' 'earlier earlier';
-    align-items: center;
-    column-gap: var(--space-4);
-    row-gap: var(--space-4);
-  }
-
-  .timeline__end {
-    margin: 0;
-    font-size: var(--text-xs);
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-
-  .timeline__end--now {
-    grid-area: now;
-  }
-
-  .timeline__end--earlier {
-    grid-area: earlier;
-  }
-
-  /* Written by the script, so it only appears when entries can be opened.
-     Elements the script creates carry no scoping attribute, so their rules are
-     written as :global() under .timeline. */
-  .timeline :global(.timeline__hint) {
-    grid-area: hint;
-    justify-self: end;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    margin: 0;
-    font-size: var(--text-xs);
-    color: var(--ink-3);
-  }
-
-  .timeline__list {
-    grid-area: list;
-    position: relative;
-    list-style: none;
-    margin: 0;
-    padding: 0 0 0 var(--inset);
-    display: grid;
-    gap: var(--space-7);
-  }
-
-  /* The rule. Vertical by default, horizontal on wide screens. */
-  .timeline__list::before {
-    content: '';
-    position: absolute;
-    left: calc(var(--node) / 2 - 1px);
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, var(--rule-from), var(--rule-to));
-    transform-origin: top center;
-  }
-
-  .timeline__chapter {
-    position: relative;
-    display: grid;
-    align-content: start;
-  }
-
-  .timeline__chapter:nth-child(1) {
-    --tone: var(--accent);
-  }
-
-  .timeline__chapter:nth-child(2) {
-    --tone: var(--heading);
-  }
-
-  .timeline__chapter:nth-child(n + 3) {
-    --tone: color-mix(in srgb, var(--ink-3) 90%, var(--bg));
-  }
-
-  .timeline__node {
-    position: absolute;
-    left: calc(-1 * var(--inset));
-    top: 0.2rem;
-    width: var(--node);
-    height: var(--node);
-    box-sizing: border-box;
-    border-radius: 50%;
-    border: 2px solid var(--tone);
-    background: var(--bg);
-  }
-
-  /* The active node: filled, with a narrow halo rather than a glow. */
-  .timeline__chapter--current .timeline__node {
-    background: var(--tone);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 16%, transparent);
-  }
-
-  /* On the vertical timeline the stem runs from the node across to the
-     entry; on the horizontal one it drops from the node to the marker. */
-  .timeline__stem {
-    position: absolute;
-    left: calc(-1 * var(--inset) + var(--node));
-    top: calc(0.2rem + var(--node) / 2);
-    width: calc(var(--inset) - var(--node) - 0.45rem);
-    height: 1px;
-    background: var(--tone);
-    opacity: 0.55;
-  }
-
-  .timeline__marker {
-    margin: 0 0 0.5rem;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-stretch: 86%;
-    font-size: var(--text-sm);
-    line-height: 1.3;
-    letter-spacing: 0.06em;
-    font-variant-numeric: tabular-nums;
-    color: var(--tone);
-  }
-
-  .timeline__heading {
-    margin: 0 0 0.8rem;
-    font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-stretch: var(--display-stretch);
-    font-size: clamp(1.25rem, 1.05rem + 0.45vw, 1.5rem);
-    line-height: 1.12;
-    letter-spacing: -0.005em;
-    color: var(--heading);
-    text-wrap: balance;
-  }
-
-  .timeline__phases {
-    display: grid;
-    row-gap: 1.1rem;
-  }
-
-  .timeline__phase {
-    position: relative;
-    isolation: isolate;
-  }
-
-  /* Stacked, a phase is no wider than its text needs, so an open entry's tint
-     hugs its description instead of running the full width of a tablet. */
-  @media (max-width: 71.99rem) {
-    .timeline__phase {
-      max-width: 34rem;
-    }
-  }
-
-  /* Two phases of one company: a hairline between them, horizontal when they
-     stack and vertical when they sit side by side. */
-  .timeline__phase + .timeline__phase::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -0.55rem;
-    height: 1px;
-    background: var(--line);
-    pointer-events: none;
-  }
-
-  .timeline__label {
-    margin: 0;
-  }
-
-  /* Secondary label: a flat tint, no border, no shadow, so it reads as a tag
-     beneath the heading rather than a control. */
-  .timeline__pill {
-    display: inline-block;
-    padding: 0.32rem 0.66rem 0.3rem;
-    border-radius: 999px;
-    background: var(--bg-sunk);
-    color: var(--ink-3);
-    font-size: var(--text-xs);
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .timeline__phase--current .timeline__pill {
-    background: var(--accent-soft);
-    color: var(--accent);
-  }
-
-  .timeline__copy {
-    margin: 0;
-    padding-top: 0.75rem;
-    max-width: 46ch;
-    font-size: var(--text-sm);
-    line-height: var(--leading-relaxed);
-    color: var(--ink-2);
-    text-wrap: pretty;
-  }
-
-  .timeline__copy .nobr {
+  .story__statement .nobr {
     white-space: nowrap;
   }
 
-  /* ---- progressive disclosure (only once the script has run) ------------ */
-  .timeline :global(.timeline__toggle) {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    margin: -0.3rem -0.4rem;
-    padding: 0.3rem 0.4rem;
-    border: 0;
-    border-radius: 999px;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+  /* The three approved emphases: blue-teal and a little more weight, nothing
+     else (9.2:1 on the light surface). */
+  .story__mark {
+    font-weight: 600;
+    color: var(--accent);
   }
 
-  /* The affordance: a small ringed plus beside each label, turning to a minus
-     while the entry is pinned open. */
-  .timeline :global(.timeline__cue) {
-    position: relative;
-    flex: none;
-    width: 1.125rem;
-    height: 1.125rem;
-    border-radius: 50%;
-    color: var(--ink-3);
-    box-shadow: inset 0 0 0 1px var(--line-strong);
-    transition:
-      color var(--dur-fast) var(--ease-out),
-      box-shadow var(--dur-fast) var(--ease-out);
+  /* The closing statement is the thesis: a step larger and heavier. */
+  .story__statement--three {
+    max-width: 20em;
+    font-size: clamp(1.5rem, 1rem + 1.75vw, 2.75rem);
+    font-weight: 520;
+    line-height: 1.2;
+    color: var(--heading);
   }
 
-  .timeline :global(.timeline__cue)::before,
-  .timeline :global(.timeline__cue)::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 0.5rem;
-    height: 1.5px;
-    margin: -0.75px 0 0 -0.25rem;
-    border-radius: 1px;
-    background: currentColor;
-    transition: transform var(--dur) var(--ease-out);
+  .story__statement--three .story__mark {
+    font-weight: 660;
   }
 
-  .timeline :global(.timeline__cue)::after {
-    transform: rotate(90deg);
-  }
-
-  .timeline__phase.is-pinned :global(.timeline__cue)::after {
-    transform: rotate(0deg);
-  }
-
-  .timeline.is-disclosure .timeline__phase:not(.is-pinned) {
-    cursor: pointer;
-  }
-
-  /* A single-phase chapter is one entry, so its heading is clickable too. */
-  .timeline.is-disclosure .timeline__chapter:not(.timeline__chapter--wide):not(:has(.is-pinned)) {
-    cursor: pointer;
-  }
-
-  .timeline.is-disclosure .timeline__phase:hover :global(.timeline__cue),
-  .timeline :global(.timeline__toggle:focus-visible .timeline__cue) {
-    color: var(--ink);
-    box-shadow: inset 0 0 0 1px var(--ink-3);
-  }
-
-  .timeline.is-disclosure .timeline__chapter:not(.timeline__chapter--wide):hover :global(.timeline__cue) {
-    color: var(--ink);
-    box-shadow: inset 0 0 0 1px var(--ink-3);
-  }
-
-  /* The tint behind an open entry. Drawn by a pseudo-element outside the
-     layout, so it never changes a measurement. */
-  .timeline.is-disclosure .timeline__phase::before {
-    content: '';
-    position: absolute;
-    inset: -0.5rem -0.75rem;
-    z-index: -1;
-    border-radius: 0.85rem;
-    background: var(--bg-elev);
-    box-shadow: inset 0 0 0 1px var(--line);
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity var(--dur) var(--ease-out),
-      box-shadow var(--dur) var(--ease-out);
-  }
-
-  .timeline.is-disclosure .timeline__phase.is-open::before {
-    opacity: 1;
-  }
-
-  .timeline.is-disclosure .timeline__phase.is-pinned::before {
-    box-shadow: inset 0 0 0 1px var(--line-strong);
-  }
-
-  /* Closed: an accordion row of no height. Opening grows it (the tapped or
-     clicked label stays where it is; only what follows moves down). */
-  .timeline.is-disclosure .timeline__detail {
+  .story__close {
     display: grid;
-    grid-template-rows: 0fr;
-    visibility: hidden;
-    opacity: 0;
-    transition:
-      grid-template-rows 300ms var(--ease-out),
-      opacity 180ms var(--ease-out),
-      visibility 0s linear 300ms;
+    justify-items: start;
+    gap: clamp(1.75rem, 1rem + 1.6vw, 2.75rem);
   }
 
-  .timeline.is-disclosure .timeline__phase.is-open .timeline__detail {
-    grid-template-rows: 1fr;
-    visibility: visible;
-    opacity: 1;
-    transition:
-      grid-template-rows 320ms var(--ease-out),
-      opacity 260ms var(--ease-out) 60ms,
-      visibility 0s;
+  /* The lower rule closes the narrative across the whole canvas. */
+  .about__rule {
+    margin: clamp(4.5rem, 2.5rem + 6vw, 9rem) 0 0;
+    border: 0;
+    height: 1px;
+    background: var(--line-strong);
+    transform-origin: left center;
   }
 
-  .timeline.is-disclosure .timeline__clip {
-    min-height: 0;
-    overflow: hidden;
+  .about :global(.logobar--embedded) {
+    margin-top: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
   }
 
-  /* ---- wide: the horizontal timeline ------------------------------------
-     One rule from NOW to EARLIER, a node and stem for each chapter, and four
-     equal columns. Phi Labs Global spans two of them with a rule under its
-     heading across both phases. The chapters, their phases and the list
-     share rows (nested subgrid), so markers, headings, labels and
-     descriptions each start on one line even when a heading wraps. */
-  @media (min-width: 72rem) {
-    .timeline {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      grid-template-areas: 'now hint earlier' 'list list list';
+  /* Tablet: the same order with gentler offsets. */
+  @media (min-width: 48rem) {
+    .story__statement--two {
+      margin-left: 8%;
     }
 
-    .timeline :global(.timeline__hint) {
-      justify-self: center;
-    }
-
-    .timeline__end--earlier {
-      justify-self: end;
-    }
-
-    .timeline__list {
-      padding: 0;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      column-gap: var(--gap);
-      row-gap: 0;
-    }
-
-    .timeline__list::before {
-      left: 0;
-      right: 0;
-      top: calc(var(--node) / 2 - 1px);
-      bottom: auto;
-      width: auto;
-      height: 2px;
-      background: linear-gradient(90deg, var(--rule-from), var(--rule-to));
-      transform-origin: center left;
-    }
-
-    .timeline__chapter {
-      padding-top: calc(var(--node) + var(--stem) + 0.6rem);
-    }
-
-    .timeline__chapter--wide {
-      grid-column: span 2;
-    }
-
-    .timeline__chapter--wide .timeline__phases {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: var(--gap);
-    }
-
-    .timeline__chapter--wide .timeline__heading {
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid var(--line);
-    }
-
-    @supports (grid-template-rows: subgrid) {
-      .timeline__chapter {
-        grid-row: span 4;
-        grid-template-rows: subgrid;
-        grid-template-columns: subgrid;
-        row-gap: 0;
-      }
-
-      .timeline__marker,
-      .timeline__heading {
-        grid-column: 1 / -1;
-      }
-
-      .timeline__phases,
-      .timeline__chapter--wide .timeline__phases {
-        grid-column: 1 / -1;
-        grid-row: span 2;
-        grid-template-rows: subgrid;
-        grid-template-columns: subgrid;
-        row-gap: 0;
-      }
-
-      .timeline__phase {
-        grid-row: span 2;
-        display: grid;
-        grid-template-rows: subgrid;
-        row-gap: 0;
-      }
-    }
-
-    .timeline__phase + .timeline__phase::after {
-      left: calc(var(--gap) / -2);
-      right: auto;
-      top: 0;
-      bottom: 0;
-      width: 1px;
-      height: auto;
-    }
-
-    /* At rest the hairline only divides the two labels; it runs the full
-       height once either Phi Labs phase is open. */
-    .timeline.is-disclosure .timeline__phase + .timeline__phase::after {
-      bottom: auto;
-      height: 1.6rem;
-      transition: height var(--dur) var(--ease-out);
-    }
-
-    .timeline.is-disclosure .timeline__chapter--wide:has(.is-open) .timeline__phase + .timeline__phase::after {
-      height: 100%;
-    }
-
-    .timeline__node {
-      left: 0;
-      top: 0;
-    }
-
-    .timeline__stem {
-      left: calc(var(--node) / 2 - 0.5px);
-      top: calc(var(--node) + 0.2rem);
-      width: 1px;
-      height: var(--stem);
-    }
-
-    /* The description row keeps its height at rest, so a hover or focus
-       preview reveals it in place (a clip from the top and a fade) and
-       nothing on the page moves. */
-    .timeline.is-disclosure .timeline__detail {
-      grid-template-rows: 1fr;
-      clip-path: inset(0 0 100% 0);
-      transition:
-        clip-path 300ms var(--ease-out),
-        opacity 200ms var(--ease-out),
-        visibility 0s linear 300ms;
-    }
-
-    .timeline.is-disclosure .timeline__phase.is-open .timeline__detail {
-      clip-path: inset(0 0 0 0);
-      transition:
-        clip-path 360ms var(--ease-out),
-        opacity 260ms var(--ease-out),
-        visibility 0s;
-    }
-
-    /* That reserved row already gives the section its closing space. */
-    .about.has-disclosure {
-      padding-bottom: clamp(2rem, 1rem + 1.5vw, 3rem);
+    .story__close {
+      margin-left: 16%;
     }
   }
 
-  /* ---- entrance, once --------------------------------------------------- */
-  .timeline.is-armed .timeline__list::before {
-    transform: scaleY(0);
-  }
-
-  .timeline.is-armed .timeline__node {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-
-  .timeline.is-armed .timeline__stem {
-    opacity: 0;
-  }
-
-  .timeline.is-armed .timeline__chapter > :not(.timeline__node, .timeline__stem) {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-
-  .timeline.is-playing .timeline__list::before {
-    transform: none;
-    transition: transform 900ms var(--ease-out);
-  }
-
-  .timeline.is-playing .timeline__node {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 320ms var(--ease-out),
-      transform 460ms var(--ease-out);
-    transition-delay: calc(620ms + var(--i) * 190ms);
-  }
-
-  .timeline.is-playing .timeline__stem {
-    opacity: 0.55;
-    transition: opacity 360ms var(--ease-out);
-    transition-delay: calc(740ms + var(--i) * 190ms);
-  }
-
-  .timeline.is-playing .timeline__chapter > :not(.timeline__node, .timeline__stem) {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 520ms var(--ease-out),
-      transform 620ms var(--ease-out);
-    transition-delay: calc(820ms + var(--i) * 190ms);
-  }
-
-  @media (min-width: 72rem) {
-    .timeline.is-armed .timeline__list::before {
-      transform: scaleX(0);
+  /* Desktop: a twelve-column canvas and a diagonal from the left edge toward
+     the right. */
+  @media (min-width: 64rem) {
+    .story {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--space-6);
     }
 
-    .timeline.is-playing .timeline__list::before {
-      transform: none;
+    .story__statement--one {
+      grid-column: 1 / span 8;
+    }
+
+    .story__statement--two {
+      grid-column: 3 / span 8;
+      margin-left: 0;
+    }
+
+    .story__close {
+      grid-column: 5 / span 8;
+      margin-left: 0;
     }
   }
 
-  /* Reduced motion: every state change is immediate. */
-  @media (prefers-reduced-motion: reduce) {
-    .timeline__detail,
-    .timeline__phase::before,
-    .timeline :global(.timeline__cue),
-    .timeline :global(.timeline__cue)::before,
-    .timeline :global(.timeline__cue)::after {
-      transition: none !important;
+  @media (min-width: 90rem) {
+    .story__statement--one {
+      grid-column: 1 / span 7;
+    }
+
+    .story__statement--two {
+      grid-column: 4 / span 7;
+    }
+
+    .story__close {
+      grid-column: 6 / span 7;
     }
   }
 
-  @media print {
-    .timeline.is-armed .timeline__list::before,
-    .timeline.is-armed .timeline__node,
-    .timeline.is-armed .timeline__chapter > * {
-      opacity: 1 !important;
-      transform: none !important;
-    }
-
-    .timeline.is-disclosure .timeline__detail {
-      grid-template-rows: 1fr !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      clip-path: none !important;
-    }
-
-    .timeline :global(.timeline__hint),
-    .timeline :global(.timeline__cue) {
-      display: none !important;
-    }
-  }
-
-  /* ---- headline sizes --------------------------------------------------- */
   /* The smallest phones cannot fit "Operator discipline." at the 2.5rem floor,
      which breaks the headline into four short lines; sizing it to the viewport
      keeps the two-line reading every other phone gets. */
@@ -909,11 +544,163 @@ const chapters = about.career.chapters.map((chapter, i) => ({
     }
   }
 
-  @media (min-width: 64rem) {
-    .about__cols {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.9fr);
-      gap: clamp(2rem, 1rem + 2.5vw, 4rem);
-      align-items: start;
+  /* ---- the sequence (only while the script has armed it) ---------------- */
+  /* Desktop and tablet: a waiting statement is covered by a sheet of the
+     section's own background rather than faded out, so the text itself never
+     changes (not its position, not its opacity). When typing begins the
+     per-line masks take over in the same frame and the sheet is lifted. */
+  @media (min-width: 48rem) {
+    .about.is-armed .story__statement {
+      position: relative;
+    }
+
+    .about.is-armed .story__statement::after {
+      content: '';
+      position: absolute;
+      inset: -6px -4px;
+      background: var(--bg);
+      pointer-events: none;
+    }
+
+    .about.is-armed .story__statement.is-veiled::after {
+      content: none;
+    }
+  }
+
+  /* Phones reveal each statement as a block with a short rise. */
+  @media (max-width: 47.99rem) {
+    .about.is-armed .story__statement {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+  }
+
+  /* Phones: a block at a time. */
+  .about.is-armed .story__statement.is-shown {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 640ms var(--ease-out),
+      transform 720ms var(--ease-out);
+  }
+
+  .about.is-armed .story__resume {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  .about.is-armed.is-resume .story__resume {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 520ms var(--ease-out),
+      transform 620ms var(--ease-out);
+  }
+
+  .about.is-armed .about__rule {
+    transform: scaleX(0);
+  }
+
+  .about.is-armed.is-rule .about__rule {
+    transform: none;
+    transition: transform 900ms var(--ease-out);
+  }
+
+  .about.is-armed :global(.logobar__heading) {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  .about.is-armed :global(.logobar__item) {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  .about.is-armed.is-trust :global(.logobar__heading) {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 460ms var(--ease-out),
+      transform 560ms var(--ease-out);
+  }
+
+  .about.is-armed.is-trust :global(.logobar__item) {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 520ms var(--ease-out),
+      transform 620ms var(--ease-out);
+    transition-delay: calc(240ms + var(--n, 0) * 70ms);
+  }
+
+  /* The veil, its masks and the caret are written by the script, so their
+     rules are global under .about. */
+  .about :global(.story__veil) {
+    position: absolute;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* A waiting mask is a flat sheet of the section's color, identical to the
+     ground beneath it. Only the mask that is moving carries the soft edge, and
+     a finished one is put away, so no partly transparent sheet ever rests on
+     bare background, where rounding would leave a faint rectangle. */
+  .about :global(.story__mask) {
+    position: absolute;
+    right: 0;
+    background: var(--bg);
+    will-change: transform;
+  }
+
+  /* The soft edge fades from the section's own color at zero alpha, so no
+     gray creeps into the gradient whichever space it is interpolated in. */
+  .about :global(.story__mask.is-live) {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--bg), transparent 100%) 0, var(--bg) var(--edge), var(--bg) 100%);
+  }
+
+  .about :global(.story__mask.is-done) {
+    visibility: hidden;
+  }
+
+  .about :global(.story__caret) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--accent);
+    will-change: transform;
+    transition: opacity 240ms var(--ease-out);
+  }
+
+  .about :global(.story__caret.is-resting) {
+    animation: about-caret-blink 900ms steps(1, end) infinite;
+  }
+
+  .about :global(.story__caret.is-leaving) {
+    opacity: 0;
+    animation: none;
+  }
+
+  @keyframes about-caret-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media print {
+    .about.is-armed .story__statement,
+    .about.is-armed .story__resume,
+    .about.is-armed .about__rule,
+    .about.is-armed :global(.logobar__heading),
+    .about.is-armed :global(.logobar__item) {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .about :global(.story__veil) {
+      display: none !important;
     }
   }
 </style>

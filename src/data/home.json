@@ -112,72 +112,24 @@
     ]
   },
   "about": {
-    "_note": "Version 1.6 About: three narrative columns in plain text (the narrative names the company, no individual products, and nothing is bolded; the resume action sits beneath the thesis), then the career timeline. The timeline has three chapters, NOW to EARLIER, numbered 01 to 03 from their order; Phi Labs Global holds two phases. Descriptions are collapsed at rest when JavaScript runs and always visible without it. The trust bar is its own band after About (see index.astro).",
+    "_note": "About (redesign): the headline, then three editorial statements in a staggered composition, the resume action beneath the third, a lower rule, and the trust bar on the same background. Double asterisks mark the three approved emphases, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed the statements type on once when About enters the viewport, then the rule draws and the trust bar appears.",
     "heading": "Creative instincts. Operator discipline.",
-    "columns": [
+    "statements": [
       {
-        "role": "foundation",
-        "text": "I entered DeFi full-time in 2021 after a decade of building audiences and managing the business behind a globally distributed music project."
+        "text": "I entered DeFi full-time in 2021 after a decade of building audiences and running the business behind a **professionally managed, globally distributed** music project that reached listeners in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings."
       },
       {
-        "role": "phi-labs",
-        "text": "In 2024, I joined Phi Labs Global to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and a proprietary AMM. As the organization evolved, my role expanded far beyond social."
+        "text": "In 2024, I joined Phi Labs Global to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and DeFi products with a combined audience of **more than 200,000**. As the organization evolved, my scope expanded into positioning, messaging, technical documentation, community strategy, creator partnerships, events, websites, campaign operations, and distribution."
       },
       {
-        "role": "thesis",
-        "text": "Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore."
+        "text": "Today, I connect **strategy with execution** to make complex products clear, relevant, and difficult to ignore."
       }
     ],
     "resumeLink": {
       "label": "Read the full resume",
       "href": "resume"
     },
-    "headshot": "about-headshot",
-    "career": {
-      "heading": "Career snapshot",
-      "nowLabel": "Now",
-      "earlierLabel": "Earlier",
-      "chapters": [
-        {
-          "heading": "Phi Labs Global",
-          "current": true,
-          "phases": [
-            {
-              "label": "Current scope",
-              "current": true,
-              "detail": "Own positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, campaign operations, and distribution."
-            },
-            {
-              "label": "Original mandate",
-              "current": false,
-              "detail": "Joined as Social Media Manager to manage social channels, community engagement, campaigns, and product education across a portfolio with a combined audience of more than 200,000, including a Layer 1 blockchain and NFT marketplace."
-            }
-          ]
-        },
-        {
-          "heading": "Web3 Marketing Consulting",
-          "current": false,
-          "phases": [
-            {
-              "label": "Select DeFi Projects",
-              "current": false,
-              "detail": "Led social, community, content, and partner marketing for DeFi startups across Avalanche and Ethereum, managing audiences of up to 40,000 and a five-person moderator team."
-            }
-          ]
-        },
-        {
-          "heading": "Independent Music and Business Operator",
-          "current": false,
-          "phases": [
-            {
-              "label": "Global Music Project",
-              "current": false,
-              "detail": "Built a globally distributed music project streamed in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings."
-            }
-          ]
-        }
-      ]
-    }
+    "headshot": "about-headshot"
   },
   "contact": {
     "heading": "Make the complex impossible to ignore.",

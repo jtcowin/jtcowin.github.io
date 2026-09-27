@@ -141,9 +141,6 @@
      05 brand         blue-teal
      06 light-return  fog
 
-   band is not a chapter: it is the trust bar's transition band between About
-   and Selected Work, on the pale slate tokens so it reads apart from both.
-
    The header reads the surface beneath it from data-surface to pick its
    light or dark control mode. */
 [data-surface] {
@@ -159,8 +156,7 @@
   --line-strong: #bdb5a7;
 }
 
-[data-surface='soft'],
-[data-surface='band'] {
+[data-surface='soft'] {
   --bg: var(--c-pale);
   --bg-elev: #e9edee;
   --bg-sunk: #d1d8d9;

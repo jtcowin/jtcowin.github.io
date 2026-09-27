@@ -131,8 +131,9 @@ const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 // v1.5: the standalone metrics strip is gone; figures live with the work they describe.
 if (!/Approximately 1\.25M impressions/.test(home)) failures.push('[claim] the creator work card must carry "Approximately 1.25M impressions"');
 if (/class="proof[\s"]/.test(home)) failures.push('[claim] the standalone metrics strip was retired in v1.5');
-if (!/Social Media Manager/.test(home)) failures.push('[claim] homepage must preserve the official title "Social Media Manager"');
-if (!/Web3 Marketing Consulting/.test(home)) failures.push('[claim] homepage must carry the consulting career entry');
+// The About redesign states no formal title on the homepage. The only formal
+// title for the Phi Labs role is still "Social Media Manager" (resume); the
+// invented-title check above keeps any other title from appearing.
 // v1.3 hero: name and descriptor only.
 if (!/hero__name/.test(home)) failures.push('[claim] hero must render the name as live text');
 if (!/<header class="[^"]*site-header--overlay/.test(home)) failures.push('[claim] homepage header must overlay the hero, not sit on its own bar');
@@ -147,30 +148,41 @@ if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render a
 if (/icon-192\.png"[^>]*class="brand__mark"|brand__mark/.test(home)) failures.push('[claim] no brand mark may appear in the hero header');
 if (!/Creative instincts\. Operator discipline\./.test(home)) failures.push('[claim] About must use the approved headline');
 if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About section must have no eyebrow');
-// v1.6 About narrative: the company is named, individual products are not, and
-// the resume action sits in the third column beneath the thesis.
+// About (redesign): the headline, three editorial statements in the approved
+// copy, exactly the three approved blue-teal emphases, the resume button
+// beneath the third statement, then the lower rule and the trust bar, all
+// inside About on its own background. Nothing of the timeline remains.
 const decode = (t) => t.replace(/&#39;|&#x27;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 const textOf = (html) => decode(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
-const aboutCols = (home.match(/<div class="about__cols"[\s\S]*?<div class="timeline"/) || [''])[0];
-if (!aboutCols) failures.push('[claim] About narrative columns not found');
-if (!/Phi Labs Global/.test(aboutCols)) failures.push('[claim] the About narrative must name Phi Labs Global');
-if (/<(?:strong|b)[\s>]/.test(aboutCols)) failures.push('[claim] the About narrative is set without bold (Version 1.6)');
+const aboutStart = home.indexOf('id="about"');
+const aboutEnd = home.indexOf('</section>', aboutStart);
+const aboutHtml = aboutStart < 0 ? '' : home.slice(aboutStart, aboutEnd);
+const story = (aboutHtml.match(/<div class="story"[\s\S]*?<hr class="about__rule"/) || [''])[0];
+if (!story) failures.push('[claim] the About narrative (story, then the lower rule) was not found');
+const statementHtml = [...story.matchAll(/<p class="story__statement[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+const approvedStatements = [
+  'I entered DeFi full-time in 2021 after a decade of building audiences and running the business behind a professionally managed, globally distributed music project that reached listeners in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings.',
+  'In 2024, I joined Phi Labs Global to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and DeFi products with a combined audience of more than 200,000. As the organization evolved, my scope expanded into positioning, messaging, technical documentation, community strategy, creator partnerships, events, websites, campaign operations, and distribution.',
+  'Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore.',
+];
+if (statementHtml.length !== approvedStatements.length) failures.push(`[claim] About must present three statements (found ${statementHtml.length})`);
+approvedStatements.forEach((copy, i) => {
+  if (textOf(statementHtml[i] || '') !== copy) failures.push(`[claim] About statement ${i + 1} must use the approved copy`);
+});
+const marks = [...story.matchAll(/<strong class="story__mark"[^>]*>([^<]*)<\/strong>/g)].map((m) => textOf(m[1]));
+if (marks.join(' | ') !== 'professionally managed, globally distributed | more than 200,000 | strategy with execution') {
+  failures.push(`[claim] About must emphasize exactly the three approved phrases, in order (found: ${marks.join(' | ') || 'none'})`);
+}
+if ((story.match(/<(?:strong|b|em|mark|u)[\s>]/g) || []).length !== 3) failures.push('[claim] nothing in the About narrative may be emphasized besides the three approved phrases');
+const closing = (story.match(/<div class="story__close"[\s\S]*?<\/div>/) || [''])[0];
+const thirdAt = closing.indexOf('story__statement--three');
+if (thirdAt < 0 || closing.indexOf('story__resume') < thirdAt || !/Read the full resume/.test(closing)) {
+  failures.push('[claim] the "Read the full resume" button must sit directly beneath Statement Three');
+}
 for (const product of ['Archway', 'Ambur', 'Bolt']) {
-  if (aboutCols.includes(product)) failures.push(`[claim] the About narrative must not name individual products (found "${product}")`);
+  if (story.includes(product)) failures.push(`[claim] the About narrative must not name individual products (found "${product}")`);
 }
-if (!textOf(aboutCols).includes('to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and a proprietary AMM.')) {
-  failures.push('[claim] the Phi Labs column must use the approved Version 1.6 copy');
-}
-const thesisCol = (aboutCols.match(/<div class="about__col about__col--thesis"[\s\S]*?<\/div>/) || [''])[0];
-const thesisAt = thesisCol.indexOf('difficult to ignore.');
-const resumeAt = thesisCol.indexOf('about__resume');
-if (thesisAt < 0 || resumeAt < thesisAt || !/Read the full resume/.test(thesisCol)) {
-  failures.push('[claim] the "Read the full resume" button must sit in the third column, beneath the thesis');
-}
-// v1.6 career timeline: three chapters NOW to EARLIER, numbered 01 to 03, three
-// primary nodes. Phi Labs Global is one chapter holding two phases, Current
-// scope and Original mandate; every label sits beneath its chapter heading.
-const retiredCareer = [
+const retiredAbout = [
   'Late 2024 to present',
   'Bolt Liquidity phase',
   'Archway and Ambur Marketplace phase',
@@ -180,66 +192,23 @@ const retiredCareer = [
   'Selected DeFi',
   'Selected Companies',
   'publishing calendars',
+  'my role expanded far beyond social',
 ];
-for (const retired of retiredCareer) {
+for (const retired of retiredAbout) {
   if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
 }
-if (/securing global distribution/.test(home)) failures.push('[claim] the music entry must not repeat "securing global distribution"');
-const timeline = (home.match(/<ol class="timeline__list"[\s\S]*?<\/ol>/) || [''])[0];
-const chapterHtml = timeline.split('<li class="timeline__chapter').slice(1);
-const timelineSpec = [
-  ['Phi Labs Global', [
-    ['Current scope', 'Own positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, campaign operations, and distribution.'],
-    ['Original mandate', 'Joined as Social Media Manager to manage social channels, community engagement, campaigns, and product education across a portfolio with a combined audience of more than 200,000, including a Layer 1 blockchain and NFT marketplace.'],
-  ]],
-  ['Web3 Marketing Consulting', [
-    ['Select DeFi Projects', 'Led social, community, content, and partner marketing for DeFi startups across Avalanche and Ethereum, managing audiences of up to 40,000 and a five-person moderator team.'],
-  ]],
-  ['Independent Music and Business Operator', [
-    ['Global Music Project', 'Built a globally distributed music project streamed in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings.'],
-  ]],
-];
-if (chapterHtml.length !== timelineSpec.length) failures.push(`[claim] the career timeline must have three chapters (found ${chapterHtml.length})`);
-if ((timeline.match(/class="timeline__node"/g) || []).length !== 3) failures.push('[claim] the career timeline must have exactly three primary nodes');
-if ((timeline.match(/Phi Labs Global/g) || []).length !== 1) failures.push('[claim] Phi Labs Global must appear once in the timeline, over both of its phases');
-const details = [];
-timelineSpec.forEach(([heading, phases], i) => {
-  const c = chapterHtml[i] || '';
-  const want = String(i + 1).padStart(2, '0');
-  const markers = [...c.matchAll(/class="timeline__marker"[^>]*>([^<]*)</g)].map((m) => m[1]);
-  const h = (c.match(/<h4 class="timeline__heading"[^>]*>([^<]*)<\/h4>/) || [])[1];
-  if (markers.join(',') !== want) failures.push(`[claim] timeline chapter ${i + 1} must carry one typographic marker, ${want} (found ${markers.join(', ') || 'none'})`);
-  if (h !== heading) failures.push(`[claim] timeline chapter ${want} must be headed "${heading}" (found ${h || 'none'})`);
-  if (/<img|<svg/.test(c)) failures.push(`[claim] timeline chapter ${want} must not use icons or logos`);
-  const phaseHtml = c.split(/<div class="timeline__phase[ "]/).slice(1);
-  if (phaseHtml.length !== phases.length) failures.push(`[claim] "${heading}" must hold ${phases.length} phase(s) (found ${phaseHtml.length})`);
-  phases.forEach(([label, copy], j) => {
-    const ph = phaseHtml[j] || '';
-    const l = (ph.match(/class="timeline__pill"[^>]*>([^<]*)</) || [])[1];
-    const d = textOf((ph.match(/<p class="timeline__copy"[^>]*>([\s\S]*?)<\/p>/) || ['', ''])[1]);
-    details.push(d);
-    if (l !== label) failures.push(`[claim] "${heading}" phase ${j + 1} must carry the label "${label}" (found ${l || 'none'})`);
-    if (c.indexOf('timeline__heading') > c.indexOf(`>${label}<`)) failures.push(`[claim] "${label}" must sit beneath "${heading}"`);
-    if (d !== copy) failures.push(`[claim] the "${label}" description must use the approved copy`);
-    if (!/<div class="timeline__detail" id="timeline-detail-\d+"/.test(ph)) failures.push(`[claim] the "${label}" description needs an id for its toggle`);
-  });
-});
-const chapterClass = (c) => c.slice(0, c.indexOf('"'));
-if (!chapterClass(chapterHtml[0] || '').includes('timeline__chapter--current') || chapterHtml.slice(1).some((c) => chapterClass(c).includes('--current'))) {
-  failures.push('[claim] only the first chapter may be marked current');
+if (/securing global distribution/.test(home)) failures.push('[claim] the About copy must not repeat "securing global distribution"');
+for (const token of ['timeline__', 'data-timeline', 'timeline-detail', 'career__', 'about__cols', 'logobar--band', 'data-surface="band"']) {
+  if (home.includes(token)) failures.push(`[claim] "${token}" is left over from the retired timeline, columns or band`);
 }
-if (!chapterClass(chapterHtml[0] || '').includes('timeline__chapter--wide')) failures.push('[claim] Phi Labs Global must span two timeline columns');
-if (/production/i.test(details[0] || '')) failures.push('[claim] the Current scope description must not include "production"');
-if (!/^Joined as Social Media Manager/.test(details[1] || '')) failures.push('[claim] the Original mandate description must open with the official title');
-if (/\bindependent\b/i.test(details[3] || '')) failures.push('[claim] the music description must not include "independent"');
-// Progressive disclosure is script-built on top of complete HTML, so without
-// JavaScript every description above is simply visible.
-for (const token of ['data-timeline', 'prefers-reduced-motion: reduce', 'timeline__toggle', 'aria-expanded', 'aria-controls', 'Escape']) {
-  if (!home.includes(token)) failures.push(`[claim] the timeline script is missing "${token}" (disclosure, keyboard or motion guard)`);
+// The type-on is progressive: armed only by the inline script, skipped for
+// reduced motion, so the HTML alone shows everything.
+for (const token of ['data-about', 'data-story', 'prefers-reduced-motion: reduce', 'IntersectionObserver', 'is-armed']) {
+  if (!aboutHtml.includes(token)) failures.push(`[claim] the About sequence is missing "${token}" (script or motion guard)`);
 }
 if (!/Select Companies, Products, and Partners/.test(home)) failures.push('[claim] trust-bar heading must read "Select Companies, Products, and Partners"');
-// Trust bar: its own band between About and Selected Work, seven entries in
-// the approved order, no Sui Summit.
+// Trust bar: closes About beneath the lower rule, on the About background,
+// seven entries in the approved order, no Sui Summit.
 const bar = (home.match(/class="logobar[ "][\s\S]*?<\/ul>/) || [''])[0];
 const barOrder = ['Phi Labs', 'Bolt Liquidity', 'Archway', 'Ambur Marketplace', 'Trezor', 'Bitrefill', 'Rayls Labs'];
 const positions = barOrder.map((n) => bar.indexOf(n));
@@ -247,12 +216,10 @@ if (positions.some((x) => x < 0) || positions.some((x, i) => i > 0 && x < positi
   failures.push('[claim] trust bar must list its seven entries in the approved order');
 }
 if (/Sui Summit/.test(bar)) failures.push('[claim] Sui Summit was removed from the trust bar');
-const aboutEnd = home.indexOf('</section>', home.indexOf('id="about"'));
-const bandAt = home.indexOf('logobar--band');
-if (!(bandAt > aboutEnd && bandAt < home.indexOf('id="work"'))) {
-  failures.push('[claim] the trust bar must be its own band after About and before Selected Work');
-}
-if (!/<section[^>]*data-surface="band"[^>]*logobar--band/.test(home)) failures.push('[claim] the trust band must sit on its own band surface');
+const ruleAt = aboutHtml.indexOf('class="about__rule"');
+const barAt = aboutHtml.indexOf('class="logobar');
+if (ruleAt < 0 || barAt < ruleAt) failures.push('[claim] the lower rule and then the trust bar must close the About section');
+if (/data-surface=/.test(aboutHtml)) failures.push('[claim] the trust bar must stay on the About background (no surface of its own)');
 // Homepage order and surfaces.
 const sectionIds = [...home.matchAll(/<section[^>]*\bid="([a-z-]+)"/g)].map((m) => m[1]);
 const expected = ['about', 'work', 'capabilities', 'how-i-work', 'contact'];
@@ -270,10 +237,6 @@ if (order[0] !== undefined && order.indexOf('about') !== 0 && !/class="hero"/.te
 }
 if (/<header class="[^"]*site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
 if (/hero__(?:marquee|lede|actions)/.test(home)) failures.push('[claim] retired v1.2 hero elements are still in the build');
-if (!textOf(aboutCols).includes('I entered DeFi full-time in 2021 after a decade of building audiences and managing the business behind a globally distributed music project.')) {
-  failures.push('[claim] homepage must use the approved About copy');
-}
-if (!textOf(aboutCols).includes('As the organization evolved, my role expanded far beyond social.')) failures.push('[claim] the Phi Labs column must close with the approved line');
 // v1.2 sections and copy.
 if (!/Governed by human judgment/.test(home)) failures.push('[claim] homepage must carry the How I Work heading');
 if (!/AI accelerates the work/.test(home)) failures.push('[claim] homepage must carry the How I Work accountability statement');
