@@ -5,16 +5,27 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.5.** Layout, copy, motion, metadata, approved media, and deployment are
-complete. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
-approved and present, so an unresolved entry never reaches the public site (see
-[Replacing placeholders](#replacing-placeholders)).
+**Status: Version 1.7, in review.** Version 1.7 is committed locally and not pushed: the About
+spacing, the Select Work card template, the reel's behavior and the combined section are to be
+reviewed together first, and the reel still shows placeholder frames (`npm run verify -- --release`
+fails until they are replaced). Otherwise placeholders render only in `npm run dev`; production builds
+hide any asset that is not both approved and present, so an unresolved entry never reaches the public
+site (see [Replacing placeholders](#replacing-placeholders)).
+
+Version 1.7 orders the homepage as hero, About with the trust bar, Select Work, a wordless three-row
+work reel, From positioning to production (What I Do and How I Work in one frame), and Contact. About
+takes the revised copy with more negative space: the body copy is 5% smaller, the measure is about the
+headline's width so the paragraphs take two, three and two lines, and the headline sits about 20px
+higher than in Version 1.6. Select Work is an equal-size visual catalog in one card template that
+stacks as you scroll, with a muted loop in a dominant panel that plays only while its card is active.
+The separate How I Work section and its AI-centered treatment are gone; AI now appears only in a short
+working-style statement.
 
 Version 1.5 introduced a visual system drawn from the hero portrait: a small palette of charcoal,
 cool stone, slate, bone and blue-teal; six numbered surfaces handed out by page position; a heavy
 semi-condensed display face with Manrope for everything read closely; and a wide editorial canvas.
-The homepage is now hero, About (the narrative and the trust bar), Selected Work, What I Do, How I
-Work, Contact. The About section has since been finalized as one desktop frame: the static headline,
+At that point the homepage ran hero, About (the narrative and the trust bar), Selected Work, What I
+Do, How I Work, Contact. The About section was then finalized as one desktop frame: the static headline,
 three paragraphs (the music and business foundation, the move to Phi Labs Global, and a larger
 concluding line) with three blue-teal highlights, the resume button on the closing row, a thin rule,
 and the trust bar in one centered row. Its words flow in once, in reading order, as About comes into
@@ -89,10 +100,15 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
 ## Editing content
 
 - **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`
-- **Homepage copy** (hero, about, career snapshot, capabilities, how I work, contact): `src/data/home.json`
+- **Homepage copy** (hero, About, the Select Work title and intro, the reel's frames, the combined
+  section's headline, How I Work statement, capability groups and Stack, contact): `src/data/home.json`.
+  The Stack's tool marks: `src/data/stack-icons.json`.
 - **Case studies**: `src/content/work/*.mdx`. Frontmatter holds the page metadata, hero copy, results,
   and the homepage card; the body holds the narrative sections using the components in
-  `src/components/casestudy/`. Section ordering, headings, and copy are all editable in the MDX.
+  `src/components/casestudy/`. Section ordering, headings, and copy are all editable in the MDX. The
+  `card` block drives the Select Work card: `category`, `title`, a one-sentence `subline` (95 to 130
+  characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
+  `fallback` stand-ins, and optional `focus`).
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -104,18 +120,29 @@ status (`pending`, `approved`, `redacted`, or `private-only`), and a `credit` li
 
 To replace a placeholder with a real asset:
 
-1. **Images, stills, artifacts, slides, analytics, article cards** — save the file under `src/assets/`
+1. **Images, stills, artifacts, slides, analytics, article cards**: save the file under `src/assets/`
    using the suggested `filename` (for example `src/assets/hero/documentation-panel.png`), then set the
    entry's `file` to that relative path. The image is optimized and served responsively at build time.
-2. **Video** — put the video file in `public/media/` and set `file` to its name; put a poster image
-   under `src/assets/` and set `poster`. Videos never autoplay and start muted with controls.
-3. **Galleries** (`type: gallery`) — add objects to `items`: `{ "file": "work/creator-campaigns/mykonos-1.jpg", "alt": "…", "credit": null }`.
+2. **Video**: put the video file in `public/media/` and set `file` to its name; put a poster image
+   under `src/assets/` and set `poster`. Case-study videos never autoplay and start muted with
+   controls. The one exception is a Select Work card's dominant-panel loop (`card.media.motion`),
+   which plays muted, without controls, only while its card is active (see Select Work below).
+3. **Galleries** (`type: gallery`): add objects to `items`: `{ "file": "work/creator-campaigns/mykonos-1.jpg", "alt": "…", "credit": null }`.
    Any unfilled `slots` keep rendering as placeholders.
-4. **Logos** — add a monochrome SVG or PNG to `src/assets/logos/`, set `file` in `logos.json`, and set
+4. **Logos**: add a monochrome SVG or PNG to `src/assets/logos/`, set `file` in `logos.json`, and set
    `permission` to `approved`. Logos render as text wordmarks until approved.
-5. **Testimonial** — set `quote` and change `permission` to `approved`. Nothing is shown until then.
-6. **Live link** (`tm-link-docs`) — set `permission` to `approved` to make it clickable.
-7. **Metrics** (`hero-metric`) — edit `value` and `metricLabel`.
+5. **Testimonial**: set `quote` and change `permission` to `approved`. Nothing is shown until then.
+6. **Live link** (`tm-link-docs`): set `permission` to `approved` to make it clickable.
+7. **Metrics** (`hero-metric`): edit `value` and `metricLabel`.
+8. **Select Work card visuals**: set asset ids in the case study's `card.media`. A slot whose asset is
+   not approved and present shows its `fallback` stand-in (`activations`, `impressions` or
+   `cosponsors`, drawn only from approved facts) or a quiet empty tone, and the real image replaces
+   it as soon as the manifest entry has a file. `focus` sets the `object-position` for each slot, in
+   the order main, first side, second side, for an image its panel has to crop.
+9. **Reel frames**: in `home.json` under `reel.rows[].frames`, replace a `{ "ratio": "16:9" }` or
+   `{ "ratio": "1:1" }` placeholder with `{ "asset": "<id>" }` for an approved still of that shape.
+   Keep each row's pattern of wide and square frames so the rows stay balanced.
+   `npm run verify -- --release` fails while any placeholder frame remains.
 
 Set `permission` to `private-only` on anything that must never render even if a file is present.
 The build will crop real media to the entry's aspect ratio with `object-fit: cover`.
@@ -205,10 +232,10 @@ chapter the next surface from one ordered list; reorder the chapters and their c
 | --- | --- | --- |
 | 01 | Image | Hero |
 | 02 | Light (warm bone) | About: the narrative and the trust bar |
-| 03 | Dark (ink) | Selected Work and the visual rail |
-| 04 | Soft (pale slate) | What I Do |
-| 05 | Brand (blue-teal) | How I Work |
-| 06 | Light return (fog) | Contact and the footer |
+| 03 | Dark (ink) | Select Work and the work reel |
+| 04 | Soft (pale slate) | From positioning to production |
+| 05 | Brand (blue-teal) | Contact and the footer |
+| 06 | Light return (fog) | Not used since Version 1.7 |
 
 Past six, the sequence continues from dark, soft and light rather than starting another photograph.
 
@@ -225,7 +252,7 @@ each pill matches the ground it sits on and the switch happens exactly at the bo
 - The serif and the monospace face are retired, and their packages were removed. `scripts/og.mjs`
   renders the social-preview cards in Archivo and Manrope on the same palette: the home card echoes the
   hero (name, rule, arrow and descriptor on the dark ground), and each case-study card uses the tone of
-  its panel in the work rail. Card titles come from the current page titles, so rerun `npm run og`
+  its Select Work card. Card titles come from the current page titles, so rerun `npm run og`
   whenever a title changes.
 
 ## Content guardrails
@@ -234,10 +261,22 @@ The verify script fails the build check if any of these appear in the output: th
 handle, the unverified 524% Trezor lift claim, any mention of Sui Network negotiations, "17 unique
 creators," invented senior titles, raw internal links, the word "client" (logo-bar organizations are
 employers, products, co-sponsors, and events, not clients), em dashes, a location-level impressions
-figure, or a published count of active workflows. (Since Version 1.6 the homepage states no formal
-title; the only formal title for the Phi Labs role is still "Social Media Manager", on the resume.) It
-also confirms the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
-and the approved How I Work, contact, trust-bar, and footer lines are present.
+figure, a published count of active workflows, or "community strategy" (John did not lead a community
+function in this B2B role, so the portfolio does not imply one). (Since Version 1.6 the homepage states
+no formal title; the only formal title for the Phi Labs role is still "Social Media Manager", on the
+resume.) It also confirms the approved creator-page claims and the approved contact, trust-bar and
+footer lines.
+
+The Version 1.7 checks: the homepage order (hero, About, Select Work, the reel, the combined section,
+Contact) and its four surfaces; "Select Work" and its intro; three cards in the approved order, each
+with its number and category, the approved title and subline (one sentence, 95 to 130 characters, 12
+to 16 words), one dominant and two supporting panels, exactly one link, and no metric other than the
+creator stand-in's "Approximately 1.25M impressions"; a card loop that is muted, inline, looping, has
+a poster, loads nothing up front and carries its pause control; a reel with no visible text, a hidden
+heading, and rows moving right, left, right (placeholder frames are noted, and fail with `--release`);
+and the combined section's headline, labels, four capability groups, three Stack groups, 12 to 15
+tools, no certificate column, a How I Work statement of 60 words at most, and none of the retired
+AI-centered copy.
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -254,12 +293,16 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - One frame: from 64rem the complete section (headline, three paragraphs, resume button, trust-bar
   title and every logo and label) fits one screen when About is aligned to the top, as it is after a
   click on the About link. Type and spacing scale with the smaller of the viewport's width and its
-  height read as a 16:9 frame (`--fit`), the section is one screen tall with its content centered, and
-  its top padding reserves the floating header's height (`--nav-h`, shared with the header). About
+  height read as a 16:9 frame (`--fit`), the section is one screen tall, and its top padding reserves
+  the floating header's height (`--nav-h`, shared with the header). Spare height is shared evenly
+  above and below the content, which is then drawn up by `--about-lift`, so the headline sits about
+  20px higher than in Version 1.6's centered frame wherever there is room (at 1280x720 and 1366x768 it
+  already sat directly under the header, and stays there). About
   cancels the usual in-page link offset (`--scroll-pad`) so it lands flush with the top. Checked at
   1280x720, 1440x900 and 1920x1080, and at common laptop windows such as 1366x768, 1536x730 and
   1440x790. Phones and tablets stack and scroll naturally.
-- Type: paragraphs are Archivo at 440 on a 34em measure (the same line breaks at every desktop size);
+- Type: paragraphs are Archivo at 440 on a 44em desktop measure, about the headline's width, so they
+  take two, three and two lines with the same breaks at every desktop size (36em below 64rem);
   the concluding paragraph is a step larger at 560 in the heading color, with the resume button at the
   right edge of its row; the highlights are blue-teal at 600, 9.2:1 on the light surface. The trust bar
   keeps its contents, order, labels and monochrome marks, with its rhythm tightened through
@@ -279,6 +322,48 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - The complete text is in the HTML throughout. Without JavaScript, with reduced motion, without
   IntersectionObserver, or in print, everything is shown immediately.
 
+### Select Work
+
+- One template and one size for every card: number and category, title, a one-sentence subline, one
+  dominant panel, two supporting panels, and one case-study link (the title is the link and the whole
+  card is its target; "View case study" is its visible label, beside the head on desktop and last on
+  phones). Metrics live on the case-study pages; while the creator photographs are pending, that
+  card's typographic stand-ins carry the one approved aggregate.
+- From 60rem the cards stack as you scroll with plain `position: sticky`: each parks `--peek` (14px)
+  lower than the one before, so the earlier cards' top edges stay in view and none is ever fully
+  covered. A covered card recedes 4% and its pictures dim; its text keeps full contrast. The parked
+  stack sits centered in the screen below the header, and every card is one height: the screen less
+  the header and the stack's edges, capped at 52% of the canvas width so the dominant panel stays near
+  16:9. Phones, tablets and reduced motion read as an ordinary sequence.
+- Motion: a dominant panel may carry a muted loop (`card.media.motion`; currently the Bolt website
+  hero). It is `muted`, `playsinline` and `loop`, shows its poster, and loads nothing until its card
+  first becomes active (`preload="none"`). Only the active card plays; a loop pauses when its card is
+  covered or leaves the screen. Reduced motion, data saving and phones get the poster only. A pause
+  and play button sits in the panel's corner (the loop runs longer than five seconds), and the
+  reader's choice holds from then on. Supporting panels stay still.
+
+### Work reel
+
+- A wordless transition between Select Work and the combined section: three rows of frames that move
+  sideways with the scroll, right, left, right, at related speeds (1, 0.8 and 1.2). The travel is
+  short (16% of the width across the whole pass, 10% on phones, where the frames are also larger
+  relative to the screen) and nothing moves on its own; each row is laid out twice end to end, so no
+  track edge ever shows. A visually hidden heading names it; there is no visible title or text.
+- Frames keep one height and a fixed ratio (16:9 or 1:1), so nothing shifts as images load. Reduced
+  motion and no JavaScript show the same rows as a still collage. The frames are placeholders until
+  the asset mix is approved (see [Replacing placeholders](#replacing-placeholders)).
+
+### From positioning to production
+
+- What I Do and How I Work in one desktop frame: the headline and the How I Work statement on the
+  left, the four capability groups on the right, level with the foot of the statement, and the Stack
+  full width below it. The Stack shows 14 tools in three groups, each with its name and, where an
+  authentic single-color mark is available (from Simple Icons, CC0; the marks remain their owners'
+  trademarks), that mark. Tools without one (ChatGPT, Photoshop, Descript, Typefully) show their
+  names only, never a generic icon.
+- From 64rem the section scales with `--fit`, as About does, is one screen tall, and keeps its spare
+  height mostly below the content. Checked from 1024x768 to 2560x1440; phones and tablets stack.
+
 ## Project structure
 
 ```
@@ -290,12 +375,12 @@ scripts/                og.mjs (social previews), icons.py (browser icons), veri
 src/
   content.config.ts     Case-study collection schema
   content/work/*.mdx    Case studies
-  data/                 site.json, home.json, logos.json, assets.json
+  data/                 site.json, home.json, logos.json, assets.json, stack-icons.json
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
-  components/           Hero, Media, LogoBar, ProofStrip, WorkPanels, WorkRail, Capabilities,
-                        HowIWork, About, Contact, …
+  components/           Hero, About, LogoBar, WorkPanels (Select Work), WorkReel,
+                        Capabilities (From positioning to production), Contact, Media, …
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
   pages/                index, work/[slug], 404, robots.txt, site.webmanifest
 ```

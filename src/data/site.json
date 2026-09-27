@@ -1,7 +1,7 @@
 {
   "_readme": "Site-wide settings: identity, navigation, contact, resume path, and default metadata. Page copy lives in home.json and src/content/work/*.mdx.",
   "name": "John Cowin",
-  "title": "Web3 Marketing, Content & Community Strategist",
+  "title": "Web3 Marketing, Strategy, & Content",
   "tagline": "Web3 marketing built from strategy through execution.",
   "description": "John Cowin is a Web3 marketer working across positioning, technical content, creator programs, events, and multimedia production. Selected work, resume, and contact.",
   "email": "jtcowin@yahoo.com",
@@ -30,7 +30,7 @@
     }
   ],
   "footer": {
-    "line": "Web3 Marketing, Content & Community Strategist",
+    "line": "Web3 Marketing, Strategy, & Content",
     "note": "Built as a static site and published with GitHub Pages."
   },
   "social": {

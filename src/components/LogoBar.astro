@@ -37,7 +37,7 @@ const Tag = embedded ? 'div' : 'section';
 const Heading = embedded ? 'h3' : 'h2';
 ---
 
-<Tag class:list={['logobar', embedded && 'logobar--embedded']} aria-labelledby="logobar-heading">
+<Tag class:list={['logobar', embedded && 'logobar--embedded']} role={embedded ? 'group' : undefined} aria-labelledby="logobar-heading">
   <div class:list={[!embedded && 'container']}>
     <Heading id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</Heading>
     <ul class="logobar__list" style={`--count: ${items.length}`}>

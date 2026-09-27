@@ -1,0 +1,238 @@
+---
+/**
+ * The work reel: a wordless transition after Select Work.
+ *
+ * Three rows of frames move sideways as the page scrolls, the top and bottom
+ * rows to the right and the middle row to the left, each at a slightly
+ * different rate, so the motion reads as one gesture rather than three tickers.
+ * The travel is short and tied to how far the reel has crossed the screen;
+ * nothing moves on its own. Every row is laid out twice end to end, so no edge
+ * of a track can come into view. The section has no visible title; a hidden
+ * heading names it for screen readers.
+ *
+ * Frames keep a fixed height and a fixed aspect ratio, so nothing shifts as
+ * images load. A frame is either `{ "ratio": "16:9" }`, a placeholder until
+ * the content pull, or `{ "asset": "<manifest id>" }`, which renders that
+ * approved image in the same frame.
+ *
+ * Reduced motion, no JavaScript: the same three rows as a still collage.
+ * Phones: taller frames relative to the screen, so fewer show at once, and a
+ * shorter travel.
+ */
+import type { ImageMetadata } from 'astro';
+import { Picture } from 'astro:assets';
+import home from '@data/home.json';
+import { getAsset, hasAsset, isIdVisible, resolveImage, aspectToCss } from '@lib/assets';
+
+const { reel } = home as unknown as {
+  reel: { label: string; rows: { direction: 'left' | 'right'; speed: number; frames: { ratio?: string; asset?: string }[] }[] };
+};
+
+type Frame = { ratio: string; img: ImageMetadata | null; alt: string; tone: number };
+
+const TONES = 6;
+const rows = reel.rows.map((row, r) => {
+  const frames: Frame[] = row.frames.map((f, i) => {
+    const entry = f.asset && hasAsset(f.asset) && isIdVisible(f.asset) ? getAsset(f.asset) : null;
+    const img = entry ? resolveImage(entry) : null;
+    return {
+      ratio: aspectToCss(f.ratio ?? entry?.aspect ?? '16:9'),
+      img,
+      alt: entry?.alt ?? '',
+      tone: (i * 5 + r * 2) % TONES,
+    };
+  });
+  return { ...row, frames, real: frames.some((f) => f.img) };
+});
+---
+
+<section class="reel" aria-labelledby="reel-heading" data-reel>
+  <h2 id="reel-heading" class="sr-only">{reel.label}</h2>
+  <div class="reel__rows">
+    {
+      rows.map((row) => (
+        <div class="reel__row" data-reel-row data-direction={row.direction} data-speed={row.speed}>
+          {[0, 1].map((copy) => (
+            <ul class="reel__run" aria-hidden={copy === 1 || !row.real ? 'true' : undefined}>
+              {row.frames.map((f) => (
+                <li class:list={['reel__frame', !f.img && `reel__frame--t${f.tone}`]} style={`aspect-ratio: ${f.ratio}`}>
+                  {f.img && (
+                    <Picture
+                      src={f.img}
+                      alt={copy === 0 ? f.alt : ''}
+                      widths={[320, 480, 720]}
+                      sizes="(min-width: 60rem) 28rem, 60vw"
+                      formats={['avif', 'webp']}
+                      loading="lazy"
+                      class="reel__img"
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  // Tie each row's sideways offset to how far the reel has crossed the screen:
+  // 0 as it enters at the bottom, 1 as it leaves at the top, still at 0.5.
+  const reel = document.querySelector<HTMLElement>('[data-reel]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (reel && 'IntersectionObserver' in window) {
+    const rows = Array.from(reel.querySelectorAll<HTMLElement>('[data-reel-row]'));
+    let raf = 0;
+    let listening = false;
+
+    const place = () => {
+      raf = 0;
+      if (reduce.matches) {
+        for (const row of rows) row.style.removeProperty('--x');
+        return;
+      }
+      const rect = reel.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const progress = Math.min(1, Math.max(0, (vh - rect.top) / (vh + rect.height)));
+      const travel = reel.clientWidth * (parseFloat(getComputedStyle(reel).getPropertyValue('--travel')) || 0.16);
+      for (const row of rows) {
+        const dir = row.dataset.direction === 'left' ? -1 : 1;
+        const speed = parseFloat(row.dataset.speed || '1') || 1;
+        row.style.setProperty('--x', `${((progress - 0.5) * travel * speed * dir).toFixed(1)}px`);
+      }
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(place);
+    };
+
+    // Only listen while the reel is near the screen.
+    new IntersectionObserver(
+      (entries) => {
+        const near = entries.some((e) => e.isIntersecting);
+        if (near && !listening) {
+          addEventListener('scroll', onScroll, { passive: true });
+          addEventListener('resize', onScroll, { passive: true });
+          listening = true;
+          place();
+        } else if (!near && listening) {
+          removeEventListener('scroll', onScroll);
+          removeEventListener('resize', onScroll);
+          listening = false;
+        }
+      },
+      { rootMargin: '25% 0px' },
+    ).observe(reel);
+
+    reduce.addEventListener?.('change', onScroll);
+  }
+</script>
+
+<style>
+  .reel {
+    /* Share of the reel's width a row travels across the whole pass. */
+    --travel: 0.16;
+    --frame-h: clamp(6.5rem, 4.6rem + 8vw, 15rem);
+    --gap: clamp(0.5rem, 0.35rem + 0.5vw, 0.85rem);
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+
+  /* One column held to the reel's width, so a row wider than the page
+     overflows its track instead of stretching it. */
+  .reel__rows {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--gap);
+  }
+
+  .reel__row {
+    position: relative;
+    left: 50%;
+    display: flex;
+    gap: var(--gap);
+    width: max-content;
+    height: var(--frame-h);
+    /* Centered on the page, then offset by the scroll position. */
+    transform: translate3d(calc(-50% + var(--x, 0px)), 0, 0);
+    will-change: transform;
+  }
+
+  .reel__run {
+    display: flex;
+    gap: var(--gap);
+    height: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .reel__frame {
+    position: relative;
+    flex: none;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg-sunk);
+  }
+
+  .reel__frame :global(picture),
+  .reel__frame :global(.reel__img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Placeholder frames: quiet tones from the palette, lit from one corner, so
+     the rhythm of formats reads before the real frames arrive. */
+  .reel__frame[class*='reel__frame--t'] {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 55%),
+      var(--tone);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .reel__frame--t0 {
+    --tone: #1b2225;
+  }
+
+  .reel__frame--t1 {
+    --tone: #25343a;
+  }
+
+  .reel__frame--t2 {
+    --tone: #1f3d3d;
+  }
+
+  .reel__frame--t3 {
+    --tone: #cfd6d5;
+  }
+
+  .reel__frame--t4 {
+    --tone: #2e3a3e;
+  }
+
+  .reel__frame--t5 {
+    --tone: #3d5654;
+  }
+
+  @media (max-width: 47.99rem) {
+    .reel {
+      --travel: 0.1;
+    }
+  }
+
+  /* Reduced motion: a still collage, each row centered. */
+  @media (prefers-reduced-motion: reduce) {
+    .reel__row {
+      transform: translate3d(-50%, 0, 0);
+      will-change: auto;
+    }
+  }
+</style>

@@ -4,9 +4,8 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/Hero.astro';
 import About from '@components/About.astro';
 import WorkPanels from '@components/WorkPanels.astro';
-import WorkRail from '@components/WorkRail.astro';
+import WorkReel from '@components/WorkReel.astro';
 import Capabilities from '@components/Capabilities.astro';
-import HowIWork from '@components/HowIWork.astro';
 import Contact from '@components/Contact.astro';
 import home from '@data/home.json';
 
@@ -31,7 +30,7 @@ const surface = () => {
 };
 
 // Evaluated in document order, so these match the chapters below.
-const S = { about: surface(), work: surface(), capabilities: surface(), how: surface(), contact: surface() };
+const S = { about: surface(), work: surface(), capabilities: surface(), contact: surface() };
 ---
 
 <BaseLayout path="/" ogAsset="og-home" footerSurface={S.contact}>
@@ -41,7 +40,7 @@ const S = { about: surface(), work: surface(), capabilities: surface(), how: sur
     <About />
   </div>
 
-  {/* One chapter: the case-study panels and the visual rail belong together. */}
+  {/* One chapter: the Select Work catalog and the wordless work reel belong together. */}
   <div class="chapter" data-surface={S.work}>
     <section id="work" class="section work" aria-labelledby="work-heading">
       <div class="container">
@@ -52,15 +51,11 @@ const S = { about: surface(), work: surface(), capabilities: surface(), how: sur
         <WorkPanels entries={work} />
       </div>
     </section>
-    <WorkRail />
+    <WorkReel />
   </div>
 
   <div class="chapter" data-surface={S.capabilities}>
     <Capabilities />
-  </div>
-
-  <div class="chapter" data-surface={S.how}>
-    <HowIWork />
   </div>
 
   <div class="chapter" data-surface={S.contact}>
@@ -69,8 +64,10 @@ const S = { about: surface(), work: surface(), capabilities: surface(), how: sur
 </BaseLayout>
 
 <style>
+  /* The reel follows the last card directly; its own padding is the gap. */
   .work {
     padding-top: var(--section-y);
+    padding-bottom: 0;
   }
 
   .work__head {

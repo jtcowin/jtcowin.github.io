@@ -23,14 +23,30 @@ const work = defineCollection({
     /** Asset manifest id for the social preview image. */
     ogAsset: z.string(),
     results: z.array(z.string()).min(1),
-    /** Homepage card content. */
+    /** Homepage Select Work card: one shared template for every case study. */
     card: z.object({
+      /** Compact label beside the card number. */
       category: z.string(),
       title: z.string(),
-      summary: z.string(),
-      metrics: z.array(z.string()).min(1),
+      /** One sentence, about 95 to 125 characters (130 at most). */
+      subline: z.string().max(130),
       linkLabel: z.string(),
-      asset: z.string(),
+      media: z.object({
+        /** Asset id for the dominant panel (a still, or a video's poster). */
+        main: z.string(),
+        /** Optional muted loop for the dominant panel. */
+        motion: z.string().optional(),
+        /** Asset ids for the two supporting panels. */
+        side: z.tuple([z.string(), z.string()]),
+        /** Typographic stand-ins, in slot order, while an id has no approved file. */
+        fallback: z.tuple([z.string(), z.string(), z.string()]).optional(),
+        /**
+         * Optional CSS object-position per slot, in the same order (main, then
+         * the two sides), for an image whose panel crops it: which part stays
+         * in view. Omitted or empty means centered.
+         */
+        focus: z.array(z.string()).max(3).optional(),
+      }),
     }),
   }),
 });

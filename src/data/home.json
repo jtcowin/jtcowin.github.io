@@ -1,5 +1,5 @@
 {
-  "_readme": "Homepage copy (Version 1.2). Case-study panels are drawn from each case study's frontmatter in src/content/work/.",
+  "_readme": "Homepage copy (Version 1.7). Select Work cards are drawn from each case study's frontmatter in src/content/work/.",
   "hero": {
     "_note": "Version 1.4 hero. The name is title case and repeats as a moving stream behind the subject; the separator between repeats is an em dash, which is deliberate typography and the one place an em dash is allowed on the site. The descriptor renders uppercase through CSS so assistive technology reads it as a sentence.",
     "name": "John Cowin",
@@ -9,120 +9,236 @@
     "foreground": "hero-foreground"
   },
   "work": {
-    "heading": "Selected work",
-    "copy": "These case studies represent only part of my range. My work spans product positioning, messaging, technical documentation, social and community strategy, creator partnerships, events, websites, multimedia production, campaign operations, and distribution. The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship."
+    "heading": "Select Work",
+    "copy": "The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship."
   },
-  "rail": {
-    "heading": "More of the work",
-    "copy": "Selected frames from documentation, website, event, and production work.",
-    "items": [
-      "tm-hero",
-      "tm-docs-architecture",
-      "tm-docs-sdk",
-      "tm-website-hero",
-      "ev-hero",
-      "rail-explainer-still",
-      "ev-image-production-setup"
-    ]
-  },
-  "capabilities": {
-    "heading": "What I do",
-    "items": [
+  "reel": {
+    "_note": "Wordless transition after Select Work (Version 1.7): three rows of frames that move sideways with the scroll, the top and bottom rows to the right and the middle row to the left, at slightly different rates. Every frame is a placeholder until the content pull; replace a { \"ratio\": \"16:9\" } frame with { \"asset\": \"<manifest id>\" } to show that approved image in the same frame. The label is for screen readers only.",
+    "label": "More of the work",
+    "rows": [
       {
-        "icon": "target",
-        "title": "Positioning and messaging",
-        "copy": "Translate stakeholder knowledge and technical product detail into positioning, messaging architecture, audience strategy, claims standards, and reusable copy systems."
+        "direction": "right",
+        "speed": 1,
+        "frames": [
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          }
+        ]
       },
       {
-        "icon": "file-text",
-        "title": "Technical content",
-        "copy": "Research and write technical documentation, articles, website copy, presentations, scripts, and social content pitched to different levels of product familiarity."
+        "direction": "left",
+        "speed": 0.8,
+        "frames": [
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          }
+        ]
       },
       {
-        "icon": "users",
-        "title": "Creator and community programs",
-        "copy": "Manage creator relationships, sponsor packages, contracts, logistics, content reviews, publishing schedules, and coordinated distribution across social communities."
-      },
-      {
-        "icon": "camera",
-        "title": "Multimedia and events",
-        "copy": "Develop concepts, scripts, shot lists, decks, and production plans, then work hands-on with cameras, lighting, audio, speakers, creators, editors, and event partners."
+        "direction": "right",
+        "speed": 1.2,
+        "frames": [
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          },
+          {
+            "ratio": "16:9"
+          },
+          {
+            "ratio": "1:1"
+          }
+        ]
       }
     ]
   },
-  "howIWork": {
-    "eyebrow": "How I work",
-    "heading": "AI-accelerated. Governed by human judgment.",
-    "lead": "I use AI as operating infrastructure, not as a substitute for strategy. After interviewing company leaders and technical stakeholders, I translate their knowledge into positioning, messaging, claims, audience, and content systems that people and automated workflows can use consistently.",
-    "supporting": "I also build governed workflows for recurring intelligence, analytics, documentation maintenance, opportunity monitoring, and outreach. Every system works from approved brand and claims context, cites its sources, and stops for human review before an unverified fact reaches the public.",
-    "categories": [
-      {
-        "title": "Marketing intelligence",
-        "copy": "Leadership interviews, competitive research, buyer analysis, product positioning, messaging hierarchies, claims logs, and reusable content systems."
-      },
-      {
-        "title": "Governed automation",
-        "copy": "Recurring workflows monitor performance, identify opportunities, maintain prospect intelligence, and propose updates within defined verification and approval rules."
-      },
-      {
-        "title": "Build and execution",
-        "copy": "AI-assisted websites, MDX documentation, dashboards, CRM systems, technical-content maintenance, creative production, and cross-channel distribution."
-      }
-    ],
-    "accountability": "AI accelerates the work. I remain accountable for source verification, brand voice, disclosure standards, cross-functional review, and final approval.",
-    "tools": [
-      {
-        "group": "AI and building",
-        "items": [
-          "ChatGPT",
-          "Claude CoWork",
-          "Claude Code",
-          "GitHub",
-          "MDX"
-        ]
-      },
-      {
-        "group": "Systems and measurement",
-        "items": [
-          "Linear",
-          "Mintlify",
-          "GitBook",
-          "Grafana",
-          "Google Analytics"
-        ]
-      },
-      {
-        "group": "Creative and distribution",
-        "items": [
-          "Figma",
-          "Photoshop",
-          "Descript",
-          "Typefully"
-        ]
-      },
-      {
-        "group": "Channels",
-        "items": [
-          "X",
-          "LinkedIn",
-          "Telegram",
-          "Discord"
-        ]
-      }
-    ]
+  "practice": {
+    "_note": "Version 1.7: What I Do and How I Work combined into one section. The How I Work statement is temporary copy awaiting approval. Stack tools show their mark from stack-icons.json (Simple Icons) when one exists and their name only otherwise.",
+    "heading": "From positioning to production.",
+    "how": {
+      "label": "How I Work",
+      "copy": "I move comfortably between strategy and execution. I work best with clear ownership, direct collaboration, and systems that make good work repeatable. AI speeds up research, organization, production, and analysis; judgment, verification, brand fit, and final approval stay with me."
+    },
+    "capabilities": {
+      "label": "Capabilities",
+      "items": [
+        {
+          "title": "Positioning and messaging",
+          "icon": "target"
+        },
+        {
+          "title": "Technical content and websites",
+          "icon": "file-text"
+        },
+        {
+          "title": "Partnerships and KOL programs",
+          "icon": "users"
+        },
+        {
+          "title": "Campaigns and distribution",
+          "icon": "send"
+        }
+      ]
+    },
+    "stack": {
+      "label": "Stack",
+      "groups": [
+        {
+          "group": "AI and building",
+          "tools": [
+            {
+              "name": "ChatGPT"
+            },
+            {
+              "name": "Claude Cowork",
+              "icon": "claude"
+            },
+            {
+              "name": "Claude Code",
+              "icon": "claude"
+            },
+            {
+              "name": "GitHub",
+              "icon": "github"
+            },
+            {
+              "name": "MDX",
+              "icon": "mdx"
+            }
+          ]
+        },
+        {
+          "group": "Systems and measurement",
+          "tools": [
+            {
+              "name": "Linear",
+              "icon": "linear"
+            },
+            {
+              "name": "Mintlify",
+              "icon": "mintlify"
+            },
+            {
+              "name": "GitBook",
+              "icon": "gitbook"
+            },
+            {
+              "name": "Grafana",
+              "icon": "grafana"
+            },
+            {
+              "name": "Google Analytics",
+              "icon": "googleanalytics"
+            }
+          ]
+        },
+        {
+          "group": "Creative and distribution",
+          "tools": [
+            {
+              "name": "Figma",
+              "icon": "figma"
+            },
+            {
+              "name": "Photoshop"
+            },
+            {
+              "name": "Descript"
+            },
+            {
+              "name": "Typefully"
+            }
+          ]
+        }
+      ]
+    }
   },
   "about": {
-    "_note": "About (finalization): the static headline, then three paragraphs (the music and business foundation, the move to Phi Labs Global and the wider scope, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three approved highlights, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
+    "_note": "About (Version 1.7): the static headline, then three paragraphs (the music and business foundation, the move to Phi Labs Global and the wider scope, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three approved highlights, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
     "heading": "Creative instincts. Operator discipline.",
     "paragraphs": [
       {
-        "text": "I came to DeFi in 2021 after a decade of building audiences and running the business behind a **globally distributed music project**. That chapter included sponsorships, media appearances, and major bookings."
+        "text": "I came to DeFi in 2021 after a decade of building audiences and running the business behind a **globally distributed music project**, securing sponsorships, media appearances, and major bookings."
       },
       {
-        "text": "In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching **more than 200,000 people**. As the company evolved, my role expanded into positioning, technical storytelling, community strategy, partnerships, campaigns, websites, and distribution."
+        "text": "In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching **more than 200,000 people**. As the company evolved, my role expanded into positioning, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
       },
       {
-        "text": "Today, I turn product complexity into **market narratives** people understand and act on."
+        "text": "Today, I turn product complexity into **market narratives** people understand and connect with."
       }
     ],
     "resumeLink": {

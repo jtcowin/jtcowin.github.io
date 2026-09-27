@@ -1,99 +1,318 @@
 ---
+/**
+ * From positioning to production: what John does, how he works, and the tools
+ * he works with, in one section that fits one desktop frame.
+ *
+ * Left, the headline and a short working-style statement (How I Work). Right,
+ * the four capability groups, level with the foot of the statement. Beneath,
+ * full width, the Stack: tools in three groups, each shown as its authentic
+ * mark beside its name, so recognition never depends on the mark alone. A tool
+ * with no approved mark appears as its name only, never as a generic icon. The
+ * marks are single color and sized to one height, and the Stack stays visually
+ * secondary to the capabilities and the statement.
+ *
+ * From 64rem the type and spacing scale with the smaller of the viewport's
+ * width and its height (read as a 16:9 frame), as in About. The section is one
+ * screen tall, its top padding reserves the floating header's height, and any
+ * height it has to spare collects mostly below the content, as in About, so
+ * aligned to the top of the screen the section fills the frame on its own.
+ * Phones and tablets stack and scroll.
+ */
 import home from '@data/home.json';
+import stackIcons from '@data/stack-icons.json';
 import Icon from './Icon.astro';
 
-const { capabilities } = home;
+type Tool = { name: string; icon?: string };
+const { practice } = home as unknown as {
+  practice: {
+    heading: string;
+    how: { label: string; copy: string };
+    capabilities: { label: string; items: { title: string; icon: string }[] };
+    stack: { label: string; groups: { group: string; tools: Tool[] }[] };
+  };
+};
+const icons = (stackIcons as { icons: Record<string, { title: string; path: string }> }).icons;
 ---
 
-<section id="capabilities" class="section capabilities" aria-labelledby="capabilities-heading">
-  <div class="container">
-    <div class="section-head">
-      <h2 id="capabilities-heading" class="display display-lg">{capabilities.heading}</h2>
+<section id="capabilities" class="section practice" aria-labelledby="practice-heading">
+  <div class="container practice__frame">
+    <div class="practice__top">
+      <div class="practice__intro">
+        <h2 id="practice-heading" class="display practice__heading">{practice.heading}</h2>
+        <h3 class="practice__label">{practice.how.label}</h3>
+        <p class="practice__statement">{practice.how.copy}</p>
+      </div>
+
+      <div class="practice__caps">
+        <h3 class="practice__label">{practice.capabilities.label}</h3>
+        <ol class="caps">
+          {
+            practice.capabilities.items.map((item, i) => (
+              <li class="cap">
+                <span class="cap__icon" aria-hidden="true">
+                  <Icon name={item.icon as any} size={18} />
+                </span>
+                <span class="cap__num" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span class="cap__title">{item.title}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
     </div>
-    <ul class="cap__list">
-      {
-        capabilities.items.map((item) => (
-          <li class="cap">
-            <span class="cap__icon" aria-hidden="true">
-              <Icon name={item.icon as any} size={20} />
-            </span>
-            <h3 class="cap__title">{item.title}</h3>
-            <p class="cap__copy">{item.copy}</p>
-          </li>
-        ))
-      }
-    </ul>
+
+    <div class="practice__stack">
+      <h3 class="practice__label">{practice.stack.label}</h3>
+      <div class="stack">
+        {
+          practice.stack.groups.map((g) => (
+            <div class="stack__group">
+              <h4 class="stack__name">{g.group}</h4>
+              <ul class="stack__tools">
+                {g.tools.map((t) => {
+                  const mark = t.icon ? icons[t.icon] : undefined;
+                  return (
+                    <li class:list={['tool', !mark && 'tool--text']}>
+                      {mark && (
+                        <svg class="tool__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d={mark.path} />
+                        </svg>
+                      )}
+                      <span class="tool__name">{t.name}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
-  .capabilities {
+  .practice {
+    padding-block: clamp(4rem, 3rem + 4vw, 7rem);
   }
 
-  .cap__list {
+  .practice__heading {
+    margin: 0 0 clamp(2rem, 1.5rem + 2vw, 3rem);
+    font-size: var(--text-2xl);
+    max-width: none;
+    text-wrap: balance;
+  }
+
+  /* Compact metadata labels: How I Work, Capabilities, Stack. */
+  .practice__label {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .practice__top {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  }
+
+  .practice__statement {
+    margin: 0;
+    max-width: 34em;
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+    line-height: 1.55;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ---- capabilities ----------------------------------------------------- */
+  .caps {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: var(--space-4);
-    grid-template-rows: auto auto auto;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    column-gap: var(--space-6);
+    border-top: 1px solid var(--line-strong);
   }
 
-  /* Subgrid keeps the icon, headline and copy of every card on the same three
-     baselines, so a two-line title never pushes its body copy out of step. */
   .cap {
     display: grid;
-    grid-row: span 3;
-    grid-template-rows: subgrid;
-    gap: var(--space-3);
-    padding: clamp(1.4rem, 1.2rem + 1vw, 2rem);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--bg-elev);
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-
-  .cap:hover {
-    border-color: var(--accent-line);
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.85rem;
+    padding-block: clamp(0.9rem, 0.7rem + 0.6vw, 1.25rem);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .cap__icon {
     display: grid;
     place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 10px;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
     color: var(--accent);
-    background: var(--accent-soft);
-    border: 1px solid var(--accent-line);
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+  }
+
+  .cap__num {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
   }
 
   .cap__title {
-    align-self: start;
-    font-size: var(--text-md);
+    font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: var(--leading-snug);
-    text-wrap: balance;
+    font-stretch: var(--display-stretch);
+    font-size: clamp(1.1rem, 1rem + 0.45vw, 1.375rem);
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    color: var(--heading);
   }
 
-  .cap__copy {
-    align-self: start;
+  /* ---- stack ------------------------------------------------------------ */
+  .practice__stack {
+    margin-top: clamp(2.5rem, 2rem + 2vw, 3.75rem);
+  }
+
+  .stack {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .stack__group {
+    padding: clamp(1rem, 0.8rem + 0.6vw, 1.35rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+  }
+
+  .stack__name {
+    margin: 0 0 0.85rem;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+  }
+
+  .stack__tools {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem 0.45rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
     color: var(--ink-2);
+  }
+
+  .tool--text {
+    padding-left: 0.75rem;
+  }
+
+  .tool__mark {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: none;
+    fill: currentColor;
+    color: var(--ink);
+  }
+
+  .tool__name {
     font-size: var(--text-sm);
-    line-height: var(--leading-relaxed);
-    text-wrap: pretty;
+    font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
   }
 
   @media (min-width: 48rem) {
-    .cap__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .stack {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
-  @media (min-width: 72rem) {
-    .cap__list {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* ---- desktop: the whole section in one frame ------------------------- */
+  @media (min-width: 64rem) {
+    .practice {
+      --fit: min(1vw, 1.8vh);
+      display: flex;
+      flex-direction: column;
+      min-height: min(100vh, 62.5vw);
+      padding-block: calc(var(--nav-h) + 1.4 * var(--fit)) calc(3 * var(--fit));
+    }
+
+    @supports (height: 1svh) {
+      .practice {
+        --fit: min(1vw, 1.8svh);
+        min-height: min(100svh, 62.5vw);
+      }
+    }
+
+    /* Spare height: one part above the content, five below, as in About. */
+    .practice::before,
+    .practice::after {
+      content: '';
+    }
+
+    .practice::before {
+      flex: 1 1 0;
+    }
+
+    .practice::after {
+      flex: 5 1 0;
+    }
+
+    .practice__heading {
+      font-size: min(calc(4.6 * var(--fit)), 5rem);
+      line-height: 0.98;
+      margin-bottom: calc(2.8 * var(--fit));
+    }
+
+    /* The headline and statement on the left; the capabilities on the right,
+       their last rule level with the foot of the statement. */
+    .practice__top {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: calc(6 * var(--fit));
+      align-items: end;
+    }
+
+    .practice__statement {
+      max-width: 33em;
+      font-size: clamp(1.0625rem, calc(0.35rem + 1.1 * var(--fit)), 1.5rem);
+    }
+
+    .caps {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cap {
+      padding-block: calc(0.95 * var(--fit));
+    }
+
+    .cap__title {
+      font-size: clamp(1.1rem, calc(0.35rem + 1.15 * var(--fit)), 1.625rem);
+    }
+
+    .practice__stack {
+      margin-top: calc(3.4 * var(--fit));
     }
   }
 </style>

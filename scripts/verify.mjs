@@ -99,6 +99,8 @@ const forbidden = [
   // v1.2: one aggregate impressions figure only. Location-level figures are retired.
   { re: /approximately\s+[\d,]+\s+impressions/i, why: 'location-level impression figures were retired in v1.2' },
   { re: /\b\d+\s+(?:active\s+|automated\s+|governed\s+)*workflows\b/i, why: 'do not publish a count of active workflows' },
+  // v1.7: John did not lead a community function in this B2B role.
+  { re: /community strateg/i, why: 'the portfolio must not imply community strategy' },
 ];
 // The hero name stream separates its repeats with an em dash, which is
 // deliberate typography rather than prose punctuation, so that one element is
@@ -128,9 +130,10 @@ if (!/directional performance benchmarks, not Trezor-owned analytics/i.test(crea
   failures.push('[claim] creator page must carry the comparison methodology note');
 }
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-// v1.5: the standalone metrics strip is gone; figures live with the work they describe.
-if (!/Approximately 1\.25M impressions/.test(home)) failures.push('[claim] the creator work card must carry "Approximately 1.25M impressions"');
+// v1.5: the standalone metrics strip is gone; v1.7 moves the figures to the
+// case-study pages (see Select Work below).
 if (/class="proof[\s"]/.test(home)) failures.push('[claim] the standalone metrics strip was retired in v1.5');
+const release = process.argv.includes('--release') || process.env.RELEASE === '1';
 // The About redesign states no formal title on the homepage. The only formal
 // title for the Phi Labs role is still "Social Media Manager" (resume); the
 // invented-title check above keeps any other title from appearing.
@@ -148,7 +151,7 @@ if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render a
 if (/icon-192\.png"[^>]*class="brand__mark"|brand__mark/.test(home)) failures.push('[claim] no brand mark may appear in the hero header');
 if (!/Creative instincts\. Operator discipline\./.test(home)) failures.push('[claim] About must use the approved headline');
 if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About section must have no eyebrow');
-// About (finalization): the static headline, the three approved paragraphs
+// About (v1.7): the static headline, the three approved paragraphs
 // (every word its own span, so the flow never re-wraps a line), exactly the
 // three approved blue-teal highlights, the resume button on the closing row
 // after the third paragraph, then the lower rule and the trust bar, all inside
@@ -162,9 +165,9 @@ const flow = (aboutHtml.match(/<div class="flow"[\s\S]*?<hr class="about__rule"/
 if (!flow) failures.push('[claim] the About narrative (flow, then the lower rule) was not found');
 const paragraphHtml = [...flow.matchAll(/<p class="flow__p[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
 const approvedParagraphs = [
-  'I came to DeFi in 2021 after a decade of building audiences and running the business behind a globally distributed music project. That chapter included sponsorships, media appearances, and major bookings.',
-  'In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching more than 200,000 people. As the company evolved, my role expanded into positioning, technical storytelling, community strategy, partnerships, campaigns, websites, and distribution.',
-  'Today, I turn product complexity into market narratives people understand and act on.',
+  'I came to DeFi in 2021 after a decade of building audiences and running the business behind a globally distributed music project, securing sponsorships, media appearances, and major bookings.',
+  'In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching more than 200,000 people. As the company evolved, my role expanded into positioning, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
+  'Today, I turn product complexity into market narratives people understand and connect with.',
 ];
 if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present three paragraphs (found ${paragraphHtml.length})`);
 approvedParagraphs.forEach((copy, i) => {
@@ -174,8 +177,8 @@ approvedParagraphs.forEach((copy, i) => {
   const words = copy.split(' ').length;
   if (spans !== words) failures.push(`[claim] About paragraph ${i + 1} must set each word in its own span (${spans} spans for ${words} words)`);
 });
-// Each highlight is one <strong> around its words; a period that follows it
-// sits inside, set plain, and is not part of the phrase.
+// Each highlight is one <strong> around its words; a comma or period that
+// follows it sits inside, set plain, and is not part of the phrase.
 const marks = [...flow.matchAll(/<strong class="flow__mark"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1].replace(/<span class="flow__plain">[\s\S]*?<\/span>/g, '')));
 if (marks.join(' | ') !== 'globally distributed music project | more than 200,000 people | market narratives') {
   failures.push(`[claim] About must highlight exactly the three approved phrases, in order (found: ${marks.join(' | ') || 'none'})`);
@@ -215,6 +218,11 @@ const retiredAbout = [
   'combined audience',
   'strategy with execution',
   'difficult to ignore',
+  // retired in v1.7
+  'That chapter included',
+  'community strategy',
+  'technical storytelling',
+  'understand and act on',
 ];
 for (const retired of retiredAbout) {
   if (aboutHtml.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
@@ -243,15 +251,106 @@ const ruleAt = aboutHtml.indexOf('class="about__rule"');
 const barAt = aboutHtml.indexOf('class="logobar');
 if (ruleAt < 0 || barAt < ruleAt) failures.push('[claim] the lower rule and then the trust bar must close the About section');
 if (/data-surface=/.test(aboutHtml)) failures.push('[claim] the trust bar must stay on the About background (no surface of its own)');
-// Homepage order and surfaces.
-const sectionIds = [...home.matchAll(/<section[^>]*\bid="([a-z-]+)"/g)].map((m) => m[1]);
-const expected = ['about', 'work', 'capabilities', 'how-i-work', 'contact'];
-if (expected.some((id, i) => sectionIds.indexOf(id) < 0 || (i > 0 && sectionIds.indexOf(id) < sectionIds.indexOf(expected[i - 1])))) {
-  failures.push(`[claim] homepage order must be hero, about, work, capabilities, how-i-work, contact (got ${sectionIds.join(', ')})`);
+// Homepage order (v1.7): hero, About with the trust bar, Select Work, the
+// wordless work reel, From positioning to production, Contact.
+const at = (needle) => home.indexOf(needle);
+const orderMarks = [['about', at('id="about"')], ['work', at('id="work"')], ['reel', at('data-reel')], ['capabilities', at('id="capabilities"')], ['contact', at('id="contact"')]];
+if (orderMarks.some(([, i]) => i < 0) || orderMarks.some(([, i], k) => k > 0 && i < orderMarks[k - 1][1])) {
+  failures.push(`[claim] homepage order must be hero, about, work, reel, capabilities, contact (${orderMarks.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
 }
+if (/id="how-i-work"/.test(home)) failures.push('[claim] How I Work is part of the combined section in v1.7, not a section of its own');
 const surfaceOrder = [...home.matchAll(/class="chapter"[^>]*data-surface="([a-z-]+)"|data-surface="([a-z-]+)"[^>]*class="chapter"/g)].map((m) => m[1] || m[2]);
-if (surfaceOrder.join(',') !== 'light,dark,soft,brand,light-return') {
-  failures.push(`[claim] chapters must take surfaces 02 to 06 in order (got ${surfaceOrder.join(', ')})`);
+if (surfaceOrder.join(',') !== 'light,dark,soft,brand') {
+  failures.push(`[claim] the four chapters must take surfaces 02 to 05 in order (got ${surfaceOrder.join(', ')})`);
+}
+
+// Select Work (v1.7): the approved title and intro, then three cards in one
+// template: number and category, a short title, a one-sentence subline, one
+// dominant panel and two supporting panels, and one case-study link. Metrics
+// live on the case-study pages; the only figure a card may show is the
+// approved aggregate, on the creator card's typographic stand-in.
+const sectionAt = (i) => (i < 0 ? '' : home.slice(i, home.indexOf('</section>', i)));
+const workHtml = sectionAt(at('id="work"'));
+if (!/<h2 id="work-heading"[^>]*>Select Work<\/h2>/.test(workHtml)) failures.push('[claim] the work section must be titled "Select Work"');
+if (!workHtml.includes('The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship.')) {
+  failures.push('[claim] Select Work must use the approved intro');
+}
+const cardsHtml = [...workHtml.matchAll(/<article class="card"[\s\S]*?<\/article>/g)].map((m) => m[0]);
+const approvedCards = [
+  ['Creator Marketing and Partnerships', 'Built international creator campaigns from partner strategy and logistics through production and coordinated distribution.', 'work/creator-campaigns/'],
+  ['Technical Product Marketing', 'Turned a complex DeFi protocol into a clear positioning, documentation, website, and content system.', 'work/technical-marketing/'],
+  ['Events and Multimedia Production', 'Led event strategy and multi-camera production that turned live technical moments into reusable content.', 'work/events-video/'],
+];
+if (cardsHtml.length !== approvedCards.length) failures.push(`[claim] Select Work must show three cards (found ${cardsHtml.length})`);
+approvedCards.forEach(([title, sub, href], i) => {
+  const c = cardsHtml[i] || '';
+  const t = textOf((c.match(/<h3 class="card__title"[\s\S]*?<\/h3>/) || [''])[0]);
+  const line = textOf((c.match(/<p class="card__subline"[\s\S]*?<\/p>/) || [''])[0]);
+  const words = line.split(' ').length;
+  if (t !== title) failures.push(`[claim] card ${i + 1} must be titled "${title}" (found "${t}")`);
+  if (line !== sub) failures.push(`[claim] card ${i + 1} must use the approved subline`);
+  if (line.length < 95 || line.length > 130 || words < 12 || words > 16 || (line.match(/[.!?]/g) || []).length !== 1) {
+    failures.push(`[claim] card ${i + 1} subline must be one sentence of 95 to 130 characters and 12 to 16 words (${line.length} characters, ${words} words)`);
+  }
+  const links = [...c.matchAll(/<a\b[^>]*href="([^"]*)"/g)].map((m) => m[1]);
+  if (links.length !== 1 || links[0] !== `${BASE}/${href}`) failures.push(`[claim] card ${i + 1} must carry exactly one link, to /${href} (found ${links.join(', ') || 'none'})`);
+  if (!/View case study/.test(c)) failures.push(`[claim] card ${i + 1} must carry the case-study link label`);
+  if (!/<span class="card__num"[^>]*>0\d<\/span>/.test(c) || !/<span class="card__label"[^>]*>[^<]+<\/span>/.test(c)) failures.push(`[claim] card ${i + 1} must carry its number and category`);
+  if ((c.match(/class="card__panel card__panel--main"/g) || []).length !== 1 || (c.match(/class="card__panel card__panel--side"/g) || []).length !== 2) {
+    failures.push(`[claim] card ${i + 1} must have one dominant panel and two supporting panels`);
+  }
+  const visible = textOf(c.replace(/<span class="card__num"[\s\S]*?<\/span>/, ''));
+  const figures = (visible.match(/\d[\d.,]*[%MKx]?/g) || []).filter((f) => !(i === 0 && f === '1.25M'));
+  if (figures.length) failures.push(`[claim] card ${i + 1} must leave its metrics to the case-study page (found ${figures.join(', ')})`);
+  if (/1\.25M/.test(visible) && !/Approximately 1\.25M impressions/.test(visible)) failures.push('[claim] the creator card may show only "Approximately 1.25M impressions"');
+});
+// The dominant-panel loop: muted, inline, looping, a poster, nothing loaded
+// until needed, no player controls, and a pause control for the reader.
+for (const video of workHtml.match(/<video\b[^>]*>/g) || []) {
+  for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'poster="']) {
+    if (!video.includes(attr)) failures.push(`[claim] the card loop is missing ${attr}`);
+  }
+  if (/\b(?:controls|autoplay)\b/.test(video)) failures.push('[claim] the card loop must not show player controls or autoplay from the HTML');
+  if (!/data-card-toggle/.test(workHtml)) failures.push('[claim] a card loop needs its pause control');
+}
+
+// The work reel (v1.7): no visible title or paragraph, a visually hidden
+// heading, three rows moving right, left, right. Placeholder frames are
+// allowed for review builds only.
+const reelAt = at('data-reel');
+const reelHtml = reelAt < 0 ? '' : home.slice(home.lastIndexOf('<section', reelAt), home.indexOf('</section>', reelAt));
+if (!/<h2 id="reel-heading" class="sr-only"[^>]*>[^<]+<\/h2>/.test(reelHtml)) failures.push('[claim] the reel must be named by a visually hidden heading');
+if (textOf(reelHtml.replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<[^>]*\balt="[^"]*"[^>]*>/g, '')) !== '') failures.push('[claim] the reel must carry no visible text');
+const reelDirs = [...reelHtml.matchAll(/data-reel-row data-direction="(left|right)"/g)].map((m) => m[1]).join(',');
+if (reelDirs !== 'right,left,right') failures.push(`[claim] the reel rows must move right, left, right (found ${reelDirs || 'none'})`);
+const reelFrames = (reelHtml.match(/<li class="reel__frame/g) || []).length;
+const reelPlaceholders = (reelHtml.match(/<li class="reel__frame reel__frame--t\d/g) || []).length;
+if (reelPlaceholders) {
+  // Each row is laid out twice for the seamless loop, so a slot is two frames.
+  const msg = `[reel] ${reelPlaceholders / 2} of ${reelFrames / 2} reel slots are placeholders; replace them with approved stills before pushing`;
+  if (release) failures.push(msg);
+  else notes.push(msg + ' (fails with --release)');
+}
+
+// From positioning to production (v1.7): What I Do and How I Work in one
+// frame. AI appears only as an enabler, in a short working-style statement.
+const prHtml = sectionAt(at('id="capabilities"'));
+if (!/<h2 id="practice-heading"[^>]*>From positioning to production\.<\/h2>/.test(prHtml)) failures.push('[claim] the combined section must be headed "From positioning to production."');
+const prLabels = [...prHtml.matchAll(/<h3 class="practice__label"[^>]*>([^<]+)<\/h3>/g)].map((m) => m[1].trim()).join(', ');
+if (prLabels !== 'How I Work, Capabilities, Stack') failures.push(`[claim] the combined section's labels must be How I Work, Capabilities, Stack (found ${prLabels})`);
+const prCaps = [...prHtml.matchAll(/<span class="cap__title"[^>]*>([^<]+)<\/span>/g)].map((m) => m[1]).join(' | ');
+if (prCaps !== 'Positioning and messaging | Technical content and websites | Partnerships and KOL programs | Campaigns and distribution') {
+  failures.push(`[claim] the four capability groups must be the approved ones, in order (found ${prCaps})`);
+}
+const prGroups = [...prHtml.matchAll(/<h4 class="stack__name"[^>]*>([^<]+)<\/h4>/g)].map((m) => m[1]).join(' | ');
+if (prGroups !== 'AI and building | Systems and measurement | Creative and distribution') failures.push(`[claim] the Stack groups must be the approved three, in order (found ${prGroups})`);
+const prTools = (prHtml.match(/<li class="tool[ "]/g) || []).length;
+if (prTools < 12 || prTools > 15) failures.push(`[claim] the Stack should show about 12 to 15 primary tools (found ${prTools})`);
+if (/certificat/i.test(prHtml)) failures.push('[claim] the Stack has no certificate column');
+const prStatement = textOf((prHtml.match(/<p class="practice__statement"[\s\S]*?<\/p>/) || [''])[0]);
+if (!prStatement || prStatement.split(' ').length > 60) failures.push(`[claim] the How I Work statement must be short (${prStatement.split(' ').length} words)`);
+for (const retired of ['Governed by human judgment', 'AI-accelerated', 'AI accelerates the work', 'operating infrastructure', 'Governed automation', 'Marketing intelligence', 'What I do']) {
+  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired with the separate What I Do and How I Work sections`);
 }
 // About must be the second section, directly after the hero.
 const order = [...home.matchAll(/<section[^>]*\bid="([a-z-]+)"/g)].map((m) => m[1]);
@@ -260,11 +359,12 @@ if (order[0] !== undefined && order.indexOf('about') !== 0 && !/class="hero"/.te
 }
 if (/<header class="[^"]*site-header--overlay/.test(creator)) failures.push('[claim] case-study pages must keep the ordinary header bar');
 if (/hero__(?:marquee|lede|actions)/.test(home)) failures.push('[claim] retired v1.2 hero elements are still in the build');
-// v1.2 sections and copy.
-if (!/Governed by human judgment/.test(home)) failures.push('[claim] homepage must carry the How I Work heading');
-if (!/AI accelerates the work/.test(home)) failures.push('[claim] homepage must carry the How I Work accountability statement');
+// Contact and footer.
 if (!/Make the complex impossible to ignore/.test(home)) failures.push('[claim] homepage must use the approved contact headline');
-if (!/Web3 Marketing, Content/.test(home)) failures.push('[claim] footer must carry the approved role line');
+for (const f of htmlFiles) {
+  const line = (fs.readFileSync(f, 'utf8').match(/<p class="site-footer__line"[^>]*>([\s\S]*?)<\/p>/) || [])[1];
+  if (!line || textOf(line) !== 'Web3 Marketing, Strategy, & Content') failures.push(`[claim] ${path.relative(dist, f)}: the footer must carry the approved line "Web3 Marketing, Strategy, & Content"`);
+}
 // The resume must actually exist for v1.1.
 if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
@@ -301,18 +401,23 @@ for (const f of srcFiles) {
   for (const m of s.matchAll(/\b(?:heroAsset|ogAsset|asset|poster|gallery|headshot)"?\s*[:=]\s*["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/ids=\{\[([^\]]+)\]\}/g)) for (const id of m[1].matchAll(/["']([a-z0-9-]+)["']/g)) idRefs.add(id[1]);
   for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
+  // Select Work card media in each case study's frontmatter.
+  if (f.endsWith('.mdx')) {
+    for (const m of s.matchAll(/^\s*(?:main|motion):\s*["']([a-z0-9-]+)["']/gm)) idRefs.add(m[1]);
+    for (const m of s.matchAll(/^\s*side:\s*\[([^\]]+)\]/gm)) for (const id of m[1].matchAll(/["']([a-z0-9-]+)["']/g)) idRefs.add(id[1]);
+  }
 }
 // Ids referenced from home.json structures that the generic scan above cannot see
-// (the visual rail's list, and the hero portrait).
+// (the reel's frames, and the hero portrait).
 const homeData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8'));
-for (const id of homeData.rail?.items ?? []) idRefs.add(id);
+for (const row of homeData.reel?.rows ?? []) for (const fr of row.frames ?? []) if (fr.asset) idRefs.add(fr.asset);
 if (homeData.hero?.portrait) idRefs.add(homeData.hero.portrait);
 if (homeData.hero?.foreground) idRefs.add(homeData.hero.foreground);
 
 for (const id of idRefs) {
   if (!ids.has(id) && !['context', 'role', 'main', 'top', 'work', 'about', 'contact', 'capabilities'].includes(id)) {
     // Section ids in MDX also match the pattern; only flag ids that look like asset ids.
-    if (/^(hero|card|about|cc|tm|ev|og)-/.test(id)) failures.push(`[manifest] referenced asset id "${id}" is not in assets.json`);
+    if (/^(hero|card|about|cc|tm|ev|og|rail)-/.test(id)) failures.push(`[manifest] referenced asset id "${id}" is not in assets.json`);
   }
 }
 const unused = [...ids].filter((id) => !idRefs.has(id));
