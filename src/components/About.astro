@@ -1,26 +1,31 @@
 ---
 /**
- * About: a typography-led narrative directly beneath the hero.
+ * About: the headline, a three-paragraph narrative, the resume action and the
+ * trust bar, composed so the complete section fits one desktop frame.
  *
- * The headline stays as it was and is visible from the start. Beneath it,
- * three large editorial statements step across the canvas on a diagonal (left,
- * further in, then toward the right and lower), each in its own row so the
- * reading order is always top to bottom. The resume action sits under the
- * third statement. A thin rule then closes the narrative and the trust bar
- * follows on the same background.
+ * Layout. The headline is static. Beneath it the story runs in one wide
+ * column: where it began, what it grew into and, as the conclusion, where it
+ * stands today, set a step larger and heavier on its own row with the resume
+ * button. A thin rule and the trust bar close the frame. From 64rem the type
+ * and spacing scale with the smaller of the viewport's width and its height
+ * (read as a 16:9 frame), the section is one screen tall, and the floating
+ * header's height is reserved at the top, so the whole section is visible
+ * whenever About is aligned to the top of the viewport, including after a
+ * click on the About link. Phones and tablets stack and scroll naturally.
  *
  * Emphasis: only the three approved phrases are marked (double asterisks in
  * home.json) and render as <strong> in blue-teal at a slightly heavier weight.
  *
- * Motion, once: when the statements meaningfully enter the viewport, a caret
- * types them on line by line (a soft-edged wipe led by the caret, about three
- * seconds for all three, resting briefly after each), the resume button
- * appears, the caret leaves, the rule draws, and the trust bar fades up. The
- * text is laid out in its final place before anything moves: the wipe is a set
- * of background-colored masks drawn over each finished line, so nothing wraps
- * or shifts. Phones reveal each statement as a block instead. The complete
- * text is in the HTML throughout; without JavaScript, with reduced motion,
- * without IntersectionObserver, or in print, everything is simply shown.
+ * Motion, once: shortly after the story comes into view, its words flow in
+ * reading order, each fading up with an 8px rise out of a soft blur and
+ * starting before the word ahead of it has settled, with a short breath
+ * between paragraphs; the resume button and the trust bar fade in as the last
+ * paragraph resolves. Every word is its own span in the HTML from the start,
+ * laid out in its final place before anything moves. Only the paint changes,
+ * so nothing wraps or shifts, and the text is never rewritten, which keeps
+ * screen readers, selection and search on the plain copy. Without
+ * JavaScript, with reduced motion, without IntersectionObserver, or in print,
+ * everything is simply shown.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
@@ -31,97 +36,159 @@ import LogoBar from './LogoBar.astro';
 const { about } = home;
 const resumeHref = withBase(site.resumePath);
 
-/** Split "a **b** c" into runs; the odd runs are the approved emphases. */
-function runs(text: string) {
-  return text.split('**').map((t, i) => ({ text: t, mark: i % 2 === 1 }));
+const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * One paragraph as word spans separated by ordinary spaces. Double asterisks
+ * mark an approved highlight, which becomes a single <strong> around its
+ * words. Each word keeps its punctuation inside its own span, so a line can
+ * break only where the plain text could; punctuation that follows a
+ * highlight (a period) stays in the word's span but is set plain.
+ */
+type Part = { text: string; mark: boolean };
+function wordsHtml(text: string) {
+  const words: Part[][] = [];
+  let word: Part[] = [];
+  text.split('**').forEach((run, i) => {
+    const mark = i % 2 === 1;
+    for (const piece of run.split(/(\s+)/)) {
+      if (!piece) continue;
+      if (/^\s+$/.test(piece)) {
+        if (word.length) words.push(word);
+        word = [];
+        continue;
+      }
+      word.push({ text: piece, mark });
+    }
+  });
+  if (word.length) words.push(word);
+
+  const out: string[] = [];
+  let phrase: string[] = [];
+  const close = () => {
+    if (phrase.length) out.push(`<strong class="flow__mark">${phrase.join(' ')}</strong>`);
+    phrase = [];
+  };
+  for (const parts of words) {
+    const marked = parts[0].mark;
+    const inner = parts
+      .map((part) => {
+        if (part.mark === marked) return escape(part.text);
+        return marked ? `<span class="flow__plain">${escape(part.text)}</span>` : `<strong class="flow__mark">${escape(part.text)}</strong>`;
+      })
+      .join('');
+    const span = `<span class="w">${inner}</span>`;
+    if (!marked) {
+      close();
+      out.push(span);
+      continue;
+    }
+    phrase.push(span);
+    if (!parts[parts.length - 1].mark) close();
+  }
+  close();
+  return out.join(' ');
 }
 
-/** Keep hyphenated compounds such as "major-festival" on one line; odd pieces
- *  are the compounds. */
-function compounds(text: string) {
-  return text.split(/([A-Za-z0-9]+-[A-Za-z0-9]+)/).map((t, i) => ({ text: t, keep: i % 2 === 1 }));
-}
-
-const ORDER = ['one', 'two', 'three'];
-const statements = about.statements.map((s, i) => ({ runs: runs(s.text), key: ORDER[i] }));
-const closing = statements[statements.length - 1];
-const leading = statements.slice(0, -1);
+const KEYS = ['one', 'two', 'three'];
+const paragraphs = about.paragraphs.map((p, i) => ({ html: wordsHtml(p.text), key: KEYS[i] }));
+const closing = paragraphs[paragraphs.length - 1];
+const leading = paragraphs.slice(0, -1);
 ---
 
 <section id="about" class="section about" aria-labelledby="about-heading" data-about>
   <div class="container">
     <h2 id="about-heading" class="about__heading display">{about.heading}</h2>
 
-    <div class="story" data-story>
-      {
-        leading.map((s) => (
-          <p class:list={['story__statement', `story__statement--${s.key}`]}>
-            {s.runs.map((run) =>
-              run.mark ? (
-                <strong class="story__mark">{run.text}</strong>
-              ) : (
-                compounds(run.text).map((piece) => (piece.keep ? <span class="nobr">{piece.text}</span> : piece.text))
-              ),
-            )}
-          </p>
-        ))
-      }
-      <div class="story__close">
-        <p class:list={['story__statement', `story__statement--${closing.key}`]}>
-          {closing.runs.map((run) =>
-            run.mark ? (
-              <strong class="story__mark">{run.text}</strong>
-            ) : (
-              compounds(run.text).map((piece) => (piece.keep ? <span class="nobr">{piece.text}</span> : piece.text))
-            ),
-          )}
-        </p>
-        <a href={resumeHref} class="btn btn--secondary story__resume" download>
+    <div class="flow" data-flow>
+      {leading.map((p) => <p class:list={['flow__p', `flow__p--${p.key}`]}><Fragment set:html={p.html} /></p>)}
+      <div class="flow__close">
+        <p class:list={['flow__p', `flow__p--${closing.key}`]}><Fragment set:html={closing.html} /></p>
+        <a href={resumeHref} class="btn btn--secondary flow__resume" download>
           {about.resumeLink.label} <Icon name="download" size={16} />
         </a>
       </div>
     </div>
 
-    <hr class="about__rule" />
-
-    <LogoBar embedded />
+    <div class="about__trust" data-trust>
+      <hr class="about__rule" />
+      <LogoBar embedded />
+    </div>
   </div>
 
   <script is:inline>
     (function () {
       var about = document.querySelector('[data-about]');
       if (!about) return;
-      var story = about.querySelector('[data-story]');
-      var statements = [].slice.call(story.querySelectorAll('.story__statement'));
-      var rule = about.querySelector('.about__rule');
-      if (!statements.length || !rule) return;
-      if (!('IntersectionObserver' in window) || !window.requestAnimationFrame || !window.Promise) return;
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var flow = about.querySelector('[data-flow]');
+      var trust = about.querySelector('[data-trust]');
+      var paras = flow ? [].slice.call(flow.querySelectorAll('.flow__p')) : [];
+      if (!trust || !paras.length) return;
+      if (!('IntersectionObserver' in window) || !window.requestAnimationFrame || !window.Promise || !window.matchMedia) return;
+      var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (motion.matches) return;
 
-      /* Armed before first paint: the statements, button, rule and trust bar
-         wait (in their final positions) until the sequence reaches them. */
+      /* Armed before first paint: every word, the button and the trust bar
+         keep their final places but are not painted until the flow reaches
+         them. */
       about.classList.add('is-armed');
 
+      /* Timing. D is each word's own fade, rise and blur, and TOTAL runs from
+         the first word starting to the last one settled. The flow is a little
+         slower at its start and its finish (K) and quickest in the middle, so
+         it gathers pace and then lands. PARA is the breath between paragraphs
+         and STOP a lighter one at a full stop inside a paragraph. WORD gives
+         every word a small share of time of its own, so short words do not
+         pile up. */
+      var D = 380;
+      var TOTAL = 2300;
+      var PARA = 140;
+      var STOP = 40;
+      var K = 0.45;
+      var WORD = 4;
+
       var finished = false;
-      var veil = null;
-      var caret = null;
       var width0 = window.innerWidth;
 
-      /* Only a real width change re-wraps the lines; mobile toolbars that
+      var plan = paras.map(function (p) {
+        return [].slice.call(p.querySelectorAll('.w')).map(function (el) {
+          var text = el.textContent;
+          return { el: el, len: text.length, stop: /[.!?]$/.test(text) };
+        });
+      });
+
+      function finish() {
+        if (finished) return;
+        finished = true;
+        about.classList.remove('is-armed', 'is-resume', 'is-trust');
+        for (var i = 0; i < paras.length; i++) paras[i].classList.remove('is-go');
+        plan.forEach(function (ws) {
+          ws.forEach(function (w) {
+            w.el.removeAttribute('style');
+          });
+        });
+        about.style.removeProperty('--d-resume');
+        about.style.removeProperty('--d-trust');
+        about.classList.add('is-told');
+        window.removeEventListener('resize', onResize);
+        about.removeEventListener('focusin', finish);
+        about.removeEventListener('selectstart', finish);
+        if (motion.removeEventListener) motion.removeEventListener('change', finish);
+      }
+
+      /* Only a real width change can re-wrap the lines; mobile toolbars that
          collapse on scroll change the height alone. */
       function onResize() {
         if (Math.abs(window.innerWidth - width0) > 1) finish();
       }
 
-      function finish() {
-        if (finished) return;
-        finished = true;
-        if (veil) veil.remove();
-        about.classList.remove('is-armed', 'is-resume', 'is-rule', 'is-trust');
-        for (var i = 0; i < statements.length; i++) statements[i].classList.remove('is-shown', 'is-veiled');
-        about.classList.add('is-told');
-        window.removeEventListener('resize', onResize);
-      }
+      /* A keyboard user arriving in the section, the start of a text
+         selection, a resize that would re-wrap the lines, or a switch to
+         reduced motion shows everything at once. */
+      window.addEventListener('resize', onResize);
+      about.addEventListener('focusin', finish);
+      about.addEventListener('selectstart', finish);
+      if (motion.addEventListener) motion.addEventListener('change', finish);
 
       function wait(ms) {
         return new Promise(function (resolve) {
@@ -129,10 +196,18 @@ const leading = statements.slice(0, -1);
         });
       }
 
-      /* Resolves once any of els is meaningfully in view: at least `ratio` of
-         it, or (for anything taller than the screen) at least `share` of the
-         viewport, above the bottom `margin` of the screen. */
-      function inView(els, ratio, share, margin) {
+      function nextFrame() {
+        return new Promise(function (resolve) {
+          requestAnimationFrame(function () {
+            resolve();
+          });
+        });
+      }
+
+      /* Resolves once el is meaningfully in view: at least `ratio` of it, or
+         (for anything taller than the screen) at least `share` of the
+         viewport, above the bottom `margin` percent of the screen. */
+      function inView(el, ratio, share, margin) {
         return new Promise(function (resolve) {
           var io = new IntersectionObserver(
             function (entries) {
@@ -149,7 +224,7 @@ const leading = statements.slice(0, -1);
             },
             { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1], rootMargin: '0px 0px -' + margin + '% 0px' },
           );
-          for (var j = 0; j < els.length; j++) io.observe(els[j]);
+          io.observe(el);
         });
       }
 
@@ -158,181 +233,117 @@ const leading = statements.slice(0, -1);
         return Promise.race([document.fonts.ready, wait(1500)]);
       }
 
-      /* Line boxes of one statement, relative to the story. */
-      function linesOf(p, base) {
-        var range = document.createRange();
-        range.selectNodeContents(p);
-        var rects = [].slice.call(range.getClientRects());
-        var lines = [];
-        for (var i = 0; i < rects.length; i++) {
-          var r = rects[i];
-          if (r.width < 0.5 || r.height < 0.5) continue;
-          var cy = (r.top + r.bottom) / 2;
-          var line = null;
-          for (var k = 0; k < lines.length; k++) {
-            if (Math.abs(lines[k].cy - cy) < r.height * 0.45) {
-              line = lines[k];
-              break;
-            }
-          }
-          if (!line) lines.push({ cy: cy, top: r.top, bottom: r.bottom, left: r.left, right: r.right });
-          else {
-            line.top = Math.min(line.top, r.top);
-            line.bottom = Math.max(line.bottom, r.bottom);
-            line.left = Math.min(line.left, r.left);
-            line.right = Math.max(line.right, r.right);
-          }
-        }
-        lines.sort(function (a, b) {
-          return a.top - b.top;
+      /* Resolves once every part of the flow has finished animating. */
+      function settled() {
+        var list = about.getAnimations
+          ? about.getAnimations({ subtree: true }).filter(function (a) {
+              return String(a.animationName || '').indexOf('about-') === 0;
+            })
+          : [];
+        if (!list.length) return wait(D + 1200);
+        return Promise.all(
+          list.map(function (a) {
+            return a.finished.catch(function () {});
+          }),
+        );
+      }
+
+      /* Start times for one continuous flow through all three paragraphs.
+         Each word starts after the characters before it, through a gentle
+         ease on the pace, plus the breaths before it. */
+      function schedule() {
+        var X = 0;
+        plan.forEach(function (ws) {
+          ws.forEach(function (w) {
+            w.x = X;
+            X += w.len + 1 + WORD;
+          });
         });
-        return lines.map(function (l) {
-          return { top: l.top - base.top, bottom: l.bottom - base.top, left: l.left - base.left, right: l.right - base.left };
+        var rest = 0;
+        plan.forEach(function (ws) {
+          ws.forEach(function (w, i) {
+            w.rest = rest;
+            if (w.stop && i < ws.length - 1) rest += STOP;
+          });
+          rest += PARA;
+        });
+        function pace(u) {
+          return u + (K / (2 * Math.PI)) * Math.sin(2 * Math.PI * u);
+        }
+        var tail = plan[plan.length - 1];
+        var last = tail[tail.length - 1];
+        var F = (TOTAL - D - last.rest) / pace(last.x / X);
+        plan.forEach(function (ws) {
+          ws.forEach(function (w) {
+            w.t = Math.round(F * pace(w.x / X) + w.rest);
+          });
+        });
+        return { last: last, perChar: F / X };
+      }
+
+      function stamp(ws) {
+        ws.forEach(function (w) {
+          w.el.style.setProperty('--d', w.t + 'ms');
         });
       }
 
-      /* Desktop and tablet: a caret types each statement on, line by line.
-         Masks cover every finished line; each slides away at a steady speed
-         with a soft leading edge, and the caret rides that edge. */
-      function typeOn() {
-        for (var s = 0; s < statements.length; s++) statements[s].classList.add('is-veiled');
-        var base = story.getBoundingClientRect();
-        var size = parseFloat(getComputedStyle(statements[0]).fontSize) || 32;
-        var edge = Math.round(size * 0.9);
-        var pad = 6;
-        veil = document.createElement('div');
-        veil.className = 'story__veil';
-        veil.setAttribute('aria-hidden', 'true');
-        veil.style.cssText = 'left:' + -edge + 'px;right:0;top:' + -pad + 'px;bottom:' + -pad + 'px;--edge:' + edge + 'px';
-        var segs = [];
-        var total = 0;
-        var groups = statements.map(function (p) {
-          return linesOf(p, base);
-        });
-        groups.forEach(function (lines, g) {
-          lines.forEach(function (l, i) {
-            var prev = lines[i - 1];
-            var next = lines[i + 1];
-            var top = prev ? (prev.bottom + l.top) / 2 : l.top - 4;
-            var bottom = next ? (l.bottom + next.top) / 2 : l.bottom + 4;
-            var mask = document.createElement('span');
-            mask.className = 'story__mask';
-            /* In veil coordinates (the veil starts one edge to the left of
-               the story), the mask's soft edge sits just before the line. */
-            mask.style.cssText = 'left:' + l.left + 'px;top:' + (top + pad) + 'px;height:' + (bottom - top) + 'px';
-            veil.appendChild(mask);
-            var w = l.right - l.left;
-            total += w;
-            segs.push({ mask: mask, w: w, left: l.left + edge, right: l.right + edge, top: l.top + pad, h: l.bottom - l.top, group: g, last: i === lines.length - 1 });
-          });
-        });
-        caret = document.createElement('span');
-        caret.className = 'story__caret';
-        veil.appendChild(caret);
-        story.appendChild(veil);
+      var timing = schedule();
 
-        /* About three seconds of typing for all three statements, including
-           a short rest after the first two. Each statement starts once the one
-           before it has finished and it is itself on screen, so on a tall
-           screen the three run straight through, and on a shorter one the
-           caret waits, blinking, instead of typing below the fold. */
-        var REST = 240;
-        var GAP = 16;
-        var budget = 3000 - REST * (groups.length - 1) - GAP * Math.max(0, segs.length - groups.length);
-        var speed = total / Math.max(budget, 900);
-        var plan = groups.map(function () {
-          return [];
+      /* The whole story is on screen: one flow, with the button and the trust
+         bar joining in as the last paragraph resolves. */
+      function together() {
+        plan.forEach(stamp);
+        about.style.setProperty('--d-resume', Math.max(0, timing.last.t - 80) + 'ms');
+        about.style.setProperty('--d-trust', timing.last.t + 20 + 'ms');
+        return nextFrame().then(function () {
+          if (finished) return;
+          for (var i = 0; i < paras.length; i++) paras[i].classList.add('is-go');
+          about.classList.add('is-resume', 'is-trust');
+          return settled();
         });
-        segs.forEach(function (sg) {
-          plan[sg.group].push(sg);
-        });
-        plan.forEach(function (lines) {
-          var t = 0;
-          lines.forEach(function (sg) {
-            sg.dur = Math.max(70, sg.w / speed);
-            sg.dist = sg.w + edge + 6;
-            sg.start = t;
-            t += sg.dur + (sg.last ? 0 : GAP);
-          });
-          lines.end = t;
-        });
-
-        function place(sg) {
-          var edgeX = sg.left - edge + sg.k * sg.dist + edge * 0.35;
-          var x = Math.max(sg.left - 2, Math.min(edgeX, sg.right + 3));
-          caret.style.height = Math.round(sg.h * 0.78) + 'px';
-          caret.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + (sg.top + sg.h * 0.11).toFixed(1) + 'px,0)';
-          /* It blinks only while it rests at the end of a statement, not in
-             the short step between two lines. */
-          caret.classList.toggle('is-resting', sg.k >= 1 && sg.last);
-        }
-
-        function run(lines) {
-          return new Promise(function (resolve) {
-            var t0 = null;
-            function frame(now) {
-              if (finished) return resolve();
-              if (t0 === null) t0 = now;
-              var el = now - t0;
-              var active = null;
-              for (var i = 0; i < lines.length; i++) {
-                var sg = lines[i];
-                var k = Math.min(1, Math.max(0, (el - sg.start) / sg.dur));
-                if (k !== sg.k) {
-                  sg.k = k;
-                  sg.mask.style.transform = 'translate3d(' + (k * sg.dist).toFixed(1) + 'px,0,0)';
-                  /* Only a moving mask carries the soft edge; a finished one
-                     is put away. */
-                  var state = k >= 1 ? 'is-done' : 'is-live';
-                  if (state !== sg.state) {
-                    sg.state = state;
-                    sg.mask.className = 'story__mask ' + state;
-                  }
-                }
-                if (el >= sg.start) active = sg;
-              }
-              if (active) place(active);
-              if (el < lines.end) requestAnimationFrame(frame);
-              else resolve();
-            }
-            requestAnimationFrame(frame);
-          });
-        }
-
-        segs.forEach(function (sg) {
-          sg.k = 0;
-        });
-        place(segs[0]);
-        var chain = Promise.resolve();
-        plan.forEach(function (lines, g) {
-          chain = chain.then(function () {
-            if (finished) return;
-            var go = g === 0 ? Promise.resolve() : Promise.all([wait(REST), inView([statements[g]], 0.35, 0.3, 10)]);
-            return go.then(function () {
-              if (finished) return;
-              return run(lines);
-            });
-          });
-        });
-        return chain;
       }
 
-      /* Phones: each statement arrives as a block, in order, as it is reached. */
-      function blocks() {
+      /* Taller than the screen (phones, short windows): each paragraph flows
+         in at the same pace as it is reached, then the trust bar. */
+      function inTurn() {
         var chain = Promise.resolve();
-        statements.forEach(function (p, i) {
+        paras.forEach(function (p, g) {
           chain = chain
             .then(function () {
-              return inView([p], 0.2, 0.2, 8);
+              return inView(p, 0.35, 0.3, 8);
             })
             .then(function () {
               if (finished) return;
-              p.classList.add('is-shown');
-              if (i === statements.length - 1) about.classList.add('is-resume');
-              return wait(360);
+              var ws = plan[g];
+              var x = 0;
+              var rest = 0;
+              ws.forEach(function (w, i) {
+                w.t = Math.round(x * timing.perChar + rest);
+                x += w.len + 1 + WORD;
+                if (w.stop && i < ws.length - 1) rest += STOP;
+              });
+              stamp(ws);
+              var closing = g === paras.length - 1;
+              var end = ws[ws.length - 1].t;
+              if (closing) about.style.setProperty('--d-resume', Math.max(0, end - 80) + 'ms');
+              return nextFrame().then(function () {
+                if (finished) return;
+                p.classList.add('is-go');
+                if (closing) about.classList.add('is-resume');
+                return wait(end + PARA);
+              });
             });
         });
-        return chain;
+        return chain
+          .then(function () {
+            return inView(trust, 0.25, 0.15, 4);
+          })
+          .then(function () {
+            if (finished) return;
+            about.style.setProperty('--d-trust', '0ms');
+            about.classList.add('is-trust');
+            return settled();
+          });
       }
 
       function step(fn) {
@@ -341,53 +352,19 @@ const leading = statements.slice(0, -1);
         };
       }
 
-      /* A keyboard user reaching the button, or a resize that would re-wrap
-         the lines, ends the sequence at once. */
-      about.addEventListener('focusin', finish);
-
-      /* Start once a statement is about half on screen within the top three
-         quarters, so the typing happens where the reader is looking. */
-      inView(statements, 0.5, 0.3, 25)
+      /* Begin shortly after the story is well into view. */
+      inView(flow, 0.55, 0.45, 5)
         .then(step(fontsReady))
         .then(
           step(function () {
-            if (window.matchMedia('(min-width: 48rem)').matches) {
-              window.addEventListener('resize', onResize);
-              return typeOn().then(
-                step(function () {
-                  about.classList.add('is-resume');
-                  return wait(520);
-                }),
-              );
-            }
-            return blocks();
+            return wait(120);
           }),
         )
         .then(
           step(function () {
-            if (caret) caret.classList.add('is-leaving');
-            return wait(caret ? 260 : 0);
-          }),
-        )
-        .then(
-          step(function () {
-            window.removeEventListener('resize', onResize);
-            if (veil) veil.remove();
-            veil = null;
-            caret = null;
-            return inView([rule], 0.01, 0, 12);
-          }),
-        )
-        .then(
-          step(function () {
-            about.classList.add('is-rule');
-            return wait(720);
-          }),
-        )
-        .then(
-          step(function () {
-            about.classList.add('is-trust');
-            return wait(1500);
+            var header = document.querySelector('[data-header]');
+            var room = window.innerHeight - (header ? header.getBoundingClientRect().height : 0);
+            return flow.getBoundingClientRect().height <= room ? together() : inTurn();
           }),
         )
         .then(finish, finish);
@@ -396,136 +373,97 @@ const leading = statements.slice(0, -1);
 </section>
 
 <style>
+  /* ---- the frame -------------------------------------------------------- */
   .about {
-    padding-block: clamp(3.5rem, 2rem + 4vw, 6rem) clamp(4rem, 2.5rem + 4vw, 7rem);
+    --logobar-slot: 2.5rem;
+    padding-block: clamp(3.5rem, 2rem + 4vw, 6rem) clamp(4rem, 2.5rem + 4vw, 6rem);
   }
 
-  /* One line across the canvas on wide screens. The size is fitted to the
-     container width (the phrase runs about 15.6 of its own ems at this weight
-     and width) with a margin for rendering variance, and capped where the
-     canvas stops growing. */
   .about__heading {
     font-size: clamp(2.5rem, 1rem + 6vw, 4rem);
-    margin: 0 0 clamp(3rem, 1.5rem + 5vw, 7rem);
+    margin: 0 0 clamp(1.75rem, 1rem + 3vw, 2.75rem);
     max-width: none;
     text-wrap: balance;
   }
 
-  /* ---- the narrative ----------------------------------------------------
-     Three statements, one per row, stepping across the canvas. A measure of
-     19.5em keeps lines near 38 to 48 characters at every desktop and tablet
-     size; phones simply use the full width. */
-  .story {
-    position: relative;
-    display: grid;
-    row-gap: clamp(3rem, 1.5rem + 5vw, 8rem);
-  }
-
-  .story__statement {
+  /* ---- the narrative ---------------------------------------------------- */
+  /* One measure for the paragraphs, set in ems, so their lines break in the
+     same places at every desktop size. */
+  .flow__p {
+    --flow-weight: 440;
+    --flow-ink: var(--ink-2);
     margin: 0;
-    max-width: 19.5em;
+    max-width: 34em;
     font-family: var(--font-display);
-    font-weight: 440;
+    font-weight: var(--flow-weight);
     font-stretch: 96%;
-    font-size: clamp(1.375rem, 0.95rem + 1.45vw, 2.375rem);
-    line-height: 1.26;
-    letter-spacing: -0.011em;
-    color: var(--ink-2);
-    /* Plain wrapping, not text-wrap: pretty: Chrome can settle "pretty"
-       lines a moment after first layout, which would move text under the
-       type-on masks. */
+    font-size: clamp(1.25rem, 1rem + 0.6vw, 1.5rem);
+    line-height: 1.42;
+    letter-spacing: -0.008em;
+    color: var(--flow-ink);
+    /* Plain wrapping, so the lines fall the same way before, during and
+       after the flow. */
     text-wrap: wrap;
   }
 
-  .story__statement .nobr {
-    white-space: nowrap;
+  .flow__p--two {
+    margin-top: 0.8em;
   }
 
-  /* The three approved emphases: blue-teal and a little more weight, nothing
-     else (9.2:1 on the light surface). */
-  .story__mark {
+  /* Each word is shaped on its own (a font setting of its own splits the
+     run at the span), so a word is exactly as wide as a plain inline as it is
+     in the box it takes while it flows; otherwise a kern between a word and
+     the space after it moves the rest of the line by half a pixel when the
+     flow ends. */
+  .flow :global(.w) {
+    font-kerning: normal;
+  }
+
+  /* The three approved highlights: blue-teal and a little more weight,
+     nothing else (9.2:1 on the light surface). */
+  .flow :global(.flow__mark) {
     font-weight: 600;
     color: var(--accent);
   }
 
-  /* The closing statement is the thesis: a step larger and heavier. */
-  .story__statement--three {
-    max-width: 20em;
-    font-size: clamp(1.5rem, 1rem + 1.75vw, 2.75rem);
-    font-weight: 520;
-    line-height: 1.2;
-    color: var(--heading);
+  /* A period after a highlight sits inside it (so the phrase stays one
+     <strong>) but reads as plain text. */
+  .flow :global(.flow__plain) {
+    font-weight: var(--flow-weight);
+    color: var(--flow-ink);
   }
 
-  .story__statement--three .story__mark {
+  /* The conclusion: a step larger, heavier and darker, on its own row. */
+  .flow__close {
+    margin-top: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  }
+
+  .flow__p--three {
+    --flow-weight: 560;
+    --flow-ink: var(--heading);
+    max-width: 24em;
+    font-size: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+  }
+
+  .flow__p--three :global(.flow__mark) {
     font-weight: 660;
   }
 
-  .story__close {
-    display: grid;
-    justify-items: start;
-    gap: clamp(1.75rem, 1rem + 1.6vw, 2.75rem);
-  }
-
-  /* The lower rule closes the narrative across the whole canvas. */
   .about__rule {
-    margin: clamp(4.5rem, 2.5rem + 6vw, 9rem) 0 0;
+    margin: clamp(2.5rem, 1.75rem + 2.5vw, 3.5rem) 0 0;
     border: 0;
     height: 1px;
     background: var(--line-strong);
-    transform-origin: left center;
   }
 
   .about :global(.logobar--embedded) {
-    margin-top: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
-  }
-
-  /* Tablet: the same order with gentler offsets. */
-  @media (min-width: 48rem) {
-    .story__statement--two {
-      margin-left: 8%;
-    }
-
-    .story__close {
-      margin-left: 16%;
-    }
-  }
-
-  /* Desktop: a twelve-column canvas and a diagonal from the left edge toward
-     the right. */
-  @media (min-width: 64rem) {
-    .story {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      column-gap: var(--space-6);
-    }
-
-    .story__statement--one {
-      grid-column: 1 / span 8;
-    }
-
-    .story__statement--two {
-      grid-column: 3 / span 8;
-      margin-left: 0;
-    }
-
-    .story__close {
-      grid-column: 5 / span 8;
-      margin-left: 0;
-    }
-  }
-
-  @media (min-width: 90rem) {
-    .story__statement--one {
-      grid-column: 1 / span 7;
-    }
-
-    .story__statement--two {
-      grid-column: 4 / span 7;
-    }
-
-    .story__close {
-      grid-column: 6 / span 7;
-    }
+    margin-top: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
   }
 
   /* The smallest phones cannot fit "Operator discipline." at the 2.5rem floor,
@@ -537,170 +475,166 @@ const leading = statements.slice(0, -1);
     }
   }
 
+  /* One line across the canvas once it fits (the phrase runs about 15.6 of
+     its own ems at this weight and width). */
   @media (min-width: 60rem) {
     .about__heading {
-      font-size: min(5.6vw, 5.5rem);
+      font-size: 5vw;
       white-space: nowrap;
     }
   }
 
-  /* ---- the sequence (only while the script has armed it) ---------------- */
-  /* Desktop and tablet: a waiting statement is covered by a sheet of the
-     section's own background rather than faded out, so the text itself never
-     changes (not its position, not its opacity). When typing begins the
-     per-line masks take over in the same frame and the sheet is lifted. */
-  @media (min-width: 48rem) {
-    .about.is-armed .story__statement {
-      position: relative;
+  /* ---- desktop: the whole section in one frame --------------------------- */
+  @media (min-width: 64rem) {
+    .about {
+      /* The frame unit: one percent of the width, unless the screen is
+         shorter than 16:9, where its height decides instead. */
+      --fit: min(1vw, 1.8vh);
+      --logobar-slot: 2.25rem;
+      --logobar-label-gap: 0.4rem;
+      --logobar-head-gap: calc(1.15 * var(--fit));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: min(100vh, 62.5vw);
+      padding-block: calc(var(--nav-h) + 1.1 * var(--fit)) calc(1.8 * var(--fit));
+      /* In-page links normally stop short of the header. About lands flush
+         with the top of the screen, where its own padding clears the header,
+         so the whole frame shows. */
+      scroll-margin-top: calc(-1 * var(--scroll-pad));
     }
 
-    .about.is-armed .story__statement::after {
-      content: '';
-      position: absolute;
-      inset: -6px -4px;
-      background: var(--bg);
-      pointer-events: none;
+    @supports (height: 1svh) {
+      .about {
+        --fit: min(1vw, 1.8svh);
+        min-height: min(100svh, 62.5vw);
+      }
     }
 
-    .about.is-armed .story__statement.is-veiled::after {
-      content: none;
+    .about__heading {
+      font-size: min(calc(5 * var(--fit)), 5.5rem);
+      margin-bottom: calc(2.5 * var(--fit));
+    }
+
+    .flow__p {
+      font-size: clamp(1.25rem, calc(0.4rem + 1.5 * var(--fit)), 2rem);
+      line-height: 1.34;
+    }
+
+    .flow__p--two {
+      margin-top: 0.72em;
+    }
+
+    /* The conclusion and the resume button share the closing row, the button
+       on the right edge of the canvas, level with the last line. */
+    .flow__close {
+      margin-top: calc(2.3 * var(--fit));
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      align-items: last baseline;
+      gap: 1rem 2.5rem;
+    }
+
+    .flow__p--three {
+      font-size: clamp(1.5rem, calc(0.5rem + 1.85 * var(--fit)), 2.5rem);
+      line-height: 1.18;
+    }
+
+    .about__rule {
+      margin-top: calc(2.3 * var(--fit));
+    }
+
+    .about :global(.logobar--embedded) {
+      margin-top: calc(1.9 * var(--fit));
     }
   }
 
-  /* Phones reveal each statement as a block with a short rise. */
-  @media (max-width: 47.99rem) {
-    .about.is-armed .story__statement {
-      opacity: 0;
-      transform: translate3d(0, 14px, 0);
-    }
-  }
-
-  /* Phones: a block at a time. */
-  .about.is-armed .story__statement.is-shown {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 640ms var(--ease-out),
-      transform 720ms var(--ease-out);
-  }
-
-  .about.is-armed .story__resume {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
-
-  .about.is-armed.is-resume .story__resume {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 520ms var(--ease-out),
-      transform 620ms var(--ease-out);
-  }
-
-  .about.is-armed .about__rule {
-    transform: scaleX(0);
-  }
-
-  .about.is-armed.is-rule .about__rule {
-    transform: none;
-    transition: transform 900ms var(--ease-out);
-  }
-
-  .about.is-armed :global(.logobar__heading) {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
-
+  /* ---- the flow (only while the script has armed it) --------------------- */
+  .about.is-armed .flow__p :global(.w),
+  .about.is-armed .flow__resume,
+  .about.is-armed .about__rule,
+  .about.is-armed :global(.logobar__heading),
   .about.is-armed :global(.logobar__item) {
     opacity: 0;
-    transform: translate3d(0, 10px, 0);
+  }
+
+  /* While a paragraph flows, each word takes a box of its own so it can rise
+     and blur; the boxes fall exactly where the words already sit. */
+  .about.is-armed .flow__p.is-go :global(.w) {
+    display: inline-block;
+    animation: about-word 380ms cubic-bezier(0.25, 1, 0.5, 1) var(--d, 0ms) both;
+  }
+
+  .about.is-armed.is-resume .flow__resume {
+    animation: about-rise 560ms cubic-bezier(0.25, 1, 0.5, 1) var(--d-resume, 0ms) both;
+  }
+
+  .about.is-armed.is-trust .about__rule {
+    animation: about-fade 700ms cubic-bezier(0.25, 1, 0.5, 1) var(--d-trust, 0ms) both;
   }
 
   .about.is-armed.is-trust :global(.logobar__heading) {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 460ms var(--ease-out),
-      transform 560ms var(--ease-out);
+    animation: about-rise 520ms cubic-bezier(0.25, 1, 0.5, 1) calc(var(--d-trust, 0ms) + 40ms) both;
   }
 
   .about.is-armed.is-trust :global(.logobar__item) {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 520ms var(--ease-out),
-      transform 620ms var(--ease-out);
-    transition-delay: calc(240ms + var(--n, 0) * 70ms);
+    animation: about-rise 520ms cubic-bezier(0.25, 1, 0.5, 1) calc(var(--d-trust, 0ms) + 120ms + var(--n, 0) * 45ms) both;
   }
 
-  /* The veil, its masks and the caret are written by the script, so their
-     rules are global under .about. */
-  .about :global(.story__veil) {
-    position: absolute;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  /* A waiting mask is a flat sheet of the section's color, identical to the
-     ground beneath it. Only the mask that is moving carries the soft edge, and
-     a finished one is put away, so no partly transparent sheet ever rests on
-     bare background, where rounding would leave a faint rectangle. */
-  .about :global(.story__mask) {
-    position: absolute;
-    right: 0;
-    background: var(--bg);
-    will-change: transform;
-  }
-
-  /* The soft edge fades from the section's own color at zero alpha, so no
-     gray creeps into the gradient whichever space it is interpolated in. */
-  .about :global(.story__mask.is-live) {
-    background: linear-gradient(90deg, color-mix(in srgb, var(--bg), transparent 100%) 0, var(--bg) var(--edge), var(--bg) 100%);
-  }
-
-  .about :global(.story__mask.is-done) {
-    visibility: hidden;
-  }
-
-  .about :global(.story__caret) {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 2px;
-    border-radius: 1px;
-    background: var(--accent);
-    will-change: transform;
-    transition: opacity 240ms var(--ease-out);
-  }
-
-  .about :global(.story__caret.is-resting) {
-    animation: about-caret-blink 900ms steps(1, end) infinite;
-  }
-
-  .about :global(.story__caret.is-leaving) {
-    opacity: 0;
-    animation: none;
-  }
-
-  @keyframes about-caret-blink {
-    50% {
+  @keyframes about-word {
+    from {
       opacity: 0;
+      transform: translate3d(0, 8px, 0);
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
     }
   }
 
-  @media print {
-    .about.is-armed .story__statement,
-    .about.is-armed .story__resume,
+  @keyframes about-rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes about-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about.is-armed .flow__p :global(.w),
+    .about.is-armed .flow__resume,
     .about.is-armed .about__rule,
     .about.is-armed :global(.logobar__heading),
     .about.is-armed :global(.logobar__item) {
       opacity: 1 !important;
-      transform: none !important;
+      animation: none !important;
     }
+  }
 
-    .about :global(.story__veil) {
-      display: none !important;
+  @media print {
+    .about.is-armed .flow__p :global(.w),
+    .about.is-armed .flow__resume,
+    .about.is-armed .about__rule,
+    .about.is-armed :global(.logobar__heading),
+    .about.is-armed :global(.logobar__item) {
+      opacity: 1 !important;
+      animation: none !important;
     }
   }
 </style>

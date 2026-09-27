@@ -112,17 +112,17 @@
     ]
   },
   "about": {
-    "_note": "About (redesign): the headline, then three editorial statements in a staggered composition, the resume action beneath the third, a lower rule, and the trust bar on the same background. Double asterisks mark the three approved emphases, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed the statements type on once when About enters the viewport, then the rule draws and the trust bar appears.",
+    "_note": "About (finalization): the static headline, then three paragraphs (the music and business foundation, the move to Phi Labs Global and the wider scope, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three approved highlights, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
     "heading": "Creative instincts. Operator discipline.",
-    "statements": [
+    "paragraphs": [
       {
-        "text": "I entered DeFi full-time in 2021 after a decade of building audiences and running the business behind a **professionally managed, globally distributed** music project that reached listeners in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings."
+        "text": "I came to DeFi in 2021 after a decade of building audiences and running the business behind a **globally distributed music project**. That chapter included sponsorships, media appearances, and major bookings."
       },
       {
-        "text": "In 2024, I joined Phi Labs Global to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and DeFi products with a combined audience of **more than 200,000**. As the organization evolved, my scope expanded into positioning, messaging, technical documentation, community strategy, creator partnerships, events, websites, campaign operations, and distribution."
+        "text": "In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching **more than 200,000 people**. As the company evolved, my role expanded into positioning, technical storytelling, community strategy, partnerships, campaigns, websites, and distribution."
       },
       {
-        "text": "Today, I connect **strategy with execution** to make complex products clear, relevant, and difficult to ignore."
+        "text": "Today, I turn product complexity into **market narratives** people understand and act on."
       }
     ],
     "resumeLink": {

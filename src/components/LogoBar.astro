@@ -77,8 +77,11 @@ const Heading = embedded ? 'h3' : 'h2';
     padding-block: 0;
   }
 
+  /* The host section may tighten the bar's vertical rhythm through
+     --logobar-head-gap, --logobar-slot and --logobar-label-gap (About does,
+     to keep its whole frame on one screen); the defaults are the bar's own. */
   .logobar__heading {
-    margin-bottom: clamp(1.25rem, 0.9rem + 1.2vw, 1.85rem);
+    margin-bottom: var(--logobar-head-gap, clamp(1.25rem, 0.9rem + 1.2vw, 1.85rem));
     text-align: center;
   }
 
@@ -100,10 +103,10 @@ const Heading = embedded ? 'h3' : 'h2';
   .logobar__item {
     flex: 0 0 calc((100% - (var(--cols) - 1) * var(--col-gap)) / var(--cols));
     display: grid;
-    grid-template-rows: 3rem auto;
+    grid-template-rows: var(--logobar-slot, 3rem) auto;
     justify-items: center;
     text-align: center;
-    gap: 0.5rem;
+    gap: var(--logobar-label-gap, 0.5rem);
     min-width: 0;
   }
 
@@ -114,7 +117,7 @@ const Heading = embedded ? 'h3' : 'h2';
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 3rem;
+    height: var(--logobar-slot, 3rem);
     min-width: 0;
     container-type: inline-size;
   }

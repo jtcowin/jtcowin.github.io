@@ -148,40 +148,50 @@ if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render a
 if (/icon-192\.png"[^>]*class="brand__mark"|brand__mark/.test(home)) failures.push('[claim] no brand mark may appear in the hero header');
 if (!/Creative instincts\. Operator discipline\./.test(home)) failures.push('[claim] About must use the approved headline');
 if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About section must have no eyebrow');
-// About (redesign): the headline, three editorial statements in the approved
-// copy, exactly the three approved blue-teal emphases, the resume button
-// beneath the third statement, then the lower rule and the trust bar, all
-// inside About on its own background. Nothing of the timeline remains.
+// About (finalization): the static headline, the three approved paragraphs
+// (every word its own span, so the flow never re-wraps a line), exactly the
+// three approved blue-teal highlights, the resume button on the closing row
+// after the third paragraph, then the lower rule and the trust bar, all inside
+// About on its own background. No caret, no retired copy, no em dash.
 const decode = (t) => t.replace(/&#39;|&#x27;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 const textOf = (html) => decode(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
 const aboutStart = home.indexOf('id="about"');
 const aboutEnd = home.indexOf('</section>', aboutStart);
 const aboutHtml = aboutStart < 0 ? '' : home.slice(aboutStart, aboutEnd);
-const story = (aboutHtml.match(/<div class="story"[\s\S]*?<hr class="about__rule"/) || [''])[0];
-if (!story) failures.push('[claim] the About narrative (story, then the lower rule) was not found');
-const statementHtml = [...story.matchAll(/<p class="story__statement[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
-const approvedStatements = [
-  'I entered DeFi full-time in 2021 after a decade of building audiences and running the business behind a professionally managed, globally distributed music project that reached listeners in 80+ countries, performed 140+ shows annually, and secured sponsorships, media appearances, and major-festival bookings.',
-  'In 2024, I joined Phi Labs Global to manage social media across a product portfolio that included a Layer 1 blockchain, an NFT marketplace, and DeFi products with a combined audience of more than 200,000. As the organization evolved, my scope expanded into positioning, messaging, technical documentation, community strategy, creator partnerships, events, websites, campaign operations, and distribution.',
-  'Today, I connect strategy with execution to make complex products clear, relevant, and difficult to ignore.',
+const flow = (aboutHtml.match(/<div class="flow"[\s\S]*?<hr class="about__rule"/) || [''])[0];
+if (!flow) failures.push('[claim] the About narrative (flow, then the lower rule) was not found');
+const paragraphHtml = [...flow.matchAll(/<p class="flow__p[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+const approvedParagraphs = [
+  'I came to DeFi in 2021 after a decade of building audiences and running the business behind a globally distributed music project. That chapter included sponsorships, media appearances, and major bookings.',
+  'In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching more than 200,000 people. As the company evolved, my role expanded into positioning, technical storytelling, community strategy, partnerships, campaigns, websites, and distribution.',
+  'Today, I turn product complexity into market narratives people understand and act on.',
 ];
-if (statementHtml.length !== approvedStatements.length) failures.push(`[claim] About must present three statements (found ${statementHtml.length})`);
-approvedStatements.forEach((copy, i) => {
-  if (textOf(statementHtml[i] || '') !== copy) failures.push(`[claim] About statement ${i + 1} must use the approved copy`);
+if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present three paragraphs (found ${paragraphHtml.length})`);
+approvedParagraphs.forEach((copy, i) => {
+  const html = paragraphHtml[i] || '';
+  if (textOf(html) !== copy) failures.push(`[claim] About paragraph ${i + 1} must use the approved copy`);
+  const spans = (html.match(/<span class="w">/g) || []).length;
+  const words = copy.split(' ').length;
+  if (spans !== words) failures.push(`[claim] About paragraph ${i + 1} must set each word in its own span (${spans} spans for ${words} words)`);
 });
-const marks = [...story.matchAll(/<strong class="story__mark"[^>]*>([^<]*)<\/strong>/g)].map((m) => textOf(m[1]));
-if (marks.join(' | ') !== 'professionally managed, globally distributed | more than 200,000 | strategy with execution') {
-  failures.push(`[claim] About must emphasize exactly the three approved phrases, in order (found: ${marks.join(' | ') || 'none'})`);
+// Each highlight is one <strong> around its words; a period that follows it
+// sits inside, set plain, and is not part of the phrase.
+const marks = [...flow.matchAll(/<strong class="flow__mark"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1].replace(/<span class="flow__plain">[\s\S]*?<\/span>/g, '')));
+if (marks.join(' | ') !== 'globally distributed music project | more than 200,000 people | market narratives') {
+  failures.push(`[claim] About must highlight exactly the three approved phrases, in order (found: ${marks.join(' | ') || 'none'})`);
 }
-if ((story.match(/<(?:strong|b|em|mark|u)[\s>]/g) || []).length !== 3) failures.push('[claim] nothing in the About narrative may be emphasized besides the three approved phrases');
-const closing = (story.match(/<div class="story__close"[\s\S]*?<\/div>/) || [''])[0];
-const thirdAt = closing.indexOf('story__statement--three');
-if (thirdAt < 0 || closing.indexOf('story__resume') < thirdAt || !/Read the full resume/.test(closing)) {
-  failures.push('[claim] the "Read the full resume" button must sit directly beneath Statement Three');
+if (/<(?:b|em|mark|u)[\s>]/.test(flow) || /<strong(?![^>]*class="flow__mark")/.test(flow)) {
+  failures.push('[claim] nothing in the About narrative may be emphasized besides the three approved phrases');
+}
+const closing = (flow.match(/<div class="flow__close"[\s\S]*?<\/div>/) || [''])[0];
+const thirdAt = closing.indexOf('flow__p--three');
+if (thirdAt < 0 || closing.indexOf('flow__resume') < thirdAt || !/Read the full resume/.test(closing)) {
+  failures.push('[claim] the "Read the full resume" button must follow the third paragraph on the closing row');
 }
 for (const product of ['Archway', 'Ambur', 'Bolt']) {
-  if (story.includes(product)) failures.push(`[claim] the About narrative must not name individual products (found "${product}")`);
+  if (flow.includes(product)) failures.push(`[claim] the About narrative must not name individual products (found "${product}")`);
 }
+// Earlier About copy, including the retired music metrics, must not return.
 const retiredAbout = [
   'Late 2024 to present',
   'Bolt Liquidity phase',
@@ -193,18 +203,31 @@ const retiredAbout = [
   'Selected Companies',
   'publishing calendars',
   'my role expanded far beyond social',
+  'I entered DeFi',
+  'rofessionally managed',
+  'listeners in',
+  '80+',
+  '80-plus',
+  '140+',
+  '140-plus',
+  'shows annually',
+  'major-festival',
+  'combined audience',
+  'strategy with execution',
+  'difficult to ignore',
 ];
 for (const retired of retiredAbout) {
-  if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
+  if (aboutHtml.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
 }
 if (/securing global distribution/.test(home)) failures.push('[claim] the About copy must not repeat "securing global distribution"');
-for (const token of ['timeline__', 'data-timeline', 'timeline-detail', 'career__', 'about__cols', 'logobar--band', 'data-surface="band"']) {
-  if (home.includes(token)) failures.push(`[claim] "${token}" is left over from the retired timeline, columns or band`);
+if (/\u2014|&mdash;|&#8212;|&#x2014;/i.test(aboutHtml)) failures.push('[claim] no em dash anywhere in the About section');
+for (const token of ['timeline__', 'data-timeline', 'timeline-detail', 'career__', 'about__cols', 'logobar--band', 'data-surface="band"', 'story__', 'data-story', 'caret']) {
+  if (aboutHtml.includes(token)) failures.push(`[claim] "${token}" is left over from a retired About (timeline, columns, band or type-on)`);
 }
-// The type-on is progressive: armed only by the inline script, skipped for
+// The flow is progressive: armed only by the inline script, skipped for
 // reduced motion, so the HTML alone shows everything.
-for (const token of ['data-about', 'data-story', 'prefers-reduced-motion: reduce', 'IntersectionObserver', 'is-armed']) {
-  if (!aboutHtml.includes(token)) failures.push(`[claim] the About sequence is missing "${token}" (script or motion guard)`);
+for (const token of ['data-about', 'data-flow', 'data-trust', 'prefers-reduced-motion: reduce', 'IntersectionObserver', 'is-armed']) {
+  if (!aboutHtml.includes(token)) failures.push(`[claim] the About flow is missing "${token}" (script or motion guard)`);
 }
 if (!/Select Companies, Products, and Partners/.test(home)) failures.push('[claim] trust-bar heading must read "Select Companies, Products, and Partners"');
 // Trust bar: closes About beneath the lower rule, on the About background,

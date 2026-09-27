@@ -111,6 +111,12 @@
   --container-narrow: 46rem;
   --measure: 64ch;
 
+  /* The homepage header floats over every section at this height, so anything
+     that has to clear it (About's frame) reads the same value. In-page links
+     land this far below the top of the screen. */
+  --nav-h: clamp(4.5rem, 9vh, 6rem);
+  --scroll-pad: 5.5rem;
+
   --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 14px;
@@ -229,7 +235,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: 5.5rem;
+  scroll-padding-top: var(--scroll-pad);
   background: var(--bg);
 }
 

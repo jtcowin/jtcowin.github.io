@@ -14,10 +14,11 @@ Version 1.5 introduced a visual system drawn from the hero portrait: a small pal
 cool stone, slate, bone and blue-teal; six numbered surfaces handed out by page position; a heavy
 semi-condensed display face with Manrope for everything read closely; and a wide editorial canvas.
 The homepage is now hero, About (the narrative and the trust bar), Selected Work, What I Do, How I
-Work, Contact. The About section was then redesigned as a typography-led narrative: the headline, three large
-editorial statements on a staggered diagonal with three blue-teal emphases, the resume button beneath the
-last statement, a lower rule, and the trust bar on the same background. The statements type on once as
-About enters the viewport. The career timeline, the three-column layout and the separate trust band are
+Work, Contact. The About section has since been finalized as one desktop frame: the static headline,
+three paragraphs (the music and business foundation, the move to Phi Labs Global, and a larger
+concluding line) with three blue-teal highlights, the resume button on the closing row, a thin rule,
+and the trust bar in one centered row. Its words flow in once, in reading order, as About comes into
+view. The career timeline, the three-column layout, the separate trust band and the type-on caret are
 gone. Version 1.4 layered the hero so the moving name runs behind the subject, and Version 1.3
 introduced the full-viewport photograph and the photographic favicon.
 
@@ -238,30 +239,43 @@ title; the only formal title for the Phi Labs role is still "Social Media Manage
 also confirms the word "approximate" on the aggregate impressions figure, the 1.25M aggregate,
 and the approved How I Work, contact, trust-bar, and footer lines are present.
 
-The About checks: three statements in the approved copy; exactly three emphases, in order
-("professionally managed, globally distributed", "more than 200,000", "strategy with execution") and
-nothing else emphasized or bold, Phi Labs Global included; no individual product named in the narrative;
-the resume button directly beneath the third statement; the lower rule and then the trust bar inside
-About with no surface of their own; the trust-bar heading "Select Companies, Products, and Partners";
-and no class or attribute left over from the retired timeline, columns or band. The homepage no longer
-states a formal title; the only formal title for the Phi Labs role is still "Social Media Manager", on
-the resume.
+The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
+highlights, in order ("globally distributed music project", "more than 200,000 people", "market
+narratives") and nothing else emphasized or bold, Phi Labs Global included; no individual product named
+in the narrative; the resume button on the closing row after the third paragraph; none of the earlier
+About copy or its music metrics (80+ countries, 140+ shows, "professionally managed"); no em dash; the
+lower rule and then the trust bar inside About with no surface of their own; the trust-bar heading
+"Select Companies, Products, and Partners"; and no class or attribute left over from the retired
+timeline, columns, band or type-on caret. The homepage no longer states a formal title; the only
+formal title for the Phi Labs role is still "Social Media Manager", on the resume.
 
 ### About narrative and motion
 
-- Layout: the headline is unchanged and visible from the start. The three statements each take a row of
-  their own, so the reading order is always top to bottom. From 64rem they sit on a twelve-column canvas
-  on a diagonal (columns 1, 3 and 5 over eight columns; from 90rem, 1, 4 and 6 over seven), which keeps
-  lines near 38 to 48 characters. Tablets keep the order with gentler offsets; phones stack them, left
-  aligned. Statements are Archivo at 440 (the third at 520 and a step larger); the three emphases are
-  blue-teal at 600, 9.2:1 on the light surface.
-- Sequence, once: when a statement is about a third in view, a blue-teal caret types the statements on
-  line by line in about three seconds, resting briefly after each; the resume button appears; the caret
-  leaves; when the rule is in view it draws across the canvas; then the trust-bar heading and the entries
-  fade up in order. Phones reveal each statement as a block as it is reached.
-- Nothing moves while it plays: the text is laid out in its final place first, and the "typing" is a set
-  of background-colored masks over each line that slide away with a soft leading edge. A width change or
-  a keyboard focus inside About ends the sequence at once.
+- One frame: from 64rem the complete section (headline, three paragraphs, resume button, trust-bar
+  title and every logo and label) fits one screen when About is aligned to the top, as it is after a
+  click on the About link. Type and spacing scale with the smaller of the viewport's width and its
+  height read as a 16:9 frame (`--fit`), the section is one screen tall with its content centered, and
+  its top padding reserves the floating header's height (`--nav-h`, shared with the header). About
+  cancels the usual in-page link offset (`--scroll-pad`) so it lands flush with the top. Checked at
+  1280x720, 1440x900 and 1920x1080, and at common laptop windows such as 1366x768, 1536x730 and
+  1440x790. Phones and tablets stack and scroll naturally.
+- Type: paragraphs are Archivo at 440 on a 34em measure (the same line breaks at every desktop size);
+  the concluding paragraph is a step larger at 560 in the heading color, with the resume button at the
+  right edge of its row; the highlights are blue-teal at 600, 9.2:1 on the light surface. The trust bar
+  keeps its contents, order, labels and monochrome marks, with its rhythm tightened through
+  `--logobar-slot`, `--logobar-label-gap` and `--logobar-head-gap`, and holds one row from 72rem.
+- Motion, once: shortly after the story is well in view, its words flow in, in reading order. Each word
+  fades from 0 to 1 while it rises 8px and sharpens from a 3px blur (380ms, ease-out), starting before
+  the word ahead of it has settled; the pace eases in and out over the whole copy, with a breath of
+  about 140ms between paragraphs, and the copy is complete in 2.3 seconds. The resume button and the
+  trust bar fade in as the last paragraph resolves. No caret. When the story is taller than the screen
+  (small phones, short windows) each paragraph flows in as it is reached.
+- Nothing moves while it plays: every word is its own span in the HTML from the start, laid out in its
+  final place; while a paragraph flows its words take their own boxes, which fall exactly where the
+  words already sit (each word is shaped on its own, so no kern can shift a line when the flow ends).
+  The text is never rewritten, so screen readers, selection and search always see the plain copy. A
+  keyboard focus inside About, the start of a text selection, a width change, or switching on reduced
+  motion shows everything at once.
 - The complete text is in the HTML throughout. Without JavaScript, with reduced motion, without
   IntersectionObserver, or in print, everything is shown immediately.
 
