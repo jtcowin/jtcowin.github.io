@@ -95,7 +95,7 @@ const forbidden = [
   { re: /\[\[[A-Z ]+PLACEHOLDER/i, why: 'raw brief placeholder token leaked into output' },
   { re: /article reads/i, why: 'X figures must be labeled as post views' },
   { re: /\bclients?\b/i, why: 'logo bar organizations must not be called clients' },
-  { re: /\u2014/, why: 'no em dashes in public-facing copy' },
+  { re: /\u2014|&mdash;|&#8212;|&#x2014;/i, why: 'no em dashes in public-facing copy' },
   { re: /class="[^"]*\bph\b[^"]*"/, why: 'placeholder block rendered into the public build' },
   { re: /pending permission|pending confirmation/i, why: 'pending-permission UI rendered into the public build' },
   // v1.2: one aggregate impressions figure only. Location-level figures are retired.
@@ -104,14 +104,18 @@ const forbidden = [
   // v1.7: John did not lead a community function in this B2B role.
   { re: /community strateg/i, why: 'the portfolio must not imply community strategy' },
 ];
-// The hero name stream separates its repeats with an em dash, which is
-// deliberate typography rather than prose punctuation, so that one element is
-// excised before the guardrails run. Everything else is still tested.
+// Two em dashes are approved, and each is excised in its exact approved form
+// before the guardrails run: the hero name stream separates its repeats with
+// one, which is deliberate typography rather than prose punctuation, and the
+// Version 1.9 footer credit, "© <year> John Cowin — Built end to end.", keeps
+// one on purpose. Everything else is still tested, so an em dash anywhere
+// else, or in a reworded credit, still fails.
 const STREAM = /<span class="stream"[\s\S]*?<\/span>\s*<\/h1>/g;
+const FOOTER_CREDIT = /(<p class="site-footer__meta[^"]*"[^>]*>)© \d{4} John Cowin — Built end to end\.(<\/p>)/g;
 
 for (const f of htmlFiles) {
   const raw = fs.readFileSync(f, 'utf8');
-  const html = raw.replace(STREAM, '');
+  const html = raw.replace(STREAM, '').replace(FOOTER_CREDIT, '$1$2');
   for (const { re, why } of forbidden) {
     const m = html.match(re);
     if (m) failures.push(`[guardrail] ${path.relative(dist, f)} contains "${m[0]}" (${why})`);
@@ -269,6 +273,40 @@ if (surfaceOrder.join(',') !== 'light,dark,soft,brand') {
   failures.push(`[claim] the four chapters must take surfaces 02 to 05 in order (got ${surfaceOrder.join(', ')})`);
 }
 
+// The built CSS as flat rules, each with the at-rules around it, for the few
+// checks that are about layout rather than copy (Select Work, the Stack and
+// Contact below). Media queries may come out in either syntax, so the tests
+// accept both "(min-width: 60rem)" and "(width>=60rem)".
+const cssText = [
+  ...files.filter((f) => f.endsWith('.css')).map((f) => fs.readFileSync(f, 'utf8')),
+  ...htmlFiles.flatMap((f) => [...fs.readFileSync(f, 'utf8').matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1])),
+].join('\n');
+const CSS_RULES = (() => {
+  const rules = [];
+  const stack = [];
+  let buf = '';
+  for (const ch of cssText.replace(/\/\*[\s\S]*?\*\//g, '')) {
+    if (ch === '{') {
+      stack.push(buf.split(';').pop().trim());
+      buf = '';
+    } else if (ch === '}') {
+      const sel = stack.pop();
+      if (sel && !sel.startsWith('@') && buf.trim()) rules.push({ sel, body: buf.trim(), at: stack.filter((x) => x.startsWith('@')).join(' ') });
+      buf = '';
+    } else buf += ch;
+  }
+  return rules;
+})();
+const rulesFor = (re) => CSS_RULES.filter((r) => re.test(r.sel));
+// The built scripts, inline and bundled, for the checks on their guards.
+const scriptsText = [
+  ...htmlFiles.flatMap((f) => [...fs.readFileSync(f, 'utf8').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1])),
+  ...files.filter((f) => f.endsWith('.js')).map((f) => fs.readFileSync(f, 'utf8')),
+];
+const DESKTOP = /min-width:\s*60rem|width\s*>=\s*60rem/;
+const TALL = /min-height:\s*[\d.]+rem|height\s*>=\s*[\d.]+rem/;
+const MOTION_OK = /prefers-reduced-motion:\s*no-preference/;
+
 // Select Work (v1.7): the approved title and intro, then three cards in one
 // template: number and category, a short title, a one-sentence subline, one
 // dominant panel and two supporting panels, and one case-study link. Metrics
@@ -318,6 +356,34 @@ for (const video of workHtml.match(/<video\b[^>]*>/g) || []) {
   if (/\b(?:controls|autoplay)\b/.test(video)) failures.push('[claim] the card loop must not show player controls or autoplay from the HTML');
   if (!/data-card-toggle/.test(workHtml)) failures.push('[claim] a card loop needs its pause control');
 }
+// Select Work (v1.9): on tall desktop screens the title and intro stay pinned
+// beneath the header while the cards park under them, and both release
+// together after the last card. It is an enhancement only: the inline head
+// script marks the page with .js, and every sticky rule for the intro or the
+// cards needs that class, a desktop width and prefers-reduced-motion:
+// no-preference, so without JavaScript or with reduced motion the section
+// reads as an ordinary sequence. The pinned intro also needs a minimum height.
+const workHead = (workHtml.match(/<div class="[^"]*\bwork__head\b[^"]*"[^>]*\bdata-work-head\b[^>]*>[\s\S]*?<\/div>/) || [''])[0];
+if (!/class="[^"]*\bwork__track\b/.test(workHtml) || !workHead) failures.push('[claim] Select Work must hold its title and intro (data-work-head) and its cards in one track');
+else if (!/id="work-heading"/.test(workHead) || !/class="lede"/.test(workHead)) failures.push('[claim] the pinned Select Work head must hold the title and the intro');
+for (const f of htmlFiles) {
+  const headHtml = (fs.readFileSync(f, 'utf8').match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
+  if (!/<script>document\.documentElement\.classList\.add\(['"`]js['"`]\);?<\/script>/.test(headHtml)) failures.push(`[claim] ${path.relative(dist, f)}: the head must mark the page with the .js class`);
+}
+const stickyWork = CSS_RULES.filter((r) => /position:\s*sticky/.test(r.body) && /\.(?:card|work__head)\b(?!-)/.test(r.sel));
+for (const part of ['work__head', 'card']) {
+  if (!stickyWork.some((r) => new RegExp(`\\.${part}\\b(?!-)`).test(r.sel))) failures.push(`[claim] no sticky rule for .${part} was found in the built CSS`);
+}
+for (const r of stickyWork) {
+  if (!r.sel.split(',').every((x) => /^\s*\.js\s/.test(x)) || !DESKTOP.test(r.at) || !MOTION_OK.test(r.at)) {
+    failures.push(`[claim] "${r.sel}" is sticky without the .js class, a 60rem minimum width and prefers-reduced-motion: no-preference`);
+  }
+  if (/\.work__head\b/.test(r.sel) && !TALL.test(r.at)) failures.push('[claim] the pinned Select Work intro must be limited to screens tall enough to hold it');
+}
+// Keyboard focus never rests on a covered card: the stack script brings a
+// covered card back into view when one of its controls takes keyboard focus.
+const stackScript = scriptsText.find((t) => t.includes('data-catalog') && t.includes('focusin')) || '';
+if (!stackScript.includes(':focus-visible')) failures.push('[claim] the Select Work stack must bring a covered card into view when it takes keyboard focus');
 
 // The work reel (v1.8): a purely visual transition between Select Work and
 // the combined section. No heading, label, caption, badge, tooltip or text of
@@ -369,6 +435,13 @@ if (strayReel.length || REEL_POOL.some((st) => !reelStems.includes(st))) {
   failures.push(`[asset] src/assets/reel must hold exactly the 24 approved pieces (extra: ${strayReel.join(', ') || 'none'}; missing: ${REEL_POOL.filter((st) => !reelStems.includes(st)).join(', ') || 'none'})`);
 }
 if (reelFiles.some((f) => /discord|educational|screenshot/i.test(f))) failures.push('[asset] an excluded or unrenamed screenshot is in src/assets/reel');
+// v1.9: the reel stays purely visual. Nothing but the reel sits between Select
+// Work and the combined section, so no title, note or caption can appear above
+// or below it either; roles are stated on the case-study pages instead.
+const reelGap = home.slice(home.indexOf('</section>', at('id="work"')), home.lastIndexOf('<section', at('id="capabilities"')));
+if (textOf(reelGap.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, '')) !== '') {
+  failures.push('[claim] nothing but the reel may sit between Select Work and the combined section');
+}
 
 // From positioning to production (v1.7, Stack rebuilt in v1.8): What I Do and
 // How I Work in one frame. AI appears only as an enabler, in a short
@@ -376,7 +449,9 @@ if (reelFiles.some((f) => /discord|educational|screenshot/i.test(f))) failures.p
 const prHtml = sectionAt(at('id="capabilities"'));
 if (!/<h2 id="practice-heading"[^>]*>From positioning to production\.<\/h2>/.test(prHtml)) failures.push('[claim] the combined section must be headed "From positioning to production."');
 const prLabels = [...prHtml.matchAll(/<h3 class="practice__label"[^>]*>([^<]+)<\/h3>/g)].map((m) => m[1].trim()).join(', ');
-if (prLabels !== 'How I Work, Capabilities, Stack') failures.push(`[claim] the combined section's labels must be How I Work, Capabilities, Stack (found ${prLabels})`);
+// v1.9: the How I Work eyebrow is gone, so the statement follows the headline directly.
+if (prLabels !== 'Capabilities, Stack') failures.push(`[claim] the combined section's labels must be Capabilities, Stack (found ${prLabels})`);
+if (/>\s*How I Work\s*</i.test(prHtml)) failures.push('[claim] the How I Work eyebrow was removed in Version 1.9');
 const prCaps = [...prHtml.matchAll(/<span class="cap__title"[^>]*>([^<]+)<\/span>/g)].map((m) => m[1]).join(' | ');
 if (prCaps !== 'Positioning and messaging | Technical content and websites | Partnerships and KOL programs | Campaigns and distribution') {
   failures.push(`[claim] the four capability groups must be the approved ones, in order (found ${prCaps})`);
@@ -420,6 +495,15 @@ for (const g of homeJson.practice?.stack?.groups ?? []) {
     if (!t.logo || !fs.existsSync(path.join(root, 'src/assets', t.logo))) failures.push(`[asset] Stack tool "${t.name}" has no logo file (src/assets/${t.logo})`);
   }
 }
+// The Stack (v1.9): each group's heading and its collection of tiles are
+// centered in the group, and the tiles keep their own width rather than
+// stretching to fill a row.
+if (!rulesFor(/\.stack__name\b/).some((r) => /text-align:\s*center/.test(r.body))) failures.push('[claim] each Stack group heading must be centered in its group');
+const toolRows = rulesFor(/\.stack__tools\b/);
+if (!toolRows.some((r) => /justify-content:\s*center/.test(r.body))) failures.push('[claim] each Stack group must center its tiles');
+if (toolRows.some((r) => /justify-content:\s*(?:space-|stretch)/.test(r.body)) || rulesFor(/\.tool\b(?!__|--)/).some((r) => /(?:^|;)\s*flex(?:-grow)?:\s*(?:[1-9]|auto)/.test(r.body))) {
+  failures.push('[claim] Stack tiles must keep their own width, not stretch to fill a row');
+}
 // The capability rows answer the pointer and the keyboard alike.
 const capRows = prHtml.match(/<li class="cap"[^>]*>/g) || [];
 if (capRows.length !== 4 || capRows.some((t) => !/tabindex="0"/.test(t))) failures.push('[claim] the four capability rows must be reachable by keyboard');
@@ -454,19 +538,73 @@ for (const f of htmlFiles) {
     const actions = [...contactHtml.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((m) => m[1]);
     if (actions.length !== 2 || !actions[0].startsWith('mailto:') || !/John-Cowin-Resume\.pdf$/.test(actions[1])) failures.push(`[claim] ${rel}: Contact keeps exactly the email and resume actions (found ${actions.join(', ')})`);
   }
-  // Footer (v1.8): the descriptor, identical to the hero's, and one compact
-  // credit that names John once: "© <year> John Cowin. Built end to end."
+  // Footer (v1.9): the descriptor, identical to the hero's, and the approved
+  // credit, which names John once: "© <year> John Cowin — Built end to end."
+  // Its em dash is intentional (see the guardrails above).
   const footer = (html.match(/<footer[\s\S]*?<\/footer>/) || [''])[0];
   const line = (footer.match(/<p class="site-footer__line"[^>]*>([\s\S]*?)<\/p>/) || [])[1];
   if (!line || textOf(line) !== DESCRIPTOR) failures.push(`[claim] ${rel}: the footer must carry the descriptor "${DESCRIPTOR}" exactly`);
   const credit = textOf((footer.match(/<p class="site-footer__meta[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]);
   const year = new Date().getFullYear();
-  if (credit !== `© ${year} John Cowin. Built end to end.`) failures.push(`[claim] ${rel}: the footer credit must read "© ${year} John Cowin. Built end to end." (found "${credit}")`);
+  if (credit !== `© ${year} John Cowin — Built end to end.`) failures.push(`[claim] ${rel}: the footer credit must read "© ${year} John Cowin — Built end to end." (found "${credit}")`);
   if ((textOf(footer).match(/John Cowin/g) || []).length !== 1) failures.push(`[claim] ${rel}: John's name must appear once in the footer`);
 }
 for (const retired of ['Make the complex impossible to ignore', 'Site by John Cowin']) {
   if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired in Version 1.8`);
 }
+// Contact (v1.9): on the homepage, Contact and the footer form one closing
+// frame at least a screen tall (small-viewport units where supported, so
+// browser chrome never pushes the footer out of it), over a quiet grid. The
+// grid is decorative (aria-hidden, no text), drawn with CSS gradients alone
+// (no canvas or WebGL), and never animates on its own. Its pointer layer shows
+// only for a fine pointer that can hover, without reduced motion, so touch
+// and reduced motion keep the still grid.
+const contactHome = (home.match(/<section id="contact"[\s\S]*?<\/section>/) || [''])[0];
+if (!/class="[^"]*\bcontact--frame\b/.test(contactHome)) failures.push('[claim] the homepage Contact must be the full-height closing frame (contact--frame)');
+const gridHtml = (contactHome.match(/<div class="contact__grid"[^>]*>[\s\S]*?<\/div>/) || [''])[0];
+if (!gridHtml || !/\baria-hidden="true"/.test(gridHtml.slice(0, gridHtml.indexOf('>') + 1)) || !/data-contact-grid/.test(gridHtml)) {
+  failures.push('[claim] the Contact grid must be present and hidden from assistive technology');
+} else if (textOf(gridHtml) !== '' || /<(?:canvas|svg|img|picture|video)\b/.test(gridHtml)) {
+  failures.push('[claim] the Contact grid must be drawn in CSS alone, with no text, canvas, image or SVG');
+}
+if (/<canvas\b/.test(home) || scriptsText.some((t) => /getContext\(\s*['"`](?:webgl|experimental-webgl)/.test(t))) failures.push('[claim] the homepage must not use canvas or WebGL');
+const gridScript = scriptsText.find((t) => t.includes('data-contact-grid')) || '';
+for (const token of ['(hover: hover) and (pointer: fine)', '(prefers-reduced-motion: reduce)', 'pointermove', 'pointerleave', 'requestAnimationFrame', 'touch']) {
+  if (!gridScript.includes(token)) failures.push(`[claim] the Contact grid's pointer response is missing "${token}"`);
+}
+const frameRules = rulesFor(/\.contact--frame\b/);
+if (!frameRules.some((r) => /min-height:/.test(r.body)) || !frameRules.some((r) => /100svh/.test(r.body))) failures.push('[claim] the Contact frame needs a min-height based on 100svh');
+if (rulesFor(/\.contact__(?:grid|lines)\b/).some((r) => /(?:^|;)\s*animation(?:-name)?\s*:/.test(r.body))) failures.push('[claim] the Contact grid must never animate on its own');
+const litRules = rulesFor(/\.contact__lines--lit\b/);
+const litShown = litRules.filter((r) => /display:\s*block/.test(r.body));
+if (!litRules.some((r) => /display:\s*none/.test(r.body) && !r.at) || !litShown.length || litShown.some((r) => !/hover:\s*hover/.test(r.at) || !/pointer:\s*fine/.test(r.at) || !MOTION_OK.test(r.at))) {
+  failures.push('[claim] the grid\'s pointer layer must stay hidden except for a fine pointer that can hover, without reduced motion');
+}
+
+// Case-study roles (v1.9): each case study states John's part in one compact
+// line under its intro, "My role: ...", naming how he set the strategy and
+// briefed, shaped, approved and distributed work made with designers, editors
+// and creators, without implying he was the hands-on designer. The label
+// appears once per page.
+for (const slug of ['creator-campaigns', 'technical-marketing', 'events-video']) {
+  const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
+  const roles = [...page.matchAll(/<p class="cs-hero__role[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+  if (roles.length !== 1) {
+    failures.push(`[claim] ${slug}: the hero must carry one "My role" line (found ${roles.length})`);
+    continue;
+  }
+  const label = textOf((roles[0].match(/^\s*<strong\b[^>]*>([\s\S]*?)<\/strong>/) || [, ''])[1]);
+  const role = textOf(roles[0].replace(/^\s*<strong\b[^>]*>[\s\S]*?<\/strong>/, ''));
+  if (label !== 'My role:') failures.push(`[claim] ${slug}: the role line must open with a bold "My role:" (found "${label}")`);
+  if (!role || role.split(' ').length > 22 || !role.endsWith('.')) failures.push(`[claim] ${slug}: the role line must be one compact list of responsibilities (${role.split(' ').length} words)`);
+  for (const [re, what] of [[/strateg/i, 'strategy'], [/brief/i, 'briefing'], [/approv/i, 'approval'], [/distribut|publish/i, 'distribution or publishing']]) {
+    if (!re.test(role)) failures.push(`[claim] ${slug}: the role line must name ${what}`);
+  }
+  if (/graphic design|\bdesigned\b|\bdesigner\b|illustrat|\banimat/i.test(role)) failures.push(`[claim] ${slug}: the role line must not imply John was the hands-on designer`);
+  if (page.indexOf('cs-hero__intro') < 0 || page.indexOf('cs-hero__role') < page.indexOf('cs-hero__intro')) failures.push(`[claim] ${slug}: the role line must follow the intro`);
+  if ((textOf(page.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length !== 1) failures.push(`[claim] ${slug}: "My role" must appear once on the page`);
+}
+
 // The resume must actually exist for v1.1.
 if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');

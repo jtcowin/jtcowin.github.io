@@ -16,10 +16,15 @@
  * Desktop stacks the cards as you scroll: each one parks a little lower than
  * the one before (`--peek`), so the top edges of the earlier cards stay in view
  * above the active one, and a covered card recedes slightly (its pictures dim;
- * its text keeps full contrast). The stacking is
- * plain CSS `position: sticky`, so DOM order, reading order and tab order stay
- * those of an ordinary list. Phones, tablets and reduced motion read as a
- * normal vertical sequence.
+ * its text keeps full contrast). Once the last card has arrived the complete
+ * stack rests briefly and then leaves as one, every edge still in view. On
+ * screens tall enough, the section's headline and introduction stay pinned
+ * above the stack until then (see index.astro, which sizes the stack for
+ * both). The stacking is CSS `position: sticky`, switched on once the page's
+ * script has run, so DOM order, reading order and tab order stay those of an
+ * ordinary list.
+ * Without JavaScript, with reduced motion, and on phones and tablets the cards
+ * read as a normal vertical sequence.
  *
  * Motion: a dominant panel may carry a muted loop (`card.media.motion`). Only
  * the active card's loop plays; it pauses when its card is covered or leaves
@@ -106,7 +111,7 @@ const places = [
 <div class="catalog" data-catalog>
   {
     cards.map(({ href, num, card, main, sides }, index) => (
-      <article class="card" style={`--i: ${index}`} data-card>
+      <article class="card" style={`--i: ${index}; --r: ${cards.length - 1 - index}`} data-card>
         <div class="card__inner">
           <header class="card__head">
             <p class="card__meta">
@@ -295,6 +300,46 @@ const places = [
     if (!raf) raf = requestAnimationFrame(update);
   };
 
+  // The pinned introduction sizes the stack from the head's height; measure
+  // the real one (its type is known, but its wrapping is the browser's).
+  const work = document.getElementById('work');
+  const head = document.querySelector<HTMLElement>('[data-work-head]');
+  const measure = () => {
+    if (work && head) work.style.setProperty('--head-h', `${head.getBoundingClientRect().height}px`);
+  };
+  if (work && head) {
+    measure();
+    if ('ResizeObserver' in window) new ResizeObserver(measure).observe(head);
+    document.fonts?.ready.then(measure);
+  }
+
+  // Keyboard focus never rests on a covered card. Going backwards through the
+  // stack (Shift+Tab) reaches cards that later ones cover; when a control in
+  // a covered card takes keyboard focus, the page scrolls back to where that
+  // card has just parked, with the next card still waiting below it.
+  document.querySelector<HTMLElement>('[data-catalog]')?.addEventListener('focusin', (event) => {
+    const target = event.target as HTMLElement;
+    const card = target.closest<HTMLElement>('[data-card]');
+    const i = card ? cards.indexOf(card) : -1;
+    if (!card || i < 0 || i === cards.length - 1 || !wide.matches || reduce.matches) return;
+    let keyboard = true;
+    try {
+      keyboard = target.matches(':focus-visible');
+    } catch {
+      /* no :focus-visible: treat every focus as the keyboard's */
+    }
+    if (!keyboard) return;
+    requestAnimationFrame(() => {
+      if (cards[i + 1].getBoundingClientRect().top >= target.getBoundingClientRect().bottom) return;
+      const parkedTop = parseFloat(getComputedStyle(card).top) || 0;
+      // The card's place in the flow, read without its sticky offset.
+      card.style.position = 'static';
+      const flowTop = card.getBoundingClientRect().top + window.scrollY;
+      card.style.position = '';
+      window.scrollTo({ top: flowTop - parkedTop, behavior: 'smooth' });
+    });
+  });
+
   if (cards.length) {
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', onScroll, { passive: true });
@@ -306,8 +351,6 @@ const places = [
 <style>
   /* ---- the catalog -------------------------------------------------------- */
   .catalog {
-    --peek: 0.875rem;
-    --stack-top: calc(var(--nav-h) + 0.75rem);
     display: grid;
     gap: var(--space-6);
   }
@@ -736,30 +779,14 @@ const places = [
 
   /* ---- desktop: one size, a stack with visible edges ---------------------- */
   @media (min-width: 60rem) {
+    /* The sizes (--card-h, --stack-top, --peek, --stack-gap) come from the
+       Select Work section, which shares them with its pinned introduction. */
     .catalog {
-      --view-h: 100vh;
       /* The distance a card travels before the next one starts to cover it. */
-      gap: clamp(3rem, 10vh, 7rem);
-      /* One height for every card: the screen below the header, less the
-         stack's edges, but never taller than about half the canvas width, so
-         the dominant panel stays close to the 16:9 of most of the work. */
-      --card-w: calc(min(100vw, var(--container)) - 2 * var(--gutter));
-      --card-h: clamp(30rem, min(calc(var(--view-h) - var(--nav-h) - 2rem - 2 * var(--peek)), calc(var(--card-w) * 0.52)), 47rem);
-      /* The parked stack sits centered in the screen below the header, so a
-         wide, short card does not leave all its spare room underneath. */
-      --stack-top: calc(var(--nav-h) + max(0.75rem, (var(--view-h) - var(--nav-h) - var(--card-h) - 2 * var(--peek)) / 2));
-    }
-
-    @supports (height: 1svh) {
-      .catalog {
-        --view-h: 100svh;
-      }
+      gap: var(--stack-gap, clamp(3rem, 10vh, 7rem));
     }
 
     .card {
-      position: sticky;
-      /* Each card parks a little lower, so the stack's edges stay visible. */
-      top: calc(var(--stack-top) + var(--i) * var(--peek));
       height: var(--card-h);
     }
 
@@ -799,6 +826,25 @@ const places = [
     .card__panel--main,
     .card__panel--side {
       aspect-ratio: auto;
+    }
+  }
+
+  /* The stack itself, once the page's script has run: each card parks a
+     little lower than the one before, so the stack's edges stay visible. */
+  @media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
+    :global(.js) .card {
+      position: sticky;
+      top: calc(var(--stack-top) + var(--i) * var(--peek));
+      /* Every card's margin box ends where the last card's does (--r counts
+         the cards after this one), so when the section runs out the whole
+         stack leaves at once with every edge still in view, rather than the
+         last card sliding on over the others. */
+      margin-bottom: calc(var(--r, 0) * var(--peek));
+    }
+
+    /* A short rest for the complete stack once the last card has arrived. */
+    :global(.js) .catalog::after {
+      content: '';
     }
   }
 

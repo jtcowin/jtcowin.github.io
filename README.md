@@ -5,10 +5,20 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.8, in review.** Version 1.8 is committed locally and not pushed until it has been
+**Status: Version 1.9, in review.** Version 1.9 is committed locally and not pushed until it has been
 reviewed. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
 approved and present, so an unresolved entry never reaches the public site (see
 [Replacing placeholders](#replacing-placeholders)).
+
+Version 1.9 tightens Select Work and closes the page with a full frame. Select Work now starts just
+below the header, so its opening view holds the headline, the introduction and the whole first card,
+and on tall desktop screens the headline and introduction stay pinned while the cards arrive beneath
+them; the complete stack then leaves with them, every card's edge still in view. The How I Work eyebrow
+is gone, and each Stack group centers its heading and its tiles. Each case study states John's part in
+one "My role:" line under its intro, and the reel stays wordless. Contact and the footer fill the last
+screen over a quiet teal grid that brightens slightly around a fine pointer, and the footer credit reads
+"© 2026 John Cowin — Built end to end.", whose em dash is the one approved exception besides the hero's
+name stream.
 
 Version 1.8 refines spacing and interaction and fills the reel and the Stack with approved work. About
 reads as three vertical zones: the headline at the top, the story and resume action centered in the
@@ -119,7 +129,8 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   `src/components/casestudy/`. Section ordering, headings, and copy are all editable in the MDX. The
   `card` block drives the Select Work card: `category`, `title`, a one-sentence `subline` (95 to 130
   characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
-  `fallback` stand-ins, and optional `focus`).
+  `fallback` stand-ins, and optional `focus`). `role` (optional) is the one-line "My role:" summary
+  under the intro (see Case-study roles below).
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -273,7 +284,8 @@ each pill matches the ground it sits on and the switch happens exactly at the bo
 The verify script fails the build check if any of these appear in the output: the `@johnboycrypto`
 handle, the unverified 524% Trezor lift claim, any mention of Sui Network negotiations, "17 unique
 creators," invented senior titles, raw internal links, the word "client" (logo-bar organizations are
-employers, products, co-sponsors, and events, not clients), em dashes, a location-level impressions
+employers, products, co-sponsors, and events, not clients), em dashes (other than the hero's name
+stream and the approved footer credit), a location-level impressions
 figure, a published count of active workflows, or "community strategy" (John did not lead a community
 function in this B2B role, so the portfolio does not imply one). (Since Version 1.6 the homepage states
 no formal title; the only formal title for the Phi Labs role is still "Social Media Manager", on the
@@ -300,8 +312,21 @@ image; the Stack shows the approved 18 tools in their groups and order, ChatGPT 
 approved SVGs with nothing in them that could run a script or load another file; the four capability
 rows are keyboard reachable and no icon tilts more than 2 degrees; Contact reads "Your product is
 complex. Its story shouldn't be." with the approved subline and keeps exactly the email and resume
-actions; the hero and footer descriptor is exactly "Web3 Marketing, Strategy, & Content"; and the
-footer credit reads "© <year> John Cowin. Built end to end." with John's name once in the footer.
+actions; the hero and footer descriptor is exactly "Web3 Marketing, Strategy, & Content"; and John's
+name appears once in the footer.
+
+The Version 1.9 checks: the footer credit reads "© <year> John Cowin — Built end to end." with John's
+name once, and that exact line is the only em dash allowed besides the hero's name stream; the combined
+section's labels are Capabilities and Stack, with no How I Work eyebrow; each Stack group's heading and
+tiles are centered and the tiles never stretch; Select Work holds its title and intro in the pinned head,
+every page's head marks it with `.js`, and every sticky rule for the intro or the cards needs `.js`, a
+60rem minimum width and no reduced motion (the pinned intro also a minimum height); the stack script
+brings a covered card into view on keyboard focus; nothing but the reel sits between Select Work and the
+combined section; the homepage Contact is the full-height frame with a min-height based on `100svh`, its
+grid is decorative, text-free, drawn in CSS alone and never animates, its pointer layer shows only for a
+fine pointer that can hover without reduced motion, and nothing uses canvas or WebGL; and each case study
+carries one compact "My role:" line after its intro that names strategy, briefing, approval, and
+distribution or publishing, without implying hands-on design.
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -354,12 +379,35 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   card is its target; "View case study" is its visible label, beside the head on desktop and last on
   phones). Metrics live on the case-study pages; while the creator photographs are pending, that
   card's typographic stand-ins carry the one approved aggregate.
-- From 60rem the cards stack as you scroll with plain `position: sticky`: each parks `--peek` (14px)
-  lower than the one before, so the earlier cards' top edges stay in view and none is ever fully
-  covered. A covered card recedes 4% and its pictures dim; its text keeps full contrast. The parked
-  stack sits centered in the screen below the header, and every card is one height: the screen less
-  the header and the stack's edges, capped at 52% of the canvas width so the dominant panel stays near
-  16:9. Phones, tablets and reduced motion read as an ordinary sequence.
+- The opening frame (Version 1.9): from 60rem the section starts just below the floating header
+  (`--work-top`, the header's height and a little more), and the Work link lands with the section flush
+  at the top, so the first view holds the headline, the introduction and the complete first card. At
+  1728x968, the review frame, the headline starts at 100px and the first card spans 284 to 914px (630px
+  tall), with the second card waiting just below the frame.
+- The stack: from 60rem the cards stack as you scroll with `position: sticky`: each parks `--peek`
+  (14px) lower than the one before, so the earlier cards' top edges stay in view and none is ever fully
+  covered. A covered card recedes 4% and its pictures dim; its text keeps full contrast. Every card is
+  one height, capped at 52% of the canvas width so the dominant panel stays near 16:9. Each card's
+  margin box ends where the last card's does (a `margin-bottom` of one `--peek` for every card after
+  it), so when the section runs out the complete stack rests for a moment and then leaves as one,
+  instead of the last card sliding over the others.
+- The pinned introduction: on screens at least 56rem tall and no wider than 2:1 (1440x900, 1512x945,
+  1728x968, 1920x1080, 2560x1440), the headline and introduction stay pinned just below the header while
+  the cards park beneath them, and nothing ever covers them. The cards take the room left under the
+  introduction, and the run between cards is short, so the pinned sequence lasts about one and a half
+  screens of scrolling (1,490px at 1728x968). The head's margin box ends exactly where the stack's margin
+  boxes end, so the head and the complete stack release together. A script measures the head's height
+  (`--head-h`); the CSS estimate it replaces matches it, so nothing shifts when the script runs. On a
+  screen much taller than the width-capped card (2560x1440) the second card shows below the first from
+  the start. On shorter or very wide desktop screens (1280x720, 1366x768, 1536x864, 2560x1080) the
+  introduction scrolls away as before and the parked stack sits centered in the screen below the header.
+- Enhancement only: the sticky rules apply once an inline script in the head has marked the page with
+  `.js`, and only without reduced motion. Without JavaScript, with reduced motion, and on phones and
+  tablets the section reads as an ordinary sequence: the headline, the introduction, then the three
+  cards.
+- Keyboard: going backwards through the stack (Shift+Tab) reaches cards that later ones cover. When a
+  control in a covered card takes keyboard focus, the page scrolls back to where that card has just
+  parked, so focus is never hidden under another card.
 - Motion: a dominant panel may carry a muted loop (`card.media.motion`; currently the Bolt website
   hero). It is `muted`, `playsinline` and `loop`, shows its poster, and loads nothing until its card
   first becomes active (`preload="none"`). Only the active card plays; a loop pauses when its card is
@@ -397,8 +445,8 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 
 ### From positioning to production
 
-- What I Do and How I Work in one desktop frame: the headline and the How I Work statement on the
-  left, set in four even lines on a 36em measure, the four capability groups on the right, level with
+- What I Do and How I Work in one desktop frame: the headline and the working-style statement on the
+  left (with no eyebrow since Version 1.9), set in four even lines on a 36em measure, the four capability groups on the right, level with
   the foot of the statement, and then, clearly separated, the Stack full width below.
 - The Stack: 18 tools in three compact groups (AI and building; Systems and measurement; Creative and
   distribution). Each shows its own brand artwork and colors in the same neutral tile, with its name
@@ -409,7 +457,9 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   logos are the approved SVGs in `src/assets/stack/`, served as images so each keeps its own colors
   and internal ids; the marks remain their owners' trademarks. Phones and tablets wrap the tiles into
   a grid of comfortable touch targets, and a long name wraps onto two balanced lines rather than
-  shrinking.
+  shrinking. Since Version 1.9 each group centers its heading and its tiles, and a short last row sits
+  centered too; the tiles keep one width (a third of the row on phones, 6.25rem on tablets, about 8.4
+  times the label size on desktop) rather than stretching to fill a row.
 - The capability rows respond to hover and keyboard focus alike: the icon lifts 3.5px, grows 6% and,
   where the symbol suits it, tilts a degree or two (`tilt`), while its circle takes a little more teal
   and a faint ring, over 220ms with an ease-out curve. Only the icon moves; the text never shifts, and
@@ -421,6 +471,47 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   2rem more than its own margin), and two parts below, so the Stack sits lower wherever there is room
   and never rests against the lower edge. Checked from 1024x768 to 2560x1440, including 16:9 laptop
   frames and windows such as 1536x730 and 1440x790; phones and tablets stack.
+
+### Contact and the closing frame
+
+- One closing frame: on the homepage, Contact and the footer together are at least one screen tall
+  (`min-height: calc(100svh - var(--footer-h))`, with `100vh` where small-viewport units are not
+  supported), so at the end of the page nothing of the section before remains above Contact.
+  `--footer-h` in `global.css` is the footer's height worked out from its own spacing tokens, so it
+  follows any change to them. The headline and subline hold the left and the email and resume actions
+  the right, with the spare height shared out above and below (1 to 1.25), and the footer rests at the
+  bottom as a quiet anchor. The top padding reserves the header's height, so the navigation never meets
+  the headline. Phones and short windows let the frame grow past one screen rather than compressing
+  it, and there is no scroll snapping. The case-study pages keep the compact Contact, without the grid.
+- The grid: one-pixel lines in the surface color mixed with 8% of its light aqua, in square cells about
+  110 to 140px across at common screen sizes (3, 6, 8 and 10 columns of the content width from phones
+  up), aligned with the page's gutters and snapped to whole pixels. Where it is deepest, toward the upper
+  right, a line is up to about 4.5 points lighter than the surface in perceived lightness (CIE L*, about 5% contrast), easing
+  to about 2 elsewhere, and it fades out under the header and toward the footer. Solid fields of the
+  surface color, feathered at their edges, sit behind the copy and the actions, so no line ever runs
+  behind text or a control. The grid is CSS gradients only (no image, canvas, WebGL or library), and
+  nothing in it moves on its own. The fields reach a few rems past their text, so the frame clips its
+  own overflow (`overflow: clip`) to keep narrow screens from widening.
+- The pointer response: where a fine pointer can hover, a second copy of the lines at 12% light aqua
+  shows through a broad, feathered circle around the pointer (18rem to 30rem) and through the grid's own
+  shape, so the brightening stays in proportion wherever the pointer is; it fades in and out over
+  450ms. The pointer position is written to two custom properties at most once per frame, and nothing
+  is moved or distorted. On touch screens and with reduced motion that layer is not rendered and the
+  grid stays still.
+- The footer carries the hero's descriptor, the links and one credit: "© 2026 John Cowin — Built end to
+  end." The year follows the build date. Its em dash is intentional, the one exception besides the
+  hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
+  footer.
+
+### Case-study roles
+
+- Each case study states John's part in one compact line under its intro: "My role:" in bold, then the
+  responsibilities that apply to that project, from the `role` field in its frontmatter. The lines name
+  the strategy, the briefs, the review and approval, and the distribution or publishing, the ways John
+  commissioned and shaped the visual work with designers, editors and creators, without implying he
+  built every graphic himself; each page's closing credit still says who produced the final visuals.
+  The creator campaigns intro keeps only its first sentence, and its section 02 is now "Program
+  management", so "My role" appears once on that page. The reel stays wordless.
 
 ## Project structure
 

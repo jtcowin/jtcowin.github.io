@@ -43,10 +43,9 @@
     ]
   },
   "practice": {
-    "_note": "What I Do and How I Work in one section (Version 1.7), kept in Version 1.8 with the approved How I Work statement, the four capability groups and an 18-tool Stack drawn from the approved brand SVGs in src/assets/stack. `tilt` sets the small rotation a capability icon takes on hover and keyboard focus, for the symbols that suit one.",
+    "_note": "What I Do and How I Work in one section (Version 1.7), kept in Version 1.8 with the approved How I Work statement, the four capability groups and an 18-tool Stack drawn from the approved brand SVGs in src/assets/stack. Since Version 1.9 the statement carries no visible How I Work label, and each Stack group's heading and tools are centered in its column. `tilt` sets the small rotation a capability icon takes on hover and keyboard focus, for the symbols that suit one.",
     "heading": "From positioning to production.",
     "how": {
-      "label": "How I Work",
       "copy": "I move comfortably between strategy and execution. I work best with clear ownership, direct collaboration, and systems that make good work repeatable. AI speeds up research, organization, production, and analysis; judgment, verification, brand fit, and final approval stay with me."
     },
     "capabilities": {

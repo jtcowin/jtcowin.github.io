@@ -4,13 +4,15 @@
  * he works with, in one section that fits one desktop frame.
  *
  * The upper composition: the headline and the short working-style statement
- * (How I Work) on the left, the four capability groups on the right, their
- * last rule level with the foot of the statement. Then, clearly separated and
- * full width, the Stack: 18 tools in three compact groups. Every tool shows
- * its own brand artwork in the same neutral tile, sized to one optical scale
- * (`scale` in home.json nudges marks that read large or small, and the MDX
- * wordmark is set wide rather than squeezed into a square), with its name
- * beneath. The files are the approved SVGs in src/assets/stack, shown as
+ * on the left (it needs no label of its own), the four capability groups on
+ * the right, their last rule level with the foot of the statement. Then,
+ * clearly separated and full width, the Stack: 18 tools in three compact
+ * groups, each group's heading and collection centered in its column, every
+ * tool in a cell of one width (a short last row centers under the first rather
+ * than stretching). Every tool shows its own brand artwork in the same
+ * neutral tile, sized to one optical scale (`scale` in home.json nudges marks
+ * that read large or small, and the MDX wordmark is set wide rather than
+ * squeezed into a square), with its name beneath. The files are the approved SVGs in src/assets/stack, shown as
  * images, so each keeps its own colors and its internal ids cannot collide.
  *
  * The capability rows respond to the pointer and to keyboard focus: the icon
@@ -35,7 +37,7 @@ type Tool = { name: string; logo: string; scale?: number; shape?: 'wide' };
 const { practice } = home as unknown as {
   practice: {
     heading: string;
-    how: { label: string; copy: string };
+    how: { copy: string };
     capabilities: { label: string; items: { title: string; icon: string; tilt?: number }[] };
     stack: { label: string; groups: { group: string; tools: Tool[] }[] };
   };
@@ -53,7 +55,6 @@ const groups = practice.stack.groups.map((g) => ({
     <div class="practice__top">
       <div class="practice__intro">
         <h2 id="practice-heading" class="display practice__heading">{practice.heading}</h2>
-        <h3 class="practice__label">{practice.how.label}</h3>
         <p class="practice__statement">{practice.how.copy}</p>
       </div>
 
@@ -117,7 +118,7 @@ const groups = practice.stack.groups.map((g) => ({
     text-wrap: balance;
   }
 
-  /* Compact metadata labels: How I Work, Capabilities, Stack. */
+  /* Compact metadata labels: Capabilities, Stack. */
   .practice__label {
     margin: 0 0 var(--space-4);
     font-family: var(--font-sans);
@@ -244,25 +245,41 @@ const groups = practice.stack.groups.map((g) => ({
     font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.01em;
+    text-align: center;
     color: var(--ink);
   }
 
+  /* Each group's collection, centered in the group: every tool takes a cell
+     of one width, and a short last row centers under the one above instead
+     of stretching to fill. Phones take three to a row. */
   .stack__tools {
+    --gap-x: 0.5rem;
+    --tool-font: 0.8125rem;
     list-style: none;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
-    gap: 1rem 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem var(--gap-x);
+    width: 100%;
   }
 
   .tool {
+    flex: none;
+    width: calc((100% - 2 * var(--gap-x)) / 3);
     display: grid;
     justify-items: center;
     align-content: start;
     gap: 0.45rem;
     min-width: 0;
     text-align: center;
+  }
+
+  @media (min-width: 40rem) {
+    .tool {
+      width: 6.25rem;
+    }
   }
 
   /* One neutral tile for every tool, whatever the mark's own shape. */
@@ -292,7 +309,7 @@ const groups = practice.stack.groups.map((g) => ({
 
   .tool__name {
     max-width: 100%;
-    font-size: 0.8125rem;
+    font-size: var(--tool-font);
     font-weight: 600;
     line-height: 1.2;
     color: var(--ink-2);
@@ -398,7 +415,7 @@ const groups = practice.stack.groups.map((g) => ({
       max-height: 2rem;
     }
 
-    /* The groups sit side by side, each two rows deep, so every tile keeps
+    /* The groups sit side by side, each two rows deep, and every cell keeps
        the same width across the three groups. */
     .stack {
       grid-template-columns: 3fr 4fr 3fr;
@@ -409,17 +426,19 @@ const groups = practice.stack.groups.map((g) => ({
       gap: calc(0.9 * var(--fit));
     }
 
+    /* A cell is as wide as the longest name at this size, so every name
+       holds one line; a group's collection is its cells and gaps, centered. */
     .stack__tools {
-      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-      gap: calc(1 * var(--fit)) calc(0.5 * var(--fit));
+      --gap-x: calc(0.5 * var(--fit));
+      --tool-font: clamp(0.75rem, calc(0.9 * var(--fit)), 0.875rem);
+      --cell: calc(8.4 * var(--tool-font));
+      gap: calc(1 * var(--fit)) var(--gap-x);
+      max-width: calc(var(--cols) * var(--cell) + (var(--cols) - 1) * var(--gap-x));
     }
 
     .tool {
+      width: min(var(--cell), calc((100% - (var(--cols) - 1) * var(--gap-x)) / var(--cols)));
       gap: calc(0.45 * var(--fit));
-    }
-
-    .tool__name {
-      font-size: clamp(0.75rem, calc(0.9 * var(--fit)), 0.875rem);
     }
   }
 

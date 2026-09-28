@@ -115,6 +115,10 @@
      that has to clear it (About's frame) reads the same value. In-page links
      land this far below the top of the screen. */
   --nav-h: clamp(4.5rem, 9vh, 6rem);
+  /* The footer's height, from its own spacing and line heights (Footer.astro):
+     three rows on phones, two from 48rem. The homepage Contact subtracts it
+     so that Contact and the footer together fill the screen. */
+  --footer-h: calc(2 * var(--space-7) + 1px + 2 * var(--text-sm) * var(--leading-normal) + 2 * var(--space-4) + var(--text-xs) * var(--leading-normal));
   --scroll-pad: 5.5rem;
 
   --radius-sm: 4px;
@@ -129,6 +133,12 @@
   --dur-fast: 160ms;
   --dur: 260ms;
   --dur-slow: 700ms;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --footer-h: calc(2 * var(--space-7) + 1px + var(--text-sm) * var(--leading-normal) + var(--space-4) + var(--text-xs) * var(--leading-normal));
+  }
 }
 
 /* ------------------------------------------------------------------ */

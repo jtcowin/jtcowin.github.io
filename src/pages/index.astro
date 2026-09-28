@@ -42,9 +42,9 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
 
   {/* One chapter: the Select Work catalog and the wordless work reel belong together. */}
   <div class="chapter" data-surface={S.work}>
-    <section id="work" class="section work" aria-labelledby="work-heading">
-      <div class="container">
-        <div class="section-head work__head">
+    <section id="work" class="section work" aria-labelledby="work-heading" style={`--cards: ${work.length}`}>
+      <div class="container work__track">
+        <div class="section-head work__head" data-work-head>
           <h2 id="work-heading" class="display display-lg">{home.work.heading}</h2>
           <p class="lede">{home.work.copy}</p>
         </div>
@@ -72,5 +72,83 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
 
   .work__head {
     max-width: 56rem;
+  }
+
+  /* ---- Select Work on desktop --------------------------------------------
+     The section starts just below the floating header, and the Work link
+     lands with it flush at the top, so the opening frame is the headline, the
+     introduction and the first card. Everything that sizes the card stack
+     lives here, shared by the head and the cards. */
+  @media (min-width: 60rem) {
+    .work {
+      --fit: min(1vw, 1.8vh);
+      --view-h: 100vh;
+      --work-top: calc(var(--nav-h) + clamp(0.5rem, 0.75 * var(--fit), 1rem));
+      --work-gap: clamp(1.25rem, 2 * var(--fit), 2.5rem);
+      --work-foot: clamp(1rem, 1.5 * var(--fit), 2rem);
+      /* The head's height from its type: one line of headline, two of
+         introduction. A script replaces it with the measured height. */
+      --head-h: calc(var(--text-2xl) * 0.98 + var(--space-4) + 2 * var(--text-lg) * var(--leading-normal));
+      /* The stack: each card parks a little lower than the one before, and
+         the edges of the cards after the first add up to --stack-rest. */
+      --peek: 0.875rem;
+      --stack-rest: calc((var(--cards, 3) - 1) * var(--peek));
+      --card-w: calc(min(100vw, var(--container)) - 2 * var(--gutter));
+      /* One height for every card: the screen below the header, less the
+         stack's edges, never taller than about half the canvas width, so the
+         dominant panel stays close to the 16:9 of most of the work. */
+      --card-h: clamp(30rem, min(calc(var(--view-h) - var(--nav-h) - 2rem - 2 * var(--peek)), calc(var(--card-w) * 0.52)), 47rem);
+      /* Without the pinned introduction the parked stack sits centered in the
+         screen below the header. */
+      --stack-top: calc(var(--nav-h) + max(0.75rem, (var(--view-h) - var(--nav-h) - var(--card-h) - 2 * var(--peek)) / 2));
+      --stack-gap: clamp(3rem, 10vh, 7rem);
+      padding-top: var(--work-top);
+      scroll-margin-top: calc(-1 * var(--scroll-pad));
+    }
+
+    @supports (height: 1svh) {
+      .work {
+        --fit: min(1vw, 1.8svh);
+        --view-h: 100svh;
+      }
+    }
+
+    .work__head {
+      margin-bottom: var(--work-gap);
+    }
+  }
+
+  /* ---- the pinned introduction --------------------------------------------
+     On screens tall enough to hold the introduction and a full card, the
+     headline and introduction stay in place while the cards arrive beneath
+     them. The cards park just below the introduction, and the head's margin
+     box ends exactly where the stack's margin boxes end (see WorkPanels), so
+     the head and the complete stack release together after the last card.
+     With JavaScript off, reduced motion, or a short or very wide screen,
+     everything reads in normal flow (or with the stack alone). */
+  @media (min-width: 60rem) and (min-height: 56rem) and (max-aspect-ratio: 2/1) and (prefers-reduced-motion: no-preference) {
+    :global(.js) .work {
+      --stack-top: calc(var(--work-top) + var(--head-h) + var(--work-gap));
+      --card-h: clamp(24rem, min(calc(var(--view-h) - var(--stack-top) - 2 * var(--peek) - var(--work-foot)), calc(var(--card-w) * 0.52)), 47rem);
+      /* A short run between cards keeps the pinned sequence brief; the next
+         card waits just below the frame, so the opening view is clean. */
+      --stack-gap: calc(var(--work-foot) + 2 * var(--peek) + 1rem);
+    }
+
+    :global(.js) .work__track {
+      display: flex;
+      flex-direction: column;
+    }
+
+    :global(.js) .work__head {
+      position: sticky;
+      top: var(--work-top);
+      z-index: 1;
+      margin-bottom: calc(var(--card-h) + var(--stack-rest) + var(--work-gap));
+    }
+
+    :global(.js) .work__track > :global(.catalog) {
+      margin-top: calc(-1 * (var(--card-h) + var(--stack-rest)));
+    }
   }
 </style>

@@ -18,6 +18,13 @@ const work = defineCollection({
     eyebrow: z.string(),
     headline: z.string(),
     intro: z.string(),
+    /**
+     * One compact line naming John's part in the work, shown under the intro
+     * as "My role: ...": the responsibilities that apply to this case study,
+     * including how he briefed, shaped, approved and distributed work made
+     * with designers, editors and creators.
+     */
+    role: z.string().optional(),
     /** Asset manifest id for the page hero. */
     heroAsset: z.string(),
     /** Asset manifest id for the social preview image. */

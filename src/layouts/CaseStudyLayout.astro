@@ -35,6 +35,13 @@ const next = all[(idx + 1) % all.length];
         <p class="eyebrow rise" style="--delay: 0ms">{d.eyebrow}</p>
         <h1 class="display display-xl cs-hero__title rise" style="--delay: 60ms">{d.headline}</h1>
         <p class="lede cs-hero__intro rise" style="--delay: 140ms">{d.intro}</p>
+        {
+          d.role && (
+            <p class="cs-hero__role rise" style="--delay: 180ms">
+              <strong>My role:</strong> {d.role}
+            </p>
+          )
+        }
       </div>
       {
         (isIdVisible(d.heroAsset) || SHOW_PLACEHOLDERS) && (
@@ -108,6 +115,21 @@ const next = all[(idx + 1) % all.length];
 
   .cs-hero__intro {
     max-width: var(--measure);
+  }
+
+  /* John's part in the work, in one compact line beneath the intro. */
+  .cs-hero__role {
+    max-width: var(--measure);
+    margin-top: calc(-1 * var(--space-2));
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .cs-hero__role strong {
+    font-weight: 700;
+    color: var(--heading);
   }
 
   .cs-hero__media :global(.media__frame) {
