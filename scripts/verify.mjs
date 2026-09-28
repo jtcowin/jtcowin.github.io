@@ -339,23 +339,89 @@ approvedCards.forEach(([title, sub, href], i) => {
   if (links.length !== 1 || links[0] !== `${BASE}/${href}`) failures.push(`[claim] card ${i + 1} must carry exactly one link, to /${href} (found ${links.join(', ') || 'none'})`);
   if (!/View case study/.test(c)) failures.push(`[claim] card ${i + 1} must carry the case-study link label`);
   if (!/<span class="card__num"[^>]*>0\d<\/span>/.test(c) || !/<span class="card__label"[^>]*>[^<]+<\/span>/.test(c)) failures.push(`[claim] card ${i + 1} must carry its number and category`);
-  if ((c.match(/class="card__panel card__panel--main"/g) || []).length !== 1 || (c.match(/class="card__panel card__panel--side"/g) || []).length !== 2) {
+  if ((c.match(/class="card__panel card__panel--main[\s"]/g) || []).length !== 1 || (c.match(/class="card__panel card__panel--side[\s"]/g) || []).length !== 2) {
     failures.push(`[claim] card ${i + 1} must have one dominant panel and two supporting panels`);
   }
-  const visible = textOf(c.replace(/<span class="card__num"[\s\S]*?<\/span>/, ''));
+  // The Sui Fest stand-in names its event and year (TOKEN2049 Singapore 2025),
+  // which are not metrics; its wording is checked with the card media below.
+  const visible = textOf(c.replace(/<span class="card__num"[\s\S]*?<\/span>/, '').replace(/<p class="fb__event"[\s\S]*?<\/p>/g, ''));
   const figures = (visible.match(/\d[\d.,]*[%MKx]?/g) || []).filter((f) => !(i === 0 && f === '1.25M'));
   if (figures.length) failures.push(`[claim] card ${i + 1} must leave its metrics to the case-study page (found ${figures.join(', ')})`);
   if (/1\.25M/.test(visible) && !/Approximately 1\.25M impressions/.test(visible)) failures.push('[claim] the creator card may show only "Approximately 1.25M impressions"');
 });
-// The dominant-panel loop: muted, inline, looping, a poster, nothing loaded
-// until needed, no player controls, and a pause control for the reader.
-for (const video of workHtml.match(/<video\b[^>]*>/g) || []) {
-  for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'poster="']) {
-    if (!video.includes(attr)) failures.push(`[claim] the card loop is missing ${attr}`);
+// Every card video: muted, inline, looping, a poster, nothing loaded until
+// needed, no player controls or autoplay in the HTML (the script decides what
+// plays), an accessible name, and its own labeled play and pause control. Each
+// is either its card's primary (data-card-video) or a secondary tile
+// (data-card-secondary).
+const workVideos = workHtml.match(/<video\b[^>]*>/g) || [];
+for (const video of workVideos) {
+  for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'poster="', 'aria-label="']) {
+    if (!video.includes(attr)) failures.push(`[claim] a card video is missing ${attr}`);
   }
-  if (/\b(?:controls|autoplay)\b/.test(video)) failures.push('[claim] the card loop must not show player controls or autoplay from the HTML');
-  if (!/data-card-toggle/.test(workHtml)) failures.push('[claim] a card loop needs its pause control');
+  if (/\b(?:controls|autoplay)\b/.test(video)) failures.push('[claim] a card video must not show player controls or autoplay from the HTML');
+  if (/\bdata-card-video\b/.test(video) === /\bdata-card-secondary\b/.test(video)) failures.push('[claim] each card video must be either its card\'s primary (data-card-video) or a secondary tile (data-card-secondary)');
 }
+const workToggles = workHtml.match(/<button\b[^>]*\bdata-card-toggle\b[^>]*>/g) || [];
+if (workToggles.length !== workVideos.length || workToggles.some((t) => !/aria-label="(?:Play|Pause) video: [^"]+"/.test(t))) {
+  failures.push(`[claim] every card video needs its own labeled play and pause control (${workToggles.length} controls for ${workVideos.length} videos)`);
+}
+// Select Work media (Version 1.9 update). Case Study 01 keeps its typographic
+// stand-ins until assets are approved. Case Study 02: the hero animation
+// preview is the primary video, the website hero motion the secondary tile,
+// and the architecture still the third tile, contained whole on its own plate
+// (the architecture video is kept for the case-study page). Case Study 03: the
+// slippage explainer preview is the primary video, then the Sui Fest interview
+// stand-in (until its still is supplied) and the Sui Summit presentation still.
+const panelsOf = (c) => (c.match(/<div class="card__media"[\s\S]*/) || [''])[0].split(/(?=<div class="card__panel )/).slice(1);
+const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
+const imgSrcOf = (html) => (html.match(/<img\b[^>]*\bsrc="([^"]+)"/) || [, ''])[1];
+const wordsOf = (html) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+const [cs1 = [], cs2 = [], cs3 = []] = cardsHtml.map(panelsOf);
+if (cs1.length !== 3 || /<video\b|class="card__img"/.test(cardsHtml[0] || '') || !/fb--places/.test(cs1[0]) || !/fb--metric/.test(cs1[1]) || !/fb--logos/.test(cs1[2])) {
+  failures.push('[claim] Case Study 01 keeps its typographic stand-ins (the places, the aggregate, the co-sponsors), with no photograph or video until assets are approved');
+}
+if (!/\bdata-card-video\b/.test(cs2[0] || '') || !sourcesOf(cs2[0] || '').includes('bolt-hero-animation-preview.mp4')) failures.push('[claim] Case Study 02 must use the hero animation preview as its primary video');
+if (!/\bdata-card-secondary\b/.test(cs2[1] || '') || !sourcesOf(cs2[1] || '').includes('bolt-website-hero-motion.mp4')) failures.push('[claim] Case Study 02 must use the website hero motion as its secondary motion tile');
+if (!/^<div class="card__panel card__panel--side card__panel--contain"/.test(cs2[2] || '') || !/bolt-architecture-diagram/.test(imgSrcOf(cs2[2] || '')) || /<video\b|object-position/.test(cs2[2] || '')) {
+  failures.push('[claim] Case Study 02 must show the architecture still in its third tile, contained and uncropped');
+}
+if (!rulesFor(/\.card__panel--contain\b.*\.card__img\b/).some((r) => /object-fit:\s*contain/.test(r.body))) failures.push('[claim] a contained card tile must use object-fit: contain');
+if (!/\bdata-card-video\b/.test(cs3[0] || '') || !sourcesOf(cs3[0] || '').includes('bolt-slippage-explainer-preview.mp4')) failures.push('[claim] Case Study 03 must use the slippage explainer preview as its primary video');
+if (wordsOf((/<div class="fb fb--event"[\s\S]*?<\/div>/.exec(cs3[1] || '') || [''])[0]) !== 'Sui Fest interviews TOKEN2049 Singapore 2025') failures.push('[claim] Case Study 03 must hold the Sui Fest interview stand-in in its second tile');
+if (!/sui-summit-presentation/.test(imgSrcOf(cs3[2] || '')) || /<video\b/.test(cs3[2] || '')) failures.push('[claim] Case Study 03 must show the Sui Summit presentation still in its third tile');
+// The card videos are web previews made for the homepage, never the original
+// masters (the 181 MB hero animation and the 411 MB slippage explainer stay
+// outside the repository): each under 4 MB, a primary running 8 to 12.5
+// seconds, a secondary no more than 15.
+const mp4Seconds = (file) => {
+  const buf = fs.readFileSync(file);
+  const i = buf.indexOf('mvhd');
+  if (i < 4) return NaN;
+  const v1 = buf[i + 4] === 1;
+  const scale = buf.readUInt32BE(i + (v1 ? 24 : 16));
+  const duration = v1 ? Number(buf.readBigUInt64BE(i + 28)) : buf.readUInt32BE(i + 20);
+  return scale ? duration / scale : NaN;
+};
+cardsHtml.forEach((c, i) => {
+  for (const video of c.match(/<video\b[\s\S]*?<\/video>/g) || []) {
+    const primary = /\bdata-card-video\b/.test(video);
+    for (const name of sourcesOf(video)) {
+      const file = path.join(root, 'public/media', name);
+      if (!fs.existsSync(file)) {
+        failures.push(`[asset] card ${i + 1}: public/media/${name} not found`);
+        continue;
+      }
+      const mb = fs.statSync(file).size / 1048576;
+      if (mb > 4) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(1)} MB; a card video stays under 4 MB`);
+      if (!name.endsWith('.mp4')) continue;
+      const sec = mp4Seconds(file);
+      if (primary ? !(sec >= 8 && sec <= 12.5) : !(sec > 0 && sec <= 15)) {
+        failures.push(`[asset] card ${i + 1}: ${name} runs ${sec.toFixed(1)} s (${primary ? 'a primary preview runs 8 to 12.5 s' : 'a secondary tile runs 15 s at most'})`);
+      }
+    }
+  }
+});
 // Select Work (v1.9): on tall desktop screens the title and intro stay pinned
 // beneath the header while the cards park under them, and both release
 // together after the last card. It is an enhancement only: the inline head
@@ -391,7 +457,9 @@ if (!stackScript.includes(':focus-visible')) failures.push('[claim] the Select W
 // image has empty alt text. Three rows of eight, moving right, left, right,
 // dealt from the approved 24-piece pool, each piece once. The HTML carries a
 // fixed mixed order; the inline script shuffles once per visit and keeps that
-// order for the browser session. No video.
+// order for the browser session. No video. It stays at three rows until eight
+// more approved pieces arrive (32 in all): a fourth row now would have to
+// repeat pieces or bring back excluded ones.
 const REEL_POOL = [
   'ambur-1', 'ambur-2',
   'archway-1', 'archway-2', 'archway-3', 'archway-4', 'archway-5', 'archway-6', 'archway-7',
@@ -569,7 +637,7 @@ if (!gridHtml || !/\baria-hidden="true"/.test(gridHtml.slice(0, gridHtml.indexOf
 }
 if (/<canvas\b/.test(home) || scriptsText.some((t) => /getContext\(\s*['"`](?:webgl|experimental-webgl)/.test(t))) failures.push('[claim] the homepage must not use canvas or WebGL');
 const gridScript = scriptsText.find((t) => t.includes('data-contact-grid')) || '';
-for (const token of ['(hover: hover) and (pointer: fine)', '(prefers-reduced-motion: reduce)', 'pointermove', 'pointerleave', 'requestAnimationFrame', 'touch']) {
+for (const token of ['(hover: hover) and (pointer: fine)', '(prefers-reduced-motion: reduce)', 'pointermove', 'pointerout', 'requestAnimationFrame', 'touch', 'IntersectionObserver']) {
   if (!gridScript.includes(token)) failures.push(`[claim] the Contact grid's pointer response is missing "${token}"`);
 }
 const frameRules = rulesFor(/\.contact--frame\b/);
@@ -579,6 +647,74 @@ const litRules = rulesFor(/\.contact__lines--lit\b/);
 const litShown = litRules.filter((r) => /display:\s*block/.test(r.body));
 if (!litRules.some((r) => /display:\s*none/.test(r.body) && !r.at) || !litShown.length || litShown.some((r) => !/hover:\s*hover/.test(r.at) || !/pointer:\s*fine/.test(r.at) || !MOTION_OK.test(r.at))) {
   failures.push('[claim] the grid\'s pointer layer must stay hidden except for a fine pointer that can hover, without reduced motion');
+}
+// Contact grid (Version 1.9 update): one even field behind the headline, the
+// subline, the actions, the navigation and the footer, with no calm field
+// masking it behind the text, eased in only at its outer edges. It runs on
+// beneath the footer, so the frame must not clip it, the footer is at least
+// that deep and its content paints above the grid. The lines take 8% of the
+// light aqua at rest (about 4.6 points of L*, inside the 4 to 8% asked for)
+// and 17% around the pointer, five points more than the reviewed build's 12%.
+if (rulesFor(/\.contact__(?:copy|actions)\b[^,]*::?(?:before|after)/).length) failures.push('[claim] the Contact grid must run behind the text: no calm field behind the copy or the actions');
+if (!rulesFor(/\.contact__grid\b/).some((r) => /inset:\s*0\s+0\s+calc\(\s*-1\s*\*\s*var\(--footer-h\)\s*\)/.test(r.body))) failures.push('[claim] the Contact grid must run on beneath the footer (bottom inset of minus --footer-h)');
+if (frameRules.some((r) => /overflow(?:-[xy])?:\s*(?:hidden|clip)/.test(r.body))) failures.push('[claim] the Contact frame must not clip the grid that runs on beneath the footer');
+const stillLines = rulesFor(/\.contact__lines(?!-)/).filter((r) => /mask-image/.test(r.body));
+if (!stillLines.length || stillLines.some((r) => /radial-gradient|--grid-shape/.test(r.body))) failures.push('[claim] the still grid must be one even field, eased only at its edges (no shaped or calm area in its mask)');
+// The row that meets the footer's rule is left to the rule, so the rule keeps
+// its own color edge to edge instead of taking the grid's color.
+if (!rulesFor(/\.contact__lines\b/).filter((r) => /mask-image/.test(r.body)).every((r) => /var\(--grid-rule\)/.test(r.body)) || !rulesFor(/\.contact__grid\b/).some((r) => /--grid-rule:\s*linear-gradient\(to top/.test(r.body))) {
+  failures.push('[claim] the Contact grid must leave the footer rule\'s row to the rule (--grid-rule in every line mask)');
+}
+if (!rulesFor(/^\.site-footer(?:\[[^\]]*\])?$/).some((r) => /min-height:\s*var\(--footer-h\)/.test(r.body))) failures.push('[claim] the footer must be at least --footer-h tall, the depth the Contact grid runs beneath it');
+if (!rulesFor(/^\.site-footer__inner(?:\[[^\]]*\])?$/).some((r) => /position:\s*relative/.test(r.body))) failures.push('[claim] the footer content must paint above the Contact grid (position: relative)');
+const hexToken = (name) => (cssText.match(new RegExp(`${name}:\\s*(#[0-9a-f]{3,8})\\b`, 'i')) || [])[1];
+const rgbOf = (hex) => {
+  let h = hex.slice(1, 7);
+  if (h.length === 3) h = [...h].map((x) => x + x).join('');
+  return [0, 2, 4].map((k) => parseInt(h.slice(k, k + 2), 16));
+};
+const linear = (c) => ((c /= 255) <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const lumOf = ([r, g, b]) => 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+const ratioOf = (a, b) => {
+  const [x, y] = [lumOf(a), lumOf(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+};
+const lstarOf = (c) => {
+  const y = lumOf(c);
+  return y > 216 / 24389 ? 116 * Math.cbrt(y) - 16 : (24389 / 27) * y;
+};
+const brandBody = CSS_RULES.filter((r) => /^\[data-surface=["']?brand["']?\]$/.test(r.sel)).map((r) => r.body).join(';');
+const brandToken = (name) => {
+  const v = (brandBody.match(new RegExp(`(?:^|;)\\s*${name}:\\s*([^;]+)`)) || [])[1]?.trim();
+  const ref = /^var\((--[a-z0-9-]+)\)$/.exec(v || '');
+  return ref ? hexToken(ref[1]) : v;
+};
+const aquaShare = (name) => {
+  const m = cssText.match(new RegExp(`${name}:\\s*color-mix\\(in srgb,\\s*var\\(--bg\\)\\s+(\\d+(?:\\.\\d+)?)%,\\s*var\\(--c-aqua-light\\)\\s*\\)`));
+  return m ? 100 - Number(m[1]) : NaN;
+};
+const restShare = aquaShare('--grid-ink');
+const litShare = aquaShare('--grid-lit');
+if (restShare !== 8 || litShare !== 17) failures.push(`[claim] the Contact grid lines take 8% of the light aqua at rest and 17% around the pointer (found ${restShare}% and ${litShare}%)`);
+const teal = brandToken('--bg');
+const aqua = hexToken('--c-aqua-light');
+if (!teal || !aqua) failures.push('[claim] the brand surface or the light aqua was not found in the built CSS');
+else {
+  const lineAt = (share) => rgbOf(teal).map((c, k) => Math.round(c + (rgbOf(aqua)[k] - c) * (share / 100)));
+  const restPoints = lstarOf(lineAt(restShare)) - lstarOf(rgbOf(teal));
+  if (!(restPoints >= 4 && restPoints <= 8)) failures.push(`[claim] the still Contact grid must sit at about 4 to 8% perceived contrast (found ${restPoints.toFixed(1)} points of L*)`);
+  // Text on the brand surface keeps 4.5:1 even beside a fully lit line, with
+  // one level of rendering variation added to the line.
+  const lit = lineAt(litShare).map((c) => c + 1);
+  for (const name of ['--heading', '--ink', '--ink-2', '--ink-3', '--accent', '--accent-ink']) {
+    const v = brandToken(name);
+    if (!v || !/^#[0-9a-f]{3,8}$/i.test(v)) {
+      failures.push(`[claim] the brand surface's ${name} could not be read from the built CSS`);
+      continue;
+    }
+    const r = ratioOf(rgbOf(v), lit);
+    if (r < 4.5) failures.push(`[claim] brand ${name} (${v}) is ${r.toFixed(2)}:1 beside a fully lit Contact grid line; text there needs 4.5:1`);
+  }
 }
 
 // Case-study roles (v1.9): each case study states John's part in one compact
@@ -673,7 +809,13 @@ if (unused.length) notes.push(`[manifest] unreferenced asset ids (fine, but tidy
 
 // ------------------------------------------------------ 4. hygiene
 // No Finder metadata ships or is tracked, and nothing oversized (such as the
-// full-length explainer video) reaches dist.
+// full-length explainer video) reaches dist. The original video masters (the
+// hero animation and the slippage explainer) never enter the site under their
+// own names either; only the web previews made from them do.
+const MASTER_NAME = /hero animation|slippage explained|bolt explainers/i;
+for (const f of [...files, ...walk(path.join(root, 'public'))]) {
+  if (MASTER_NAME.test(path.basename(f))) failures.push(`[hygiene] ${path.relative(root, f)} looks like an original video master; only its web preview belongs in the site`);
+}
 for (const f of files) {
   const rel = path.relative(dist, f);
   if (path.basename(f) === '.DS_Store') failures.push(`[hygiene] dist/${rel} must not ship`);
@@ -684,6 +826,10 @@ try {
   const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n');
   for (const t of tracked.filter((x) => /(^|\/)\.DS_Store$/.test(x))) failures.push(`[hygiene] ${t} is tracked by git`);
   for (const t of tracked.filter((x) => /chatgpt #2/i.test(x) || /(^|\/)ChatGPT\.svg$/.test(x))) failures.push(`[hygiene] ${t}: only the normalized chatgpt.svg belongs in the repository`);
+  for (const t of tracked.filter(Boolean)) {
+    const full = path.join(root, t);
+    if (fs.existsSync(full) && fs.statSync(full).size > 25 * 1048576) failures.push(`[hygiene] ${t} is tracked and over 25 MB; video masters stay outside the repository`);
+  }
 } catch {
   notes.push('[hygiene] git not available; skipped the tracked-file check');
 }

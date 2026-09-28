@@ -21,9 +21,13 @@ card:
   subline: "Turned a complex DeFi protocol into a clear positioning, documentation, website, and content system."
   linkLabel: "View case study"
   media:
-    main: "tm-website-hero"
-    motion: "tm-website-motion"
-    side: ["tm-hero", "tm-docs-architecture"]
+    # Primary: the hero animation (a 10 second preview). Secondary motion: the
+    # website hero, played only on request. Third: the architecture still,
+    # whole and uncropped on its own dark plate.
+    main: "tm-hero-animation"
+    motion: "tm-hero-animation"
+    side: ["tm-website-motion", "tm-architecture-still"]
+    fit: ["cover", "cover", "contain"]
 ---
 
 import Section from '@components/casestudy/Section.astro';

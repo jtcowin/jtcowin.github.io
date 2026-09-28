@@ -43,10 +43,24 @@ const work = defineCollection({
         main: z.string(),
         /** Optional muted loop for the dominant panel. */
         motion: z.string().optional(),
-        /** Asset ids for the two supporting panels. */
+        /**
+         * Asset ids for the two supporting panels. A still shows as an image;
+         * a video entry becomes a secondary motion tile, which shows its
+         * poster and plays only when the visitor asks (a hover preview with a
+         * fine pointer, or its play button).
+         */
         side: z.tuple([z.string(), z.string()]),
-        /** Typographic stand-ins, in slot order, while an id has no approved file. */
-        fallback: z.tuple([z.string(), z.string(), z.string()]).optional(),
+        /**
+         * Typographic stand-ins, in slot order, while an id has no approved
+         * file (null for a slot that needs none).
+         */
+        fallback: z.tuple([z.string().nullable(), z.string().nullable(), z.string().nullable()]).optional(),
+        /**
+         * Optional fit per slot, in the same order: `contain` shows the whole
+         * image, uncropped, on a plate of its own background (the asset's
+         * `plate` color) with a little room around it. Omitted means cover.
+         */
+        fit: z.array(z.enum(['cover', 'contain'])).max(3).optional(),
         /**
          * Optional CSS object-position per slot, in the same order (main, then
          * the two sides), for an image whose panel crops it: which part stays

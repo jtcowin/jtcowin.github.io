@@ -44,6 +44,8 @@ export interface AssetEntry {
   optional?: boolean;
   /** Decorative imagery (the work reel): rendered with empty alt text. */
   decorative?: boolean;
+  /** The image's own background color, for a contained presentation. */
+  plate?: string;
   // metric
   value?: string;
   metricLabel?: string;

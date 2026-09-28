@@ -225,9 +225,13 @@
   --heading: var(--c-bone);
   --ink: var(--c-bone);
   --ink-2: var(--c-bone-2);
-  --ink-3: var(--c-fog-2);
-  --accent: var(--c-aqua-light);
-  --accent-ink: var(--c-aqua-light);
+  /* A touch lighter than light slate and light aqua: on this surface the
+     Contact grid runs behind small text and brightens around the pointer, and
+     these keep that text at 4.5:1 even beside a fully lit line (6.6:1 on the
+     plain teal). See the README. */
+  --ink-3: #c7cecf;
+  --accent: #aad5cf;
+  --accent-ink: #aad5cf;
   --accent-soft: #2c5a58;
   --accent-line: #4c7c78;
   --focus: var(--c-aqua-light);

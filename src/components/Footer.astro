@@ -29,15 +29,20 @@ const year = new Date().getFullYear();
 
 <style>
   /* Its height is --footer-h in global.css (the same spacing and line
-     heights), which the homepage's closing frame subtracts from the screen. */
+     heights), which the homepage's closing frame subtracts from the screen.
+     It is never shorter than that, since the homepage's Contact grid runs on
+     beneath it by exactly that much. */
   .site-footer {
+    min-height: var(--footer-h);
     border-top: 1px solid var(--line);
     padding-block: var(--space-7);
     color: var(--ink-3);
     font-size: var(--text-sm);
   }
 
+  /* Above the Contact grid that runs beneath the footer on the homepage. */
   .site-footer__inner {
+    position: relative;
     display: grid;
     gap: var(--space-4);
   }

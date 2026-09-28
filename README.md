@@ -5,10 +5,10 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.9, in review.** Version 1.9 is committed locally and not pushed until it has been
-reviewed. Placeholders render only in `npm run dev`; production builds hide any asset that is not both
-approved and present, so an unresolved entry never reaches the public site (see
-[Replacing placeholders](#replacing-placeholders)).
+**Status: Version 1.9 update, in review.** Version 1.9 is published; this update is committed locally
+and not pushed until it has been reviewed. Placeholders render only in `npm run dev`; production
+builds hide any asset that is not both approved and present, so an unresolved entry never reaches the
+public site (see [Replacing placeholders](#replacing-placeholders)).
 
 Version 1.9 tightens Select Work and closes the page with a full frame. Select Work now starts just
 below the header, so its opening view holds the headline, the introduction and the whole first card,
@@ -19,6 +19,16 @@ one "My role:" line under its intro, and the reel stays wordless. Contact and th
 screen over a quiet teal grid that brightens slightly around a fine pointer, and the footer credit reads
 "© 2026 John Cowin — Built end to end.", whose em dash is the one approved exception besides the hero's
 name stream.
+
+The Version 1.9 update gives Select Work its approved media and a stricter playback model, and carries
+the Contact grid behind everything. Case Study 02 leads with a 10-second preview of the Bolt hero
+animation, with the website hero motion as a secondary tile and the architecture still shown whole on
+its own dark plate. Case Study 03 leads with a 9.7-second passage of the slippage explainer, beside a
+Sui Fest stand-in and the Sui Summit presentation still, and Case Study 01 keeps its typographic
+stand-ins. Only the active card's primary video plays on its own; secondary tiles play only when asked.
+The Contact grid now runs as one even field behind the headline, the actions, the navigation and the
+footer, and its pointer reveal is five points stronger (17% light aqua instead of 12%), with the brand
+surface's small text set a touch lighter so it keeps 4.5:1 beside a lit line.
 
 Version 1.8 refines spacing and interaction and fills the reel and the Stack with approved work. About
 reads as three vertical zones: the headline at the top, the story and resume action centered in the
@@ -147,8 +157,11 @@ To replace a placeholder with a real asset:
    entry's `file` to that relative path. The image is optimized and served responsively at build time.
 2. **Video**: put the video file in `public/media/` and set `file` to its name; put a poster image
    under `src/assets/` and set `poster`. Case-study videos never autoplay and start muted with
-   controls. The one exception is a Select Work card's dominant-panel loop (`card.media.motion`),
-   which plays muted, without controls, only while its card is active (see Select Work below).
+   controls. The exceptions are the Select Work card videos (see Select Work below): a card's primary
+   (`card.media.motion`) plays muted, without controls, only while its card is active, and a
+   secondary tile (a video id in `card.media.side`) plays only when asked. Card videos are short web
+   previews (under 4 MB; a primary runs 8 to 12.5 seconds, a secondary 15 at most); the original
+   masters stay outside the repository.
 3. **Galleries** (`type: gallery`): add objects to `items`: `{ "file": "work/creator-campaigns/mykonos-1.jpg", "alt": "…", "credit": null }`.
    Any unfilled `slots` keep rendering as placeholders.
 4. **Logos**: add a monochrome SVG or PNG to `src/assets/logos/`, set `file` in `logos.json`, and set
@@ -156,11 +169,14 @@ To replace a placeholder with a real asset:
 5. **Testimonial**: set `quote` and change `permission` to `approved`. Nothing is shown until then.
 6. **Live link** (`tm-link-docs`): set `permission` to `approved` to make it clickable.
 7. **Metrics** (`hero-metric`): edit `value` and `metricLabel`.
-8. **Select Work card visuals**: set asset ids in the case study's `card.media`. A slot whose asset is
-   not approved and present shows its `fallback` stand-in (`activations`, `impressions` or
-   `cosponsors`, drawn only from approved facts) or a quiet empty tone, and the real image replaces
-   it as soon as the manifest entry has a file. `focus` sets the `object-position` for each slot, in
-   the order main, first side, second side, for an image its panel has to crop.
+8. **Select Work card visuals**: set asset ids in the case study's `card.media`: `main` (the dominant
+   still, or the poster behind the primary video), `motion` (the primary video) and `side` (two ids; a
+   video id there becomes a secondary motion tile). A slot whose asset is not approved and present
+   shows its `fallback` stand-in (`activations`, `impressions`, `cosponsors` or `suifest`, drawn only
+   from approved facts) or a quiet empty tone, and the real image replaces it as soon as the manifest
+   entry has a file. `focus` sets the `object-position` for each slot, in the order main, first side,
+   second side, for an image its panel has to crop; `fit` (same order) set to `contain` shows an image
+   whole and uncropped, inset on the `plate` color from its manifest entry.
 9. **Reel pieces**: the reel draws on `reel.pool` in `home.json`, 24 ids dealt into three rows of
    `reel.perRow` (8). To change a piece, put the optimized image under `src/assets/reel/` with a
    descriptive lower-case name, add a manifest entry with `"section": "reel"`, `"alt": ""`,
@@ -234,15 +250,16 @@ they use semantic tokens (`--bg`, `--ink`, `--ink-2`, `--ink-3`, `--heading`, `-
 | Blue-teal | `#1F4546` | Brand surface, links and details on light |
 | Muted aqua | `#4F918A` | Focus and accents on dark surfaces |
 
-Five pairings the palette suggests fail WCAG, so the site routes around them rather than shipping them:
+Six pairings the palette suggests fail WCAG, so the site routes around them rather than shipping them:
 
 | Pairing | Ratio | Instead |
 | --- | --- | --- |
 | Steel text on warm bone | 3.1:1 | Deepened steel `#4E5862`, 6.3:1 |
 | Muted aqua text on warm bone | 3.2:1 | Blue-teal for links, 9.2:1 |
 | Muted aqua focus ring on pale slate | 2.8:1 | Blue-teal focus on all light surfaces |
-| Steel text on blue-teal | 3.0:1 | Light slate `#C3CACB`, 6.3:1 |
+| Steel text on blue-teal | 3.0:1 | Light slate `#C3CACB`, 6.3:1 (lifted to `#C7CECF` in the Version 1.9 update, below) |
 | Muted aqua focus ring on blue-teal | 2.9:1 | Light aqua `#9FC9C3`, 5.8:1 |
+| Light slate and light aqua text beside a lit Contact grid line | 4.45:1 and 4.10:1 | `#C7CECF` and `#AAD5CF` on the brand surface, 4.6:1 (6.6:1 on the plain teal) |
 
 Every other text and control pairing clears 4.5:1 for text and 3:1 for focus and control borders on
 every surface and on all three work cards.
@@ -408,12 +425,29 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - Keyboard: going backwards through the stack (Shift+Tab) reaches cards that later ones cover. When a
   control in a covered card takes keyboard focus, the page scrolls back to where that card has just
   parked, so focus is never hidden under another card.
-- Motion: a dominant panel may carry a muted loop (`card.media.motion`; currently the Bolt website
-  hero). It is `muted`, `playsinline` and `loop`, shows its poster, and loads nothing until its card
-  first becomes active (`preload="none"`). Only the active card plays; a loop pauses when its card is
-  covered or leaves the screen. Reduced motion, data saving and phones get the poster only. A pause
-  and play button sits in the panel's corner (the loop runs longer than five seconds), and the
-  reader's choice holds from then on. Supporting panels stay still.
+- Media (Version 1.9 update): Case Study 01 keeps its typographic stand-ins (the three activations,
+  the approved aggregate and the co-sponsors) until its photographs are approved. Case Study 02 leads
+  with a 10-second preview of the Bolt hero animation (from 0:25.5 of the 60-second master; 1600x900,
+  2.1 MB), then the website hero motion as a secondary tile, and the architecture still (1842x1552)
+  shown whole with `object-fit: contain`, inset on its own dark plate; the architecture video is kept
+  for the case-study page. Case Study 03 leads with a 9.7-second passage of the slippage explainer
+  (from 1:08.25; 1600x900, 1.2 MB), then a typographic Sui Fest stand-in (TOKEN2049 Singapore 2025)
+  until the interview still is supplied, and the Sui Summit presentation still, framed to keep the
+  slide's title whole; the complete presentation stays on the case-study page. The previews are H.264
+  at CRF 24 with no audio track, fast start and no metadata, and each poster is its preview's own first
+  frame, so playback starts without a jump. The masters (181 MB and 411 MB) stay outside the
+  repository, and `verify.mjs` fails on any tracked or shipped file over 25 MB or under a master's name.
+- Playback: only the active card's primary video plays on its own, muted, looping and inline, once at
+  least 60% of its panel is in view (a quarter, for one the reader started), and never two at once. A
+  primary pauses and returns to its first frame when its card stops being the active one, and the
+  reader's pause holds. Secondary tiles show their poster and play only when asked: a mouse or pen
+  resting on the tile plays a silent preview, and the play button in its corner starts and stops it
+  from the keyboard or by touch. The card's primary waits while a secondary plays, and a secondary
+  stops and shows its poster again when the pointer leaves, when most of it leaves the screen, when
+  another video starts or when the tab is hidden. A primary's video data loads only as its card
+  approaches the screen (`preload="none"` until then), and a secondary's only when asked. Reduced
+  motion, data saving and phones get posters only, with no autoplay and no hover preview; the buttons
+  still play a video on request.
 
 ### Work reel
 
@@ -442,6 +476,9 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - Frames keep each image's own proportions at one row height, so nothing is cropped and nothing shifts
   as images load. Reduced motion and no JavaScript show the same rows, in the same order, as a still
   collage.
+- Capacity: the reel stays at three rows of eight until eight more approved pieces are supplied (32 in
+  all), and only then gains a fourth row. Excluded pieces never return, and no piece repeats to fill a
+  row.
 
 ### From positioning to production
 
@@ -485,19 +522,27 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   it, and there is no scroll snapping. The case-study pages keep the compact Contact, without the grid.
 - The grid: one-pixel lines in the surface color mixed with 8% of its light aqua, in square cells about
   110 to 140px across at common screen sizes (3, 6, 8 and 10 columns of the content width from phones
-  up), aligned with the page's gutters and snapped to whole pixels. Where it is deepest, toward the upper
-  right, a line is up to about 4.5 points lighter than the surface in perceived lightness (CIE L*, about 5% contrast), easing
-  to about 2 elsewhere, and it fades out under the header and toward the footer. Solid fields of the
-  surface color, feathered at their edges, sit behind the copy and the actions, so no line ever runs
-  behind text or a control. The grid is CSS gradients only (no image, canvas, WebGL or library), and
-  nothing in it moves on its own. The fields reach a few rems past their text, so the frame clips its
-  own overflow (`overflow: clip`) to keep narrow screens from widening.
-- The pointer response: where a fine pointer can hover, a second copy of the lines at 12% light aqua
-  shows through a broad, feathered circle around the pointer (18rem to 30rem) and through the grid's own
-  shape, so the brightening stays in proportion wherever the pointer is; it fades in and out over
-  450ms. The pointer position is written to two custom properties at most once per frame, and nothing
-  is moved or distorted. On touch screens and with reduced motion that layer is not rendered and the
-  grid stays still.
+  up), aligned with the page's gutters and snapped to whole pixels. Since the Version 1.9 update it is
+  one even field, a line about 4.6 points lighter than the surface in perceived lightness (CIE L*,
+  about 5% contrast), that runs behind the headline, the subline, the actions and the navigation and
+  on beneath the footer, with no calm field around the text. It eases in only at its outer edges:
+  where Contact begins, toward the sides of the screen and at the foot of the page. The rows are
+  counted up from the footer's top edge, so a row meets the footer's rule instead of running just
+  beside it, and the grid leaves a two-pixel band around the rule to the rule itself, which keeps its
+  own color edge to edge. The grid layer reaches below Contact by exactly `--footer-h`; the footer is
+  at least that tall and its content paints above the lines, and nothing clips the frame. The grid is CSS gradients
+  only (no image, canvas, WebGL or library), and nothing in it moves on its own.
+- The pointer response: where a fine pointer can hover, a second copy of the lines at 17% light aqua,
+  five points more than the reviewed build's 12%, shows through a broad, feathered circle around the
+  pointer (18rem to 30rem), anywhere over Contact and the footer. A line at the pointer is about 9.3
+  points lighter than the surface, against 4.6 at rest (6.7 in the reviewed build). It fades in and
+  out over 450ms. The pointer position is written to two custom properties at most once per frame, by
+  listeners that run only while the grid is near the screen, and nothing is moved or distorted. On
+  touch screens and with reduced motion that layer is not rendered and the grid stays still.
+- Contrast: with the grid behind the text, every text color on the surface keeps 4.5:1 against the
+  lightest line it can sit beside, a fully lit one included. That is why the brand surface's secondary
+  text and accent are a touch lighter than light slate and light aqua (see Palette); `verify.mjs`
+  recomputes it from the built CSS.
 - The footer carries the hero's descriptor, the links and one credit: "© 2026 John Cowin — Built end to
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the

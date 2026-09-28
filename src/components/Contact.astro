@@ -11,12 +11,13 @@
  *
  * Behind it lies a quiet grid in the surface's own teal, drawn with two CSS
  * gradients: thin lines on generous cells aligned to the page's content edge,
- * faded toward the header and the footer, and held back behind the text by a
- * soft field of the plain surface around each block, so no letter or control
- * ever sits on a line. With a fine pointer that can hover, the lines brighten
- * a little in a broad, feathered area around the pointer; nothing moves or
- * bends. Touch screens and reduced motion show only the still grid. The
- * compact variant at the end of the case-study pages keeps its plain surface.
+ * one even field that runs behind the headline, the actions, the navigation
+ * and on through the footer, eased in only at its outer edges. The lines are
+ * faint enough to sit behind text without costing it contrast, lit or not.
+ * With a fine pointer that can hover, the lines brighten a little in a broad,
+ * feathered area around the pointer; nothing moves or bends. Touch screens
+ * and reduced motion show only the still grid. The compact variant at the end
+ * of the case-study pages keeps its plain surface.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
@@ -61,45 +62,70 @@ const resumeHref = withBase(site.resumePath);
 </section>
 
 <script>
-  // The grid brightens a little around a fine pointer. The position goes to
-  // two custom properties once per frame; nothing else changes.
+  // The grid brightens a little around a fine pointer, anywhere over Contact
+  // and the footer, which share it. Pointer moves are gathered into one update
+  // a frame, which writes the position to two custom properties; the listeners
+  // run only while the grid is near the screen. Nothing moves or bends.
   const grid = document.querySelector<HTMLElement>('[data-contact-grid]');
-  const section = grid?.closest<HTMLElement>('.contact');
   const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (grid && section) {
+  if (grid) {
     let raf = 0;
-    let x = 0;
-    let y = 0;
+    let x = -1;
+    let y = -1;
+    let near = !('IntersectionObserver' in window);
     let listening = false;
     const apply = () => {
       raf = 0;
-      grid.style.setProperty('--mx', `${x.toFixed(1)}px`);
-      grid.style.setProperty('--my', `${y.toFixed(1)}px`);
+      const r = grid.getBoundingClientRect();
+      const inside = x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+      if (inside) {
+        grid.style.setProperty('--mx', `${(x - r.left).toFixed(1)}px`);
+        grid.style.setProperty('--my', `${(y - r.top).toFixed(1)}px`);
+      }
+      grid.classList.toggle('is-lit', inside);
+    };
+    const queue = () => {
+      if (!raf) raf = requestAnimationFrame(apply);
     };
     const move = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return;
-      const r = section.getBoundingClientRect();
-      x = e.clientX - r.left;
-      y = e.clientY - r.top;
-      if (!raf) raf = requestAnimationFrame(apply);
-      grid.classList.add('is-lit');
+      x = e.clientX;
+      y = e.clientY;
+      queue();
     };
-    const leave = () => grid.classList.remove('is-lit');
+    // Leaving the window altogether.
+    const out = (e: PointerEvent) => {
+      if (e.relatedTarget) return;
+      x = -1;
+      y = -1;
+      queue();
+    };
     const sync = () => {
-      const want = fine.matches && !reduce.matches;
+      const want = near && fine.matches && !reduce.matches;
       if (want && !listening) {
-        section.addEventListener('pointermove', move, { passive: true });
-        section.addEventListener('pointerleave', leave);
+        document.addEventListener('pointermove', move, { passive: true });
+        document.addEventListener('pointerout', out, { passive: true });
+        window.addEventListener('scroll', queue, { passive: true });
         listening = true;
       } else if (!want && listening) {
-        section.removeEventListener('pointermove', move);
-        section.removeEventListener('pointerleave', leave);
-        leave();
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerout', out);
+        window.removeEventListener('scroll', queue);
+        grid.classList.remove('is-lit');
         listening = false;
       }
     };
+    if (!near) {
+      new IntersectionObserver(
+        ([entry]) => {
+          near = entry.isIntersecting;
+          sync();
+        },
+        { rootMargin: '25% 0px' },
+      ).observe(grid);
+    }
     sync();
     fine.addEventListener?.('change', sync);
     reduce.addEventListener?.('change', sync);
@@ -186,10 +212,6 @@ const resumeHref = withBase(site.resumePath);
     flex-direction: column;
     /* With the footer, at least one full screen. */
     min-height: calc(var(--view-h) - var(--footer-h));
-    /* The calm fields reach a few rems past their text, which near a narrow
-       screen's edge would widen the page; the frame keeps them inside. */
-    overflow: hidden;
-    overflow: clip;
   }
 
   @supports (height: 1svh) {
@@ -217,34 +239,6 @@ const resumeHref = withBase(site.resumePath);
     z-index: 1;
   }
 
-  /* A soft field of the plain surface around each block of text, so the grid
-     fades out well before it reaches any letter or control. The field is the
-     surface color itself, feathered at its edges by a mask (no blur, so the
-     color stays exact and leaves no edge of its own): solid over the text and
-     a little beyond, fading to nothing a few rems out. */
-  .contact--frame .contact__copy,
-  .contact--frame .contact__actions {
-    position: relative;
-  }
-
-  .contact--frame .contact__copy::before,
-  .contact--frame .contact__actions::before {
-    --feather: 3.5rem;
-    content: '';
-    position: absolute;
-    inset: -3.5rem -4rem;
-    z-index: -1;
-    background: var(--bg);
-    -webkit-mask-image:
-      linear-gradient(to right, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent),
-      linear-gradient(to bottom, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent);
-    mask-image:
-      linear-gradient(to right, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent),
-      linear-gradient(to bottom, transparent, #000 var(--feather), #000 calc(100% - var(--feather)), transparent);
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
-  }
-
   /* ---- the grid --------------------------------------------------------- */
   .contact__grid {
     /* Columns fitted to the content width, so a line runs along the text's
@@ -253,19 +247,29 @@ const resumeHref = withBase(site.resumePath);
     --grid-cols: 3;
     --content-w: calc(min(100vw, var(--container)) - 2 * var(--gutter));
     --cell: calc(var(--content-w) / var(--grid-cols));
-    /* The surface with a little of its own light aqua: where the grid is
-       deepest a line is about 4.5 points lighter than the surface in
-       perceived lightness (CIE L*, about 5% contrast), easing to about 2
-       elsewhere. A lit line is about half again as visible. */
+    /* The surface with a little of its own light aqua: a line is about 4.5
+       points lighter than the surface in perceived lightness (CIE L*, about
+       5% contrast), quiet enough to run behind the text. Around a pointer the
+       lines take five points more of the aqua than in the reviewed build (17%
+       instead of 12%), about 9 points lighter at the pointer itself. The
+       brand surface's small text is set a touch lighter (global.css), so it
+       keeps 4.5:1 even beside a fully lit line. */
     --grid-ink: color-mix(in srgb, var(--bg) 92%, var(--c-aqua-light));
-    --grid-lit: color-mix(in srgb, var(--bg) 88%, var(--c-aqua-light));
-    /* Deepest toward the upper right, where the frame is most open, and a
-       little lighter everywhere else. */
-    --grid-shape: radial-gradient(ellipse 80% 100% at 78% 30%, #000 0%, rgba(0, 0, 0, 0.62) 60%, rgba(0, 0, 0, 0.42) 100%);
-    /* Calm under the floating header and toward the footer. */
-    --grid-fade: linear-gradient(to bottom, transparent 0, #000 calc(var(--nav-h) + 3rem), #000 calc(100% - 7rem), transparent 100%);
+    --grid-lit: color-mix(in srgb, var(--bg) 83%, var(--c-aqua-light));
+    /* One even field behind everything, the headline, actions, navigation
+       and footer included, eased in only at its outer edges: where Contact
+       begins, at the foot of the page, and toward the sides of the screen. */
+    --grid-fade: linear-gradient(to bottom, transparent 0, #000 2.5rem, #000 calc(100% - 3rem), transparent 100%);
+    --grid-sides: linear-gradient(to right, transparent 0, #000 min(8vw, 6rem), #000 calc(100% - min(8vw, 6rem)), transparent 100%);
+    /* The footer's rule, counted up from the foot of the grid. The rows start
+       there, so no line runs just beside the rule, and the grid leaves a
+       two-pixel band around it (wherever the rule's pixel row falls) to the
+       rule, which keeps its own color edge to edge. */
+    --rule-at: var(--footer-h);
+    --grid-rule: linear-gradient(to top, #000 calc(var(--footer-h) - 1.5px), transparent calc(var(--footer-h) - 1.5px) calc(var(--footer-h) + 0.5px), #000 calc(var(--footer-h) + 0.5px));
     position: absolute;
-    inset: 0;
+    /* Down through the footer, so Contact and the footer share one grid. */
+    inset: 0 0 calc(-1 * var(--footer-h));
     z-index: 0;
     pointer-events: none;
   }
@@ -281,21 +285,23 @@ const resumeHref = withBase(site.resumePath);
     background-size: var(--cell) var(--cell);
     background-origin: content-box;
     background-clip: border-box;
-    -webkit-mask-image: var(--grid-fade), var(--grid-shape);
-    mask-image: var(--grid-fade), var(--grid-shape);
+    /* Rows counted up from the top of the footer, so a row meets the
+       footer's rule instead of running just beside it. */
+    background-position: left 0 bottom var(--rule-at);
+    -webkit-mask-image: var(--grid-fade), var(--grid-sides), var(--grid-rule);
+    mask-image: var(--grid-fade), var(--grid-sides), var(--grid-rule);
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
   }
 
   /* The same lines a little brighter, seen through a broad, feathered circle
-     around the pointer and through the grid's own shape, so the brightening
-     is in proportion to the grid wherever the pointer is. */
+     around the pointer. */
   .contact__lines--lit {
     background-image:
       linear-gradient(to right, var(--grid-lit) 0 1px, transparent 1px 100%),
       linear-gradient(to bottom, var(--grid-lit) 0 1px, transparent 1px 100%);
-    -webkit-mask-image: var(--grid-fade), var(--grid-shape), radial-gradient(circle var(--lit-r, 24rem) at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0, 0, 0, 0.58) 32%, rgba(0, 0, 0, 0.2) 64%, transparent 100%);
-    mask-image: var(--grid-fade), var(--grid-shape), radial-gradient(circle var(--lit-r, 24rem) at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0, 0, 0, 0.58) 32%, rgba(0, 0, 0, 0.2) 64%, transparent 100%);
+    -webkit-mask-image: var(--grid-fade), var(--grid-sides), var(--grid-rule), radial-gradient(circle var(--lit-r, 24rem) at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0, 0, 0, 0.58) 32%, rgba(0, 0, 0, 0.2) 64%, transparent 100%);
+    mask-image: var(--grid-fade), var(--grid-sides), var(--grid-rule), radial-gradient(circle var(--lit-r, 24rem) at var(--mx, 50%) var(--my, 50%), #000 0%, rgba(0, 0, 0, 0.58) 32%, rgba(0, 0, 0, 0.2) 64%, transparent 100%);
     opacity: 0;
     transition: opacity 450ms var(--ease-out);
   }
@@ -308,6 +314,7 @@ const resumeHref = withBase(site.resumePath);
   @supports (width: round(1.5px, 1px)) {
     .contact__grid {
       --cell: round(down, calc(var(--content-w) / var(--grid-cols)), 1px);
+      --rule-at: round(var(--footer-h), 1px);
     }
 
     .contact__lines {
@@ -344,8 +351,7 @@ const resumeHref = withBase(site.resumePath);
       text-align: right;
     }
 
-    /* The actions take only the room they need, so their calm field hugs
-       the address and the button. */
+    /* The actions take only the room they need, at the right edge. */
     .contact--frame .contact__actions {
       justify-self: end;
     }
