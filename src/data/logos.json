@@ -2,7 +2,8 @@
   "_readme": [
     "Credibility bar and inline logo marks. A logo renders only when it has a file and `permission` is `approved`.",
     "To add a logo: place a file in src/assets/logos/ and set `file` plus `permission`. Entries without a file render as a text wordmark in the same slot, so a later logo swap does not reflow the band.",
-    "`relationship` is shown as a small caption so no organization is mislabeled as a client. Order here is display order."
+    "`relationship` is shown as a small caption so no organization is mislabeled as a client. Order here is display order.",
+    "`optical` (optional) sizes a logo by eye for the bar, for a mark whose drawing sits differently in its frame from its neighbors': `scale` multiplies the bar's logo height and `shift` moves it by that fraction of the height (negative is up). The file itself is never altered."
   ],
   "heading": "Select Companies, Products, and Partners",
   "logos": [
@@ -37,10 +38,14 @@
       "id": "ambur-marketplace",
       "name": "Ambur Marketplace",
       "relationship": "Product",
-      "file": null,
+      "file": "ambur-marketplace.svg",
       "permission": "approved",
       "url": null,
-      "inBar": true
+      "inBar": true,
+      "optical": {
+        "scale": 0.865,
+        "shift": -0.055
+      }
     },
     {
       "id": "trezor",

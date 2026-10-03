@@ -21,15 +21,16 @@ card:
   subline: "Led event strategy and multi-camera production that turned live technical moments into reusable content."
   linkLabel: "View case study"
   media:
-    # Primary: the slippage explainer (a 9.7 second preview). Second: the Sui
-    # Fest interview still, shown as a typographic stand-in until it is
-    # supplied. Third: the Sui Summit presentation still.
+    # Primary: the slippage explainer (a 9.7 second preview). Secondary
+    # motion: the Sui Fest interview and the opening of the Sui Summit
+    # presentation, played only on request. The Sui Fest stand-in appears
+    # only if its entry loses its approved file.
     main: "ev-slippage-preview"
     motion: "ev-slippage-preview"
-    side: ["ev-suifest-still", "ev-hero"]
+    side: ["ev-suifest-loop", "ev-max-loop"]
     fallback: [null, "suifest", null]
-    # Where a narrower panel crops the presentation still, keep the slide's
-    # title whole and as much of the speaker's photograph as fits.
+    # Where a narrower panel crops the presentation, keep the slide's title
+    # whole and as much of the speaker as fits.
     focus: ["", "", "30% 50%"]
 ---
 

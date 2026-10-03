@@ -29,20 +29,26 @@
  * read as a normal vertical sequence.
  *
  * Motion: a dominant panel may carry a primary video (`card.media.motion`), a
- * short muted, looping, inline preview with a poster. Only the active card's
- * primary plays on its own, once its panel is substantially in view, and it
- * pauses on its first frame when the card leaves that position; no two ever
+ * short muted, looping, inline loop. Every video sits on its poster, a still
+ * of the loop at the loop's exact crop, which holds the panel until the loop
+ * is playing and again whenever it stops; without JavaScript, or if a video
+ * cannot load, the poster simply stays. Only the active card's primary plays
+ * on its own, once the card has reached its resting place in the stack, and
+ * it returns to its poster when the card leaves that position; no two ever
  * play at once. A supporting panel whose id is a video entry is a secondary
  * motion tile: it shows its poster and plays only when the visitor asks (a
  * silent hover preview with a fine pointer, or its button), then returns to
- * its poster. Nothing autoplays or plays on hover under reduced motion, with
- * data saving, or on small screens, and video data loads only as its card
- * approaches. Every video has a pause and play button, since each runs longer
- * than five seconds.
+ * its poster and its first frame, and the card's primary waits while it
+ * plays. `card.media.fit` `contain` works for a video too: poster and loop
+ * share one frame at the loop's aspect ratio on the asset's plate. Nothing
+ * autoplays or plays on hover under reduced motion, with data saving, or on
+ * small screens, and video data loads only as its card approaches (a
+ * secondary's, only once a request is likely). Every video has a pause and
+ * play button, since each runs longer than five seconds.
  */
 import type { CollectionEntry } from 'astro:content';
 import type { ImageMetadata } from 'astro';
-import { Picture, Image, getImage } from 'astro:assets';
+import { Picture, Image } from 'astro:assets';
 import { withBase } from '@lib/paths';
 import { getAsset, hasAsset, isIdVisible, resolveImage, resolveGalleryImages, getLogo, resolveLogoImage } from '@lib/assets';
 import Icon from './Icon.astro';
@@ -55,7 +61,16 @@ const { entries } = Astro.props;
 
 type Slot =
   | { kind: 'image'; img: ImageMetadata; alt: string; plate?: string }
-  | { kind: 'video'; role: 'primary' | 'secondary'; src: string; poster: string; alt: string; label: string }
+  | {
+      kind: 'video';
+      role: 'primary' | 'secondary';
+      src: string;
+      /** A still of the loop at the loop's own crop and aspect ratio. */
+      poster: ImageMetadata;
+      alt: string;
+      label: string;
+      plate?: string;
+    }
   | { kind: 'fallback'; name: string }
   | { kind: 'empty' };
 
@@ -73,24 +88,31 @@ function still(id: string | undefined): { img: ImageMetadata; alt: string; plate
 
 /**
  * A video entry as a motion slot: the primary loop of the dominant panel, or
- * a secondary motion tile in a supporting panel. Every video carries a poster
- * (a still of its own first frame or a strong frame of it).
+ * a secondary motion tile in a supporting panel. Every video carries a poster:
+ * a still of the loop (its first frame or a strong frame of it) at the loop's
+ * own crop and aspect ratio, so poster and loop fill the panel identically.
  */
-async function motion(id: string | undefined | null, role: 'primary' | 'secondary'): Promise<Slot | null> {
+function motion(id: string | undefined | null, role: 'primary' | 'secondary'): Slot | null {
   if (!id || !hasAsset(id) || !isIdVisible(id)) return null;
   const entry = getAsset(id);
-  const posterImg = resolveImage(entry);
-  if (entry.type !== 'video' || !entry.file || !posterImg) return null;
-  const width = role === 'primary' ? 1600 : 960;
-  const poster = await getImage({ src: posterImg, width: Math.min(width, posterImg.width), format: 'webp' });
+  const poster = resolveImage(entry);
+  if (entry.type !== 'video' || !entry.file || !poster) return null;
   return {
     kind: 'video',
     role,
     src: withBase(`/media/${entry.file.replace(/^\/+/, '')}`),
-    poster: poster.src,
+    poster,
     alt: entry.alt,
     label: entry.label,
+    plate: entry.plate,
   };
+}
+
+/** Responsive widths for a picture, none wider than its source. */
+function widthsFor(img: ImageMetadata, wanted: number[]): number[] {
+  const out = wanted.filter((w) => w < img.width);
+  out.push(Math.min(img.width, wanted[wanted.length - 1]));
+  return [...new Set(out)];
 }
 
 /** A still for this id, else its typographic stand-in, else a quiet tone. */
@@ -101,27 +123,25 @@ function stillSlot(id: string | undefined, fallback: string | null | undefined):
 }
 
 /** A supporting panel: a secondary motion tile for a video entry, else a still. */
-async function toSlot(id: string | undefined, fallback: string | null | undefined): Promise<Slot> {
-  return (await motion(id, 'secondary')) ?? stillSlot(id, fallback);
+function toSlot(id: string | undefined, fallback: string | null | undefined): Slot {
+  return motion(id, 'secondary') ?? stillSlot(id, fallback);
 }
 
-const cards = await Promise.all(
-  entries.map(async (entry, index) => {
-    const { card } = entry.data;
-    const fb = card.media.fallback ?? [];
-    // Without its loop, the dominant panel shows the main id as a still (a
-    // video entry's poster).
-    const main = (await motion(card.media.motion, 'primary')) ?? stillSlot(card.media.main, fb[0]);
-    return {
-      id: entry.id,
-      href: withBase(`/work/${entry.id}/`),
-      num: String(index + 1).padStart(2, '0'),
-      card,
-      main,
-      sides: [await toSlot(card.media.side[0], fb[1]), await toSlot(card.media.side[1], fb[2])],
-    };
-  }),
-);
+const cards = entries.map((entry, index) => {
+  const { card } = entry.data;
+  const fb = card.media.fallback ?? [];
+  // Without its loop, the dominant panel shows the main id as a still (a
+  // video entry's poster).
+  const main = motion(card.media.motion, 'primary') ?? stillSlot(card.media.main, fb[0]);
+  return {
+    id: entry.id,
+    href: withBase(`/work/${entry.id}/`),
+    num: String(index + 1).padStart(2, '0'),
+    card,
+    main,
+    sides: [toSlot(card.media.side[0], fb[1]), toSlot(card.media.side[1], fb[2])],
+  };
+});
 
 // Typographic stand-ins, drawn only from approved case-study facts.
 const cosponsors = ['trezor', 'bitrefill', 'rayls-labs']
@@ -157,27 +177,47 @@ const places = [
 
           <div class="card__media">
             {[main, ...sides].map((slot, n) => {
-              const contain = card.media.fit?.[n] === 'contain' && slot.kind === 'image';
+              const media = slot.kind === 'image' || slot.kind === 'video';
+              const contain = card.media.fit?.[n] === 'contain' && media;
+              const focus = !contain && card.media.focus?.[n] ? `object-position: ${card.media.focus[n]}` : undefined;
+              const panelStyle = [
+                contain && (slot.kind === 'image' || slot.kind === 'video') && slot.plate ? `--plate: ${slot.plate}` : '',
+                contain && slot.kind === 'video' ? `--ratio: ${(slot.poster.width / slot.poster.height).toFixed(4)}` : '',
+              ]
+                .filter(Boolean)
+                .join('; ');
               return (
                 <div
                   class:list={['card__panel', n === 0 ? 'card__panel--main' : 'card__panel--side', { 'card__panel--contain': contain }]}
-                  style={contain && slot.kind === 'image' && slot.plate ? `--plate: ${slot.plate}` : undefined}
+                  style={panelStyle || undefined}
                 >
                   {slot.kind === 'video' ? (
                     <>
-                      <video
-                        class="card__video"
-                        muted
-                        loop
-                        playsinline
-                        preload="none"
-                        poster={slot.poster}
-                        aria-label={slot.alt}
-                        data-card-video={slot.role === 'primary' ? '' : undefined}
-                        data-card-secondary={slot.role === 'secondary' ? '' : undefined}
-                      >
-                        <source src={slot.src} type="video/mp4" />
-                      </video>
+                      <div class="card__frame">
+                        <Picture
+                          src={slot.poster}
+                          alt=""
+                          widths={widthsFor(slot.poster, n === 0 ? [640, 960, 1280, 1600] : [360, 560, 760])}
+                          sizes={n === 0 ? '(min-width: 60rem) 62vw, 100vw' : contain ? '(min-width: 60rem) 18vw, 30vw' : '(min-width: 60rem) 30vw, 50vw'}
+                          formats={['avif', 'webp']}
+                          loading="lazy"
+                          class="card__img card__poster"
+                          style={focus}
+                        />
+                        <video
+                          class="card__video"
+                          muted
+                          loop
+                          playsinline
+                          preload="none"
+                          aria-label={slot.alt}
+                          style={focus}
+                          data-card-video={slot.role === 'primary' ? '' : undefined}
+                          data-card-secondary={slot.role === 'secondary' ? '' : undefined}
+                        >
+                          <source src={slot.src} type="video/mp4" />
+                        </video>
+                      </div>
                       <button
                         type="button"
                         class="card__toggle"
@@ -203,7 +243,7 @@ const places = [
                       formats={['avif', 'webp']}
                       loading="lazy"
                       class="card__img"
-                      style={!contain && card.media.focus?.[n] ? `object-position: ${card.media.focus[n]}` : undefined}
+                      style={focus}
                     />
                   ) : slot.kind === 'fallback' && slot.name === 'activations' ? (
                     <div class="fb fb--places">
@@ -267,19 +307,30 @@ const places = [
   // Depth and motion for the stack. The stacking itself is CSS; this adds the
   // slight recede of a covered card and runs the playback model:
   //
-  // - Only the active card's primary video plays on its own, once its panel
-  //   is substantially in view (60% or more, clear of the next card). It
-  //   pauses, back on its first frame (its poster), when the card leaves that
-  //   position, and starting one primary stops any other, so two never play
-  //   at once.
-  // - A secondary motion tile shows its poster and plays only when the
-  //   visitor asks: a silent hover preview with a fine pointer, or its play
-  //   button for keyboard and touch. It returns to its poster when it stops or
-  //   goes out of view, and the card's primary waits while it plays.
+  // - Every video sits on its poster, a still of the loop at the loop's exact
+  //   crop. The video stays invisible until its first frame is on screen,
+  //   then fades in over the poster; whenever it stops it disappears, back on
+  //   the poster, and returns to its first frame. Without JavaScript, or if a
+  //   video cannot load, the poster stays (and a broken video's button goes).
+  // - Only the active card's primary plays on its own. On desktop the active
+  //   card is the one that has reached its resting place in the stack with
+  //   its dominant panel substantially in view (60% or more, clear of the next
+  //   card); elsewhere, the card whose dominant panel is most in view, if
+  //   substantially. A primary stops when its card leaves that position, and
+  //   starting one stops any other, so two never play at once.
+  // - A secondary motion tile plays only when the visitor asks: a silent
+  //   hover preview with a fine pointer, or its play button for keyboard and
+  //   touch. It stops, back on its poster, when the pointer leaves, when its
+  //   button stops it, or when it leaves view. While it plays, the card's
+  //   primary waits on its current frame, and resumes afterwards if the card
+  //   is still the active one.
   // - Reduced motion keeps every poster: nothing autoplays or plays on hover.
   //   Data saving and small screens autoplay nothing either. The buttons
   //   always play on request.
-  // - Video data loads only as a card approaches the screen.
+  // - Video data loads only as needed: a primary's as its card comes within a
+  //   screen of view; a secondary's metadata once a request is likely (a
+  //   pointer settling on its card, or keyboard focus on its button), and the
+  //   rest when it plays.
   const wide = window.matchMedia('(min-width: 60rem)');
   const small = window.matchMedia('(max-width: 47.99rem)');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -302,6 +353,8 @@ const places = [
     asked: boolean;
     /** The browser refused to start it on its own (a power-saving mode). */
     blocked: boolean;
+    /** The video could not load: its poster stays and its button goes. */
+    failed: boolean;
     hovering: boolean;
   };
   const clips: Clip[] = [];
@@ -325,6 +378,7 @@ const places = [
         held: false,
         asked: false,
         blocked: false,
+        failed: false,
         hovering: false,
       };
       clips.push(clip);
@@ -345,10 +399,21 @@ const places = [
             rest(clip);
           }
         });
+        if (!clip.primary) toggle.addEventListener('focus', () => warm(i));
       }
       video.addEventListener('play', () => label(clip));
       video.addEventListener('pause', () => label(clip));
       video.addEventListener('emptied', () => label(clip));
+      video.addEventListener('playing', () => reveal(clip));
+      // A video that cannot load keeps its poster. Each <source> reports its
+      // own failure, so the last one failing means none could be used.
+      const fail = () => {
+        clip.failed = true;
+        hide(clip);
+        if (toggle) toggle.hidden = true;
+      };
+      video.addEventListener('error', fail);
+      video.querySelector('source:last-of-type')?.addEventListener('error', fail);
     });
   });
 
@@ -359,7 +424,26 @@ const places = [
     clip.toggle.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} video: ${clip.label}`);
   }
 
+  /** The video over its poster, from its first frame on screen. */
+  function reveal(clip: Clip) {
+    const { video } = clip;
+    if (video.hasAttribute('data-shown')) return;
+    const show = () => {
+      if (!video.paused && !clip.failed) video.setAttribute('data-shown', '');
+    };
+    const onFrame = (video as HTMLVideoElement & { requestVideoFrameCallback?: (callback: () => void) => number })
+      .requestVideoFrameCallback;
+    if (typeof onFrame === 'function') onFrame.call(video, show);
+    else show();
+  }
+
+  /** Back to the poster. */
+  function hide(clip: Clip) {
+    if (clip.video.hasAttribute('data-shown')) clip.video.removeAttribute('data-shown');
+  }
+
   function play(clip: Clip) {
+    if (clip.failed) return;
     const { video } = clip;
     for (const other of clips) {
       if (other === clip) continue;
@@ -382,22 +466,21 @@ const places = [
     }
   }
 
-  /** A primary paused and back on its first frame, which is its poster. */
+  /** A primary stopped: back on its poster, from its first frame next time. */
   function park(clip: Clip) {
     if (!clip.video.paused) clip.video.pause();
+    hide(clip);
     if (clip.video.currentTime > 0) clip.video.currentTime = 0;
   }
 
-  /**
-   * A secondary paused and back on its poster: reloading with nothing to
-   * preload resets it to the poster and fetches nothing more.
-   */
+  /** A secondary stopped: back on its poster and its first frame. */
   function rest(clip: Clip) {
     clip.asked = false;
-    if (clip.video.paused && clip.video.readyState === 0) return;
-    clip.video.pause();
-    clip.video.preload = 'none';
-    clip.video.load();
+    const { video } = clip;
+    if (video.paused && !video.hasAttribute('data-shown') && video.currentTime === 0) return;
+    if (!video.paused) video.pause();
+    hide(clip);
+    if (video.currentTime > 0) video.currentTime = 0;
     label(clip);
     schedule();
   }
@@ -410,6 +493,18 @@ const places = [
     const next = stacked && cards[i + 1] ? cards[i + 1].getBoundingClientRect().top : vh;
     const floor = Math.min(vh, next);
     return Math.max(0, Math.min(r.bottom, floor) - Math.max(r.top, 0)) / r.height;
+  }
+
+  /**
+   * Whether a card is at its resting place: in the desktop stack, once it has
+   * reached the position where it parks (its sticky top) or gone past it;
+   * elsewhere, always.
+   */
+  function rested(card: HTMLElement, stacked: boolean): boolean {
+    if (!stacked) return true;
+    const top = parseFloat(getComputedStyle(card).top);
+    if (!Number.isFinite(top)) return true;
+    return card.getBoundingClientRect().top <= top + 2;
   }
 
   let raf = 0;
@@ -430,17 +525,18 @@ const places = [
     }
     const view = mains.map((m, i) => seen(m, i, vh, stacked));
     // The active card: one the reader started, while it stays in view, or
-    // else the card whose dominant panel is most in view, if substantially.
+    // else the card at rest whose dominant panel is most in view, if
+    // substantially.
     const chosen = clips.find((c) => c.primary && c.asked && !c.video.paused && view[c.card] >= 0.25);
     let active = chosen ? chosen.card : -1;
     if (active < 0) {
-      let best = -1;
       view.forEach((v, i) => {
-        if (best < 0 || v > view[best]) best = i;
+        if (v < 0.6 || (active >= 0 && v <= view[active]) || !rested(cards[i], stacked)) return;
+        active = i;
       });
-      active = best >= 0 && view[best] >= 0.6 ? best : -1;
     }
     for (const clip of clips) {
+      if (clip.failed) continue;
       if (clip.primary) {
         const busy = clips.some((c) => !c.primary && c.card === clip.card && !c.video.paused);
         if (clip.card !== active) {
@@ -459,6 +555,17 @@ const places = [
 
   function schedule() {
     if (!raf) raf = requestAnimationFrame(update);
+  }
+
+  // A request is likely once a pointer settles on a card (moving over it, not
+  // just carried across it by the scroll): fetch the metadata of the card's
+  // secondaries, so a hover preview starts quickly.
+  let scrolled = 0;
+  function warm(i: number) {
+    if (saving()) return;
+    for (const clip of clips) {
+      if (!clip.primary && clip.card === i && !clip.failed && clip.video.preload === 'none') clip.video.preload = 'metadata';
+    }
   }
 
   // Hover previews: the whole card is its link, so the pointer is tracked on
@@ -482,7 +589,9 @@ const places = [
     card.addEventListener(
       'pointermove',
       (e) => {
-        if (e.pointerType === 'mouse' || e.pointerType === 'pen') track(e.clientX, e.clientY);
+        if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+        if (hoverAllowed() && performance.now() - scrolled > 300) warm(i);
+        track(e.clientX, e.clientY);
       },
       { passive: true },
     );
@@ -499,7 +608,7 @@ const places = [
           if (!autoplayAllowed()) continue;
           const i = cards.indexOf(entry.target as HTMLElement);
           for (const clip of clips) {
-            if (clip.primary && clip.card === i && clip.video.preload === 'none') {
+            if (clip.primary && clip.card === i && !clip.failed && clip.video.preload === 'none') {
               clip.video.preload = 'auto';
               clip.video.load();
             }
@@ -575,7 +684,14 @@ const places = [
   });
 
   if (cards.length) {
-    addEventListener('scroll', schedule, { passive: true });
+    addEventListener(
+      'scroll',
+      () => {
+        scrolled = performance.now();
+        schedule();
+      },
+      { passive: true },
+    );
     addEventListener('resize', schedule, { passive: true });
     update();
   }
@@ -794,7 +910,8 @@ const places = [
     grid-area: side2;
   }
 
-  .card__panel :global(picture) {
+  .card__panel :global(picture),
+  .card__frame {
     position: absolute;
     inset: 0;
   }
@@ -808,8 +925,17 @@ const places = [
     object-fit: cover;
   }
 
+  /* A video panel: the poster holds the panel, and the video, invisible until
+     its first frame is on screen, fades in over it, then disappears again
+     whenever it stops. Without JavaScript, or if the video cannot load, the
+     poster stays. */
   .card__video {
-    background: var(--c-ink);
+    opacity: 0;
+  }
+
+  .card__video[data-shown] {
+    opacity: 1;
+    transition: opacity 0.18s var(--ease-out);
   }
 
   /* A contained still: the whole image, uncropped, centered on a plate of its
@@ -817,21 +943,36 @@ const places = [
      hairline so the room reads as intended. The panels are wider than the
      image, so it takes the panel's height. */
   .card__panel--contain {
+    --room: clamp(0.45rem, 7cqmin, 1rem);
     background: var(--plate, var(--c-ink));
   }
 
-  .card__panel--contain :global(picture) {
-    inset: clamp(0.45rem, 7cqmin, 1rem);
+  .card__panel--contain > :global(picture) {
+    inset: var(--room);
   }
 
   /* The panel's height, the image's own width, centered by auto margins. */
-  .card__panel--contain :global(.card__img) {
+  .card__panel--contain > :global(picture > .card__img) {
     inset: 0;
     margin: auto;
     width: auto;
     height: 100%;
     max-width: 100%;
     object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px rgba(237, 240, 239, 0.12);
+  }
+
+  /* A contained video: poster and loop share one frame at the loop's own
+     aspect ratio (--ratio), as tall as the panel less the same room,
+     centered, with the same hairline, so it reads exactly as a contained
+     still would. */
+  .card__panel--contain > .card__frame {
+    inset: 0;
+    margin: auto;
+    height: calc(100% - 2 * var(--room));
+    width: min(calc((100cqh - 2 * var(--room)) * var(--ratio, 1)), calc(100% - 2 * var(--room)));
+    overflow: hidden;
     border-radius: 4px;
     box-shadow: 0 0 0 1px rgba(237, 240, 239, 0.12);
   }

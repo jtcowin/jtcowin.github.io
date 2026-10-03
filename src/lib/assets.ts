@@ -76,6 +76,13 @@ export interface LogoEntry {
   permission: Permission;
   url: string | null;
   inBar: boolean;
+  /**
+   * Optional optical sizing in the credibility bar, for a mark whose drawing
+   * sits differently in its frame from its neighbors': `scale` multiplies the
+   * bar's logo height and `shift` moves the logo by that fraction of the
+   * height (negative is up). The file itself is never altered.
+   */
+  optical?: { scale?: number; shift?: number };
 }
 
 const entries = (manifest as { assets: AssetEntry[] }).assets;

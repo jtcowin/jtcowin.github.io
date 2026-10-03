@@ -24,12 +24,25 @@ interface Props {
 const { embedded = false } = Astro.props;
 
 // Wordmarks and square marks need different heights to read at the same weight,
-// so each logo is measured at build time rather than forced to one height.
+// so each logo is measured at build time rather than forced to one height. A
+// logo whose drawing sits differently in its frame carries its own optical
+// sizing (logos.json `optical`), which the styles below apply: Ambur's letters
+// sit low beside a taller icon and run heavier than its neighbors, so it is
+// drawn a little smaller and raised, until its capitals share the cap height
+// and baseline of Bolt Liquidity and its ink weighs the same as theirs.
 const items = logos.logos
   .filter((l) => l.inBar)
   .map((l) => {
     const img = resolveLogoImage(l);
-    return { logo: l, img, isMark: img ? img.width / img.height < 1.6 : false };
+    const scale = l.optical?.scale ?? 1;
+    const shift = l.optical?.shift ?? 0;
+    return {
+      logo: l,
+      img,
+      isMark: img ? img.width / img.height < 1.6 : false,
+      scale,
+      optical: scale !== 1 || shift !== 0 ? `--logo-scale: ${scale}; --logo-shift: ${shift}` : undefined,
+    };
   });
 
 const Tag = embedded ? 'div' : 'section';
@@ -42,15 +55,16 @@ const Heading = embedded ? 'h3' : 'h2';
     <Heading id="logobar-heading" class="eyebrow eyebrow--muted logobar__heading">{logos.heading}</Heading>
     <ul class="logobar__list" style={`--count: ${items.length}`}>
       {
-        items.map(({ logo, img, isMark }, n) => (
+        items.map(({ logo, img, isMark, scale, optical }, n) => (
           <li class="logobar__item" style={`--n: ${n}`}>
             <span class="logobar__slot">
               {img ? (
                 <Image
                   src={img}
                   alt={logo.name}
-                  height={isMark ? 46 : 26}
+                  height={Math.round((isMark ? 46 : 26) * scale)}
                   class:list={['logobar__img', isMark && 'logobar__img--mark']}
+                  style={optical}
                   loading="lazy"
                 />
               ) : (
@@ -142,19 +156,22 @@ const Heading = embedded ? 'h3' : 'h2';
   /* Supplied logos arrive in their own brand colors, several of them white
      artwork that would be invisible on a light ground. brightness(0) flattens
      every mark to one silhouette, which keeps the bar monochrome and legible
-     without editing each file. */
+     without editing each file. --logo-scale and --logo-shift carry a logo's
+     optical sizing (see above); the shift moves the drawing only, never its
+     slot, so the row and its labels stay where they are. */
   .logobar__item :global(.logobar__img) {
-    height: 26px;
+    height: calc(26px * var(--logo-scale, 1));
     width: auto;
     max-width: min(140px, 100%);
     object-fit: contain;
     filter: brightness(0);
     opacity: 0.78;
+    transform: translateY(calc(26px * var(--logo-shift, 0)));
     transition: opacity var(--dur-fast) var(--ease-out);
   }
 
   .logobar__item :global(.logobar__img--mark) {
-    height: 44px;
+    height: calc(44px * var(--logo-scale, 1));
     max-width: min(64px, 100%);
   }
 

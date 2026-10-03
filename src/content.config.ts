@@ -57,8 +57,9 @@ const work = defineCollection({
         fallback: z.tuple([z.string().nullable(), z.string().nullable(), z.string().nullable()]).optional(),
         /**
          * Optional fit per slot, in the same order: `contain` shows the whole
-         * image, uncropped, on a plate of its own background (the asset's
-         * `plate` color) with a little room around it. Omitted means cover.
+         * image or video, uncropped, on a plate of its own background (the
+         * asset's `plate` color) with a little room around it. Omitted means
+         * cover.
          */
         fit: z.array(z.enum(['cover', 'contain'])).max(3).optional(),
         /**

@@ -5,10 +5,23 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Version 1.9 update, in review.** Version 1.9 is published; this update is committed locally
-and not pushed until it has been reviewed. Placeholders render only in `npm run dev`; production
+**Status: Version 2.0, in review.** Version 1.9 and its update are published; Version 2.0 is committed
+locally and not pushed until it has been reviewed. Placeholders render only in `npm run dev`; production
 builds hide any asset that is not both approved and present, so an unresolved entry never reaches the
 public site (see [Replacing placeholders](#replacing-placeholders)).
+
+Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
+Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
+joined, from the overhead pool shot to the sky), with the Trezor paper airplane and the Bolt Bus trailer
+as secondary tiles. Case Study 02 leads with a new loop of the hero animation, keeps the website hero
+motion, and replaces the architecture still with the architecture diagram video, shown whole on its own
+plate at the still's scale. Case Study 03 keeps the slippage preview and replaces the Sui Fest stand-in
+and the presentation still with loops of the Sui Fest interview and the opening of the Sui Summit
+presentation. Every video now sits on a poster cut from its own loop at the loop's exact crop, shown
+until the loop plays and again whenever it stops, so a tile is never blank: not before the video loads,
+not without JavaScript, and not if a video fails. A primary starts only once its card has reached its
+resting place in the stack. The trust bar's Ambur Marketplace entry is now the supplied SVG, unaltered,
+sized optically so its capitals share the cap height and baseline of Bolt Liquidity.
 
 Version 1.9 tightens Select Work and closes the page with a full frame. Select Work now starts just
 below the header, so its opening view holds the headline, the introduction and the whole first card,
@@ -159,24 +172,27 @@ To replace a placeholder with a real asset:
    under `src/assets/` and set `poster`. Case-study videos never autoplay and start muted with
    controls. The exceptions are the Select Work card videos (see Select Work below): a card's primary
    (`card.media.motion`) plays muted, without controls, only while its card is active, and a
-   secondary tile (a video id in `card.media.side`) plays only when asked. Card videos are short web
-   previews (under 4 MB; a primary runs 8 to 12.5 seconds, a secondary 15 at most); the original
-   masters stay outside the repository.
+   secondary tile (a video id in `card.media.side`) plays only when asked. Card videos are short,
+   silent web loops cut from approved ranges (a primary under 4 MB, a secondary under 2 MB, each held
+   to its approved length by `verify.mjs`), each with a poster cut from the loop at its own aspect
+   ratio; the original masters stay outside the repository.
 3. **Galleries** (`type: gallery`): add objects to `items`: `{ "file": "work/creator-campaigns/mykonos-1.jpg", "alt": "…", "credit": null }`.
    Any unfilled `slots` keep rendering as placeholders.
 4. **Logos**: add a monochrome SVG or PNG to `src/assets/logos/`, set `file` in `logos.json`, and set
-   `permission` to `approved`. Logos render as text wordmarks until approved.
+   `permission` to `approved`. Logos render as text wordmarks until approved. A logo whose drawing
+   sits differently in its frame from its neighbors' takes an `optical` entry (`scale` of the bar's
+   logo height, `shift` as a fraction of it, negative up), applied in CSS, never to the file.
 5. **Testimonial**: set `quote` and change `permission` to `approved`. Nothing is shown until then.
 6. **Live link** (`tm-link-docs`): set `permission` to `approved` to make it clickable.
 7. **Metrics** (`hero-metric`): edit `value` and `metricLabel`.
 8. **Select Work card visuals**: set asset ids in the case study's `card.media`: `main` (the dominant
-   still, or the poster behind the primary video), `motion` (the primary video) and `side` (two ids; a
-   video id there becomes a secondary motion tile). A slot whose asset is not approved and present
+   still, or the primary video's entry, whose poster stands in if the video is absent), `motion` (the
+   primary video) and `side` (two ids; a video id there becomes a secondary motion tile). A slot whose asset is not approved and present
    shows its `fallback` stand-in (`activations`, `impressions`, `cosponsors` or `suifest`, drawn only
    from approved facts) or a quiet empty tone, and the real image replaces it as soon as the manifest
    entry has a file. `focus` sets the `object-position` for each slot, in the order main, first side,
-   second side, for an image its panel has to crop; `fit` (same order) set to `contain` shows an image
-   whole and uncropped, inset on the `plate` color from its manifest entry.
+   second side, for an image or video its panel has to crop; `fit` (same order) set to `contain` shows
+   an image or a video whole and uncropped, inset on the `plate` color from its manifest entry.
 9. **Reel pieces**: the reel draws on `reel.pool` in `home.json`, 24 ids dealt into three rows of
    `reel.perRow` (8). To change a piece, put the optimized image under `src/assets/reel/` with a
    descriptive lower-case name, add a manifest entry with `"section": "reel"`, `"alt": ""`,
@@ -345,6 +361,17 @@ fine pointer that can hover without reduced motion, and nothing uses canvas or W
 carries one compact "My role:" line after its intro that names strategy, briefing, approval, and
 distribution or publishing, without implying hands-on design.
 
+The Version 2.0 checks: every card video sits in its frame on a lazy, responsive poster picture with
+empty alt text and no `poster` attribute, stays invisible until it plays, and each card plays its
+approved loops in order, with no typographic stand-in rendered; the architecture loop is contained on
+its plate at its own aspect ratio, and the presentation loop keeps its 30% 50% framing on poster and
+video alike; each loop runs its approved length (within 0.06 seconds), is H.264 with its index first and
+no audio track, stays under 4 MB as a primary and 2 MB as a secondary, and has a poster at its own
+aspect ratio; the playback script keeps its poster, failure, frame, tab, motion and pointer guards; the
+retired hero preview ships nowhere, and no file under a master's name (the Version 2.0 sources
+included) is tracked or shipped; and the trust bar shows seven logo files, Ambur Marketplace as the
+supplied SVG byte for byte, carrying its optical sizing.
+
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
 narratives") and nothing else emphasized or bold, Phi Labs Global included; no individual product named
@@ -374,6 +401,10 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   right edge of its row; the highlights are blue-teal at 600, 9.2:1 on the light surface. The trust bar
   keeps its contents, order, labels and monochrome marks, with its rhythm tightened through
   `--logobar-slot`, `--logobar-label-gap` and `--logobar-head-gap`, and holds one row from 72rem.
+  Since Version 2.0 every entry is a logo file: Ambur Marketplace is the supplied SVG
+  (`src/assets/logos/ambur-marketplace.svg`, byte for byte), drawn at 86.5% of the bar's logo height
+  and raised by 5.5% of it (`optical` in `logos.json`), so its capitals share the cap height and
+  baseline of Bolt Liquidity beside Archway and its ink weighs about the same as theirs.
 - Motion, once: shortly after the story is well in view, its words flow in, in reading order. Each word
   fades from 0 to 1 while it rises 8px and sharpens from a 3px blur (380ms, ease-out), starting before
   the word ahead of it has settled; the pace eases in and out over the whole copy, with a breath of
@@ -394,8 +425,8 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - One template and one size for every card: number and category, title, a one-sentence subline, one
   dominant panel, two supporting panels, and one case-study link (the title is the link and the whole
   card is its target; "View case study" is its visible label, beside the head on desktop and last on
-  phones). Metrics live on the case-study pages; while the creator photographs are pending, that
-  card's typographic stand-ins carry the one approved aggregate.
+  phones). Metrics live on the case-study pages. The creator card's typographic stand-ins, which carry
+  the one approved aggregate, remain only as a fallback: they show if its videos lose their files.
 - The opening frame (Version 1.9): from 60rem the section starts just below the floating header
   (`--work-top`, the header's height and a little more), and the Work link lands with the section flush
   at the top, so the first view holds the headline, the introduction and the complete first card. At
@@ -425,29 +456,65 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - Keyboard: going backwards through the stack (Shift+Tab) reaches cards that later ones cover. When a
   control in a covered card takes keyboard focus, the page scrolls back to where that card has just
   parked, so focus is never hidden under another card.
-- Media (Version 1.9 update): Case Study 01 keeps its typographic stand-ins (the three activations,
-  the approved aggregate and the co-sponsors) until its photographs are approved. Case Study 02 leads
-  with a 10-second preview of the Bolt hero animation (from 0:25.5 of the 60-second master; 1600x900,
-  2.1 MB), then the website hero motion as a secondary tile, and the architecture still (1842x1552)
-  shown whole with `object-fit: contain`, inset on its own dark plate; the architecture video is kept
-  for the case-study page. Case Study 03 leads with a 9.7-second passage of the slippage explainer
-  (from 1:08.25; 1600x900, 1.2 MB), then a typographic Sui Fest stand-in (TOKEN2049 Singapore 2025)
-  until the interview still is supplied, and the Sui Summit presentation still, framed to keep the
-  slide's title whole; the complete presentation stays on the case-study page. The previews are H.264
-  at CRF 24 with no audio track, fast start and no metadata, and each poster is its preview's own first
-  frame, so playback starts without a jump. The masters (181 MB and 411 MB) stay outside the
-  repository, and `verify.mjs` fails on any tracked or shipped file over 25 MB or under a master's name.
-- Playback: only the active card's primary video plays on its own, muted, looping and inline, once at
-  least 60% of its panel is in view (a quarter, for one the reader started), and never two at once. A
-  primary pauses and returns to its first frame when its card stops being the active one, and the
-  reader's pause holds. Secondary tiles show their poster and play only when asked: a mouse or pen
-  resting on the tile plays a silent preview, and the play button in its corner starts and stops it
-  from the keyboard or by touch. The card's primary waits while a secondary plays, and a secondary
-  stops and shows its poster again when the pointer leaves, when most of it leaves the screen, when
-  another video starts or when the tab is hidden. A primary's video data loads only as its card
-  approaches the screen (`preload="none"` until then), and a secondary's only when asked. Reduced
-  motion, data saving and phones get posters only, with no autoplay and no hover preview; the buttons
-  still play a video on request.
+- Media (Version 2.0): every tile plays one of John's approved loops, cut to the frame from his time
+  ranges. Each manifest entry's `source` note records its range, any frames trimmed from an edge, and
+  its poster frame.
+
+  | Card | Tile | Loop | Approved range | Length | File |
+  | --- | --- | --- | --- | --- | --- |
+  | 01 | Primary | Costa Rica aftermovie | 1:29 to 1:30, then 1:40 to 1:53 | 13.56 s | 1280x720, 25 fps, 3.5 MB |
+  | 01 | Secondary | Trezor paper airplane | 0:00 to 0:12 | 12.01 s | 960x540, 1.9 MB |
+  | 01 | Secondary | Bolt Bus trailer | 0:01 to 0:12 | 10.93 s | 960x540, 1.9 MB |
+  | 02 | Primary | Hero animation | 0:10 to 0:22 | 11.68 s | 1600x900, 1.3 MB |
+  | 02 | Secondary | Website hero motion | unchanged | 13.50 s | 1280x718, 0.7 MB |
+  | 02 | Secondary | Architecture diagram | 0:03 to 0:14 | 11.00 s | 720x618, 30 fps, 0.3 MB |
+  | 03 | Primary | Slippage explainer | unchanged | 9.72 s | 1600x900, 1.1 MB |
+  | 03 | Secondary | Sui Fest interview | 0:20 to 0:32 | 12.01 s | 960x540, 1.5 MB |
+  | 03 | Secondary | Sui Summit presentation | 0:00 to 0:11 | 11.01 s | 960x446, 0.5 MB |
+
+  Four edges are trimmed, each by the fewest frames that remove a neighboring shot or a transition:
+  the first four frames and the last frame of the Costa Rica opening range and the first six of its
+  second range (neighboring shots), the first two frames of the Bolt Bus range (a flash of the previous
+  title card), and the last eight frames of the hero range (the start of the slide into the next
+  scene, so the loop now ends on the settled panel). Nothing is extended or substituted. The Costa Rica
+  loop joins its two ranges with a cut, opens on the overhead pool shot, runs through the crew and the
+  creators to the sky, and loops back to the pool. The loops are H.264 (High profile) at CRF 22 to 29,
+  with x264's film or animation tuning, a keyframe every two seconds, no audio track, fast start and
+  no metadata, at the source's own frame rate (the variable-rate architecture recording at a steady
+  30). The Costa Rica primary is above the 3 MB working target at 3.5 MB because its water and foliage
+  soften visibly any lower (CRF 30 would save 0.4 MB). The masters stay outside the repository, and
+  `verify.mjs` fails on any tracked or shipped file over 25 MB or under a master's name.
+- Posters: each loop's poster is one frame extracted from the source at the loop's own crop and aspect
+  ratio (1600 px wide for the primaries, 960 for the secondaries, 720 for the architecture), served as a
+  lazy AVIF or WebP picture under the video, with the same fit and focus, so poster and loop fill the
+  tile identically: Costa Rica 1:29.32, the first sharp frame of the opening pool shot (its first
+  frames are motion blurred); Trezor 0:02.71, as the creator leaps for the pool; Bolt Bus 0:11.55, the
+  bus under its caption; Sui Fest 0:27.49, the captioned question; and the first frame of the hero,
+  architecture and presentation loops. The website hero motion and the slippage preview keep their
+  approved posters. No video carries a `poster` attribute, which browsers fetch at once.
+- The architecture loop is contained like the still it replaced: the whole frame, as tall as the panel
+  less a little room, centered on its own plate (`#0D1012`, the recording's background) with the same
+  hairline. The recording's framing matches the still's within a few pixels, so the diagram keeps its
+  scale and position and its labels read as before at every width. The presentation loop keeps the
+  still's framing (`focus` 30% 50%), so the slide's title stays whole where a narrower panel crops it.
+- Playback: every video sits on its poster in a frame of its own (`.card__frame`), invisible until its
+  first frame is on screen (`requestVideoFrameCallback`, else the `playing` event), when it fades in
+  over 0.18 seconds; whenever it stops it disappears again and returns to its first frame. Only the
+  active card's primary plays on its own, muted, looping and inline: on desktop, once its card has
+  reached its resting place in the stack (its sticky top) with at least 60% of its dominant panel in
+  view and clear of the next card; on tablets, once 60% of that panel is in view. Never two play at
+  once. A primary stops, back on its poster, when its card stops being the active one, and the reader's
+  pause holds. Secondary tiles show their poster and play only when asked: a mouse or pen resting on
+  the tile plays a silent preview from the loop's start, and the play button in its corner starts and
+  stops it from the keyboard or by touch. The card's primary waits on its current frame while a
+  secondary plays and resumes afterwards if its card is still active. A secondary stops, back on its
+  poster and first frame, when the pointer leaves, when most of it leaves the screen, when another
+  video starts or when the tab is hidden; a hidden tab pauses the primary too. A video that cannot load
+  keeps its poster, and its button goes. Data: a primary's video loads only as its card comes within a
+  screen of view; a secondary fetches its metadata once a request is likely (a mouse settling on its
+  card, rather than one carried across it by the scroll, or keyboard focus on its button) and the rest
+  only when it plays. Reduced motion, data saving and phones get posters only, with no autoplay and no
+  hover preview; the buttons still play a video on request.
 
 ### Work reel
 

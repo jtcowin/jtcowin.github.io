@@ -256,6 +256,20 @@ if (positions.some((x) => x < 0) || positions.some((x, i) => i > 0 && x < positi
   failures.push('[claim] trust bar must list its seven entries in the approved order');
 }
 if (/Sui Summit/.test(bar)) failures.push('[claim] Sui Summit was removed from the trust bar');
+// Version 2.0: every entry shows its own logo file. Ambur Marketplace uses the
+// supplied SVG exactly as delivered (a vector, never redrawn or recolored in
+// the file: the bar's monochrome treatment and its optical sizing are CSS),
+// sized and raised by its logos.json `optical` values so its capitals share
+// the cap height and baseline of Bolt Liquidity beside Archway.
+const barImgs = [...bar.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+if (barImgs.length !== barOrder.length || /logobar__wordmark/.test(bar)) failures.push(`[claim] all seven trust-bar entries must show their logo files (${barImgs.length} images)`);
+const amburImg = barImgs.find((t) => /\balt="Ambur Marketplace"/.test(t)) || '';
+const amburSrc = (amburImg.match(/\bsrc="([^"]+)"/) || [, ''])[1];
+const amburFile = path.join(root, 'src/assets/logos/ambur-marketplace.svg');
+if (!/\/ambur-marketplace\.[\w-]+\.svg$/.test(amburSrc)) failures.push('[claim] Ambur Marketplace must use its supplied SVG (src/assets/logos/ambur-marketplace.svg) as a vector image');
+else if (!fs.existsSync(amburFile) || !fs.readFileSync(path.join(dist, amburSrc.replace(BASE, ''))).equals(fs.readFileSync(amburFile))) failures.push('[claim] the Ambur logo must ship byte for byte as supplied');
+if (!fs.existsSync(amburFile) || !/viewBox="0 0 2022\.59 421\.513"/.test(fs.readFileSync(amburFile, 'utf8'))) failures.push('[claim] src/assets/logos/ambur-marketplace.svg must be the supplied artwork, unaltered');
+if (!/--logo-scale: 0?\.\d+; --logo-shift: -0?\.\d+/.test(amburImg)) failures.push('[claim] the Ambur logo must carry its optical sizing (logos.json `optical`)');
 const ruleAt = aboutHtml.indexOf('class="about__rule"');
 const barAt = aboutHtml.indexOf('class="logobar');
 if (ruleAt < 0 || barAt < ruleAt) failures.push('[claim] the lower rule and then the trust bar must close the About section');
@@ -349,51 +363,82 @@ approvedCards.forEach(([title, sub, href], i) => {
   if (figures.length) failures.push(`[claim] card ${i + 1} must leave its metrics to the case-study page (found ${figures.join(', ')})`);
   if (/1\.25M/.test(visible) && !/Approximately 1\.25M impressions/.test(visible)) failures.push('[claim] the creator card may show only "Approximately 1.25M impressions"');
 });
-// Every card video: muted, inline, looping, a poster, nothing loaded until
+// Every card video (Version 2.0): muted, inline, looping, nothing loaded until
 // needed, no player controls or autoplay in the HTML (the script decides what
 // plays), an accessible name, and its own labeled play and pause control. Each
 // is either its card's primary (data-card-video) or a secondary tile
-// (data-card-secondary).
+// (data-card-secondary), and each sits in a frame on its poster: a lazy,
+// responsive picture of the loop at the loop's own crop, decorative since the
+// video carries the description, used instead of the poster attribute (which
+// browsers fetch at once). The video stays invisible until it plays, so the
+// poster holds the tile without JavaScript and when a video cannot load.
 const workVideos = workHtml.match(/<video\b[^>]*>/g) || [];
 for (const video of workVideos) {
-  for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'poster="', 'aria-label="']) {
+  for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'aria-label="']) {
     if (!video.includes(attr)) failures.push(`[claim] a card video is missing ${attr}`);
   }
   if (/\b(?:controls|autoplay)\b/.test(video)) failures.push('[claim] a card video must not show player controls or autoplay from the HTML');
-  if (/\bdata-card-video\b/.test(video) === /\bdata-card-secondary\b/.test(video)) failures.push('[claim] each card video must be either its card\'s primary (data-card-video) or a secondary tile (data-card-secondary)');
+  if (/\bposter=/.test(video)) failures.push('[claim] a card video takes its poster from the lazy picture beneath it, never the eagerly fetched poster attribute');
+  if (/\bdata-card-video\b/.test(video) === /\bdata-card-secondary\b/.test(video)) failures.push("[claim] each card video must be either its card's primary (data-card-video) or a secondary tile (data-card-secondary)");
 }
 const workToggles = workHtml.match(/<button\b[^>]*\bdata-card-toggle\b[^>]*>/g) || [];
 if (workToggles.length !== workVideos.length || workToggles.some((t) => !/aria-label="(?:Play|Pause) video: [^"]+"/.test(t))) {
   failures.push(`[claim] every card video needs its own labeled play and pause control (${workToggles.length} controls for ${workVideos.length} videos)`);
 }
-// Select Work media (Version 1.9 update). Case Study 01 keeps its typographic
-// stand-ins until assets are approved. Case Study 02: the hero animation
-// preview is the primary video, the website hero motion the secondary tile,
-// and the architecture still the third tile, contained whole on its own plate
-// (the architecture video is kept for the case-study page). Case Study 03: the
-// slippage explainer preview is the primary video, then the Sui Fest interview
-// stand-in (until its still is supplied) and the Sui Summit presentation still.
+const frames = workHtml.match(/<div class="card__frame"[\s\S]*?<\/video>\s*<\/div>/g) || [];
+const posterImgOf = (html) => (html.match(/<img\b[^>]*\bclass="card__img card__poster"[^>]*>/) || [''])[0];
+if (
+  frames.length !== workVideos.length ||
+  frames.some((f) => {
+    const img = posterImgOf(f);
+    return !img || !/<\/picture>\s*<video\b/.test(f) || !/\balt(?:="")?[\s>]/.test(img) || !/\bloading="lazy"/.test(img) || !/\bsrcset="/.test(img);
+  })
+) {
+  failures.push(`[claim] every card video must sit in its frame on a lazy, responsive poster picture with empty alt text (${frames.length} frames for ${workVideos.length} videos)`);
+}
+if (!rulesFor(/^\.card__video(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => /opacity:\s*0\b/.test(r.body)) || !rulesFor(/^\.card__video(?:\[data-astro-cid-[\w-]+\])?\[data-shown\]/).some((r) => /opacity:\s*1\b/.test(r.body))) {
+  failures.push('[claim] a card video must stay invisible over its poster until it plays (opacity 0, then 1 once shown)');
+}
+const playback = scriptsText.join('\n');
+for (const token of ['data-shown', 'source:last-of-type', 'requestVideoFrameCallback', 'visibilitychange', 'prefers-reduced-motion: reduce', '(hover: hover) and (pointer: fine)']) {
+  if (!playback.includes(token)) failures.push(`[claim] the card playback script is missing "${token}" (poster, failure, frame, tab, motion or pointer guard)`);
+}
+// Select Work media (Version 2.0): every tile is a video on John's approved
+// loops. Case Study 01: the Costa Rica aftermovie primary, then the Trezor
+// paper airplane and the Bolt Bus trailer. Case Study 02: the hero animation
+// loop, the unchanged website hero motion, and the architecture diagram loop,
+// contained whole on its own plate like the still it replaced. Case Study 03:
+// the unchanged slippage preview, then the Sui Fest interview and the opening
+// of the Sui Summit presentation (cropped to keep the slide's title whole).
+// The typographic stand-ins remain only as a fallback and render nowhere.
 const panelsOf = (c) => (c.match(/<div class="card__media"[\s\S]*/) || [''])[0].split(/(?=<div class="card__panel )/).slice(1);
 const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
-const imgSrcOf = (html) => (html.match(/<img\b[^>]*\bsrc="([^"]+)"/) || [, ''])[1];
-const wordsOf = (html) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
-const [cs1 = [], cs2 = [], cs3 = []] = cardsHtml.map(panelsOf);
-if (cs1.length !== 3 || /<video\b|class="card__img"/.test(cardsHtml[0] || '') || !/fb--places/.test(cs1[0]) || !/fb--metric/.test(cs1[1]) || !/fb--logos/.test(cs1[2])) {
-  failures.push('[claim] Case Study 01 keeps its typographic stand-ins (the places, the aggregate, the co-sponsors), with no photograph or video until assets are approved');
+const CARD_MEDIA = [
+  ['creator-costa-rica-aftermovie-loop.mp4', 'creator-trezor-paper-airplane-loop.mp4', 'creator-bolt-bus-trailer-loop.mp4'],
+  ['bolt-hero-animation-loop.mp4', 'bolt-website-hero-motion.mp4', 'bolt-architecture-diagram-loop.mp4'],
+  ['bolt-slippage-explainer-preview.mp4', 'suifest-interview-loop.mp4', 'sui-summit-max-presentation-loop.mp4'],
+];
+cardsHtml.map(panelsOf).forEach((panels, i) => {
+  CARD_MEDIA[i].forEach((name, n) => {
+    const panel = panels[n] || '';
+    const role = n === 0 ? 'data-card-video' : 'data-card-secondary';
+    if (!new RegExp(`\\b${role}\\b`).test(panel) || !sourcesOf(panel).includes(name)) {
+      failures.push(`[claim] card ${i + 1}, ${n === 0 ? 'its primary' : `secondary ${n}`}, must play ${name}`);
+    }
+  });
+});
+if (/class="fb[ "]/.test(cardsHtml.join(''))) failures.push('[claim] no typographic stand-in may render on the Select Work cards once their videos are approved');
+const [, cs2 = [], cs3 = []] = cardsHtml.map(panelsOf);
+if (!/^<div class="card__panel card__panel--side card__panel--contain" style="--plate: #[0-9a-f]{6}; --ratio: 1\.16\d\d"/.test(cs2[2] || '') || /object-position/.test(cs2[2] || '')) {
+  failures.push('[claim] the architecture loop must be contained whole on its plate, at its own aspect ratio, like the still it replaced');
 }
-if (!/\bdata-card-video\b/.test(cs2[0] || '') || !sourcesOf(cs2[0] || '').includes('bolt-hero-animation-preview.mp4')) failures.push('[claim] Case Study 02 must use the hero animation preview as its primary video');
-if (!/\bdata-card-secondary\b/.test(cs2[1] || '') || !sourcesOf(cs2[1] || '').includes('bolt-website-hero-motion.mp4')) failures.push('[claim] Case Study 02 must use the website hero motion as its secondary motion tile');
-if (!/^<div class="card__panel card__panel--side card__panel--contain"/.test(cs2[2] || '') || !/bolt-architecture-diagram/.test(imgSrcOf(cs2[2] || '')) || /<video\b|object-position/.test(cs2[2] || '')) {
-  failures.push('[claim] Case Study 02 must show the architecture still in its third tile, contained and uncropped');
-}
-if (!rulesFor(/\.card__panel--contain\b.*\.card__img\b/).some((r) => /object-fit:\s*contain/.test(r.body))) failures.push('[claim] a contained card tile must use object-fit: contain');
-if (!/\bdata-card-video\b/.test(cs3[0] || '') || !sourcesOf(cs3[0] || '').includes('bolt-slippage-explainer-preview.mp4')) failures.push('[claim] Case Study 03 must use the slippage explainer preview as its primary video');
-if (wordsOf((/<div class="fb fb--event"[\s\S]*?<\/div>/.exec(cs3[1] || '') || [''])[0]) !== 'Sui Fest interviews TOKEN2049 Singapore 2025') failures.push('[claim] Case Study 03 must hold the Sui Fest interview stand-in in its second tile');
-if (!/sui-summit-presentation/.test(imgSrcOf(cs3[2] || '')) || /<video\b/.test(cs3[2] || '')) failures.push('[claim] Case Study 03 must show the Sui Summit presentation still in its third tile');
-// The card videos are web previews made for the homepage, never the original
-// masters (the 181 MB hero animation and the 411 MB slippage explainer stay
-// outside the repository): each under 4 MB, a primary running 8 to 12.5
-// seconds, a secondary no more than 15.
+if (!rulesFor(/\.card__panel--contain\b.*>\s*\.card__frame\b/).some((r) => /var\(--ratio/.test(r.body) && /var\(--room\)/.test(r.body))) failures.push('[claim] a contained video frame must take its loop\'s aspect ratio and the plate\'s room');
+if (!/object-position: 30% 50%/.test(posterImgOf(cs3[2] || '')) || !/<video\b[^>]*object-position: 30% 50%/.test(cs3[2] || '')) failures.push('[claim] the Sui Summit tile must keep the slide\'s title in view (30% 50%) on its poster and its loop alike');
+// The card videos are web derivatives made for the homepage, never the
+// original masters (which stay outside the repository): silent (no audio
+// track), H.264 in MP4 with the index first so they start at once, each at its
+// approved length, a primary under 4 MB and a secondary under 2 MB, and each
+// poster at its loop's aspect ratio, so poster and loop share one crop.
 const mp4Seconds = (file) => {
   const buf = fs.readFileSync(file);
   const i = buf.indexOf('mvhd');
@@ -403,25 +448,88 @@ const mp4Seconds = (file) => {
   const duration = v1 ? Number(buf.readBigUInt64BE(i + 28)) : buf.readUInt32BE(i + 20);
   return scale ? duration / scale : NaN;
 };
+const mp4Facts = (file) => {
+  const buf = fs.readFileSync(file);
+  const top = [];
+  let moov = null;
+  for (let off = 0; off + 8 <= buf.length; ) {
+    let size = buf.readUInt32BE(off);
+    const type = buf.toString('latin1', off + 4, off + 8);
+    if (size === 1) size = Number(buf.readBigUInt64BE(off + 8));
+    if (size === 0) size = buf.length - off;
+    if (size < 8) break;
+    top.push(type);
+    if (type === 'moov') moov = buf.subarray(off, off + size);
+    off += size;
+  }
+  const facts = { top, handlers: [], width: 0, height: 0, avc: false };
+  if (!moov) return facts;
+  for (let i = moov.indexOf('hdlr'); i >= 0; i = moov.indexOf('hdlr', i + 4)) facts.handlers.push(moov.toString('latin1', i + 12, i + 16));
+  for (let i = moov.indexOf('tkhd'); i >= 0 && !facts.width; i = moov.indexOf('tkhd', i + 4)) {
+    const at = i + 8 + (moov[i + 4] === 1 ? 32 : 20) + 52;
+    facts.width = moov.readUInt32BE(at) / 65536;
+    facts.height = moov.readUInt32BE(at + 4) / 65536;
+  }
+  facts.avc = moov.indexOf('avc1') >= 0;
+  return facts;
+};
+const imageSize = (file) => {
+  const b = fs.readFileSync(file);
+  if (b.toString('latin1', 1, 4) === 'PNG') return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
+  for (let i = 2; i + 9 < b.length; ) {
+    if (b[i] !== 0xff) { i += 1; continue; }
+    const m = b[i + 1];
+    if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return { width: b.readUInt16BE(i + 7), height: b.readUInt16BE(i + 5) };
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  return null;
+};
+// Seconds per loop, as cut from the approved ranges (see each manifest entry's
+// source note for the frames trimmed from an edge, and why).
+const LOOP_SECONDS = {
+  'creator-costa-rica-aftermovie-loop.mp4': 13.56,
+  'creator-trezor-paper-airplane-loop.mp4': 12.01,
+  'creator-bolt-bus-trailer-loop.mp4': 10.93,
+  'bolt-hero-animation-loop.mp4': 11.68,
+  'bolt-website-hero-motion.mp4': 13.5,
+  'bolt-architecture-diagram-loop.mp4': 11.0,
+  'bolt-slippage-explainer-preview.mp4': 9.72,
+  'suifest-interview-loop.mp4': 12.01,
+  'sui-summit-max-presentation-loop.mp4': 11.01,
+};
+const cardManifest = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets;
 cardsHtml.forEach((c, i) => {
   for (const video of c.match(/<video\b[\s\S]*?<\/video>/g) || []) {
     const primary = /\bdata-card-video\b/.test(video);
-    for (const name of sourcesOf(video)) {
+    for (const name of sourcesOf(video).filter((n) => n.endsWith('.mp4'))) {
       const file = path.join(root, 'public/media', name);
       if (!fs.existsSync(file)) {
         failures.push(`[asset] card ${i + 1}: public/media/${name} not found`);
         continue;
       }
       const mb = fs.statSync(file).size / 1048576;
-      if (mb > 4) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(1)} MB; a card video stays under 4 MB`);
-      if (!name.endsWith('.mp4')) continue;
+      if (mb > (primary ? 4 : 2)) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(2)} MB; a ${primary ? 'primary stays under 4' : 'secondary stays under 2'} MB`);
       const sec = mp4Seconds(file);
-      if (primary ? !(sec >= 8 && sec <= 12.5) : !(sec > 0 && sec <= 15)) {
-        failures.push(`[asset] card ${i + 1}: ${name} runs ${sec.toFixed(1)} s (${primary ? 'a primary preview runs 8 to 12.5 s' : 'a secondary tile runs 15 s at most'})`);
+      const want = LOOP_SECONDS[name];
+      if (!want) failures.push(`[asset] card ${i + 1}: ${name} is not one of the approved loops`);
+      else if (!(Math.abs(sec - want) <= 0.06)) failures.push(`[asset] card ${i + 1}: ${name} runs ${sec.toFixed(2)} s; its approved loop runs ${want} s`);
+      const f = mp4Facts(file);
+      if (f.handlers.includes('soun')) failures.push(`[asset] card ${i + 1}: ${name} carries an audio track; card videos are silent files`);
+      if (!f.avc) failures.push(`[asset] card ${i + 1}: ${name} must be H.264 (avc1) for every browser`);
+      if (!(f.top.indexOf('moov') >= 0 && f.top.indexOf('moov') < f.top.indexOf('mdat'))) failures.push(`[asset] card ${i + 1}: ${name} must keep its index (moov) before its data (faststart)`);
+      const entry = cardManifest.find((a) => a.type === 'video' && a.file === name);
+      const poster = entry?.poster ? path.join(root, 'src/assets', entry.poster) : null;
+      const size = poster && fs.existsSync(poster) && /\.(?:jpe?g|png)$/i.test(poster) ? imageSize(poster) : null;
+      if (!size) failures.push(`[asset] card ${i + 1}: ${name} needs a poster in its manifest entry`);
+      else if (f.width && Math.abs(size.width / size.height - f.width / f.height) > 0.01 * (f.width / f.height)) {
+        failures.push(`[asset] card ${i + 1}: the poster for ${name} is ${size.width}x${size.height}; it must share the loop's ${f.width}x${f.height} aspect ratio`);
       }
     }
   }
 });
+for (const retired of ['bolt-hero-animation-preview.mp4']) {
+  if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was retired in Version 2.0 and must not ship`);
+}
 // Select Work (v1.9): on tall desktop screens the title and intro stay pinned
 // beneath the header while the cards park under them, and both release
 // together after the last card. It is an enhancement only: the inline head
@@ -810,9 +918,11 @@ if (unused.length) notes.push(`[manifest] unreferenced asset ids (fine, but tidy
 // ------------------------------------------------------ 4. hygiene
 // No Finder metadata ships or is tracked, and nothing oversized (such as the
 // full-length explainer video) reaches dist. The original video masters (the
-// hero animation and the slippage explainer) never enter the site under their
-// own names either; only the web previews made from them do.
-const MASTER_NAME = /hero animation|slippage explained|bolt explainers/i;
+// hero animation, the slippage explainer, and the Version 2.0 sources: the
+// creator videos, the architecture recording, Sui Fest and the Sui Summit
+// presentation) never enter the site under their own names either; only the
+// web loops made from them do.
+const MASTER_NAME = /hero animation|slippage explained|bolt explainers|aftermovie\.|paper airplane|bolt bus trailer|architecture diagram video|max presentation|^suifest\.mp4$/i;
 for (const f of [...files, ...walk(path.join(root, 'public'))]) {
   if (MASTER_NAME.test(path.basename(f))) failures.push(`[hygiene] ${path.relative(root, f)} looks like an original video master; only its web preview belongs in the site`);
 }
