@@ -173,7 +173,7 @@ To replace a placeholder with a real asset:
    controls. The exceptions are the Select Work card videos (see Select Work below): a card's primary
    (`card.media.motion`) plays muted, without controls, only while its card is active, and a
    secondary tile (a video id in `card.media.side`) plays only when asked. Card videos are short,
-   silent web loops cut from approved ranges (a primary under 4 MB, a secondary under 2 MB, each held
+   silent web loops cut from approved ranges (a primary under 4 MiB, a secondary under 2 MiB, each held
    to its approved length by `verify.mjs`), each with a poster cut from the loop at its own aspect
    ratio; the original masters stay outside the repository.
 3. **Galleries** (`type: gallery`): add objects to `items`: `{ "file": "work/creator-campaigns/mykonos-1.jpg", "alt": "…", "credit": null }`.
@@ -366,7 +366,7 @@ empty alt text and no `poster` attribute, stays invisible until it plays, and ea
 approved loops in order, with no typographic stand-in rendered; the architecture loop is contained on
 its plate at its own aspect ratio, and the presentation loop keeps its 30% 50% framing on poster and
 video alike; each loop runs its approved length (within 0.06 seconds), is H.264 with its index first and
-no audio track, stays under 4 MB as a primary and 2 MB as a secondary, and has a poster at its own
+no audio track, stays under 4 MiB as a primary and 2 MiB as a secondary, and has a poster at its own
 aspect ratio; the playback script keeps its poster, failure, frame, tab, motion and pointer guards; the
 retired hero preview ships nowhere, and no file under a master's name (the Version 2.0 sources
 included) is tracked or shipped; and the trust bar shows seven logo files, Ambur Marketplace as the
@@ -462,14 +462,14 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 
   | Card | Tile | Loop | Approved range | Length | File |
   | --- | --- | --- | --- | --- | --- |
-  | 01 | Primary | Costa Rica aftermovie | 1:29 to 1:30, then 1:40 to 1:53 | 13.56 s | 1280x720, 25 fps, 3.5 MB |
+  | 01 | Primary | Costa Rica aftermovie | 1:29 to 1:30, then 1:40 to 1:53 | 13.56 s | 1280x720, 25 fps, 3.6 MB |
   | 01 | Secondary | Trezor paper airplane | 0:00 to 0:12 | 12.01 s | 960x540, 1.9 MB |
-  | 01 | Secondary | Bolt Bus trailer | 0:01 to 0:12 | 10.93 s | 960x540, 1.9 MB |
-  | 02 | Primary | Hero animation | 0:10 to 0:22 | 11.68 s | 1600x900, 1.3 MB |
+  | 01 | Secondary | Bolt Bus trailer | 0:01 to 0:12 | 10.93 s | 960x540, 2.0 MB |
+  | 02 | Primary | Hero animation | 0:10 to 0:22 | 11.68 s | 1600x900, 1.4 MB |
   | 02 | Secondary | Website hero motion | unchanged | 13.50 s | 1280x718, 0.7 MB |
   | 02 | Secondary | Architecture diagram | 0:03 to 0:14 | 11.00 s | 720x618, 30 fps, 0.3 MB |
-  | 03 | Primary | Slippage explainer | unchanged | 9.72 s | 1600x900, 1.1 MB |
-  | 03 | Secondary | Sui Fest interview | 0:20 to 0:32 | 12.01 s | 960x540, 1.5 MB |
+  | 03 | Primary | Slippage explainer | unchanged | 9.72 s | 1600x900, 1.2 MB |
+  | 03 | Secondary | Sui Fest interview | 0:20 to 0:32 | 12.01 s | 960x540, 1.6 MB |
   | 03 | Secondary | Sui Summit presentation | 0:00 to 0:11 | 11.01 s | 960x446, 0.5 MB |
 
   Four edges are trimmed, each by the fewest frames that remove a neighboring shot or a transition:
@@ -481,9 +481,11 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   creators to the sky, and loops back to the pool. The loops are H.264 (High profile) at CRF 22 to 29,
   with x264's film or animation tuning, a keyframe every two seconds, no audio track, fast start and
   no metadata, at the source's own frame rate (the variable-rate architecture recording at a steady
-  30). The Costa Rica primary is above the 3 MB working target at 3.5 MB because its water and foliage
-  soften visibly any lower (CRF 30 would save 0.4 MB). The masters stay outside the repository, and
-  `verify.mjs` fails on any tracked or shipped file over 25 MB or under a master's name.
+  30). The Costa Rica primary is above the 3 MB working target at 3.6 MB because its water and foliage
+  soften visibly any lower (CRF 30 would save 0.4 MB). Sizes here are decimal megabytes, as Finder
+  shows them; `verify.mjs` holds primaries under 4 MiB and secondaries under 2 MiB. The masters stay
+  outside the repository, and `verify.mjs` fails on any tracked or shipped file over 25 MB or under a
+  master's name.
 - Posters: each loop's poster is one frame extracted from the source at the loop's own crop and aspect
   ratio (1600 px wide for the primaries, 960 for the secondaries, 720 for the architecture), served as a
   lazy AVIF or WebP picture under the video, with the same fit and focus, so poster and loop fill the
