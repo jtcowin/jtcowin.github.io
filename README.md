@@ -490,9 +490,10 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   ratio (1600 px wide for the primaries, 960 for the secondaries, 720 for the architecture), served as a
   lazy AVIF or WebP picture under the video, with the same fit and focus, so poster and loop fill the
   tile identically: Costa Rica 1:29.32, the first sharp frame of the opening pool shot (its first
-  frames are motion blurred); Trezor 0:02.71, as the creator leaps for the pool; Bolt Bus 0:11.55, the
-  bus under its caption; Sui Fest 0:27.49, the captioned question; and the first frame of the hero,
-  architecture and presentation loops. The website hero motion and the slippage preview keep their
+  frames are motion blurred); Trezor 0:00.38, John signaling to the camera as the opening reveal widens;
+  Bolt Bus 0:11.55, the bus under its caption; Sui Fest 0:27.49, the captioned question; the Sui Summit
+  presentation 0:01.92, the speaker facing the room rather than turned toward the slide; and the first
+  frame of the hero and architecture loops. The website hero motion and the slippage preview keep their
   approved posters. No video carries a `poster` attribute, which browsers fetch at once.
 - The architecture loop is contained like the still it replaced: the whole frame, as tall as the panel
   less a little room, centered on its own plate (`#0D1012`, the recording's background) with the same
