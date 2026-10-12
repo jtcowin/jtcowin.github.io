@@ -1,0 +1,127 @@
+---
+/**
+ * The opening of a work chapter (Technical Product Marketing, V1.1: 04 Website
+ * and 05 Technical documentation): the chapter's name, a sparse metadata row
+ * (label over value, four across on wide screens, two on mid-size screens,
+ * one on phones) and one short paragraph on John's contribution, then the
+ * chapter's one dominant visual (the slot), which the chapter lays out itself.
+ *
+ * In the values, **text** sets a name in bold, as the brief does.
+ */
+interface Props {
+  id: string;
+  title: string;
+  meta: Array<{ label: string; value: string[] }>;
+  contribution: string;
+  /** The metadata columns on wide screens, as a grid-template-columns value. */
+  columns: string;
+  surface: 'light' | 'soft' | 'light-return';
+  class?: string;
+}
+
+const { id, title, meta, contribution, columns, surface, class: className } = Astro.props;
+const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong: i % 2 === 1 }));
+---
+
+<section class:list={['tpm-case', className]} data-surface={surface} aria-labelledby={id}>
+  <div class="container tpm-case__intro">
+    <h2 id={id} class="display tpm-case__title">{title}</h2>
+    <dl class="tpm-meta" style={`--meta-columns: ${columns}`}>
+      {
+        meta.map((item) => (
+          <div class="tpm-meta__item">
+            <dt class="tpm-meta__label">{item.label}</dt>
+            <dd class="tpm-meta__value">
+              {item.value.map((para) => (
+                <p>{rich(para).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
+              ))}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="tpm-case__contribution">{contribution}</p>
+  </div>
+  <slot />
+</section>
+
+<style>
+  .tpm-case {
+    padding-block: var(--section-y) calc(var(--section-y) * 1.1);
+  }
+
+  .tpm-case__intro {
+    display: grid;
+    gap: clamp(1.75rem, 1.25rem + 1.6vw, 2.75rem);
+  }
+
+  .tpm-case__title {
+    font-size: var(--text-2xl);
+  }
+
+  /* ---- the metadata row ---------------------------------------------------------- */
+  .tpm-meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem clamp(1.5rem, 3vw, 3rem);
+    margin: 0;
+  }
+
+  .tpm-meta__item {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .tpm-meta__label {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .tpm-meta__value {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .tpm-meta__value p {
+    margin: 0;
+  }
+
+  .tpm-meta__value strong {
+    font-weight: 700;
+    color: var(--heading);
+  }
+
+  @media (min-width: 48rem) {
+    .tpm-meta {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 75rem) {
+    .tpm-meta {
+      grid-template-columns: var(--meta-columns);
+    }
+  }
+
+  /* ---- the contribution ------------------------------------------------------------ */
+  .tpm-case__contribution {
+    max-width: 46rem;
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+</style>

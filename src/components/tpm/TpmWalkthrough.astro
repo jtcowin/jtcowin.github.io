@@ -1,0 +1,116 @@
+---
+/**
+ * A walkthrough's screen contents (Technical Product Marketing, V1.1): the
+ * poster, the silent recording over it and its one control, filling whatever
+ * frame the chapter draws around them (a desktop display for the website, a
+ * browser frame for the documentation). The chapter's script runs it with
+ * Walkthrough (tpm-motion.ts): it plays once when the frame is well inside
+ * the viewport, pauses when it leaves, and holds its last frame; the control
+ * pauses, plays and replays. The recording is fetched only as the frame comes
+ * near, and a lighter encode serves phones.
+ */
+import { Picture } from 'astro:assets';
+import { getAsset, resolveImage } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from '@components/Icon.astro';
+
+interface Props {
+  media: string;
+  widths: number[];
+  sizes: string;
+}
+
+const { media: id, widths, sizes } = Astro.props;
+const media = getAsset(id);
+const poster = resolveImage(media);
+const src = (file: string | null | undefined) => (file ? withBase(`/media/${file}`) : null);
+const large = src(media.file);
+const small = src(media.fileSmall);
+---
+
+<div class="tpm-walk" style={media.plate ? `--plate: ${media.plate}` : undefined}>
+  {poster && <Picture src={poster} alt="" widths={widths} sizes={sizes} formats={['avif', 'webp']} loading="lazy" class="tpm-walk__poster" />}
+  <video class="tpm-walk__video" muted playsinline preload="none" aria-label={media.alt}>
+    {small && <source src={small} media="(max-width: 47.99rem)" type="video/mp4" />}
+    {large && <source src={large} type="video/mp4" />}
+  </video>
+  <button type="button" class="tpm-walk__toggle" data-walk-toggle data-label={media.label} aria-label={`Play video: ${media.label}`} hidden>
+    <span class="tpm-walk__icon tpm-walk__icon--play"><Icon name="play" size={12} /></span>
+    <span class="tpm-walk__icon tpm-walk__icon--pause"><Icon name="pause" size={12} /></span>
+    <span class="tpm-walk__icon tpm-walk__icon--replay"><Icon name="replay" size={15} /></span>
+  </button>
+</div>
+
+<style>
+  .tpm-walk {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: var(--plate, #0f1113);
+  }
+
+  .tpm-walk :global(picture),
+  .tpm-walk__poster,
+  .tpm-walk__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Invisible until its first frame is on screen, then over the poster for
+     good: when it ends it keeps its last frame. */
+  .tpm-walk__video {
+    opacity: 0;
+    background: transparent;
+  }
+
+  .tpm-walk__video[data-shown] {
+    opacity: 1;
+    transition: opacity 0.4s var(--ease-out);
+  }
+
+  /* ---- the control: pause, play, replay ----------------------------------------- */
+  .tpm-walk__toggle {
+    position: absolute;
+    right: clamp(0.5rem, 1.4%, 1rem);
+    bottom: clamp(0.5rem, 1.4%, 1rem);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid rgba(237, 240, 239, 0.35);
+    border-radius: 50%;
+    background: rgba(13, 15, 16, 0.62);
+    color: var(--c-fog);
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      opacity var(--dur) var(--ease-out);
+  }
+
+  .tpm-walk__toggle:hover {
+    background: rgba(13, 15, 16, 0.85);
+  }
+
+  .tpm-walk__toggle:focus-visible {
+    outline: 2px solid var(--c-fog);
+    outline-offset: 2px;
+  }
+
+  .tpm-walk__icon {
+    display: none;
+    place-items: center;
+  }
+
+  .tpm-walk__toggle:not([data-state]) .tpm-walk__icon--play,
+  .tpm-walk__toggle[data-state='paused'] .tpm-walk__icon--play,
+  .tpm-walk__toggle[data-state='playing'] .tpm-walk__icon--pause,
+  .tpm-walk__toggle[data-state='ended'] .tpm-walk__icon--replay {
+    display: grid;
+  }
+</style>

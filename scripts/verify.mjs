@@ -853,36 +853,37 @@ for (const slug of ['creator-campaigns', 'events-video']) {
 }
 
 // ------------------------------------------------ Technical Product Marketing
-// Version 1 checkpoint (John's TPM V1 concept): the case study's own page,
-// through 01 Hero, 02 Foundation and 03 Shared Product Language, whose line
-// lands as the frame of the first website visual, then Contact and the
-// footer. Copy is checked word for word against the approved concept.
+// Version 1.1 (John's TPM V1.1 brief, October 12, 2026): the case study's own
+// page through 01 Hero, 02 Foundation, 03 the transitional statement, 04
+// Website and 05 Technical documentation, then Contact and the footer. Copy
+// is checked word for word against the brief and the approved concept.
 const tpmPage = fs.readFileSync(path.join(dist, 'work/technical-marketing/index.html'), 'utf8');
 const tpmData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/tpm.json'), 'utf8'));
-const tpmText = (re) => textOf(((tpmPage.match(re) || [, ''])[1] || '').replace(/[‘’]/g, "'"));
+const norm = (t) => (t || '').replace(/[‘’]/g, "'");
+const tpmText = (re) => textOf(norm(((tpmPage.match(re) || [, ''])[1] || '')));
 // Text with a space at every tag, for runs of separate elements.
 const spaced = (html) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+// A scoped rule's selector, with Astro's data-astro-cid attributes taken out.
+const bare = (sel) => sel.replace(/\[data-astro-cid-[^\]]*\]/g, '').replace(/:where\([^)]*\)/g, '');
+const tpmRules = (re) => CSS_RULES.filter((r) => re.test(bare(r.sel)));
 const TPM = {
   kicker: '02 / Technical Product Marketing',
   headline: 'Building the system behind the message.',
   copy: "I built the strategic foundation that turned Bolt Liquidity's technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
   scope: ['Research', 'Positioning', 'Messaging', 'Claims Governance', 'Technical Documentation', 'Web Content', 'Campaign Direction'],
-  foundationHeadline: 'Before the message came the foundation.',
+  foundationLines: ['Before the message', 'came the foundation.'],
   foundationCopy: 'Before Bolt Liquidity could be explained externally, it needed a shared internal language. I turned stakeholder interviews and product research into the positioning, claims, proof points, and narrative architecture that guided every public-facing expression.',
-  phrase: 'Shared product language',
-  expressions: ['Website', 'Documentation', 'Articles', 'Campaigns'],
+  statement: 'The strategy did not stay in a document. It became the website, technical documentation, articles, campaigns, and content that brought the product to market.',
 };
 if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not use the shared case-study hero (cs-hero)');
+
+// ---- 01 Hero: the approved copy, the loop on its poster, the scope centered.
 if (tpmText(/<p class="eyebrow tpm-hero__kicker[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.kicker) failures.push(`[tpm] the kicker must read "${TPM.kicker}" (capitals by CSS)`);
 if (tpmText(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) !== TPM.headline) failures.push(`[tpm] the headline must read "${TPM.headline}"`);
 if (tpmText(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.copy) failures.push('[tpm] the hero must carry the approved supporting sentence');
 const scopeItems = [...((tpmPage.match(/<ul class="tpm-hero__scope[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
-if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the scope line must be ${TPM.scope.join(' · ')} (found ${scopeItems.join(' · ')})`);
-if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned hero carries no "My role" line');
-// The hero loop: silent, muted, inline, looping, nothing fetched by the HTML
-// alone, no player controls or autoplay attribute (the script plays it after
-// the entrance), an accessible name, a lighter source for phones listed
-// first, and the designed poster as an eager, responsive picture beneath it.
+if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the scope line must be all seven areas, ${TPM.scope.join(' · ')} (found ${scopeItems.join(' · ')})`);
+if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned page carries no "My role" line');
 const tpmHeroHtml = (tpmPage.match(/<section class="tpm-hero"[\s\S]*?<\/section>/) || [''])[0];
 const heroVideo = (tpmHeroHtml.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
 const heroVideoTag = (heroVideo.match(/<video\b[^>]*>/) || [''])[0];
@@ -894,10 +895,8 @@ if (heroSources.length !== 2 || !/bolt-in-60-seconds-hero-loop-720\.mp4/.test(he
 }
 const heroPoster = (tpmHeroHtml.match(/<img\b[^>]*class="tpm-screen__poster"[^>]*>/) || [''])[0];
 if (!heroPoster || !/\balt(?:="")?[\s>]/.test(heroPoster) || !/loading="eager"/.test(heroPoster) || !/fetchpriority="high"/.test(heroPoster) || !/\bsrcset="/.test(heroPoster)) failures.push('[tpm] the hero poster must be an eager, high-priority, responsive picture with empty alt text');
-const toggles = tpmPage.match(/<button\b[^>]*\bdata-loop-toggle\b[^>]*>/g) || [];
-if (toggles.length !== 2 || toggles.some((t) => !/\bhidden\b/.test(t) || !/aria-label="Play video: [^"]+"/.test(t))) failures.push('[tpm] each loop (the hero and the website) needs its own labeled control, hidden until its script runs');
-// The loop files: web derivatives of bolt-in-60-seconds, frames 0 to 529
-// (22.1 seconds), H.264 with the index first, no audio track.
+const loopToggles = tpmPage.match(/<button\b[^>]*\bdata-loop-toggle\b[^>]*>/g) || [];
+if (loopToggles.length !== 1 || !/\bhidden\b/.test(loopToggles[0]) || !/aria-label="Play video: [^"]+"/.test(loopToggles[0])) failures.push('[tpm] the hero loop needs its one labeled control, hidden until its script runs');
 for (const [name, w, h, mb] of [['bolt-in-60-seconds-hero-loop.mp4', 1920, 1080, 6], ['bolt-in-60-seconds-hero-loop-720.mp4', 1280, 720, 2.5]]) {
   const file = path.join(root, 'public/media', name);
   if (!fs.existsSync(file)) {
@@ -914,58 +913,169 @@ for (const [name, w, h, mb] of [['bolt-in-60-seconds-hero-loop.mp4', 1920, 1080,
   if (f.width !== w || f.height !== h) failures.push(`[tpm] ${name} is ${f.width}x${f.height}; expected ${w}x${h}`);
   if (size > mb) failures.push(`[tpm] ${name} is ${size.toFixed(2)} MB; it stays under ${mb} MB`);
 }
-const tpmPosterFile = path.join(root, 'src/assets/technical-marketing/bolt-in-60-seconds-hero-poster.jpg');
-const tpmPosterSize = fs.existsSync(tpmPosterFile) ? imageSize(tpmPosterFile) : null;
-if (!tpmPosterSize || tpmPosterSize.width !== 1920 || tpmPosterSize.height !== 1080) failures.push('[tpm] the hero poster must be the 1920x1080 reference frame');
-// 02: the entry, then the library: the six interviews as the source, then
-// the 16 foundation documents by their Linear titles and numbers (approved
-// by John before publishing), each with its category strip, its faded icon
-// and a one-line context, and nothing of any document's body.
+const posterAt = (name, w, h, what) => {
+  const file = path.join(root, 'src/assets/technical-marketing', name);
+  const size = fs.existsSync(file) ? imageSize(file) : null;
+  if (!size || size.width !== w || size.height !== h) failures.push(`[tpm] ${what} must be the ${w}x${h} ${name}`);
+};
+posterAt('bolt-in-60-seconds-hero-poster.jpg', 1920, 1080, 'the hero poster');
+// The entry state: the screen about half the window's width (50 to 56%) with
+// a cap, the scope line centered and balanced over its lines.
+const boxRules = tpmRules(/^\.tpm-hero__box$/).filter((r) => DESKTOP.test(r.at));
+const boxVw = boxRules.map((r) => Number((r.body.match(/width:\s*min\(\s*([\d.]+)vw/) || [])[1])).find((v) => v > 0);
+if (!(boxVw >= 50 && boxVw <= 56) || !boxRules.some((r) => /\d+(?:\.\d+)?rem/.test(r.body))) failures.push(`[tpm] the hero screen starts at about 50 to 56% of the window's width, with a maximum (found ${boxVw || 'none'})`);
+if (!tpmRules(/^\.tpm-hero__foot$/).some((r) => /text-align:\s*center/.test(r.body))) failures.push('[tpm] the scope line is centered on the page');
+if (!tpmRules(/^\.tpm-hero__scope$/).some((r) => /text-wrap:\s*balance/.test(r.body))) failures.push('[tpm] the scope line wraps into balanced lines');
+if (tpmRules(/^\.tpm-hero__scope/).some((r) => /font-size:\s*(?:clamp|calc|[\d.]+vw)/.test(r.body))) failures.push('[tpm] the scope line never shrinks its type to fit');
+
+// ---- 02 Foundation: a centered two-line opening, then twelve named documents
+// in the brief's order (display numbers 00 to 11, not their Linear numbers),
+// each with its own accent and its own icon, and one or two blank covers.
 const FOUNDATION = [
-  [null, 'Stakeholder Interviews'], ['01', 'Claims Log'], ['02', 'Strategic Foundation Brief'], ['03', 'Product Positioning'], ['04', 'Invariants'],
-  ['05', 'Messaging Hierarchy'], ['06', 'Target Buyer Analysis'], ['07', 'Market Pain Points Research'], ['08', 'Competitor Analysis'], ['09', 'Mission Statement'],
-  ['10', 'Target Audience Psychology'], ['11', 'Brand Archetype'], ['12', 'Brand Tone of Voice'], ['13', 'Brand Lexicon'], ['14', 'Category North Star'],
-  ['15', 'Brand Manifesto'], [null, 'Copy Bank'],
+  ['00', 'Stakeholder Interviews', 'Cross-functional leadership input'],
+  ['01', 'Strategic Foundation Brief', 'Product foundations'],
+  ['02', 'Target Buyer Analysis', 'Audience and use cases'],
+  ['03', 'Market Pain Points Research', 'Market tensions and unmet needs'],
+  ['04', 'Target Audience Psychology', 'Motivations and decision drivers'],
+  ['05', 'Competitor Analysis', 'Market context and differentiation'],
+  ['06', 'Product Positioning', 'Positioning system'],
+  ['07', 'Brand Archetype', 'Strategic character'],
+  ['08', 'Claims Log', 'Claims and proof'],
+  ['09', 'Messaging Hierarchy', 'Messaging architecture'],
+  ['10', 'Brand Tone of Voice', 'Verbal expression'],
+  ['11', 'Brand Lexicon', 'Language system'],
 ];
-const FAMILIES = { interviews: 'chat', foundations: 'boxes', audience: 'audience', positioning: 'target', claims: 'verify', messaging: 'network' };
-if (tpmText(/<h2 id="tpm-foundation-title"[^>]*>([\s\S]*?)<\/h2>/) !== TPM.foundationHeadline) failures.push(`[tpm] 02 must be headed "${TPM.foundationHeadline}"`);
+const titleHtml = (tpmPage.match(/<h2 id="tpm-foundation-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1];
+const titleLines = [...titleHtml.matchAll(/<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
+if (JSON.stringify(titleLines) !== JSON.stringify(TPM.foundationLines)) failures.push(`[tpm] 02 is headed in exactly two lines: ${TPM.foundationLines.join(' / ')} (found ${titleLines.join(' / ')})`);
+if (!tpmRules(/^\.tpm-foundation__title span$/).some((r) => /display:\s*block/.test(r.body) && /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] each line of the 02 headline is its own unbroken line');
+if (!tpmRules(/^\.tpm-foundation__head$/).some((r) => /text-align:\s*center/.test(r.body))) failures.push('[tpm] the 02 opening is centered');
 if (tpmText(/<p class="tpm-foundation__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.foundationCopy) failures.push('[tpm] 02 must carry the approved paragraph');
 const docItems = [...tpmPage.matchAll(/<li class="tpm-doc"[\s\S]*?<\/li>/g)].map((m) => m[0]);
-const docRows = docItems.map((li) => [textOf((li.match(/<span class="tpm-doc__num[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]) || null, textOf((li.match(/<span class="tpm-doc__title[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1])]);
-if (JSON.stringify(docRows) !== JSON.stringify(FOUNDATION)) failures.push(`[tpm] the library must list the source interviews and the 16 foundation documents by their approved titles and numbers, in order (found ${docRows.map((r) => r.filter(Boolean).join(' ')).join(', ')})`);
-const docFamilies = tpmData.foundation.documents.map((d) => d.family);
-docItems.forEach((li, i) => {
-  const fam = docFamilies[i];
-  if (!/<span class="tpm-doc__strip[^"]*"[^>]*aria-hidden="true"/.test(li)) failures.push(`[tpm] document ${i + 1} needs its category strip`);
-  if (!/<svg\b[^>]*class="tpm-doc__icon[^"]*"[^>]*aria-hidden="true"/.test(li) && !/<svg\b[^>]*aria-hidden="true"[^>]*class="tpm-doc__icon/.test(li)) failures.push(`[tpm] document ${i + 1} needs its faded category icon, hidden from assistive technology`);
-  if (!fam || !FAMILIES[fam] || !new RegExp(`data-family="${fam}"`).test(li)) failures.push(`[tpm] document ${i + 1} must belong to one of the six approved families`);
-  const context = textOf((li.match(/<span class="tpm-doc__context[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]);
-  const rest = spaced(li);
-  const expected = [docRows[i][0], docRows[i][1], context].filter(Boolean).join(' ');
-  if (!context || context.split(' ').length > 4) failures.push(`[tpm] document ${i + 1} needs one short context (found "${context}")`);
-  if (rest !== expected) failures.push(`[tpm] document ${i + 1} must show only its number, title and context (found "${rest}")`);
-});
-for (const [fam, def] of Object.entries(tpmData.foundation.families)) {
-  if (FAMILIES[fam] !== def.icon) failures.push(`[tpm] the ${fam} family must keep its approved icon (${FAMILIES[fam]})`);
+const docRows = docItems.map((li) => [
+  textOf((li.match(/<span class="tpm-doc__num[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]),
+  textOf((li.match(/<span class="tpm-doc__title[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]),
+  textOf((li.match(/<span class="tpm-doc__sub[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]),
+]);
+if (JSON.stringify(docRows) !== JSON.stringify(FOUNDATION)) failures.push(`[tpm] the library lists the twelve named documents in the brief's order, numbered 00 to 11, with their sublines (found ${docRows.map((r) => r.join(' ')).join(', ')})`);
+const pageText = textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, ''));
+for (const gone of ['Invariants', 'Mission Statement', 'Category North Star', 'Brand Manifesto', 'Copy Bank', 'Shared product language']) {
+  if (pageText.includes(gone)) failures.push(`[tpm] "${gone}" is no longer on the page`);
 }
+if (/\b(?:six|6)\s+(?:structured\s+)?(?:stakeholder\s+)?interviews\b/i.test(pageText)) failures.push('[tpm] the interview count is not published');
+const accents = docItems.map((li) => ((li.match(/--doc:\s*(#[0-9a-f]{6})/i) || [])[1] || '').toLowerCase());
+const icons = docItems.map((li) => (li.match(/<svg\b[^>]*class="tpm-doc__icon[\s\S]*?<\/svg>/) || [''])[0].replace(/\s*data-astro-cid-[\w-]+(?:="[^"]*")?/g, ''));
+if (new Set(accents).size !== docItems.length || accents.some((c) => !c)) failures.push('[tpm] every named document has its own accent color');
+if (new Set(icons.map((s) => (s.match(/\bd="[^"]+"/g) || []).join(''))).size !== docItems.length) failures.push('[tpm] every named document has its own icon');
+const hexLab = (hex) => {
+  const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const [r, g, b] = [1, 3, 5].map((i) => lin(parseInt(hex.slice(i, i + 2), 16) / 255));
+  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const x = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
+  const y = f(0.2126 * r + 0.7152 * g + 0.0722 * b);
+  const z = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+};
+accents.forEach((c, i) => {
+  if (i && c && accents[i - 1]) {
+    const [a, b] = [hexLab(c), hexLab(accents[i - 1])];
+    if (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 24) failures.push(`[tpm] documents ${FOUNDATION[i - 1][0]} and ${FOUNDATION[i][0]} sit side by side in too similar accents`);
+  }
+});
+docItems.forEach((li, i) => {
+  if (!/<span class="tpm-doc__strip[^"]*"[^>]*aria-hidden="true"/.test(li)) failures.push(`[tpm] document ${FOUNDATION[i]?.[0]} needs its accent strip`);
+  if (!/<svg\b[^>]*class="tpm-doc__icon[^"]*"[^>]*aria-hidden="true"/.test(li) && !/<svg\b[^>]*aria-hidden="true"[^>]*class="tpm-doc__icon/.test(li)) failures.push(`[tpm] document ${FOUNDATION[i]?.[0]} needs its faded icon, hidden from assistive technology`);
+  const rest = spaced(li);
+  if (rest !== docRows[i].join(' ')) failures.push(`[tpm] document ${FOUNDATION[i]?.[0]} shows only its number, title and subline (found "${rest}")`);
+});
+const covers = [...tpmPage.matchAll(/<li class="tpm-doc tpm-doc--depth"[^>]*>[\s\S]*?<\/li>/g)].map((m) => m[0]);
+if (covers.length < 1 || covers.length > 2) failures.push(`[tpm] one or two unlabeled covers follow the named documents (found ${covers.length})`);
+if (covers.some((c) => !/aria-hidden="true"/.test(c) || spaced(c) || /<svg\b/.test(c))) failures.push('[tpm] the covers carry no number, title, subline or icon, and are hidden from assistive technology');
+// The card grid: a fixed row for the number, a two-line title area, the
+// subline in a fixed area at the bottom.
+const textRule = tpmRules(/^\.tpm-doc__text$/).find((r) => /grid-template-rows/.test(r.body));
+if (!textRule || !/grid-template-rows:\s*[\d.]+rem\s+auto\s+1fr\s+calc\(/.test(textRule.body)) failures.push('[tpm] every card shares one internal grid (number row, title area, open space, subline area)');
 const words02 = spaced(((tpmPage.match(/<section class="tpm-foundation"[\s\S]*?<\/section>/) || [''])[0]).replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<span class="tpm-doc__title[^"]*"[^>]*>[\s\S]*?<\/span>/g, '').replace(/<span class="tpm-doc__num[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')).split(' ').filter(Boolean).length;
 if (words02 > 80) failures.push(`[tpm] 02 keeps to about 50 to 80 words outside its titles (found ${words02})`);
-// 03: the one phrase and at most four expressions, Website leading; no cards,
-// boxes, pills or icons; the website visual in its frame.
-const langHtml = (tpmPage.match(/<section class="tpm-language"[\s\S]*?<\/section>/) || [''])[0];
-if (tpmText(/<h2 id="tpm-language-title"[^>]*>([\s\S]*?)<\/h2>/) !== TPM.phrase) failures.push(`[tpm] 03 must carry only the phrase "${TPM.phrase}" as its heading`);
-const exprs = [...langHtml.matchAll(/<li class="tpm-word[^"]*"[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
-if (exprs.join(' · ') !== TPM.expressions.join(' · ')) failures.push(`[tpm] 03 reveals exactly ${TPM.expressions.join(' · ')} (found ${exprs.join(' · ')})`);
-if (!/<li class="tpm-word tpm-word--lead"[^>]*>\s*Website\s*<\/li>/.test(langHtml)) failures.push('[tpm] Website must lead the expressions');
-if ((langHtml.match(/<h[1-6]\b/g) || []).length !== 1 || /<p\b/.test(langHtml.replace(/<video[\s\S]*?<\/video>/g, ''))) failures.push('[tpm] 03 has no second headline or paragraph');
-const langText = spaced(langHtml.replace(/<video[\s\S]*?<\/video>/g, '').replace(/<button[\s\S]*?<\/button>/g, ''));
-if (langText !== [TPM.phrase, ...TPM.expressions].join(' ')) failures.push(`[tpm] 03 shows only the phrase and the four expressions (found "${langText}")`);
-if (!/<path class="tpm-line__path"/.test(langHtml) || !/<svg\b[^>]*class="tpm-line"[^>]*aria-hidden="true"|<svg\b[^>]*aria-hidden="true"[^>]*class="tpm-line"/.test(langHtml)) failures.push('[tpm] 03 needs its decorative line (hidden from assistive technology)');
-if (!/bolt-website-hero-motion\.mp4/.test(langHtml) || !/class="tpm-site__poster"/.test(langHtml)) failures.push('[tpm] the line must land on the website visual (the website hero motion on its poster)');
-// The choreography is an enhancement: every sticky stage and every scroll
-// height needs the script's is-live class, a 60rem minimum width, a minimum
-// height and prefers-reduced-motion: no-preference; the still layout is what
-// the HTML and CSS show without it.
+
+// ---- 03 the statement: the one block of type, nothing else; read in full by
+// assistive technology, revealed word by word on screen.
+const stmtHtml = (tpmPage.match(/<div class="tpm-statement"[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
+const stmtSr = textOf(norm((stmtHtml.match(/<p class="sr-only"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]));
+const stmtWords = [...stmtHtml.matchAll(/<span class="tpm-word"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
+if (stmtSr !== TPM.statement) failures.push('[tpm] 03 must carry the statement word for word');
+if (stmtWords.join(' ') !== TPM.statement) failures.push('[tpm] 03 reveals the statement word by word, every word in order');
+if (!/<p class="tpm-statement__copy[^"]*"[^>]*aria-hidden="true"/.test(stmtHtml)) failures.push('[tpm] the word-by-word copy is hidden from assistive technology (the full sentence is read instead)');
+if (/<h[1-6]\b|<svg\b|<img\b|<video\b|<li\b|eyebrow/.test(stmtHtml)) failures.push('[tpm] 03 has no eyebrow, heading, cards, icons, diagram or arrow');
+if (/tpm-line|tpm-words|tpm-site__/.test(tpmPage)) failures.push('[tpm] the arrow-based Shared Product Language sequence is gone');
+
+// ---- 04 Website and 05 Technical documentation: the name, the metadata row,
+// the contribution, then one dominant visual: a walkthrough that plays once.
+const caseHtml = (cls) => (tpmPage.match(new RegExp(`<section class="tpm-case ${cls}"[\\s\\S]*?<\\/section>`)) || [''])[0];
+const metaOf = (html) => [...html.matchAll(/<div class="tpm-meta__item[^"]*"[^>]*>\s*<dt[^>]*>([\s\S]*?)<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(m[1]), [...m[2].matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map((p) => textOf(norm(p[1])))]);
+const expectMeta = (items) => items.map((it) => [it.label, it.value.map((v) => norm(v).replace(/\*\*/g, ''))]);
+const walkCheck = (html, what, large, small) => {
+  const video = (html.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
+  const tag = (video.match(/<video\b[^>]*>/) || [''])[0];
+  for (const attr of ['muted', 'playsinline', 'preload="none"', 'aria-label="']) if (!tag.includes(attr)) failures.push(`[tpm] the ${what} walkthrough is missing ${attr}`);
+  if (/\b(?:loop|controls|autoplay)\b|\bposter=/.test(tag)) failures.push(`[tpm] the ${what} walkthrough plays once from its script: no loop, controls, autoplay or poster attribute`);
+  const sources = [...video.matchAll(/<source\b[^>]*>/g)].map((m) => m[0]);
+  if (sources.length !== 2 || !sources[0].includes(small) || !/media="\(max-width: 47\.99rem\)"/.test(sources[0]) || !sources[1].includes(large) || /\bmedia=/.test(sources[1])) failures.push(`[tpm] the ${what} walkthrough lists the phone encode, then the wide-screen one`);
+  const toggle = (html.match(/<button\b[^>]*\bdata-walk-toggle\b[^>]*>/) || [''])[0];
+  if (!toggle || !/\bhidden\b/.test(toggle) || !/aria-label="Play video: [^"]+"/.test(toggle)) failures.push(`[tpm] the ${what} walkthrough has one labeled control, hidden until its script runs`);
+  if (!/<img\b[^>]*class="tpm-walk__poster"[^>]*loading="lazy"|<img\b[^>]*loading="lazy"[^>]*class="tpm-walk__poster"/.test(html)) failures.push(`[tpm] the ${what} walkthrough sits on a lazy, responsive poster`);
+};
+const fileCheck = (name, w, h, mb, [minS, maxS], what) => {
+  const file = path.join(root, 'public/media', name);
+  if (!fs.existsSync(file)) return failures.push(`[tpm] public/media/${name} not found`);
+  const f = mp4Facts(file);
+  const sec = mp4Seconds(file);
+  const size = fs.statSync(file).size / 1e6;
+  if (!(sec >= minS && sec <= maxS)) failures.push(`[tpm] ${name} runs ${sec.toFixed(2)} s; ${what}`);
+  if (f.handlers.includes('soun')) failures.push(`[tpm] ${name} carries an audio track`);
+  if (!f.avc) failures.push(`[tpm] ${name} must be H.264`);
+  if (!(f.top.indexOf('moov') >= 0 && f.top.indexOf('moov') < f.top.indexOf('mdat'))) failures.push(`[tpm] ${name} must keep its index before its data (faststart)`);
+  if (f.width !== w || f.height !== h) failures.push(`[tpm] ${name} is ${f.width}x${f.height}; expected ${w}x${h}`);
+  if (size > mb) failures.push(`[tpm] ${name} is ${size.toFixed(2)} MB; it stays under ${mb} MB`);
+};
+
+const webHtml = caseHtml('tpm-website');
+if (!/data-surface="soft"/.test((webHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 04 opens its own chapter on its own surface');
+if (tpmText(/<h2 id="tpm-website-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Website') failures.push('[tpm] 04 is named Website');
+if (JSON.stringify(metaOf(webHtml)) !== JSON.stringify(expectMeta(tpmData.website.meta)) || tpmData.website.meta.map((m) => m.label).join('|') !== 'Brief|Role / Services|Timeline|Credits') failures.push('[tpm] 04 metadata: Brief, Role / Services, Timeline and Credits, as approved');
+if (/Location/i.test(spaced(webHtml))) failures.push('[tpm] 04 carries no location');
+if (!/<strong\b[^>]*>Bob van der Meer<\/strong>/.test(webHtml)) failures.push('[tpm] the 04 credits name Bob van der Meer in bold');
+if (textOf(norm((webHtml.match(/<p class="tpm-case__contribution[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1])) !== norm(tpmData.website.contribution)) failures.push('[tpm] 04 must carry the approved contribution statement');
+if (!/class="tpm-display__body/.test(webHtml) || !/<div class="tpm-display__stand[^"]*"[^>]*aria-hidden="true"/.test(webHtml)) failures.push('[tpm] 04 shows the website in a thin-bezel desktop display');
+walkCheck(webHtml, 'website', 'bolt-website-walkthrough.mp4', 'bolt-website-walkthrough-720.mp4');
+fileCheck('bolt-website-walkthrough.mp4', 1920, 1080, 10, [46.5, 47.1], 'the approved take runs about 47 s, hero to partnership form, not shortened');
+fileCheck('bolt-website-walkthrough-720.mp4', 1280, 720, 4, [46.5, 47.1], 'the approved take runs about 47 s, hero to partnership form, not shortened');
+posterAt('bolt-website-walkthrough-poster.jpg', 1920, 1080, 'the website poster (the hero at rest)');
+
+const docsHtml = caseHtml('tpm-docs');
+if (!/data-surface="light-return"/.test((docsHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 05 opens its own chapter on its own surface');
+if (tpmText(/<h2 id="tpm-docs-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Technical documentation') failures.push('[tpm] 05 is named Technical documentation');
+if (JSON.stringify(metaOf(docsHtml)) !== JSON.stringify(expectMeta(tpmData.documentation.meta)) || tpmData.documentation.meta.map((m) => m.label).join('|') !== 'Brief|Goal|Role / Responsibilities|Credits') failures.push('[tpm] 05 metadata: Brief, Goal, Role / Responsibilities and Credits, as approved');
+if (/Timeline/.test(spaced(docsHtml))) failures.push('[tpm] 05 does not repeat the Website timeline');
+if (textOf(norm((docsHtml.match(/<p class="tpm-case__contribution[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1])) !== norm(tpmData.documentation.contribution)) failures.push('[tpm] 05 must carry the approved contribution statement');
+if (/tpm-display/.test(docsHtml) || !/class="tpm-browser\b/.test(docsHtml)) failures.push('[tpm] 05 reads in a frameless browser frame, not a second device');
+walkCheck(docsHtml, 'documentation', 'bolt-docs-walkthrough.mp4', 'bolt-docs-walkthrough-720.mp4');
+fileCheck('bolt-docs-walkthrough.mp4', 2560, 1440, 9, [28, 35], 'the documentation edit runs 28 to 35 s');
+fileCheck('bolt-docs-walkthrough-720.mp4', 1280, 720, 3, [28, 35], 'the documentation edit runs 28 to 35 s');
+posterAt('bolt-docs-walkthrough-poster.jpg', 2560, 1440, 'the documentation poster (its home page)');
+const chapterItems = [...docsHtml.matchAll(/<li class="tpm-chapter"[^>]*data-start="([\d.]+)"[\s\S]*?<\/li>/g)];
+const chapterTitles = chapterItems.map((m) => textOf((m[0].match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [, ''])[1]));
+const docsSec = fs.existsSync(path.join(root, 'public/media/bolt-docs-walkthrough.mp4')) ? mp4Seconds(path.join(root, 'public/media/bolt-docs-walkthrough.mp4')) : 0;
+const starts = chapterItems.map((m) => Number(m[1]));
+if (chapterTitles.join(' | ') !== 'Documentation home | Architecture diagram | Developer SDK') failures.push(`[tpm] the walkthrough's three chapters are the documentation home, the architecture diagram and the SDK (found ${chapterTitles.join(' | ')})`);
+if (starts[0] !== 0 || starts.some((s, i) => i && s <= starts[i - 1]) || starts.some((s) => s >= docsSec)) failures.push('[tpm] the chapters start at 0 and in order, inside the walkthrough');
+if (!(starts[2] - starts[1] >= starts[1] - starts[0] && starts[2] - starts[1] >= docsSec - starts[2])) failures.push('[tpm] the architecture diagram is the longest moment of the walkthrough');
+if (chapterItems.some((m) => !/<button\b[^>]*data-seek[^>]*\bhidden\b|<button\b[^>]*\bhidden\b[^>]*data-seek/.test(m[0]))) failures.push('[tpm] each chapter plays from its point with a button that its script reveals');
+if (!/Bob van der Meer/.test(chapterItems[1]?.[0] || '')) failures.push('[tpm] the diagram chapter credits Bob van der Meer for its final design and build');
+
+// ---- the choreography is an enhancement: every sticky stage and every
+// scroll height needs the script's is-live class, a 60rem minimum width, a
+// minimum height and prefers-reduced-motion: no-preference.
 const tpmSticky = CSS_RULES.filter((r) => /position:\s*sticky/.test(r.body) && /\.tpm-/.test(r.sel));
 if (tpmSticky.length < 2) failures.push('[tpm] the hero and the passage after it each need a sticky stage');
 for (const r of [...tpmSticky, ...CSS_RULES.filter((x) => /\.tpm-(?:hero|flow)(?:\[[^\]]*\])?\.is-live(?:\[[^\]]*\])?$/.test(x.sel.trim()))]) {
@@ -991,8 +1101,9 @@ const pageScripts = (html) => {
   return out.join('\n');
 };
 const tpmScripts = pageScripts(tpmPage);
-for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'requestVideoFrameCallback', 'visibilitychange', 'IntersectionObserver', 'is-live', 'NotAllowedError']) {
-  if (!tpmScripts.includes(token)) failures.push(`[tpm] the page's motion script is missing "${token}"`);
+if (!/addEventListener\(\s*[`"']ended[`"']/.test(tpmScripts)) failures.push('[tpm] the walkthroughs hold their last frame when they end');
+for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'requestVideoFrameCallback', 'visibilitychange', 'IntersectionObserver', 'is-live', 'NotAllowedError', 'ended', 'Replay']) {
+  if (!tpmScripts.includes(token)) failures.push(`[tpm] the page's motion script is missing ${token}`);
 }
 if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" class="[^"]*\bcontact--frame\b/.test(tpmPage)) failures.push('[tpm] the page closes with the full Contact frame on the brand surface');
 if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) failures.push('[tpm] the footer continues the brand surface');

@@ -1,14 +1,15 @@
 ---
 /**
- * Technical Product Marketing, Version 1 (checkpoint).
+ * Technical Product Marketing, Version 1.1.
  *
- * The rebuilt case study, through its opening three sections: 01 Hero,
- * 02 Foundation and 03 Shared Product Language, whose line lands as the frame
- * of the first website visual. The Website chapter and the chapters after it
- * come next; until then the page closes with Contact and the footer, as the
- * homepage does. Metadata and the Select Work card still come from the case
- * study's frontmatter (src/content/work/technical-marketing.mdx); its older
- * MDX body is no longer rendered.
+ * The rebuilt case study, through its first five sections: 01 Hero (a pinned
+ * hero in two states), 02 Foundation (the document library), 03 the
+ * transitional statement, 04 Website and 05 Technical documentation. The
+ * chapters after them come once these have been reviewed together; until
+ * then the page closes with Contact and the footer, as the homepage does.
+ * Metadata and the Select Work card still come from the case study's
+ * frontmatter (src/content/work/technical-marketing.mdx); its older MDX body
+ * is no longer rendered.
  *
  * The page pulls itself up under the header row, so its opening screen is the
  * whole viewport and the header's links float over it.
@@ -18,6 +19,8 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import TpmHero from '@components/tpm/TpmHero.astro';
 import TpmFlow from '@components/tpm/TpmFlow.astro';
+import TpmWebsite from '@components/tpm/TpmWebsite.astro';
+import TpmDocs from '@components/tpm/TpmDocs.astro';
 
 const entry = await getEntry('work', 'technical-marketing');
 if (!entry) throw new Error('[technical-marketing] the case study entry is missing');
@@ -28,6 +31,8 @@ const d = entry.data;
   <article class="tpm" aria-labelledby="tpm-title">
     <TpmHero />
     <TpmFlow />
+    <TpmWebsite />
+    <TpmDocs />
   </article>
 
   <div class="chapter" data-surface="brand">

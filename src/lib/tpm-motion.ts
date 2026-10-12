@@ -18,6 +18,12 @@
  * data-saving preference or a refused autoplay leave the poster (the play
  * button still plays on request), and a video that cannot load keeps its
  * poster and loses its button.
+ *
+ * Walkthroughs. A muted recording that plays once: from its poster, the first
+ * time its frame is well inside the viewport; paused whenever the frame
+ * leaves the viewport and resumed when it returns; holding its last frame
+ * once it ends. Its one control pauses, plays and, at the end, replays. The
+ * same preferences and failures leave the poster, as for the loops.
  */
 
 export const LIVE_QUERY = '(min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference)';
@@ -238,5 +244,210 @@ export class Loop {
     const playing = !video.paused;
     toggle.dataset.state = playing ? 'playing' : 'paused';
     toggle.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} video: ${this.label}`);
+  }
+}
+
+// ---- Walkthroughs -----------------------------------------------------------
+
+export interface WalkthroughOptions {
+  /** Share of the frame that must be on screen for playback to start or resume. */
+  threshold?: number;
+}
+
+type WalkState = 'playing' | 'paused' | 'ended';
+
+export class Walkthrough {
+  readonly root: HTMLElement;
+  readonly video: HTMLVideoElement;
+  private toggle: HTMLButtonElement | null;
+  private label: string;
+  /** Paused by the reader: stays paused until they play it again. */
+  private held = false;
+  /** Started (or replayed) with its control or a chapter. */
+  private asked = false;
+  /** The browser refused to start it on its own. */
+  private blocked = false;
+  private failed = false;
+  /** Played to the end: it holds its last frame and waits for a replay. */
+  private ended = false;
+  private inView = false;
+  private raf = 0;
+  private listeners: Array<(time: number, state: WalkState) => void> = [];
+
+  constructor(root: HTMLElement, options: WalkthroughOptions = {}) {
+    this.root = root;
+    this.video = root.querySelector('video') as HTMLVideoElement;
+    this.toggle = root.querySelector<HTMLButtonElement>('[data-walk-toggle]');
+    this.label = this.toggle?.dataset.label ?? 'video';
+    const { video, toggle } = this;
+    if (!video) return;
+
+    if (toggle) {
+      toggle.hidden = false;
+      toggle.addEventListener('click', () => {
+        if (this.ended) this.seek(0);
+        else if (video.paused) {
+          this.held = false;
+          this.asked = true;
+          this.blocked = false;
+          this.play();
+        } else {
+          this.held = true;
+          this.asked = false;
+          video.pause();
+        }
+      });
+    }
+
+    video.addEventListener('play', () => this.state());
+    video.addEventListener('pause', () => this.state());
+    video.addEventListener('playing', () => {
+      this.reveal();
+      this.tick();
+    });
+    video.addEventListener('ended', () => {
+      // The last frame stays on screen; nothing restarts it but a replay.
+      this.ended = true;
+      this.state();
+    });
+    video.addEventListener('seeked', () => this.emit());
+    const fail = () => {
+      this.failed = true;
+      video.removeAttribute('data-shown');
+      if (toggle) toggle.hidden = true;
+      root.setAttribute('data-failed', '');
+    };
+    video.addEventListener('error', fail);
+    video.querySelector('source:last-of-type')?.addEventListener('error', fail);
+
+    const threshold = options.threshold ?? 0.55;
+    if ('IntersectionObserver' in window) {
+      // In view once most of the frame is on screen; out of view only once
+      // little of it is left, so a small scroll does not stop and start it.
+      new IntersectionObserver(
+        ([entry]) => {
+          const r = entry.isIntersecting ? entry.intersectionRatio : 0;
+          if (r >= threshold - 0.001) this.inView = true;
+          else if (r < 0.2) this.inView = false;
+          this.sync();
+        },
+        { threshold: [0, 0.2, threshold] },
+      ).observe(root);
+      // Fetched as it comes within a screen of view.
+      const near = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          near.disconnect();
+          if (this.autoplayAllowed() && video.preload === 'none') {
+            video.preload = 'auto';
+            video.load();
+          }
+        },
+        { rootMargin: '100% 0px 100% 0px' },
+      );
+      near.observe(root);
+    } else {
+      this.inView = true;
+    }
+
+    document.addEventListener('visibilitychange', () => this.sync());
+    reduceMq.addEventListener?.('change', () => {
+      if (reduceMq.matches && !this.asked) video.pause();
+      this.sync();
+    });
+    this.state();
+  }
+
+  autoplayAllowed() {
+    return !reduceMq.matches && !saving();
+  }
+
+  /** Called with the current time on every frame while it plays, and on seeks. */
+  onTime(listener: (time: number, state: WalkState) => void) {
+    this.listeners.push(listener);
+    listener(this.video?.currentTime ?? 0, this.current());
+  }
+
+  /** Plays from a point (a chapter, or the start for a replay). */
+  seek(time: number) {
+    const { video } = this;
+    if (!video || this.failed) return;
+    this.ended = false;
+    this.held = false;
+    this.asked = true;
+    this.blocked = false;
+    try {
+      video.currentTime = time;
+    } catch {
+      /* not seekable yet: plays from where it is */
+    }
+    this.play();
+  }
+
+  private current(): WalkState {
+    if (this.ended) return 'ended';
+    return this.video && !this.video.paused ? 'playing' : 'paused';
+  }
+
+  private emit() {
+    const t = this.video.currentTime;
+    const s = this.current();
+    for (const l of this.listeners) l(t, s);
+  }
+
+  private tick() {
+    if (this.raf) return;
+    const step = () => {
+      this.raf = 0;
+      this.emit();
+      if (!this.video.paused && !this.ended) this.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+
+  private sync() {
+    const { video } = this;
+    if (!video || this.failed || this.ended) return;
+    const go =
+      !document.hidden && this.inView && !this.held && (this.asked || (this.autoplayAllowed() && !this.blocked));
+    if (go && video.paused) this.play();
+    else if (!go && !video.paused) video.pause();
+  }
+
+  private play() {
+    const { video } = this;
+    if (this.failed) return;
+    if (video.preload !== 'auto') video.preload = 'auto';
+    const p = video.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch((error: unknown) => {
+        if (!this.asked && error instanceof DOMException && error.name === 'NotAllowedError') this.blocked = true;
+        this.state();
+      });
+    }
+  }
+
+  private reveal() {
+    const { video } = this;
+    if (video.hasAttribute('data-shown')) return;
+    const show = () => {
+      if (!this.failed) video.setAttribute('data-shown', '');
+    };
+    const onFrame = (video as HTMLVideoElement & { requestVideoFrameCallback?: (callback: () => void) => number })
+      .requestVideoFrameCallback;
+    if (typeof onFrame === 'function') onFrame.call(video, show);
+    else show();
+  }
+
+  private state() {
+    const s = this.current();
+    this.root.dataset.walk = s;
+    const { toggle } = this;
+    if (toggle) {
+      toggle.dataset.state = s;
+      const verb = s === 'playing' ? 'Pause' : s === 'ended' ? 'Replay' : 'Play';
+      toggle.setAttribute('aria-label', `${verb} video: ${this.label}`);
+    }
+    if (this.video) this.emit();
   }
 }

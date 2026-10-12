@@ -1,22 +1,22 @@
 ---
 /**
- * 01 Hero (Technical Product Marketing, Version 1).
+ * 01 Hero (Technical Product Marketing, V1.1): a pinned hero in two states.
  *
- * One screen, in the approved order: the kicker, the headline and the
- * supporting sentence in the upper area (headline left, sentence right); the
- * screen in the central and lower area, as large as the room left allows and
- * with neutral space around it, playing the opening 22 seconds of Bolt in 60
- * seconds as a silent loop; and the scope line on the bottom edge. The copy
- * enters first, with a restrained fade and rise, and the screen a moment
- * later; the loop starts once the screen has arrived, and until then (and for
- * reduced motion, data saving or a refused autoplay) the screen shows the
- * designed poster frame, the reference frame John supplied.
+ * Entry: the kicker, the headline and the supporting sentence in the upper
+ * area (headline left, sentence right); below them, centered, a smaller 16:9
+ * screen playing the opening 22 seconds of Bolt in 60 seconds as a silent
+ * loop, about 54% of the screen's width at most and never so tall that it
+ * crowds the copy; and the seven areas of scope centered on the page, on one
+ * line or two balanced ones, never shrunk. Clear space separates the three.
+ * The copy enters first and the screen a moment later; the loop starts once
+ * the screen has arrived, and until then (and for reduced motion, data saving
+ * or a refused autoplay) the screen shows the designed poster frame.
  *
- * On wide screens with motion allowed the hero holds in place while the
- * screen grows toward the edges of the viewport, the copy receding, until the
- * animation fills the screen; then the page moves on to the foundation. The
- * loop pauses whenever the hero is out of view. Nothing is laid over the
- * animation except its own pause and play control.
+ * Scroll: on wide, tall-enough screens with motion allowed the hero holds in
+ * place while the screen grows until it fills the viewport. The copy and the
+ * scope line stay while the screen begins to grow, so the whole entry has
+ * been seen, then give way. Nothing is laid over the animation except its own
+ * pause and play control. With reduced motion the entry simply stays as it is.
  */
 import { Picture } from 'astro:assets';
 import tpm from '@data/tpm.json';
@@ -42,7 +42,7 @@ const small = media(loop.fileSmall);
       <p class="lede tpm-hero__lede tpm-in" style="--in: 2">{hero.copy}</p>
     </div>
 
-    <div class="container tpm-hero__media">
+    <div class="tpm-hero__media">
       <div class="tpm-hero__box" data-tpm-box>
         <div class="tpm-screen" data-surface="dark" data-tpm-screen style={loop.plate ? `--plate: ${loop.plate}` : undefined}>
           <div class="tpm-screen__frame">
@@ -77,7 +77,7 @@ const small = media(loop.fileSmall);
     </div>
 
     <div class="container tpm-hero__foot" data-tpm-hero-foot>
-      <ul class="tpm-hero__scope tpm-in" style="--in: 3" aria-label="Scope of the work">
+      <ul class="tpm-hero__scope tpm-in" style="--in: 3" aria-label="Scope of the work" data-tpm-scope>
         {hero.scope.map((item) => <li>{item}</li>)}
       </ul>
     </div>
@@ -93,6 +93,23 @@ const small = media(loop.fileSmall);
   const head = hero?.querySelector<HTMLElement>('[data-tpm-hero-copy]');
   const foot = hero?.querySelector<HTMLElement>('[data-tpm-hero-foot]');
   const toggle = hero?.querySelector<HTMLElement>('[data-loop-toggle]');
+  const scope = hero?.querySelector<HTMLElement>('[data-tpm-scope]');
+
+  // The scope line is centered and may wrap into two balanced lines; the dot
+  // before an item is hidden where that item opens a line.
+  if (scope) {
+    const items = Array.from(scope.children) as HTMLElement[];
+    const mark = () => {
+      let top = Number.NaN;
+      for (const li of items) {
+        li.classList.toggle('is-line-start', li.offsetTop !== top && !Number.isNaN(top));
+        top = li.offsetTop;
+      }
+    };
+    mark();
+    document.fonts?.ready.then(mark);
+    if ('ResizeObserver' in window) new ResizeObserver(mark).observe(scope);
+  }
 
   if (hero && box && screen && head && foot) {
     // ---- the loop ----------------------------------------------------------
@@ -156,12 +173,13 @@ const small = media(loop.fileSmall);
         const ty = bottom - (rest.y + rest.h);
         toggle.style.transform = e > 0 ? `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0)` : '';
       }
-      // The copy above and the scope line below give way as the screen grows.
-      const fade = smooth(span(e, 0.04, 0.42));
+      // The copy above and the scope line below stay while the screen starts
+      // to grow, then give way.
+      const fade = smooth(span(e, 0.14, 0.48));
       head.style.opacity = fade > 0 ? (1 - fade).toFixed(3) : '';
-      head.style.transform = e > 0 ? `translate3d(0, ${(-48 * e).toFixed(2)}px, 0)` : '';
+      head.style.transform = fade > 0 ? `translate3d(0, ${(-40 * fade).toFixed(2)}px, 0)` : '';
       foot.style.opacity = fade > 0 ? (1 - fade).toFixed(3) : '';
-      foot.style.transform = e > 0 ? `translate3d(0, ${(32 * e).toFixed(2)}px, 0)` : '';
+      foot.style.transform = fade > 0 ? `translate3d(0, ${(28 * fade).toFixed(2)}px, 0)` : '';
     };
 
     const apply = () => {
@@ -233,39 +251,54 @@ const small = media(loop.fileSmall);
     font-size: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
   }
 
-  /* Seven areas of work on one quiet line, separated by middle dots that
-     assistive technology skips. Every item carries its dot in front of it,
-     and the list starts that dot's width to the left of the column with that
-     margin clipped away, so a dot never opens a line when the list wraps. */
+  /* Seven areas of work, centered on the page: one line where they fit, two
+     balanced lines where they do not, never smaller type. A middle dot
+     (skipped by assistive technology) sits in the space before each item but
+     the first, and the script hides it where an item opens a line. */
+  .tpm-hero__foot {
+    text-align: center;
+  }
+
   .tpm-hero__scope {
-    --dot: 1.4em;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem 0;
-    margin: 0 0 0 calc(-1 * var(--dot));
+    --gap: 2.2em;
+    margin: 0;
     padding: 0;
     list-style: none;
-    clip-path: inset(0 0 0 var(--dot));
+    text-wrap: balance;
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.12em;
-    line-height: 1.6;
+    line-height: 2;
     text-transform: uppercase;
     color: var(--ink-2);
   }
 
-  .tpm-hero__scope li::before {
+  .tpm-hero__scope li {
+    position: relative;
+    display: inline-block;
+    margin-inline: calc(var(--gap) / 2);
+    white-space: nowrap;
+  }
+
+  .tpm-hero__scope li + li::before {
     content: '·';
     content: '·' / '';
-    display: inline-block;
-    width: var(--dot);
+    position: absolute;
+    right: 100%;
+    width: var(--gap);
+    letter-spacing: 0;
     text-align: center;
     color: var(--ink-3);
+  }
+
+  .tpm-hero__scope li.is-line-start::before {
+    visibility: hidden;
   }
 
   /* ---- the screen ------------------------------------------------------------ */
   .tpm-hero__media {
     min-width: 0;
+    padding-inline: var(--gutter);
     animation: tpm-screen-in 1000ms var(--ease-out) 420ms both;
   }
 
@@ -394,15 +427,17 @@ const small = media(loop.fileSmall);
     }
   }
 
-  /* ---- wide screens: one screen, top to bottom ---------------------------------
+  /* ---- wide screens: the entry state ---------------------------------------------
      The headline holds the left of the upper area and the sentence the right,
-     level with its last line; the screen takes the rest of the height, as
-     large as that room allows at 16:9, centered (a size container, so its
-     width follows the room's height); the scope line sits on the bottom edge. */
+     level with its last line. The screen is centered in the room between the
+     copy and the scope line: about 54% of the window's width, no wider than
+     60rem, and no taller than that room less clear space above and below it
+     (the room is a size container, so the screen can follow its height). */
   @media (min-width: 60rem) {
     .tpm-hero__stage {
-      grid-template-rows: auto minmax(18rem, 1fr) auto;
-      gap: clamp(1.25rem, 3.2vh, 2.5rem);
+      --air: clamp(1rem, 4.5vh, 3rem);
+      grid-template-rows: auto minmax(14rem, 1fr) auto;
+      gap: clamp(1rem, 2.4vh, 2rem);
     }
 
     .tpm-hero__head {
@@ -424,17 +459,19 @@ const small = media(loop.fileSmall);
     .tpm-hero__media {
       container-type: size;
       position: relative;
+      display: grid;
+      place-items: center;
     }
 
     .tpm-hero__box {
-      width: min(100cqw, 100cqh * 16 / 9);
+      width: min(54vw, 60rem, (100cqh - 2 * var(--air)) * 16 / 9);
     }
   }
 
   /* ---- live: the hero holds while the screen fills the viewport ------------------ */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
     .tpm-hero.is-live {
-      height: calc(var(--view-h) * 1.75);
+      height: calc(var(--view-h) * 2);
     }
 
     .tpm-hero.is-live .tpm-hero__stage {

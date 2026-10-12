@@ -1,53 +1,100 @@
 ---
 /**
- * The six category icons of the foundation library, drawn as thin outlines
- * that keep their line weight at any size (non-scaling strokes). Each card
- * shows its family's icon large and faded, in the family's color; the icon is
- * decorative, since the card's title and context carry the meaning.
+ * The foundation library's icons (Technical Product Marketing, V1.1): one for
+ * each named document, drawn for that document's subject rather than a shared
+ * category, as thin outlines that keep their line weight at any size
+ * (non-scaling strokes) on the same 64-unit grid, so they read as one set.
+ * Each card shows its icon large and faded, in the document's accent; the
+ * icon is decorative, since the card's number, title and subline carry the
+ * meaning.
  *
- *   chat      Stakeholder interviews   two speech bubbles
- *   boxes     Product foundations      stacked blocks
- *   audience  Audience and use cases   three people
- *   target    Positioning system       a target
- *   verify    Claims and proof         a shield with a check
- *   network   Messaging architecture   connected nodes
+ *   00 conversation     Stakeholder Interviews        two speech bubbles
+ *   01 layers           Strategic Foundation Brief    stacked layers
+ *   02 persona-search   Target Buyer Analysis         a person and a lens
+ *   03 search-alert     Market Pain Points Research   a lens with an alert
+ *   04 profile-insight  Target Audience Psychology    a profile and a spark
+ *   05 binoculars       Competitor Analysis           binoculars
+ *   06 crosshair        Product Positioning           a crosshair
+ *   07 fingerprint      Brand Archetype               a fingerprint
+ *   08 shield-check     Claims Log                    a verified shield
+ *   09 hierarchy        Messaging Hierarchy           a connected hierarchy
+ *   10 waveform         Brand Tone of Voice           an audio waveform
+ *   11 book             Brand Lexicon                 an open book
  */
+export type DocIconName =
+  | 'conversation'
+  | 'layers'
+  | 'persona-search'
+  | 'search-alert'
+  | 'profile-insight'
+  | 'binoculars'
+  | 'crosshair'
+  | 'fingerprint'
+  | 'shield-check'
+  | 'hierarchy'
+  | 'waveform'
+  | 'book';
+
 interface Props {
-  name: 'chat' | 'boxes' | 'audience' | 'target' | 'verify' | 'network';
+  name: DocIconName;
   class?: string;
 }
 
 const { name, class: className } = Astro.props;
 
-const shapes: Record<Props['name'], string[]> = {
-  chat: [
+const shapes: Record<DocIconName, string[]> = {
+  conversation: [
     'M9 12h32a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H24l-9 8v-8h-6a5 5 0 0 1-5-5V17a5 5 0 0 1 5-5z',
     'M50 26h5a5 5 0 0 1 5 5v13a5 5 0 0 1-5 5h-3v7l-8-7H35a5 5 0 0 1-5-5v-2',
     'M14 24.5h24M14 30h16',
   ],
-  boxes: ['M10 44h44v12H10z', 'M14 30h36v14H14z', 'M19 16h26v14H19z', 'M24 23h16M21 37h22M17 50h30'],
-  audience: [
-    'M32 15a7 7 0 1 1 0 14 7 7 0 0 1 0-14z',
-    'M18 50c0-8.3 6.3-14 14-14s14 5.7 14 14',
-    'M14 21a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M4 48c0-6.2 4.5-10.5 10-10.5 2.2 0 4.2.6 5.8 1.7',
-    'M50 21a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M60 48c0-6.2-4.5-10.5-10-10.5-2.2 0-4.2.6-5.8 1.7',
+  layers: ['M32 8l24 12-24 12L8 20z', 'M8 30.5l24 12 24-12', 'M8 41l24 12 24-12'],
+  'persona-search': [
+    'M25 10a9 9 0 1 1 0 18 9 9 0 0 1 0-18z',
+    'M7 54c0-10.5 8-18.5 18-18.5 3.4 0 6.6 0.9 9.3 2.6',
+    'M45 35a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17z',
+    'M51 49l7 7',
   ],
-  target: [
-    'M32 8a24 24 0 1 1 0 48 24 24 0 0 1 0-48z',
-    'M32 18a14 14 0 1 1 0 28 14 14 0 0 1 0-28z',
-    'M32 27a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M32 32L54 10M48 10h6v6',
+  'search-alert': [
+    'M27 9a18 18 0 1 1 0 36 18 18 0 0 1 0-36z',
+    'M40 40l15 15',
+    'M27 18.5v13',
+    'M27 37v0.6',
   ],
-  verify: ['M32 6l21 8v15c0 13.5-9 23.5-21 28-12-4.5-21-14.5-21-28V14z', 'M22 31.5l7 7 14-15'],
-  network: [
-    'M14 12a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M50 9a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M32 27a6 6 0 1 1 0 12 6 6 0 0 1 0-12z',
-    'M12 44a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M52 44a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
-    'M18.2 20.4L27.4 29M45.6 17.4L36.8 28.6M16.6 45.6L27.2 37.2M47.4 45.6L36.8 37.2M19 17h26',
+  'profile-insight': [
+    'M23 57v-9.5C17 43.5 13.5 37 13.5 30c0-12.4 10-21.5 22-21.5 10.4 0 18.4 6.8 20.6 16.2l4.4 8.3-4.9 1.3v6.2c0 3-2.4 5.5-5.5 5.5H44v11',
+    'M34.5 19.5l1.9 4.6 4.6 1.9-4.6 1.9-1.9 4.6-1.9-4.6-4.6-1.9 4.6-1.9z',
+  ],
+  binoculars: [
+    'M18 33a10 10 0 1 1 0 20 10 10 0 0 1 0-20z',
+    'M46 33a10 10 0 1 1 0 20 10 10 0 0 1 0-20z',
+    'M8.6 39.5L14.5 17h8.5l3.6 17.5',
+    'M55.4 39.5L49.5 17H41l-3.6 17.5',
+    'M26.6 35.5c1.8-1.6 3.5-2.4 5.4-2.4s3.6 0.8 5.4 2.4',
+    'M16 17v-5h6v5M42 17v-5h6v5',
+  ],
+  crosshair: [
+    'M32 14a18 18 0 1 1 0 36 18 18 0 0 1 0-36z',
+    'M32 5v13M32 46v13M5 32h13M46 32h13',
+    'M32 29.3a2.7 2.7 0 1 1 0 5.4 2.7 2.7 0 0 1 0-5.4z',
+  ],
+  fingerprint: [
+    'M13.5 43C12 39.5 11.5 36 11.5 33c0-11.3 9.2-20.5 20.5-20.5S52.5 21.7 52.5 33c0 4.1-0.5 8.1-1.6 11.6',
+    'M19.8 49.5c-1.6-4.3-2.6-9.6-2.6-16 0-8.2 6.6-14.8 14.8-14.8s14.8 6.6 14.8 14.8c0 6.2-1 11.9-3.1 16.6',
+    'M26.6 54c-1.6-5.4-2.6-11.8-2.6-19.6 0-4.4 3.6-8 8-8s8 3.6 8 8c0 7.8-1.1 14.6-3.7 20.6',
+    'M32 34c0 8.3-1 15.6-3.2 22.5',
+  ],
+  'shield-check': ['M32 6l21 8v15c0 13.5-9 23.5-21 28-12-4.5-21-14.5-21-28V14z', 'M22 31.5l7 7 14-15'],
+  hierarchy: [
+    'M24 8h16v12H24z',
+    'M6 44h16v12H6zM24 44h16v12H24zM42 44h16v12H42z',
+    'M32 20v12M14 44V32h36v12M32 32v12',
+  ],
+  waveform: ['M9 28.5v7M16.3 22v20M23.6 13v38M30.9 23.5v17M38.2 9v46M45.5 19.5v25M52.8 26.5v11'],
+  book: [
+    'M32 16c-6.5-4-14.5-5.2-24-4.4v36c9.5-0.8 17.5 0.4 24 4.4 6.5-4 14.5-5.2 24-4.4v-36c-9.5-0.8-17.5 0.4-24 4.4z',
+    'M32 16v36',
+    'M14 22.4c4.3-0.2 8.3 0.4 12 1.8M14 29.4c4.3-0.2 8.3 0.4 12 1.8M38 24.2c3.7-1.4 7.7-2 12-1.8M38 31.2c3.7-1.4 7.7-2 12-1.8',
   ],
 };
 ---

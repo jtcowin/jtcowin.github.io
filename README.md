@@ -5,23 +5,25 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Technical Product Marketing Version 1, checkpoint in review.** Version 2.0 and its poster
-revision are published. The redesigned Technical Product Marketing page is committed locally through its
-opening three sections and not pushed until they have been reviewed in the browser; the Website chapter
-and the chapters after it come next. Placeholders render only in `npm run dev`; production builds hide
+**Status: Technical Product Marketing Version 1.1 in review.** Version 2.0 and the Technical Product
+Marketing Version 1 checkpoint are published. Version 1.1 is committed locally through the page's first
+five sections and not pushed until they have been reviewed together in the browser; the chapters after
+Technical documentation come next. Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
 
-Technical Product Marketing Version 1 replaces the case study's page with its own, built through 01
-Hero, 02 Foundation and 03 Shared Product Language (see [Technical Product Marketing, Version
-1](#technical-product-marketing-version-1)). The hero plays the opening 22 seconds of Bolt in 60 seconds
-on a screen that grows to fill the viewport as the page scrolls; the foundation opens from a compact
-stack into a library of the 16 foundation documents, by their real titles, moving right to left; their
-strips become the underline of "Shared product language", and that line travels past Documentation,
-Articles and Campaigns to Website and becomes the frame of the first website visual. Contact and the
-footer close the page. Two site-wide changes come with it: inner pages lead their header with a
-restrained HOME link in place of the name, and the homepage opens, once per browsing session, with a
-1.6-second sequence of three beats: "Product complexity.", "Market clarity." and "Welcome."
+Technical Product Marketing replaces the case study's page with its own, now at Version 1.1, built
+through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website and 05 Technical
+documentation (see [Technical Product Marketing, Version 1.1](#technical-product-marketing-version-11)).
+The hero starts with a smaller screen under the copy, playing the opening 22 seconds of Bolt in 60
+seconds, and grows it to fill the viewport as the page scrolls; the foundation opens centered, then
+from a compact stack into a library of twelve named documents, each with its own accent and icon,
+moving right to left; one statement follows, revealed word by word; then the website plays in an
+oversized desktop display and the documentation in a large browser frame, each walkthrough once, from
+its poster. Contact and the footer close the page. Two site-wide changes came with Version 1: inner
+pages lead their header with a restrained HOME link in place of the name, and the homepage opens, once
+per browsing session, with a 1.6-second sequence of three beats: "Product complexity.", "Market
+clarity." and "Welcome."
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -167,11 +169,13 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
   `fallback` stand-ins, and optional `focus`). `role` (optional) is the one-line "My role:" summary
   under the intro (see Case-study roles below).
-- **Technical Product Marketing** (Version 1): `src/data/tpm.json` holds the hero copy and scope line,
-  the foundation headline and paragraph, the six category families (label, color and icon), the
-  library in order (the six interviews as the source, then the 16 foundation documents by number and
-  title), and the phrase and four expressions of the transition. The page's metadata and its Select
-  Work card still come from the case study's frontmatter; its older MDX body is no longer rendered.
+- **Technical Product Marketing** (Version 1.1): `src/data/tpm.json` holds the hero copy and scope
+  line, the foundation's two headline lines and paragraph, the twelve documents in order (display
+  number, title, subline, icon, accent name and color) and the number of blank covers, the statement,
+  and for Website and Technical documentation their name, metadata (label and paragraphs; `**name**`
+  sets a name in bold), contribution statement and walkthrough asset, with the documentation's three
+  chapters (start in seconds, title and note). The page's metadata and its Select Work card still come
+  from the case study's frontmatter; its older MDX body is no longer rendered.
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -392,8 +396,8 @@ retired hero preview ships nowhere, and no file under a master's name (the Versi
 included) is tracked or shipped; and the trust bar shows seven logo files, Ambur Marketplace as the
 supplied SVG byte for byte, carrying its optical sizing.
 
-The Technical Product Marketing Version 1 checks are listed with the page (see [Technical Product
-Marketing, Version 1](#technical-product-marketing-version-1)).
+The Technical Product Marketing checks are listed with the page (see [Technical Product Marketing,
+Version 1.1](#technical-product-marketing-version-11)).
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -643,25 +647,34 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
 
-### Technical Product Marketing, Version 1
+### Technical Product Marketing, Version 1.1
 
-John's TPM V1 concept, built to its first checkpoint: 01 Hero, 02 Foundation and 03 Shared Product
-Language, then Contact and the footer. The page is `src/pages/work/technical-marketing.astro` with
-`src/components/tpm/` (TpmHero, TpmFlow, DocIcon), its copy and library in `src/data/tpm.json` and its
-motion in `src/lib/tpm-motion.ts`; `src/pages/work/[slug].astro` no longer builds this case study. The
-page runs up under the header row (`--header-row`), so its opening screen is the whole viewport.
+John's TPM V1.1 brief (October 12, 2026), built through its first five sections: 01 Hero, 02
+Foundation, 03 the transitional statement, 04 Website and 05 Technical documentation, then Contact and
+the footer. The page is `src/pages/work/technical-marketing.astro` with `src/components/tpm/` (TpmHero;
+TpmFlow for 02 and 03; TpmWebsite and TpmDocs, which share TpmCase for their opening and TpmWalkthrough
+for their player; DocIcon), its copy and library in `src/data/tpm.json` and its motion in
+`src/lib/tpm-motion.ts`; `src/pages/work/[slug].astro` no longer builds this case study. The page runs
+up under the header row (`--header-row`), so its opening screen is the whole viewport. The brief itself
+is kept and revised in place outside the repository; this section follows it.
 
-- **01 Hero** (light surface, one screen, in the approved order): the kicker "02 / TECHNICAL PRODUCT
-  MARKETING" (capitals by CSS) and the headline on the left of the upper area with the supporting
-  sentence on the right, level with the headline's last line; the screen in the central and lower area,
-  centered and as large as the remaining height allows at 16:9 (a size container, so its width follows
-  the room's height), with neutral space around it; and the scope line on the bottom edge (its middle
-  dots are skipped by screen readers, and the list starts a dot's width left of the column with that
-  margin clipped, so no line ever opens with a dot). Phones stack the same parts. The copy rises in
-  first, the screen about 0.4 seconds later. The screen shows the designed poster, the
-  reference frame John supplied (frame 522), until the loop starts once the screen has arrived
-  (1.3 seconds); the loop then fades in over its own first frame. Nothing is laid over the animation
-  but its pause and play control.
+- **01 Hero, entry** (light surface): the kicker "02 / TECHNICAL PRODUCT MARKETING" (capitals by CSS)
+  and the headline on the left of the upper area with the supporting sentence on the right; below them,
+  centered, a smaller 16:9 screen, 54% of the window's width at most, never wider than 60rem and never
+  taller than the room between the copy and the scope line less clear space above and below it (so a
+  short laptop screen gets a smaller screen, about 44% at 1366x768, rather than a smaller headline); and
+  the scope line centered on the page, all seven areas on one line or two balanced ones (`text-wrap:
+  balance`), never in smaller type. Every item but the first has a middle dot before it, skipped by
+  screen readers, and the script hides the dot where an item opens a line. Phones stack the same parts.
+  The copy rises in first and the screen about 0.4 seconds later; the screen shows the designed poster
+  (frame 522) until the loop starts at 1.3 seconds and fades in over its own first frame.
+- **01 Hero, scroll**: on wide, tall-enough screens with motion allowed the hero holds for one screen of
+  scrolling. Over the first 80% the screen grows (transform only) from its place to cover the viewport,
+  its corners easing square and its shadow away; the copy and the scope line stay while it begins to
+  grow, so the whole entry has been seen, and give way from 14% to 48% of the growth. The rest holds the
+  animation full screen, and the header turns dark as it passes under it. Nothing is laid over the
+  animation but its pause and play control, which stays in the visible lower right corner. With reduced
+  motion the entry simply stays as it is.
 - **The loop**: the opening of `bolt-in-60-seconds.mp4`, cut from the frame-identical master: frames 0
   to 529 (0:00 to 0:22.06, 22.1 seconds), ending on the slide that follows the reference frame. The
   end-to-start cut was visible (the panel is mid-slide where the next scene would cut in), so the last
@@ -671,52 +684,93 @@ page runs up under the header row (`--header-row`), so its opening screen is the
   1920x1080, 3.2 MB, and `bolt-in-60-seconds-hero-loop-720.mp4`, 1280x720, 1.3 MB, which phones get
   through the first `<source>`'s media query. The poster is frame 522, 1920x1080, converted with the
   video's own BT.709 matrix so the hand-off from poster to video does not shift color.
-- **The screen fills the viewport**: on wide, tall-enough screens with motion allowed, the hero holds
-  for 0.75 screens of scrolling. Over the first 80% the screen grows (transform only) from its place to
-  cover the viewport, centered, its corners easing square and its shadow away, while the copy above and
-  the scope line below give way; the rest holds the animation full screen. The header turns dark as the screen
-  passes under it. The pause control stays in the visible lower right corner of the screen. The loop
-  pauses whenever the hero is out of view, in a hidden tab, and for a reader's pause.
-- **02 Foundation** (dark surface): the headline left and the paragraph right, the center open; then
-  the compact stack (the first six cards, offset and turned, Stakeholder Interviews on top) opens into
-  the featured spread across the screen, and the whole library moves right to left as the page scrolls
-  down. The library is the six stakeholder interviews (the source material, an approved result) and the
-  16 foundation documents by their Linear numbers and titles (01 Claims Log to 15 Brand Manifesto, and
-  Copy Bank); the 00 working document and the later operating documents are left out, and no document's
-  body is read, shown or quoted. Each card shows its number, title and a short context, all horizontal,
-  with a 4px strip in its family color on its left edge and its family icon large and faded (17%,
-  27% on hover, when the card also lifts 6px). The six approved families: Stakeholder interviews
-  (red, chat bubbles), Product foundations (yellow, stacked boxes), Audience and use cases (teal,
-  audience), Positioning system (violet, target), Claims and proof (green, verification) and Messaging
-  architecture (warm orange, network). The words outside titles come to 80 (the paragraph and the
-  contexts).
-- **The narrative transition**: when the library stops, the documents still on screen let go of their
-  titles, then of their faces and icons, and only then do their strips turn a quarter and slide up
-  into place as the colored segments of the phrase's underline, which the neutral line then draws over
-  as "Shared product language" arrives. No text is ever seen turned.
-- **03 Shared Product Language**: the phrase alone, and the line. From the underline it travels down and
-  across under Documentation, Articles and Campaigns, which appear as it reaches them, turns down on the
-  right in one round hook and runs back along the top edge of the website frame toward Website, where
-  a small yellow tip points at the word. Website then grows and brightens while the others recede to
-  45% (still 3:1 on the ink ground at their size), and the line runs on as Website's underline and around the frame of the first website visual
-  (the website hero motion on its poster), which fades in inside it and plays. Bolt yellow (`#FCEC2B`)
-  appears only as the line's leading 96px and that tip; the line itself is neutral. There are no
-  cards, boxes, pills or icons, no second heading or paragraph, and no arrowhead but the tip. The path
-  is drawn from the measured positions of the phrase, the words and the frame, so it adapts to any
-  screen.
-- **Pacing**: one sticky stage holds 02 and 03 for 5.95 screens of scrolling, in screen heights: the
-  stack 0.15, the spread 0.5, the library 1.9, the transition 0.75, the line 1.2, Website 0.35, the
-  frame 0.65 and the website visual 0.45 (`PHASES` in `TpmFlow.astro`; the hero's 0.75 is its
-  `.is-live` height in `TpmHero.astro`). The concept suggests about 1.2 to 1.4 screens for the
-  foundation; the library's 17 cards need about 1.9 to pass at a readable pace, so these are the
-  numbers to tune after the browser review.
+- **02 Foundation** (dark surface): a centered opening, unlike the split hero: the headline on exactly
+  two lines ("Before the message" / "came the foundation.", each its own unbroken line), the approved
+  paragraph beneath it at 38rem, then a generous gap before the documents, which are lowered rather than
+  the opening compressed. The four parts stay: the entry, the compact stack opening into the featured
+  spread, the library moving right to left, and the exit, where the documents sink a little and fade,
+  left to right, as the opening steps back. Twelve named documents in the brief's order, numbered 00 to
+  11 for display (not their Linear numbers): 00 Stakeholder Interviews ("Cross-functional leadership
+  input"; the interview count is not published), 01 Strategic Foundation Brief, 02 Target Buyer
+  Analysis, 03 Market Pain Points Research, 04 Target Audience Psychology, 05 Competitor Analysis, 06
+  Product Positioning, 07 Brand Archetype, 08 Claims Log, 09 Messaging Hierarchy, 10 Brand Tone of
+  Voice and 11 Brand Lexicon, each with its subline from the brief. Invariants, Mission Statement,
+  Category North Star, Brand Manifesto and Copy Bank are gone. Two unlabeled neutral covers follow 11,
+  quieter with depth, with no number, title, subline or icon, hidden from screen readers.
+- **The cards**: every named document has its own muted accent on its 4px strip and its faded icon
+  (coral, mustard, teal, rust, lavender, blue, magenta, ochre, green, cyan, rose and violet, in order;
+  side by side, no two closer than 24 in CIELAB), and its own icon, drawn for its subject on one 64-unit
+  grid with one line weight (`DocIcon.astro`): two speech bubbles, stacked layers, a person with a lens,
+  a lens with an alert, a profile with a spark, binoculars, a crosshair, a fingerprint, a verified
+  shield, a connected hierarchy, an audio waveform and an open book. One internal grid for every card:
+  the number in a fixed 1.25rem row (every number on one baseline), the title from the same height in an
+  area two lines tall (a longer title wraps into the space below without moving anything), open space,
+  and the subline in a fixed two-line area at the bottom. The icon keeps one zone, at the right between
+  the title and the subline, faded to 17% (27% on hover, when the card also lifts 6px).
+- **03 The transitional statement** (dark, in the same stage): one large block of type and nothing else,
+  "The strategy did not stay in a document. It became the website, technical documentation, articles,
+  campaigns, and content that brought the product to market.", its second sentence opening a line of its
+  own. It is revealed word by word as the page scrolls (each word fades in with a slight rise; no
+  typewriter, no cursor) and then held for about two thirds of a screen so it can be read. Screen
+  readers get the sentence whole (the word-by-word copy is `aria-hidden`); with reduced motion it is
+  simply there.
+- **04 Website** (soft surface, its own chapter, after FABRIC's restraint rather than its look):
+  "Website", the metadata row (Brief, Role / Services, Timeline and Credits, Bob van der Meer in bold;
+  no location or year), the contribution statement, then one oversized thin-bezel desktop display built
+  in CSS (a graphite body whose bezel is 0.85% of its width, a slim stand), min(84vw, 76rem) wide and
+  centered in open space, entering with a short rise. Nothing sits around or over it. Phones drop the
+  hardware and run the recording edge to edge.
+- **The website walkthrough**: the approved take (Website Screen Recording.mov, recorded at 3:49:15 PM
+  on October 12, 2026; it stays outside the repository), whole and in its own sequence from the hero to
+  the partnership form, 46.8 seconds, the form fully visible from about 43 seconds. Cropped by 48px at
+  each side and 46px at the bottom of the 3456x1936 capture to an exact 16:9 (3360x1890): that removes
+  the window's rounded corners, the scroll bar and the browser's link preview (39.1 to 40.8 seconds,
+  bottom left) without touching the site's own framing. Cutting it to the brief's 16:10 would have
+  taken about 5% off each side, through the left-aligned headlines, so the display is 16:9 instead. The
+  pointer appears only for the call-to-action hover and the form. Silent H.264 with fast start:
+  `bolt-website-walkthrough.mp4`, 1920x1080 at 60 fps, CRF 23, 7.6 MB, and
+  `bolt-website-walkthrough-720.mp4`, 1280x720 at 30 fps, 3.0 MB, for phones. Poster: its first frame,
+  the hero at rest. MP4 only: H.264 plays in every browser, and a WebM copy would be more files to keep
+  for no visible gain (it is a source line to add later if wanted).
+- **05 Technical documentation** (light-return surface, its own chapter): "Technical documentation",
+  the metadata row (Brief, Goal, Role / Responsibilities and Credits; no timeline), the contribution
+  statement, then a large frameless browser frame (a slim bar with three dots, no device), up to 90rem
+  wide, entering with a short rise. Under it, the walkthrough's three chapters, each with one line
+  drafted from the brief's confirmed facts (the diagram's names John's process and credits Bob van der
+  Meer for the final design and build; the SDK's says the existing SDK code was preserved). The chapter
+  playing is marked, its hairline filling as it plays, and each chapter is a button that plays from its
+  point. Nothing is laid over the documentation. Phones run the frame edge to edge.
+- **The documentation walkthrough**: from the approved take (Tech Docs Screen Recording.mov, 4:05:41
+  PM, 58.5 seconds), 33.2 seconds: 0:00 to 0:06.9 and 0:08.2 to 0:11.9 (the home page and a glimpse of
+  Start here; 1.3 seconds of a still pause come out between identical frames, so the join cannot be
+  seen), 0:15.8 to 0:28.6 (the whole diagram, then its Hedge / Rebalance Liquidity and Oracle
+  explanations; the Position Engine and Hedge hovers are cut) and 0:39.9 to 0:50.3 (the SDK page from
+  its title and quickstart to the getOracleConfig example, a still code frame), with 0.3-second
+  cross-fades at the two page changes. Contact & Support and the partnership form are cut. The diagram
+  is the longest moment (12.5 seconds); the pointer stays throughout. Silent H.264 with fast start:
+  `bolt-docs-walkthrough.mp4`, 2560x1440 at 60 fps (sharp text at the frame's full width on Retina
+  screens), CRF 22, 6.5 MB, and `bolt-docs-walkthrough-720.mp4`, 1280x720 at 30 fps, 1.9 MB. Poster:
+  the documentation home. The chapter starts (0, 10.45 and 22.95 seconds, the middles of the
+  cross-fades) are in `tpm.json`.
+- **Playback** (`Walkthrough` in `tpm-motion.ts`): each walkthrough is fetched only as its frame comes
+  within a screen of view; it plays once, silently, when the frame is well inside the viewport (60% for
+  the display, 55% for the browser), pauses whenever the frame leaves (under 20% visible) and resumes
+  when it returns, and holds its last frame when it ends. One small control pauses, plays and, at the
+  end, replays. Reduced motion, data saving or a refused autoplay leave the poster and the play
+  control; a recording that cannot load keeps its poster and loses its control. No scroll scrubbing,
+  and nothing depends on hover.
+- **Pacing**: the hero holds for one screen; one sticky stage then holds 02 and 03 for 3.9 screens, in
+  screen heights: the stack 0.15, the spread 0.5, the library 1.45, the exit 0.4, the statement 0.75 and
+  its hold 0.65 (`PHASES` in `TpmFlow.astro`; the hero's is its `.is-live` height in `TpmHero.astro`).
+  The library now passes 14 cards (12 named and 2 covers) at the Version 1 speed; 02 takes about 2.5
+  screens in all against the concept's 1.2 to 1.4. Each is one number to tune after the review.
 - **Fallbacks**: the choreography needs the script's `is-live` class, a 60rem minimum width, a 37.5rem
   minimum height and no reduced motion. Without it (phones, tablets, short windows, reduced motion, no
-  JavaScript) every section reads in normal flow: the hero with its screen inline, the library as a
-  grid, the phrase above the four words (Website first, underlined in yellow) and the framed website
-  visual. Reduced motion and data saving autoplay nothing (the controls still play on request); phones
-  play the 720p loop. Checked at 1024x768, 1280x720, 1440x900 and 1920x1080 live, and at 390x844,
-  768x1024 and reduced motion or no JavaScript at 1440x900 still.
+  JavaScript) every section reads in normal flow: the hero's entry state, the library as a grid with the
+  covers at its end, and the statement in full; the Website and Technical documentation chapters are the
+  same everywhere. Reduced motion and data saving autoplay nothing (the controls still play on request);
+  phones get the 720p encodes. Checked live at 1024x768, 1280x720, 1366x768, 1440x900 and 1920x1080, and
+  still at 390x844 and at 1440x900 with reduced motion.
 - **HOME** (every page but the homepage): the header leads with a HOME link to the homepage in place
   of the name, in the navigation's pill and padding and the small tracked capitals the site keeps for
   labels (the capitals are CSS, so it reads as "Home").
@@ -727,13 +781,19 @@ page runs up under the header row (`--header-row`), so its opening screen is the
   motion, so a return from a case study does not replay it. Nothing waits for it: the photograph and
   the videos load underneath as usual. Scrolling, a click, a tap or any key ends it at once. It is
   `aria-hidden`, and it ends by itself even if its script never runs.
-- **Checks**: `verify.mjs` holds the approved copy word for word, the library's titles and numbers in
-  order with each card's strip, icon, family and nothing but its number, title and context, the 80-word
-  ceiling, the phrase and exactly four expressions with Website leading, the loop files (22.1 seconds,
-  H.264, silent, fast start, their sizes and dimensions), the hero's video and poster markup, the
-  `is-live`, width, height and motion guards on every sticky rule, no vertical text, the page's motion
-  script guards, the closing Contact frame, HOME on every inner page and not on the homepage, and the
-  opening sequence's beats, length, session and motion guards and its homepage-only placement.
+- **Checks**: `verify.mjs` holds the approved copy word for word (the hero, the two-line foundation
+  headline, the paragraph, the statement, both chapters' metadata and contribution statements); the
+  scope line's seven areas, centering and balance, and the screen's 50 to 56% start with a cap; the
+  twelve documents' numbers, titles and sublines in order, each card's strip, icon and nothing else, a
+  distinct accent and icon for every document and no near-identical neighbors, one or two blank covers,
+  the shared card grid, the removed documents and the unpublished interview count, the 80-word ceiling;
+  no arrow sequence left; the Website display and the browser frame, the walkthroughs' markup (no loop,
+  autoplay or controls, phone encode first, a hidden labeled control, a lazy poster) and files (length,
+  H.264, silent, fast start, dimensions, sizes), the chapters (titles, order, the diagram longest, their
+  buttons), the loop files and the hero's video and poster markup, the `is-live`, width, height and
+  motion guards on every sticky rule, no vertical text, the motion script's guards (including the hold
+  on the last frame), the closing Contact frame, HOME on every inner page and not on the homepage, and
+  the opening sequence's beats, length, session and motion guards and its homepage-only placement.
 
 ### Case-study roles
 
@@ -761,13 +821,15 @@ src/
   data/                 site.json, home.json, logos.json, assets.json, tpm.json (Technical Product Marketing)
   assets/               images by page and section; reel/ (the 24 reel stills), stack/ (the 18 logos)
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution),
-                        tpm-motion.ts (the Technical Product Marketing page's stages and loops)
+                        tpm-motion.ts (the Technical Product Marketing page's stages, loops and
+                        walkthroughs)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
   components/           Intro (the homepage opening sequence), Hero, About, LogoBar, WorkPanels
                         (Select Work), WorkReel, Capabilities (From positioning to production),
                         Contact, Media, …
-  components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 Shared Product Language), DocIcon
+  components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 the statement), TpmWebsite, TpmDocs,
+                        TpmCase (a chapter's opening), TpmWalkthrough (its player), DocIcon
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
   pages/                index, work/technical-marketing, work/[slug] (the other case studies), 404,
                         robots.txt, site.webmanifest
