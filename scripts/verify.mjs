@@ -830,7 +830,10 @@ else {
 // briefed, shaped, approved and distributed work made with designers, editors
 // and creators, without implying he was the hands-on designer. The label
 // appears once per page.
-for (const slug of ['creator-campaigns', 'technical-marketing', 'events-video']) {
+// (Technical Product Marketing left the shared case-study layout in its
+// Version 1 redesign; its hero states John's part in its own copy and scope
+// line, checked below.)
+for (const slug of ['creator-campaigns', 'events-video']) {
   const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
   const roles = [...page.matchAll(/<p class="cs-hero__role[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
   if (roles.length !== 1) {
@@ -847,6 +850,196 @@ for (const slug of ['creator-campaigns', 'technical-marketing', 'events-video'])
   if (/graphic design|\bdesigned\b|\bdesigner\b|illustrat|\banimat/i.test(role)) failures.push(`[claim] ${slug}: the role line must not imply John was the hands-on designer`);
   if (page.indexOf('cs-hero__intro') < 0 || page.indexOf('cs-hero__role') < page.indexOf('cs-hero__intro')) failures.push(`[claim] ${slug}: the role line must follow the intro`);
   if ((textOf(page.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length !== 1) failures.push(`[claim] ${slug}: "My role" must appear once on the page`);
+}
+
+// ------------------------------------------------ Technical Product Marketing
+// Version 1 checkpoint (John's TPM V1 concept): the case study's own page,
+// through 01 Hero, 02 Foundation and 03 Shared Product Language, whose line
+// lands as the frame of the first website visual, then Contact and the
+// footer. Copy is checked word for word against the approved concept.
+const tpmPage = fs.readFileSync(path.join(dist, 'work/technical-marketing/index.html'), 'utf8');
+const tpmData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/tpm.json'), 'utf8'));
+const tpmText = (re) => textOf(((tpmPage.match(re) || [, ''])[1] || '').replace(/[‘’]/g, "'"));
+// Text with a space at every tag, for runs of separate elements.
+const spaced = (html) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+const TPM = {
+  kicker: '02 / Technical Product Marketing',
+  headline: 'Building the system behind the message.',
+  copy: "I built the strategic foundation that turned Bolt Liquidity's technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
+  scope: ['Research', 'Positioning', 'Messaging', 'Claims Governance', 'Technical Documentation', 'Web Content', 'Campaign Direction'],
+  foundationHeadline: 'Before the message came the foundation.',
+  foundationCopy: 'Before Bolt Liquidity could be explained externally, it needed a shared internal language. I turned stakeholder interviews and product research into the positioning, claims, proof points, and narrative architecture that guided every public-facing expression.',
+  phrase: 'Shared product language',
+  expressions: ['Website', 'Documentation', 'Articles', 'Campaigns'],
+};
+if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not use the shared case-study hero (cs-hero)');
+if (tpmText(/<p class="eyebrow tpm-hero__kicker[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.kicker) failures.push(`[tpm] the kicker must read "${TPM.kicker}" (capitals by CSS)`);
+if (tpmText(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) !== TPM.headline) failures.push(`[tpm] the headline must read "${TPM.headline}"`);
+if (tpmText(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.copy) failures.push('[tpm] the hero must carry the approved supporting sentence');
+const scopeItems = [...((tpmPage.match(/<ul class="tpm-hero__scope[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
+if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the scope line must be ${TPM.scope.join(' · ')} (found ${scopeItems.join(' · ')})`);
+if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned hero carries no "My role" line');
+// The hero loop: silent, muted, inline, looping, nothing fetched by the HTML
+// alone, no player controls or autoplay attribute (the script plays it after
+// the entrance), an accessible name, a lighter source for phones listed
+// first, and the designed poster as an eager, responsive picture beneath it.
+const tpmHeroHtml = (tpmPage.match(/<section class="tpm-hero"[\s\S]*?<\/section>/) || [''])[0];
+const heroVideo = (tpmHeroHtml.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
+const heroVideoTag = (heroVideo.match(/<video\b[^>]*>/) || [''])[0];
+for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'aria-label="']) if (!heroVideoTag.includes(attr)) failures.push(`[tpm] the hero video is missing ${attr}`);
+if (/\b(?:controls|autoplay)\b|\bposter=/.test(heroVideoTag)) failures.push('[tpm] the hero video must not carry controls, autoplay or a poster attribute');
+const heroSources = [...heroVideo.matchAll(/<source\b[^>]*>/g)].map((m) => m[0]);
+if (heroSources.length !== 2 || !/bolt-in-60-seconds-hero-loop-720\.mp4/.test(heroSources[0] || '') || !/media="\(max-width: 47\.99rem\)"/.test(heroSources[0] || '') || !/bolt-in-60-seconds-hero-loop\.mp4/.test(heroSources[1] || '') || /\bmedia=/.test(heroSources[1] || '')) {
+  failures.push('[tpm] the hero video must list the phone loop (max-width 47.99rem) and then the wide-screen loop');
+}
+const heroPoster = (tpmHeroHtml.match(/<img\b[^>]*class="tpm-screen__poster"[^>]*>/) || [''])[0];
+if (!heroPoster || !/\balt(?:="")?[\s>]/.test(heroPoster) || !/loading="eager"/.test(heroPoster) || !/fetchpriority="high"/.test(heroPoster) || !/\bsrcset="/.test(heroPoster)) failures.push('[tpm] the hero poster must be an eager, high-priority, responsive picture with empty alt text');
+const toggles = tpmPage.match(/<button\b[^>]*\bdata-loop-toggle\b[^>]*>/g) || [];
+if (toggles.length !== 2 || toggles.some((t) => !/\bhidden\b/.test(t) || !/aria-label="Play video: [^"]+"/.test(t))) failures.push('[tpm] each loop (the hero and the website) needs its own labeled control, hidden until its script runs');
+// The loop files: web derivatives of bolt-in-60-seconds, frames 0 to 529
+// (22.1 seconds), H.264 with the index first, no audio track.
+for (const [name, w, h, mb] of [['bolt-in-60-seconds-hero-loop.mp4', 1920, 1080, 6], ['bolt-in-60-seconds-hero-loop-720.mp4', 1280, 720, 2.5]]) {
+  const file = path.join(root, 'public/media', name);
+  if (!fs.existsSync(file)) {
+    failures.push(`[tpm] public/media/${name} not found`);
+    continue;
+  }
+  const f = mp4Facts(file);
+  const sec = mp4Seconds(file);
+  const size = fs.statSync(file).size / 1e6;
+  if (!(Math.abs(sec - 22.1) <= 0.06)) failures.push(`[tpm] ${name} runs ${sec.toFixed(2)} s; the approved loop runs 22.1 s (0:00 to the slide after the reference frame)`);
+  if (f.handlers.includes('soun')) failures.push(`[tpm] ${name} carries an audio track`);
+  if (!f.avc) failures.push(`[tpm] ${name} must be H.264`);
+  if (!(f.top.indexOf('moov') >= 0 && f.top.indexOf('moov') < f.top.indexOf('mdat'))) failures.push(`[tpm] ${name} must keep its index before its data (faststart)`);
+  if (f.width !== w || f.height !== h) failures.push(`[tpm] ${name} is ${f.width}x${f.height}; expected ${w}x${h}`);
+  if (size > mb) failures.push(`[tpm] ${name} is ${size.toFixed(2)} MB; it stays under ${mb} MB`);
+}
+const tpmPosterFile = path.join(root, 'src/assets/technical-marketing/bolt-in-60-seconds-hero-poster.jpg');
+const tpmPosterSize = fs.existsSync(tpmPosterFile) ? imageSize(tpmPosterFile) : null;
+if (!tpmPosterSize || tpmPosterSize.width !== 1920 || tpmPosterSize.height !== 1080) failures.push('[tpm] the hero poster must be the 1920x1080 reference frame');
+// 02: the entry, then the library: the six interviews as the source, then
+// the 16 foundation documents by their Linear titles and numbers (approved
+// by John before publishing), each with its category strip, its faded icon
+// and a one-line context, and nothing of any document's body.
+const FOUNDATION = [
+  [null, 'Stakeholder Interviews'], ['01', 'Claims Log'], ['02', 'Strategic Foundation Brief'], ['03', 'Product Positioning'], ['04', 'Invariants'],
+  ['05', 'Messaging Hierarchy'], ['06', 'Target Buyer Analysis'], ['07', 'Market Pain Points Research'], ['08', 'Competitor Analysis'], ['09', 'Mission Statement'],
+  ['10', 'Target Audience Psychology'], ['11', 'Brand Archetype'], ['12', 'Brand Tone of Voice'], ['13', 'Brand Lexicon'], ['14', 'Category North Star'],
+  ['15', 'Brand Manifesto'], [null, 'Copy Bank'],
+];
+const FAMILIES = { interviews: 'chat', foundations: 'boxes', audience: 'audience', positioning: 'target', claims: 'verify', messaging: 'network' };
+if (tpmText(/<h2 id="tpm-foundation-title"[^>]*>([\s\S]*?)<\/h2>/) !== TPM.foundationHeadline) failures.push(`[tpm] 02 must be headed "${TPM.foundationHeadline}"`);
+if (tpmText(/<p class="tpm-foundation__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.foundationCopy) failures.push('[tpm] 02 must carry the approved paragraph');
+const docItems = [...tpmPage.matchAll(/<li class="tpm-doc"[\s\S]*?<\/li>/g)].map((m) => m[0]);
+const docRows = docItems.map((li) => [textOf((li.match(/<span class="tpm-doc__num[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]) || null, textOf((li.match(/<span class="tpm-doc__title[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1])]);
+if (JSON.stringify(docRows) !== JSON.stringify(FOUNDATION)) failures.push(`[tpm] the library must list the source interviews and the 16 foundation documents by their approved titles and numbers, in order (found ${docRows.map((r) => r.filter(Boolean).join(' ')).join(', ')})`);
+const docFamilies = tpmData.foundation.documents.map((d) => d.family);
+docItems.forEach((li, i) => {
+  const fam = docFamilies[i];
+  if (!/<span class="tpm-doc__strip[^"]*"[^>]*aria-hidden="true"/.test(li)) failures.push(`[tpm] document ${i + 1} needs its category strip`);
+  if (!/<svg\b[^>]*class="tpm-doc__icon[^"]*"[^>]*aria-hidden="true"/.test(li) && !/<svg\b[^>]*aria-hidden="true"[^>]*class="tpm-doc__icon/.test(li)) failures.push(`[tpm] document ${i + 1} needs its faded category icon, hidden from assistive technology`);
+  if (!fam || !FAMILIES[fam] || !new RegExp(`data-family="${fam}"`).test(li)) failures.push(`[tpm] document ${i + 1} must belong to one of the six approved families`);
+  const context = textOf((li.match(/<span class="tpm-doc__context[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]);
+  const rest = spaced(li);
+  const expected = [docRows[i][0], docRows[i][1], context].filter(Boolean).join(' ');
+  if (!context || context.split(' ').length > 4) failures.push(`[tpm] document ${i + 1} needs one short context (found "${context}")`);
+  if (rest !== expected) failures.push(`[tpm] document ${i + 1} must show only its number, title and context (found "${rest}")`);
+});
+for (const [fam, def] of Object.entries(tpmData.foundation.families)) {
+  if (FAMILIES[fam] !== def.icon) failures.push(`[tpm] the ${fam} family must keep its approved icon (${FAMILIES[fam]})`);
+}
+const words02 = spaced(((tpmPage.match(/<section class="tpm-foundation"[\s\S]*?<\/section>/) || [''])[0]).replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<span class="tpm-doc__title[^"]*"[^>]*>[\s\S]*?<\/span>/g, '').replace(/<span class="tpm-doc__num[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')).split(' ').filter(Boolean).length;
+if (words02 > 80) failures.push(`[tpm] 02 keeps to about 50 to 80 words outside its titles (found ${words02})`);
+// 03: the one phrase and at most four expressions, Website leading; no cards,
+// boxes, pills or icons; the website visual in its frame.
+const langHtml = (tpmPage.match(/<section class="tpm-language"[\s\S]*?<\/section>/) || [''])[0];
+if (tpmText(/<h2 id="tpm-language-title"[^>]*>([\s\S]*?)<\/h2>/) !== TPM.phrase) failures.push(`[tpm] 03 must carry only the phrase "${TPM.phrase}" as its heading`);
+const exprs = [...langHtml.matchAll(/<li class="tpm-word[^"]*"[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
+if (exprs.join(' · ') !== TPM.expressions.join(' · ')) failures.push(`[tpm] 03 reveals exactly ${TPM.expressions.join(' · ')} (found ${exprs.join(' · ')})`);
+if (!/<li class="tpm-word tpm-word--lead"[^>]*>\s*Website\s*<\/li>/.test(langHtml)) failures.push('[tpm] Website must lead the expressions');
+if ((langHtml.match(/<h[1-6]\b/g) || []).length !== 1 || /<p\b/.test(langHtml.replace(/<video[\s\S]*?<\/video>/g, ''))) failures.push('[tpm] 03 has no second headline or paragraph');
+const langText = spaced(langHtml.replace(/<video[\s\S]*?<\/video>/g, '').replace(/<button[\s\S]*?<\/button>/g, ''));
+if (langText !== [TPM.phrase, ...TPM.expressions].join(' ')) failures.push(`[tpm] 03 shows only the phrase and the four expressions (found "${langText}")`);
+if (!/<path class="tpm-line__path"/.test(langHtml) || !/<svg\b[^>]*class="tpm-line"[^>]*aria-hidden="true"|<svg\b[^>]*aria-hidden="true"[^>]*class="tpm-line"/.test(langHtml)) failures.push('[tpm] 03 needs its decorative line (hidden from assistive technology)');
+if (!/bolt-website-hero-motion\.mp4/.test(langHtml) || !/class="tpm-site__poster"/.test(langHtml)) failures.push('[tpm] the line must land on the website visual (the website hero motion on its poster)');
+// The choreography is an enhancement: every sticky stage and every scroll
+// height needs the script's is-live class, a 60rem minimum width, a minimum
+// height and prefers-reduced-motion: no-preference; the still layout is what
+// the HTML and CSS show without it.
+const tpmSticky = CSS_RULES.filter((r) => /position:\s*sticky/.test(r.body) && /\.tpm-/.test(r.sel));
+if (tpmSticky.length < 2) failures.push('[tpm] the hero and the passage after it each need a sticky stage');
+for (const r of [...tpmSticky, ...CSS_RULES.filter((x) => /\.tpm-(?:hero|flow)(?:\[[^\]]*\])?\.is-live(?:\[[^\]]*\])?$/.test(x.sel.trim()))]) {
+  if (!/\.is-live\b/.test(r.sel) || !DESKTOP.test(r.at) || !TALL.test(r.at) || !MOTION_OK.test(r.at)) failures.push(`[tpm] "${r.sel}" must need .is-live, a 60rem minimum width, a minimum height and prefers-reduced-motion: no-preference`);
+}
+if (CSS_RULES.some((r) => /\.tpm-/.test(r.sel) && /writing-mode|text-orientation/.test(r.body))) failures.push('[tpm] no vertical copy');
+// The page's own scripts, inline and bundled, with the chunks they import.
+const pageScripts = (html) => {
+  const seenJs = new Set();
+  const out = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  const queue = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
+  for (const m of out.join('\n').matchAll(/from\s*["']([^"']+\.js)["']|import\s*["']([^"']+\.js)["']/g)) queue.push(m[1] || m[2]);
+  while (queue.length) {
+    let src = queue.shift();
+    if (src.startsWith(SITE_ORIGIN)) src = src.slice(SITE_ORIGIN.length);
+    const file = path.join(dist, src.replace(BASE, '').replace(/^\/+/, ''));
+    if (seenJs.has(file) || !fs.existsSync(file)) continue;
+    seenJs.add(file);
+    const js = fs.readFileSync(file, 'utf8');
+    out.push(js);
+    for (const m of js.matchAll(/from\s*["'](\.\/[^"']+\.js)["']|import\s*["'](\.\/[^"']+\.js)["']/g)) queue.push(path.posix.join(path.posix.dirname('/' + path.relative(dist, file).split(path.sep).join('/')), m[1] || m[2]));
+  }
+  return out.join('\n');
+};
+const tpmScripts = pageScripts(tpmPage);
+for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'requestVideoFrameCallback', 'visibilitychange', 'IntersectionObserver', 'is-live', 'NotAllowedError']) {
+  if (!tpmScripts.includes(token)) failures.push(`[tpm] the page's motion script is missing "${token}"`);
+}
+if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" class="[^"]*\bcontact--frame\b/.test(tpmPage)) failures.push('[tpm] the page closes with the full Contact frame on the brand surface');
+if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) failures.push('[tpm] the footer continues the brand surface');
+
+// HOME (TPM V1, global): every page but the homepage leads its header with a
+// restrained HOME link to the homepage in place of the name.
+for (const f of htmlFiles) {
+  const html = fs.readFileSync(f, 'utf8');
+  const rel = path.relative(dist, f);
+  const headerHtml = (html.match(/<header class="site-header[\s\S]*?<\/header>/) || [''])[0];
+  if (rel === 'index.html') {
+    if (/brand--home/.test(headerHtml)) failures.push('[home] the homepage header carries no HOME link');
+    continue;
+  }
+  const brand = (headerHtml.match(/<a\b[^>]*class="brand brand--home"[^>]*>([\s\S]*?)<\/a>/) || [, null])[1];
+  if (brand === null || textOf(brand) !== 'Home' || !new RegExp(`<a href="${BASE}/" class="brand brand--home"`).test(headerHtml)) failures.push(`[home] ${rel}: the header must lead with the HOME link to the homepage`);
+  if (/>\s*John Cowin\s*<\/a>/.test(headerHtml)) failures.push(`[home] ${rel}: the name no longer leads the header`);
+}
+if (!rulesFor(/\.brand--home\b/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[home] HOME is set in capitals through CSS');
+
+// The opening sequence (TPM V1, global): homepage only, three beats, about
+// 1.2 to 1.8 seconds, once per browsing session, never for reduced motion,
+// decided before the first paint, dismissed by any intent, hidden from
+// assistive technology, and never holding anything back from loading.
+const introHtml = (home.match(/<div class="intro"[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
+const beats = [...introHtml.matchAll(/<p class="intro__beat[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
+if (beats.join(' | ') !== 'Product complexity. | Market clarity. | Welcome.') failures.push(`[intro] the opening sequence must be Product complexity. / Market clarity. / Welcome. (found ${beats.join(' / ') || 'none'})`);
+if (!/<div class="intro"[^>]*aria-hidden="true"/.test(home)) failures.push('[intro] the opening sequence is decorative: aria-hidden');
+const headHome = (home.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
+const introHead = [...headHome.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('jc-intro')) || '';
+for (const token of ['prefers-reduced-motion: reduce', 'sessionStorage', 'jc-intro', "classList.add('intro'"]) if (!introHead.includes(token)) failures.push(`[intro] the head decision is missing "${token}"`);
+const introRules = rulesFor(/\.intro\b/);
+// The shorthand may come out in any order (minified: "1.6s linear both intro-out").
+const introMs = introRules
+  .map((r) => (r.body.match(/animation:\s*([^;]*)/) || [])[1])
+  .filter((v) => v && /\bintro-out\b/.test(v))
+  .map((v) => {
+    const m = v.match(/(?:^|\s)([\d.]+)(ms|s)\b/);
+    return m ? Number(m[1]) * (m[2] === 's' ? 1000 : 1) : NaN;
+  });
+if (!introMs.length || introMs.some((ms) => ms < 1200 || ms > 1800)) failures.push(`[intro] the sequence runs about 1.2 to 1.8 seconds (found ${introMs.join(', ') || 'none'} ms)`);
+const introScript = scriptsText.find((t) => t.includes('intro-skip')) || '';
+for (const token of ['wheel', 'touchstart', 'pointerdown', 'keydown', 'scroll']) if (!introScript.includes(token)) failures.push(`[intro] the sequence must end on "${token}"`);
+for (const f of htmlFiles) {
+  if (path.relative(dist, f) === 'index.html') continue;
+  const html = fs.readFileSync(f, 'utf8');
+  if (/jc-intro|class="intro"/.test(html)) failures.push(`[intro] ${path.relative(dist, f)}: the opening sequence is for the homepage only`);
 }
 
 // The resume must actually exist for v1.1.
@@ -887,7 +1080,7 @@ for (const f of srcFiles) {
   for (const m of s.matchAll(/<(?:Media|Gallery|Testimonial|LinkCard|ArticleCard|MetricMarker)\b[^>]*\bid=["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/\b(?:heroAsset|ogAsset|asset|poster|gallery|headshot)"?\s*[:=]\s*["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/ids=\{\[([^\]]+)\]\}/g)) for (const id of m[1].matchAll(/["']([a-z0-9-]+)["']/g)) idRefs.add(id[1]);
-  for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
+  for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric|media|screen)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
   // Select Work card media in each case study's frontmatter.
   if (f.endsWith('.mdx')) {
     for (const m of s.matchAll(/^\s*(?:main|motion):\s*["']([a-z0-9-]+)["']/gm)) idRefs.add(m[1]);
@@ -918,11 +1111,12 @@ if (unused.length) notes.push(`[manifest] unreferenced asset ids (fine, but tidy
 // ------------------------------------------------------ 4. hygiene
 // No Finder metadata ships or is tracked, and nothing oversized (such as the
 // full-length explainer video) reaches dist. The original video masters (the
-// hero animation, the slippage explainer, and the Version 2.0 sources: the
+// hero animation, the slippage explainer, the Version 2.0 sources: the
 // creator videos, the architecture recording, Sui Fest and the Sui Summit
-// presentation) never enter the site under their own names either; only the
-// web loops made from them do.
-const MASTER_NAME = /hero animation|slippage explained|bolt explainers|aftermovie\.|paper airplane|bolt bus trailer|architecture diagram video|max presentation|^suifest\.mp4$/i;
+// presentation, and bolt-in-60-seconds.mp4, the source of the Technical
+// Product Marketing hero) never enter the site under their own names either;
+// only the web loops made from them do.
+const MASTER_NAME = /hero animation|slippage explained|bolt explainers|aftermovie\.|paper airplane|bolt bus trailer|architecture diagram video|max presentation|^suifest\.mp4$|^bolt-in-60-seconds\.mp4$/i;
 for (const f of [...files, ...walk(path.join(root, 'public'))]) {
   if (MASTER_NAME.test(path.basename(f))) failures.push(`[hygiene] ${path.relative(root, f)} looks like an original video master; only its web preview belongs in the site`);
 }

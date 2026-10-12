@@ -35,6 +35,11 @@ export interface AssetEntry {
   filename: string | null;
   file: string | null;
   poster?: string | null;
+  /**
+   * A video's lighter encode for phones (under 48rem), in public/media
+   * beside `file`. Optional; without it every screen gets `file`.
+   */
+  fileSmall?: string | null;
   alt: string;
   source?: string | null;
   externalUrl?: string | null;

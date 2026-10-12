@@ -1,0 +1,57 @@
+---
+/**
+ * The six category icons of the foundation library, drawn as thin outlines
+ * that keep their line weight at any size (non-scaling strokes). Each card
+ * shows its family's icon large and faded, in the family's color; the icon is
+ * decorative, since the card's title and context carry the meaning.
+ *
+ *   chat      Stakeholder interviews   two speech bubbles
+ *   boxes     Product foundations      stacked blocks
+ *   audience  Audience and use cases   three people
+ *   target    Positioning system       a target
+ *   verify    Claims and proof         a shield with a check
+ *   network   Messaging architecture   connected nodes
+ */
+interface Props {
+  name: 'chat' | 'boxes' | 'audience' | 'target' | 'verify' | 'network';
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+
+const shapes: Record<Props['name'], string[]> = {
+  chat: [
+    'M9 12h32a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H24l-9 8v-8h-6a5 5 0 0 1-5-5V17a5 5 0 0 1 5-5z',
+    'M50 26h5a5 5 0 0 1 5 5v13a5 5 0 0 1-5 5h-3v7l-8-7H35a5 5 0 0 1-5-5v-2',
+    'M14 24.5h24M14 30h16',
+  ],
+  boxes: ['M10 44h44v12H10z', 'M14 30h36v14H14z', 'M19 16h26v14H19z', 'M24 23h16M21 37h22M17 50h30'],
+  audience: [
+    'M32 15a7 7 0 1 1 0 14 7 7 0 0 1 0-14z',
+    'M18 50c0-8.3 6.3-14 14-14s14 5.7 14 14',
+    'M14 21a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M4 48c0-6.2 4.5-10.5 10-10.5 2.2 0 4.2.6 5.8 1.7',
+    'M50 21a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M60 48c0-6.2-4.5-10.5-10-10.5-2.2 0-4.2.6-5.8 1.7',
+  ],
+  target: [
+    'M32 8a24 24 0 1 1 0 48 24 24 0 0 1 0-48z',
+    'M32 18a14 14 0 1 1 0 28 14 14 0 0 1 0-28z',
+    'M32 27a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M32 32L54 10M48 10h6v6',
+  ],
+  verify: ['M32 6l21 8v15c0 13.5-9 23.5-21 28-12-4.5-21-14.5-21-28V14z', 'M22 31.5l7 7 14-15'],
+  network: [
+    'M14 12a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M50 9a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M32 27a6 6 0 1 1 0 12 6 6 0 0 1 0-12z',
+    'M12 44a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M52 44a5 5 0 1 1 0 10 5 5 0 0 1 0-10z',
+    'M18.2 20.4L27.4 29M45.6 17.4L36.8 28.6M16.6 45.6L27.2 37.2M47.4 45.6L36.8 37.2M19 17h26',
+  ],
+};
+---
+
+<svg class={className} viewBox="0 0 64 64" fill="none" stroke="currentColor" aria-hidden="true" focusable="false">
+  {shapes[name].map((d) => <path d={d} vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />)}
+</svg>

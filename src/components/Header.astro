@@ -49,12 +49,14 @@ const links = [
   <div class="container site-header__inner">
     {
       /* No mark over the hero: the name is already the composition. Inner pages
-         still need a way home, so they get a plain text link. */
+         still need a way home: a restrained HOME label in the place the name
+         used to take, set like the navigation (the capitals are CSS, so it is
+         read as "Home"). */
       overlay ? (
         <span class="brand brand--empty" aria-hidden="true" />
       ) : (
-        <a href={withBase('/')} class="brand" aria-current={current === '/' ? 'page' : undefined}>
-          {site.name}
+        <a href={withBase('/')} class="brand brand--home" aria-current={current === '/' ? 'page' : undefined}>
+          Home
         </a>
       )
     }
@@ -161,16 +163,28 @@ const links = [
     if (header.classList.contains('site-header--overlay')) header.dataset.follow = '';
 
     let io: IntersectionObserver | null = null;
+    // Every surface on the line right now. A surface can sit inside another
+    // (the Technical Product Marketing hero's screen, dark inside the light
+    // hero, grows over the header as the page scrolls), so the innermost one,
+    // the last in document order, is the ground; when it leaves the line the
+    // one around it takes over again.
+    const crossing = new Set<HTMLElement>();
 
     const watch = () => {
       io?.disconnect();
+      crossing.clear();
       const mid = Math.round(header.getBoundingClientRect().height / 2);
       const bottom = Math.max(0, window.innerHeight - mid - 1);
       io = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
-            if (entry.isIntersecting) adopt(entry.target as HTMLElement);
+            const el = entry.target as HTMLElement;
+            if (entry.isIntersecting) crossing.add(el);
+            else crossing.delete(el);
           }
+          let ground: HTMLElement | null = null;
+          for (const s of surfaces) if (crossing.has(s)) ground = s;
+          if (ground) adopt(ground);
         },
         { rootMargin: `-${mid}px 0px -${bottom}px 0px`, threshold: 0 },
       );
@@ -238,7 +252,7 @@ const links = [
     align-items: center;
     justify-content: space-between;
     gap: var(--space-5);
-    min-height: 4.25rem;
+    min-height: var(--header-row);
   }
 
   .site-header--overlay .site-header__inner {
@@ -263,6 +277,27 @@ const links = [
     color: var(--nav-ink);
     text-decoration: underline;
     text-decoration-color: var(--nav-line);
+  }
+
+  /* HOME: the pill and padding of the navigation links, in the small tracked
+     capitals the site keeps for labels. */
+  .brand--home {
+    padding: 0.55rem 0.95rem;
+    margin-inline-start: -0.95rem;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--nav-ink-2);
+    transition:
+      color 180ms var(--ease-out),
+      background-color 180ms var(--ease-out);
+  }
+
+  .brand--home:hover {
+    color: var(--nav-ink);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--nav-bg) 100%, transparent);
   }
 
   .brand--empty {

@@ -394,6 +394,18 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     }
   }
 
+  /* While the homepage opening sequence plays (Intro.astro), the hero's
+     entrance waits for its ground to clear, so the photograph settles and
+     the descriptor arrives as the sequence fades. */
+  :global(html.intro-hold) .hero__photo .hero__img,
+  :global(html.intro-hold) .hero__subject .hero__img {
+    animation-delay: 1150ms;
+  }
+
+  :global(html.intro-hold) .hero__info {
+    animation-delay: calc(1150ms + 620ms);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero__photo .hero__img,
     .hero__subject .hero__img,

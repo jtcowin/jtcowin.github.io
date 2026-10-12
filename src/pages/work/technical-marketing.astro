@@ -1,0 +1,42 @@
+---
+/**
+ * Technical Product Marketing, Version 1 (checkpoint).
+ *
+ * The rebuilt case study, through its opening three sections: 01 Hero,
+ * 02 Foundation and 03 Shared Product Language, whose line lands as the frame
+ * of the first website visual. The Website chapter and the chapters after it
+ * come next; until then the page closes with Contact and the footer, as the
+ * homepage does. Metadata and the Select Work card still come from the case
+ * study's frontmatter (src/content/work/technical-marketing.mdx); its older
+ * MDX body is no longer rendered.
+ *
+ * The page pulls itself up under the header row, so its opening screen is the
+ * whole viewport and the header's links float over it.
+ */
+import { getEntry } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Contact from '@components/Contact.astro';
+import TpmHero from '@components/tpm/TpmHero.astro';
+import TpmFlow from '@components/tpm/TpmFlow.astro';
+
+const entry = await getEntry('work', 'technical-marketing');
+if (!entry) throw new Error('[technical-marketing] the case study entry is missing');
+const d = entry.data;
+---
+
+<BaseLayout title={d.title} description={d.description} path="/work/technical-marketing/" ogAsset={d.ogAsset} ogType="article" footerSurface="brand">
+  <article class="tpm" aria-labelledby="tpm-title">
+    <TpmHero />
+    <TpmFlow />
+  </article>
+
+  <div class="chapter" data-surface="brand">
+    <Contact />
+  </div>
+</BaseLayout>
+
+<style>
+  .tpm {
+    margin-top: calc(-1 * var(--header-row));
+  }
+</style>

@@ -1,0 +1,986 @@
+---
+/**
+ * 02 Foundation and 03 Shared Product Language (Technical Product Marketing,
+ * Version 1), one continuous passage on the dark surface.
+ *
+ * 02 keeps its four parts: the section entry (headline left, paragraph right,
+ * the center open), the featured spread (a compact stack of the first
+ * documents that opens across the screen), the full body of work (the whole
+ * library moving right to left as the page scrolls down) and the narrative
+ * transition (the last documents let go of their titles and icons and their
+ * colored strips converge into one line). Each document shows its number,
+ * its title and a short context, all horizontal, with a narrow strip in its
+ * category color on its left edge and its category icon large and faded.
+ * Nothing of any document's body is shown.
+ *
+ * 03 is that line. It begins as the underline of the one phrase, flows on in
+ * S-curves to underline Documentation, Articles and Campaigns, which appear as
+ * it reaches them, and comes to rest at Website, which becomes dominant while
+ * the others recede. Then it runs on as the underline of Website and the
+ * frame of the first website visual, which the case study continues from.
+ * Bolt yellow appears only at the leading end of the line and in the small
+ * tip that points at Website.
+ *
+ * All of it runs in one sticky stage on wide, tall-enough screens with motion
+ * allowed (see tpm-motion.ts). Everywhere else, and without JavaScript, the
+ * same content reads as a still layout: the headline and paragraph, the
+ * library as a grid, the phrase, the four words and the framed website.
+ */
+import { Picture } from 'astro:assets';
+import tpm from '@data/tpm.json';
+import { getAsset, resolveImage } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from '@components/Icon.astro';
+import DocIcon from './DocIcon.astro';
+
+const { foundation, language } = tpm;
+type FamilyKey = keyof typeof foundation.families;
+type IconName = 'chat' | 'boxes' | 'audience' | 'target' | 'verify' | 'network';
+
+const docs = foundation.documents.map((doc) => {
+  const family = foundation.families[doc.family as FamilyKey];
+  return {
+    number: doc.number,
+    title: doc.title,
+    family: doc.family,
+    color: family.color,
+    icon: family.icon as IconName,
+    context: ('context' in doc && doc.context) || family.label,
+  };
+});
+
+const site = getAsset(language.screen);
+const sitePoster = resolveImage(site);
+const siteSrc = site.file ? withBase(`/media/${site.file}`) : null;
+const slug = (word: string) => word.toLowerCase().replace(/[^a-z]+/g, '-');
+---
+
+<div class="tpm-flow" data-surface="dark" data-tpm-flow>
+  <div class="tpm-flow__stage">
+    <section class="tpm-foundation" aria-labelledby="tpm-foundation-title">
+      <div class="container tpm-foundation__head" data-flow-head>
+        <h2 id="tpm-foundation-title" class="display tpm-foundation__title">{foundation.headline}</h2>
+        <p class="tpm-foundation__copy">{foundation.copy}</p>
+      </div>
+
+      <div class="container tpm-library">
+        <ol class="tpm-library__docs" aria-label="The marketing foundation, document by document">
+          {
+            docs.map((doc, i) => (
+              <li class="tpm-doc" style={`--doc: ${doc.color}; --i: ${i}`} data-doc data-family={doc.family}>
+                <div class="tpm-doc__card">
+                  <span class="tpm-doc__strip" aria-hidden="true" />
+                  <span class="tpm-doc__face" aria-hidden="true">
+                    <DocIcon name={doc.icon} class="tpm-doc__icon" />
+                  </span>
+                  <span class="tpm-doc__text">
+                    <span class="tpm-doc__num">{doc.number ?? ''}</span>{' '}
+                    <span class="tpm-doc__title">{doc.title}</span>{' '}
+                    <span class="tpm-doc__context">{doc.context}</span>
+                  </span>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="tpm-language" aria-labelledby="tpm-language-title" data-flow-language>
+      <svg class="tpm-line" aria-hidden="true" focusable="false" data-flow-line>
+        <path class="tpm-line__path" d="" />
+        <path class="tpm-line__lead" d="" />
+        <path class="tpm-line__tip" d="M -9 -5.5 L 0 0 L -9 5.5" />
+      </svg>
+      <div class="container tpm-language__inner">
+        <h2 id="tpm-language-title" class="display tpm-language__phrase" data-flow-phrase>{language.phrase}</h2>
+        <ul class="tpm-words">
+          {
+            language.expressions.map((word) => (
+              <li class:list={['tpm-word', { 'tpm-word--lead': word === language.destination }]} data-word={slug(word)}>
+                {word}
+              </li>
+            ))
+          }
+        </ul>
+        <figure class="tpm-site" data-flow-site>
+          <div class="tpm-site__frame" data-flow-site-frame style={site.plate ? `--plate: ${site.plate}` : undefined}>
+            {
+              sitePoster && (
+                <Picture
+                  src={sitePoster}
+                  alt=""
+                  widths={[640, 960, 1280, 1600]}
+                  sizes="(min-width: 60rem) 56vw, calc(100vw - 2.5rem)"
+                  formats={['avif', 'webp']}
+                  loading="lazy"
+                  class="tpm-site__poster"
+                />
+              )
+            }
+            {
+              siteSrc && (
+                <video class="tpm-site__video" muted loop playsinline preload="none" aria-label={site.alt}>
+                  <source src={siteSrc} type="video/mp4" />
+                </video>
+              )
+            }
+            <button type="button" class="tpm-toggle" data-loop-toggle data-label={site.label} aria-label={`Play video: ${site.label}`} hidden>
+              <span class="tpm-toggle__play"><Icon name="play" size={12} /></span>
+              <span class="tpm-toggle__pause"><Icon name="pause" size={12} /></span>
+            </button>
+          </div>
+        </figure>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  import { Loop, addStage, live, onLiveChange, clamp, lerp, span, easeInOut, smooth } from '@lib/tpm-motion';
+
+  type Pt = { x: number; y: number };
+  type Box = { x: number; y: number; w: number; h: number };
+  type Seg = { k: number; x: number; y: number; len: number };
+
+  const flow = document.querySelector<HTMLElement>('[data-tpm-flow]');
+
+  if (flow) {
+    const stage = flow.firstElementChild as HTMLElement;
+    const head = flow.querySelector<HTMLElement>('[data-flow-head]') as HTMLElement;
+    const docs = Array.from(flow.querySelectorAll<HTMLElement>('[data-doc]'));
+    const phrase = flow.querySelector<HTMLElement>('[data-flow-phrase]') as HTMLElement;
+    const wordEls = Array.from(flow.querySelectorAll<HTMLElement>('[data-word]'));
+    const lead = flow.querySelector<HTMLElement>('.tpm-word--lead') as HTMLElement;
+    // Documentation, Articles and Campaigns, in the order the line reaches them.
+    const passing = wordEls.filter((w) => w !== lead);
+    const site = flow.querySelector<HTMLElement>('[data-flow-site]') as HTMLElement;
+    const siteFrame = flow.querySelector<HTMLElement>('[data-flow-site-frame]') as HTMLElement;
+    const svg = flow.querySelector<SVGSVGElement>('[data-flow-line]') as SVGSVGElement;
+    const line = svg.querySelector<SVGPathElement>('.tpm-line__path') as SVGPathElement;
+    const leadLine = svg.querySelector<SVGPathElement>('.tpm-line__lead') as SVGPathElement;
+    const tip = svg.querySelector<SVGPathElement>('.tpm-line__tip') as SVGPathElement;
+
+    const loop = new Loop(siteFrame, { threshold: 0.4 });
+
+    // ---- the timeline ----------------------------------------------------
+    // Lengths in screen heights of scrolling. The stage holds for their sum.
+    // The concept suggests about 1.2 to 1.4 screens for the foundation; the
+    // library's travel needs more to stay readable, so these are the numbers
+    // to tune after the browser review.
+    const PHASES: Array<[string, number]> = [
+      ['settle', 0.15], // the entry and the compact stack
+      ['spread', 0.5], // the stack opens: the featured spread
+      ['rail', 1.9], // the full library moves right to left
+      ['converge', 0.75], // the last documents simplify and become the line
+      ['line', 1.2], // the line travels to Website, revealing the words
+      ['website', 0.35], // Website becomes dominant, the others recede
+      ['frame', 0.65], // the line becomes the frame of the website visual
+      ['screen', 0.45], // the website visual arrives; a short hold
+    ];
+    const RUN = PHASES.reduce((sum, [, v]) => sum + v, 0);
+    const windows = new Map<string, [number, number]>();
+    {
+      let at = 0;
+      for (const [name, v] of PHASES) {
+        windows.set(name, [at / RUN, (at + v) / RUN]);
+        at += v;
+      }
+    }
+    const phase = (p: number, name: string) => {
+      const [a, b] = windows.get(name) as [number, number];
+      return span(p, a, b);
+    };
+    flow.style.setProperty('--flow-run', String(RUN));
+
+    // ---- geometry ----------------------------------------------------------
+    // Positions are read from layout offsets relative to the stage, so the
+    // transforms this script writes never feed back into what it measures.
+    const within = (el: HTMLElement): Box => {
+      let x = 0;
+      let y = 0;
+      for (let n: HTMLElement | null = el; n && n !== stage; n = n.offsetParent as HTMLElement | null) {
+        x += n.offsetLeft;
+        y += n.offsetTop;
+      }
+      return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+    };
+
+    let G = {
+      vw: 0,
+      vh: 0,
+      left: 0,
+      right: 0,
+      cardW: 0,
+      cardH: 0,
+      gap: 0,
+      bandY: 0,
+      pile: { x: 0, y: 0 } as Pt,
+      travel: 0,
+      under: 0,
+      total: 1,
+      reach: new Map<HTMLElement, number>(),
+      web: 0,
+      segs: new Map<HTMLElement, Seg>(),
+    };
+
+    // The compact stack: each card a little offset and turned, the first on top.
+    const PILE = [
+      { dx: 0, dy: 0, r: -1.5 },
+      { dx: 12, dy: -7, r: 2 },
+      { dx: -13, dy: -11, r: -3.5 },
+      { dx: 20, dy: -16, r: 4 },
+      { dx: -22, dy: -20, r: -5.5 },
+      { dx: 26, dy: -24, r: 6 },
+    ];
+    const IN_PILE = PILE.length;
+
+    const slotX = (i: number) => G.left + i * (G.cardW + G.gap);
+
+    const measure = () => {
+      // Clear what this script writes before reading the layout.
+      reset();
+      const vw = stage.clientWidth;
+      const vh = stage.clientHeight;
+      const headBox = within(head);
+      const cs = getComputedStyle(head);
+      const left = headBox.x + parseFloat(cs.paddingLeft);
+      const right = headBox.x + headBox.w - parseFloat(cs.paddingRight);
+
+      // Cards: sized from the screen, never taller than the room under the head.
+      let cardW = clamp(vw * 0.158, 196, 268);
+      let cardH = cardW * 1.3;
+      const bandTop = headBox.y + headBox.h + clamp(vh * 0.05, 24, 56);
+      const bandBottom = vh - clamp(vh * 0.07, 28, 72);
+      if (cardH > bandBottom - bandTop) {
+        cardH = Math.max(160, bandBottom - bandTop);
+        cardW = cardH / 1.3;
+      }
+      const gap = clamp(vw * 0.014, 14, 24);
+      const bandY = (bandTop + bandBottom) / 2;
+      flow.style.setProperty('--card-w', `${cardW.toFixed(1)}px`);
+      flow.style.setProperty('--card-h', `${cardH.toFixed(1)}px`);
+      const lastRight = left + docs.length * (cardW + gap) - gap;
+      const travel = Math.max(0, lastRight - right);
+
+      // The line. It begins as the underline of the phrase, which the last
+      // documents' strips become; flows down and up in S-curves to underline
+      // Documentation, Articles and Campaigns in turn; turns down on the right
+      // in one round hook; and comes back along the top edge of the website
+      // frame, toward Website, before going on around the frame.
+      const ph = within(phrase);
+      const M = { x: ph.x + 1, y: ph.y + ph.h + 10 };
+      const P1 = { x: ph.x + ph.w + 18, y: M.y };
+      const PAD = 10;
+      const frame = within(siteFrame);
+      const r = Math.min(14, frame.w / 20);
+      const fl = frame.x;
+      const ft = frame.y;
+      const fR = frame.x + frame.w;
+      const fb = frame.y + frame.h;
+      const f = (n: number) => n.toFixed(1);
+
+      // The three passing words are laid out along the line's way here (on
+      // the still layout they simply follow one another): spaced evenly
+      // between the end of the phrase's underline and the room the hook
+      // needs, each a little higher or lower than the one before, by no more
+      // than the space between them allows, so every S-curve stays gentle.
+      const sizes = passing.map((w) => ({ w: w.offsetWidth, h: w.offsetHeight }));
+      const hookRoom = clamp(vw * 0.075, 72, 132);
+      const room = right - hookRoom - P1.x - sizes.reduce((sum, z) => sum + z.w + 2 * PAD, 0);
+      const g = Math.max(18, room / 4);
+      const lines = [P1.y + clamp(g, 26, vh * 0.12)];
+      lines.push(lines[0] - clamp(g * 0.62, 14, vh * 0.07));
+      lines.push(lines[1] + clamp(g * 0.72, 16, vh * 0.08));
+      const words: Array<{ l: number; r: number; y: number }> = [];
+      let x = P1.x;
+      passing.forEach((w, i) => {
+        const l = x + g;
+        const left = l + PAD;
+        const y = lines[i];
+        w.style.left = `${left.toFixed(1)}px`;
+        w.style.top = `${(y - 10 - sizes[i].h).toFixed(1)}px`;
+        words.push({ l, r: left + sizes[i].w + PAD, y });
+        x = left + sizes[i].w + PAD;
+      });
+      const [D, A, C] = words;
+
+      // An S-curve, level at both ends.
+      const s = (a: Pt, b: Pt) => {
+        const k = Math.abs(b.x - a.x) * 0.55;
+        return ` C ${f(a.x + k)} ${f(a.y)} ${f(b.x - k)} ${f(b.y)} ${f(b.x)} ${f(b.y)}`;
+      };
+      // The hook starts a little below Campaigns' underline, so the curve
+      // flows down into it.
+      const hookTop = C.y + Math.max(0, ft - C.y) * 0.3;
+      const rho = Math.max(24, (ft - hookTop) / 2);
+      const edge = vw - Math.max(16, (vw - right) * 0.5);
+      const K = { x: clamp(C.r + Math.max(70, rho * 1.3), fR + 20, edge - rho), y: ft - 2 * rho };
+      let at = P1;
+      let d = `M ${f(M.x)} ${f(M.y)} L ${f(P1.x)} ${f(P1.y)}`;
+      for (const w of [D, A, C]) {
+        d += s(at, { x: w.l, y: w.y }) + ` L ${f(w.r)} ${f(w.y)}`;
+        at = { x: w.r, y: w.y };
+      }
+      d += s(at, K);
+      d += ` A ${f(rho)} ${f(rho)} 0 0 1 ${f(K.x)} ${f(ft)}`;
+      d += ` L ${f(fl + r)} ${f(ft)} Q ${f(fl)} ${f(ft)} ${f(fl)} ${f(ft + r)}`;
+      d += ` L ${f(fl)} ${f(fb - r)} Q ${f(fl)} ${f(fb)} ${f(fl + r)} ${f(fb)}`;
+      d += ` L ${f(fR - r)} ${f(fb)} Q ${f(fR)} ${f(fb)} ${f(fR)} ${f(fb - r)}`;
+      d += ` L ${f(fR)} ${f(ft + r)} Q ${f(fR)} ${f(ft)} ${f(fR - r)} ${f(ft)}`;
+
+      svg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
+      line.setAttribute('d', d);
+      leadLine.setAttribute('d', d);
+      const total = line.getTotalLength();
+      line.style.strokeDasharray = `${total} ${total}`;
+
+      // Where along the line each word is reached, and where it comes to rest
+      // just past Website's right end, on the frame's top edge.
+      const nearest = (target: Pt, from = 0, to = total) => {
+        let best = from;
+        let bestD = Infinity;
+        for (let l = from; l <= to; l += 4) {
+          const q = line.getPointAtLength(l);
+          const dd = (q.x - target.x) ** 2 + (q.y - target.y) ** 2;
+          if (dd < bestD) {
+            bestD = dd;
+            best = l;
+          }
+        }
+        return best;
+      };
+      const reach = new Map<HTMLElement, number>();
+      passing.forEach((w, i) => reach.set(w, nearest({ x: words[i].l + 24, y: words[i].y })));
+      const lb = within(lead);
+      const hooked = nearest({ x: K.x, y: ft });
+      const web = nearest({ x: lb.x + lb.w + 22, y: ft }, hooked, total);
+
+      // The underline's segments, one per document still on screen when the
+      // library stops, in order from left to right.
+      const endOffset = -travel;
+      const ending = docs.filter((_, i) => {
+        const x = left + i * (cardW + gap) + endOffset;
+        return x + cardW > 0 && x < vw;
+      });
+      const segLen = (P1.x - M.x) / Math.max(1, ending.length);
+      const segs = new Map<HTMLElement, Seg>();
+      ending.forEach((doc, k) => segs.set(doc, { k, x: M.x + (k + 0.5) * segLen, y: M.y, len: segLen }));
+
+      G = { vw, vh, left, right, cardW, cardH, gap, bandY, pile: { x: (left + right) / 2, y: bandY }, travel, under: P1.x - M.x, total, reach, web, segs };
+    };
+
+    // ---- per frame ---------------------------------------------------------
+    const update = (p: number) => {
+      const { cardW, cardH, bandY } = G;
+      const tSpread = phase(p, 'spread');
+      const tRail = phase(p, 'rail');
+      const tConv = phase(p, 'converge');
+      const tLine = phase(p, 'line');
+      const tWeb = phase(p, 'website');
+      const tFrame = phase(p, 'frame');
+      const tScreen = phase(p, 'screen');
+
+      // The entry: present until the documents converge.
+      const headOut = smooth(span(tConv, 0, 0.4));
+      head.style.opacity = headOut > 0 ? (1 - headOut).toFixed(3) : '';
+      head.style.transform = headOut > 0 ? `translate3d(0, ${(-24 * headOut).toFixed(2)}px, 0)` : '';
+
+      // The library.
+      const offset = -smooth(tRail) * G.travel;
+      const top = bandY - cardH / 2;
+      const segFade = smooth(span(tLine, 0.02, 0.2));
+      docs.forEach((doc, i) => {
+        const sx = slotX(i);
+        let x = sx + offset;
+        let y = top;
+        let rot = 0;
+        let sy = 1;
+        let opacity = 1;
+        if (i < IN_PILE) {
+          const pose = PILE[i];
+          const q = easeInOut(clamp((tSpread - i * 0.07) / (1 - (IN_PILE - 1) * 0.07)));
+          x = lerp(G.pile.x - cardW / 2 + pose.dx, sx, q) + offset;
+          y = lerp(top + pose.dy, top, q);
+          rot = lerp(pose.r, 0, q);
+        } else {
+          opacity = smooth(span(tSpread, 0.8, 1));
+        }
+        // The narrative transition: the documents on screen when the library
+        // stops let go of their faces, and their strips turn and slide into
+        // place as the segments of the phrase's underline.
+        const seg = G.segs.get(doc);
+        let face = 1;
+        let text = 1;
+        if (seg && tConv > 0) {
+          // Titles and contexts are gone before any strip starts to turn, so
+          // no text is ever seen on its side.
+          text = 1 - smooth(span(tConv, 0, 0.18));
+          face = 1 - smooth(span(tConv, 0.04, 0.32));
+          const q = easeInOut(span(tConv, 0.22 + seg.k * 0.045, 0.68 + seg.k * 0.045));
+          // The strip pivots on its own middle (the card's left edge, half way
+          // down); a quarter turn lays it along the underline.
+          x = lerp(x, seg.x, q);
+          y = lerp(y, seg.y + 2 - cardH / 2, q);
+          rot = lerp(0, -90, q);
+          sy = lerp(1, (seg.len * 0.9) / cardH, q);
+          opacity = 1 - segFade;
+        }
+        doc.style.zIndex = i < IN_PILE && tSpread < 1 ? String(100 - i) : '';
+        doc.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)${rot ? ` rotate(${rot.toFixed(3)}deg)` : ''}${sy !== 1 ? ` scaleY(${sy.toFixed(4)})` : ''}`;
+        doc.style.opacity = opacity < 1 ? opacity.toFixed(3) : '';
+        doc.style.visibility = opacity <= 0.001 ? 'hidden' : '';
+        doc.style.setProperty('--face', face.toFixed(3));
+        doc.style.setProperty('--text', text.toFixed(3));
+      });
+
+      // The phrase arrives over its underline.
+      const phraseIn = smooth(span(tConv, 0.55, 0.95));
+      phrase.style.opacity = phraseIn.toFixed(3);
+      phrase.style.transform = `translate3d(0, ${(12 * (1 - phraseIn)).toFixed(2)}px, 0)`;
+
+      // The line: drawn along the underline as the strips settle into it,
+      // then on to Website, where it rests, then around the frame.
+      let len = 0;
+      if (tLine <= 0) len = G.under * smooth(span(tConv, 0.74, 1));
+      else if (tFrame <= 0) len = lerp(G.under, G.web, easeInOut(tLine));
+      else len = lerp(G.web, G.total, easeInOut(tFrame));
+      line.style.strokeDashoffset = `${(G.total - len).toFixed(2)}`;
+      line.style.opacity = len > 0.5 ? '' : '0';
+
+      // Bolt yellow rides at the leading end once the line sets off, and fades
+      // once the frame closes.
+      const leadLen = Math.min(len, 96);
+      const leadAlpha = len > 0.5 ? smooth(span(tLine, 0, 0.08)) * (1 - smooth(span(tFrame, 0.82, 1))) : 0;
+      leadLine.style.strokeDasharray = `${leadLen.toFixed(2)} ${(G.total * 2).toFixed(0)}`;
+      leadLine.style.strokeDashoffset = `${(-(len - leadLen)).toFixed(2)}`;
+      leadLine.style.opacity = leadAlpha.toFixed(3);
+
+      // The directional tip: only as the line reaches Website.
+      const tipAlpha = smooth(span(tLine, 0.86, 1)) * (1 - smooth(span(tFrame, 0, 0.18)));
+      if (tipAlpha > 0.001 && len > 2) {
+        const a = line.getPointAtLength(Math.max(0, len - 2));
+        const b = line.getPointAtLength(len);
+        const angle = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+        tip.setAttribute('transform', `translate(${b.x.toFixed(2)} ${b.y.toFixed(2)}) rotate(${angle.toFixed(2)})`);
+        tip.style.opacity = tipAlpha.toFixed(3);
+      } else {
+        tip.style.opacity = '0';
+      }
+
+      // The passing words appear as the line reaches them, and recede once
+      // Website takes over: to 45%, which still holds 3:1 on the ink ground
+      // for words this large.
+      const recede = smooth(tWeb);
+      for (const w of passing) {
+        const reachAt = G.reach.get(w) ?? 0;
+        const seen = smooth(clamp((len - (reachAt - 70)) / 110));
+        w.style.opacity = (seen * lerp(1, 0.45, recede)).toFixed(3);
+        w.style.transform = `translate3d(0, ${(10 * (1 - seen)).toFixed(2)}px, 0)`;
+      }
+      const leadSeen = smooth(clamp((len - (G.web - 150)) / 150));
+      lead.style.opacity = leadSeen.toFixed(3);
+      lead.style.transform = `translate3d(0, ${(8 * (1 - leadSeen)).toFixed(2)}px, 0) scale(${lerp(1, 1.55, easeInOut(tWeb)).toFixed(4)})`;
+      lead.classList.toggle('is-dominant', tWeb > 0.5);
+
+      // The website visual, inside the finished frame.
+      const show = smooth(span(tScreen, 0, 0.55));
+      site.style.visibility = show > 0 ? 'visible' : 'hidden';
+      siteFrame.style.opacity = show.toFixed(3);
+      siteFrame.style.transform = show < 1 ? `scale(${lerp(0.985, 1, show).toFixed(4)})` : '';
+      loop.want(tScreen > 0.25);
+    };
+
+    const reset = () => {
+      for (const el of [head, phrase, site, siteFrame, lead, ...passing, ...docs]) {
+        el.style.transform = '';
+        el.style.opacity = '';
+      }
+      site.style.visibility = '';
+      for (const w of passing) {
+        w.style.left = '';
+        w.style.top = '';
+      }
+      for (const doc of docs) {
+        doc.style.zIndex = '';
+        doc.style.visibility = '';
+        doc.style.removeProperty('--face');
+        doc.style.removeProperty('--text');
+      }
+      lead.classList.remove('is-dominant');
+    };
+
+    const apply = () => {
+      const on = live();
+      flow.classList.toggle('is-live', on);
+      if (on) {
+        measure();
+        update(0);
+        window.dispatchEvent(new Event('scroll'));
+      } else {
+        reset();
+        loop.want(true);
+      }
+    };
+
+    // Fonts change the phrase's and the words' widths, so measure once they
+    // are in, as well as now.
+    apply();
+    document.fonts?.ready.then(() => {
+      if (live()) apply();
+    });
+    addStage(flow, (p) => update(p));
+    onLiveChange(apply);
+    let t = 0;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(t);
+      t = window.setTimeout(() => {
+        if (live()) apply();
+      }, 140);
+    });
+  }
+</script>
+
+<style>
+  /* ---- the passage ----------------------------------------------------------- */
+  .tpm-flow {
+    --view-h: 100vh;
+    --bolt: #fcec2b;
+    position: relative;
+  }
+
+  @supports (height: 1svh) {
+    .tpm-flow {
+      --view-h: 100svh;
+    }
+  }
+
+  /* ---- 02 the entry -------------------------------------------------------------- */
+  .tpm-foundation {
+    padding-block: var(--section-y) calc(var(--section-y) * 0.6);
+  }
+
+  .tpm-foundation__head {
+    display: grid;
+    gap: var(--space-5);
+    margin-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  .tpm-foundation__title {
+    font-size: var(--text-2xl);
+    max-width: 13ch;
+  }
+
+  .tpm-foundation__copy {
+    max-width: 34rem;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 60rem) {
+    /* Headline left, paragraph right, the center open. */
+    .tpm-foundation__head {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 2fr) minmax(0, 5fr);
+      align-items: start;
+    }
+
+    .tpm-foundation__copy {
+      grid-column: 3;
+      padding-top: 0.35rem;
+    }
+  }
+
+  /* ---- 02 the library (still layout) ----------------------------------------------- */
+  .tpm-library__docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tpm-doc {
+    --face: 1;
+    --text: 1;
+    min-height: 11.5rem;
+  }
+
+  .tpm-doc__card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    padding: 1rem 1rem 1rem 1.35rem;
+    overflow: hidden;
+    border-radius: 12px;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  /* The card's own surface and its faded icon fade together (the face),
+     separately from the text and from the strip. */
+  .tpm-doc__card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: #13171a;
+    box-shadow: inset 0 0 0 1px rgba(237, 240, 239, 0.08);
+    opacity: var(--face);
+  }
+
+  .tpm-doc__strip {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    z-index: 1;
+    width: 4px;
+    background: var(--doc);
+  }
+
+  .tpm-doc__face {
+    position: absolute;
+    inset: 0;
+    opacity: var(--face);
+    pointer-events: none;
+  }
+
+  .tpm-doc__face :global(.tpm-doc__icon) {
+    position: absolute;
+    right: -14%;
+    bottom: -12%;
+    width: 82%;
+    height: auto;
+    color: var(--doc);
+    stroke-width: 1.5px;
+    opacity: 0.17;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  .tpm-doc__text {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 0.5rem;
+    min-height: 100%;
+    opacity: var(--text);
+  }
+
+  .tpm-doc__num {
+    min-height: 1.1em;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+
+  .tpm-doc__title {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(1.125rem, 0.95rem + 0.55vw, 1.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.005em;
+    color: var(--heading);
+    text-wrap: balance;
+  }
+
+  .tpm-doc__context {
+    align-self: end;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* A slight lift, and the faded icon a little clearer. */
+  @media (hover: hover) and (pointer: fine) {
+    .tpm-doc:hover .tpm-doc__card {
+      transform: translate3d(0, -6px, 0);
+    }
+
+    .tpm-doc:hover :global(.tpm-doc__icon) {
+      opacity: 0.27;
+    }
+  }
+
+  /* ---- 03 the still layout -------------------------------------------------------- */
+  .tpm-line {
+    display: none;
+  }
+
+  .tpm-language {
+    padding-block: calc(var(--section-y) * 0.6) var(--section-y);
+  }
+
+  .tpm-language__phrase {
+    font-size: var(--text-xl);
+    max-width: 18ch;
+  }
+
+  .tpm-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.6rem;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: var(--text-lg);
+    line-height: 1.25;
+    color: var(--ink-3);
+  }
+
+  /* Website leads: brighter, and underlined with the one yellow line. */
+  .tpm-word--lead {
+    color: var(--heading);
+    text-decoration: underline;
+    text-decoration-color: var(--bolt);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+
+  .tpm-site {
+    max-width: 64rem;
+    margin: clamp(2rem, 1.5rem + 2vw, 3rem) 0 0;
+  }
+
+  .tpm-site__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--plate, #0b0d0e);
+    box-shadow: 0 0 0 1px rgba(237, 240, 239, 0.42);
+  }
+
+  .tpm-site__frame :global(picture),
+  .tpm-site__poster,
+  .tpm-site__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tpm-site__video {
+    opacity: 0;
+  }
+
+  .tpm-site__video[data-shown] {
+    opacity: 1;
+    transition: opacity 0.32s var(--ease-out);
+  }
+
+  /* pause and play (as the hero's) */
+  .tpm-toggle {
+    position: absolute;
+    right: 0.8rem;
+    bottom: 0.8rem;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid rgba(237, 240, 239, 0.35);
+    border-radius: 50%;
+    background: rgba(13, 15, 16, 0.62);
+    color: var(--c-fog);
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .tpm-toggle:hover {
+    background: rgba(13, 15, 16, 0.85);
+  }
+
+  .tpm-toggle:focus-visible {
+    outline: 2px solid var(--c-fog);
+    outline-offset: 2px;
+  }
+
+  .tpm-toggle__play,
+  .tpm-toggle__pause {
+    display: grid;
+    place-items: center;
+  }
+
+  .tpm-toggle__pause,
+  .tpm-toggle[data-state='playing'] .tpm-toggle__play {
+    display: none;
+  }
+
+  .tpm-toggle[data-state='playing'] .tpm-toggle__pause {
+    display: grid;
+  }
+
+  /* ---- live: one sticky stage ---------------------------------------------------- */
+  @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
+    .tpm-flow.is-live {
+      height: calc(var(--view-h) * (1 + var(--flow-run, 5.95)));
+    }
+
+    .tpm-flow.is-live .tpm-flow__stage {
+      position: sticky;
+      top: 0;
+      height: var(--view-h);
+      overflow: hidden;
+    }
+
+    .tpm-flow.is-live .tpm-foundation,
+    .tpm-flow.is-live .tpm-language {
+      position: absolute;
+      inset: 0;
+      padding: 0;
+    }
+
+    .tpm-flow.is-live .tpm-language {
+      pointer-events: none;
+    }
+
+    .tpm-flow.is-live .tpm-foundation__head {
+      position: absolute;
+      top: calc(var(--header-row) + clamp(1rem, 4vh, 3rem));
+      inset-inline: 0;
+      margin: 0 auto;
+    }
+
+    .tpm-flow.is-live .tpm-library,
+    .tpm-flow.is-live .tpm-language__inner {
+      position: absolute;
+      inset: 0;
+      max-width: none;
+      padding: 0;
+    }
+
+    .tpm-flow.is-live .tpm-library__docs {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+
+    .tpm-flow.is-live .tpm-doc {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--card-w, 15rem);
+      height: var(--card-h, 19.5rem);
+      min-height: 0;
+      transform-origin: 0 50%;
+    }
+
+    .tpm-flow.is-live .tpm-doc__card {
+      padding: clamp(0.9rem, 1.4vw, 1.25rem) clamp(0.9rem, 1.4vw, 1.25rem) clamp(0.9rem, 1.4vw, 1.25rem) clamp(1.15rem, 1.7vw, 1.55rem);
+    }
+
+    .tpm-flow.is-live .tpm-doc__title {
+      font-size: clamp(1.2rem, 0.75rem + 0.8vw, 1.6rem);
+    }
+
+    /* 03, laid over the same stage. */
+    .tpm-flow.is-live .tpm-line {
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      fill: none;
+    }
+
+    .tpm-line__path {
+      stroke: rgba(237, 240, 239, 0.5);
+      stroke-width: 1.25px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .tpm-line__lead {
+      stroke: var(--bolt);
+      stroke-width: 1.75px;
+      stroke-linecap: round;
+      opacity: 0;
+    }
+
+    .tpm-line__tip {
+      stroke: var(--bolt);
+      stroke-width: 1.75px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+
+    .tpm-flow.is-live .tpm-language__phrase {
+      position: absolute;
+      top: calc(var(--header-row) + clamp(1rem, 4vh, 3rem));
+      left: max(var(--gutter), calc((100% - var(--container)) / 2 + var(--gutter)));
+      margin: 0;
+      opacity: 0;
+      white-space: nowrap;
+      max-width: none;
+      font-size: clamp(1.75rem, 0.34rem + 2.4vw, 2.75rem);
+    }
+
+    /* The passing words are placed by the script, along the line. */
+    .tpm-flow.is-live .tpm-words {
+      position: absolute;
+      inset: 0;
+      display: block;
+      margin: 0;
+      font-size: clamp(1.2rem, -0.32rem + 2.16vw, 1.75rem);
+      color: var(--ink-2);
+    }
+
+    .tpm-flow.is-live .tpm-word {
+      position: absolute;
+      left: var(--x, 0);
+      top: var(--y, 0);
+      opacity: 0;
+      white-space: nowrap;
+    }
+
+    /* The website visual's frame: centered in the lower half of the stage,
+       with Website standing on its top edge at the left. */
+    .tpm-flow.is-live .tpm-site {
+      --frame-w: min(58vw, calc(var(--view-h) * 0.44 * 16 / 9));
+      position: absolute;
+      left: calc(50% - var(--frame-w) / 2);
+      top: calc(var(--view-h) * 0.485);
+      width: var(--frame-w);
+      max-width: none;
+      margin: 0;
+      visibility: hidden;
+    }
+
+    .tpm-flow.is-live .tpm-site__frame {
+      box-shadow: none;
+      opacity: 0;
+      pointer-events: auto;
+    }
+
+    .tpm-flow.is-live .tpm-word--lead {
+      --x: calc(50% - min(58vw, calc(var(--view-h) * 0.44 * 16 / 9)) / 2);
+      top: auto;
+      bottom: calc(100% - var(--view-h) * 0.485 + 0.55rem);
+      transform-origin: 0 100%;
+      text-decoration: none;
+      color: var(--ink-2);
+      transition: color 0.4s var(--ease-out);
+    }
+
+    .tpm-flow.is-live .tpm-word--lead.is-dominant {
+      color: var(--heading);
+    }
+  }
+</style>

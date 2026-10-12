@@ -1,0 +1,198 @@
+---
+/**
+ * The homepage opening sequence: three short beats on the ink ground,
+ * "Product complexity.", "Market clarity.", "Welcome.", then the overlay
+ * fades and the hero settles in beneath it, about 1.6 seconds in all.
+ *
+ * It plays on the homepage only, once per browsing session (the tab's
+ * session storage), and never for reduced motion. An inline script in the
+ * head decides before the first paint, by adding the `intro` class to the
+ * document, so a visitor it skips never sees it, and a return to the homepage
+ * from a case study does not replay it. Nothing waits for it: the hero's
+ * photograph and videos load as usual underneath, and scrolling, a click, a
+ * tap or a key dismisses it at once. It is decorative and hidden from
+ * assistive technology; without JavaScript it never appears, and it ends by
+ * itself even if the script below never runs.
+ */
+const BEATS = ['Product complexity.', 'Market clarity.', 'Welcome.'];
+---
+
+<div class="intro" aria-hidden="true" data-intro>
+  <div class="container intro__inner">
+    {BEATS.map((beat, i) => <p class={`intro__beat intro__beat--${i + 1}`}>{beat}</p>)}
+  </div>
+</div>
+
+<script>
+  // Dismissal and clean-up. The sequence itself is CSS, timed from the first
+  // paint; this ends it early on the first sign of intent and removes the
+  // overlay once it has faded.
+  const root = document.documentElement;
+  const overlay = document.querySelector<HTMLElement>('[data-intro]');
+
+  if (overlay && root.classList.contains('intro')) {
+    const events: Array<keyof WindowEventMap> = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'scroll'];
+    // Once it has faded the overlay goes. The hero's hold stays in place: its
+    // entrance is already running on that timing, and dropping the delay now
+    // would make it jump.
+    const finish = () => {
+      root.classList.remove('intro', 'intro-skip');
+      overlay.remove();
+      for (const type of events) window.removeEventListener(type, skip, true);
+    };
+    function skip() {
+      if (root.classList.contains('intro-skip')) return;
+      root.classList.add('intro-skip');
+      // The hero no longer waits for the sequence: its entrance picks up from
+      // where its clock already is, under the fading ground.
+      root.classList.remove('intro-hold');
+      for (const type of events) window.removeEventListener(type, skip, true);
+    }
+    for (const type of events) window.addEventListener(type, skip, { capture: true, passive: true });
+    overlay.addEventListener('animationend', (event) => {
+      if (event.target === overlay) finish();
+    });
+  } else {
+    overlay?.remove();
+  }
+</script>
+
+<style>
+  .intro {
+    display: none;
+  }
+
+  :global(html.intro) .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    align-items: center;
+    background: var(--c-ink);
+    color: #f2f1ec;
+    animation: intro-out 1600ms linear both;
+  }
+
+  :global(html.intro-skip) .intro {
+    animation: intro-skip 260ms var(--ease-out) both;
+  }
+
+  .intro__inner {
+    display: grid;
+  }
+
+  /* The beats share one place and follow each other there. */
+  .intro__beat {
+    grid-area: 1 / 1;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(2.5rem, 1.2rem + 5.2vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: -0.012em;
+    opacity: 0;
+    animation: 1600ms var(--ease-out) both;
+  }
+
+  .intro__beat--1 {
+    animation-name: intro-beat-1;
+  }
+
+  .intro__beat--2 {
+    animation-name: intro-beat-2;
+  }
+
+  .intro__beat--3 {
+    animation-name: intro-beat-3;
+  }
+
+  /* 1600ms in all: each beat rises in over about 200ms and holds; the first
+     two leave as the next arrives; Welcome. stays and fades with the ground,
+     which clears from about 1.2s, as the hero settles in beneath it. */
+  @keyframes intro-beat-1 {
+    0%,
+    4% {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+    16%,
+    29% {
+      opacity: 1;
+      transform: none;
+    }
+    37%,
+    100% {
+      opacity: 0;
+      transform: translate3d(0, -10px, 0);
+    }
+  }
+
+  @keyframes intro-beat-2 {
+    0%,
+    34% {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+    46%,
+    59% {
+      opacity: 1;
+      transform: none;
+    }
+    67%,
+    100% {
+      opacity: 0;
+      transform: translate3d(0, -10px, 0);
+    }
+  }
+
+  @keyframes intro-beat-3 {
+    0%,
+    64% {
+      opacity: 0;
+      transform: translate3d(0, 16px, 0);
+    }
+    76%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes intro-out {
+    0%,
+    76% {
+      opacity: 1;
+      visibility: visible;
+    }
+    99.9% {
+      opacity: 0;
+      visibility: visible;
+    }
+    100% {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  @keyframes intro-skip {
+    from {
+      opacity: 1;
+      visibility: visible;
+    }
+    99.9% {
+      opacity: 0;
+      visibility: visible;
+    }
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.intro) .intro {
+      display: none;
+    }
+  }
+</style>

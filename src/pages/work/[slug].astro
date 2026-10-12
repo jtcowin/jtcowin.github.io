@@ -3,8 +3,12 @@ import { getCollection, render } from 'astro:content';
 import CaseStudyLayout from '@layouts/CaseStudyLayout.astro';
 
 export async function getStaticPaths() {
+  // Technical Product Marketing has its own page (technical-marketing.astro)
+  // since Version 1 of its redesign; the other case studies share this layout.
+  // (getStaticPaths runs in its own scope, so the list lives inside it.)
+  const ownPages = new Set(['technical-marketing']);
   const entries = await getCollection('work');
-  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  return entries.filter((entry) => !ownPages.has(entry.id)).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
