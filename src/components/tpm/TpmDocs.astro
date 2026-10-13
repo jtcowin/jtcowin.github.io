@@ -11,11 +11,20 @@
  * documentation overview, the interactive architecture diagram (the longest
  * moment) and the developer SDK page, ending on a stable code frame.
  *
- * Under the frame, introduced as selected views from a broader documentation
- * system, the three chapters of the walkthrough each carry one line on what
- * it shows and who did what; the one playing is marked, its line filling as
- * it plays, and each starts the walkthrough from its own point. Nothing is
- * laid over the documentation itself. On phones the frame runs edge to edge.
+ * Under the frame, introduced (centered beneath it, V1.3) as selected views
+ * from a broader documentation system, the three chapters of the walkthrough
+ * each carry one line on what it shows and who did what; the one playing is
+ * marked, its line filling as it plays, and each starts the walkthrough from
+ * its own point. Nothing is laid over the documentation itself. On phones the
+ * frame runs edge to edge.
+ *
+ * V1.3: the walkthrough runs continuously, as the website's does: through to
+ * its final page, a moment on the last frame, a fade back to the first (its
+ * poster) and again, never cutting from the end to the start. It pauses
+ * whenever the frame leaves the viewport. The recording is silent, so there
+ * is no sound to keep or lose between loops; nothing in the loop touches its
+ * mute state. With reduced motion or a data-saving preference it plays only
+ * when asked, once, and holds its last frame.
  */
 import tpm from '@data/tpm.json';
 import TpmCase from './TpmCase.astro';
@@ -30,7 +39,7 @@ const chapters = docs.chapters.map((c, i) => ({ ...c, number: String(i + 1).padS
   title={docs.title}
   meta={docs.meta}
   contribution={docs.contribution}
-  columns="minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 0.8fr)"
+  em={docs.em}
   surface="light-return"
   align="center"
   class="tpm-docs"
@@ -74,7 +83,9 @@ const chapters = docs.chapters.map((c, i) => ({ ...c, number: String(i + 1).padS
   const list = document.querySelector<HTMLElement>('[data-chapters]');
 
   if (frame && screen) {
-    const walk = new Walkthrough(screen, { threshold: 0.55 });
+    // Continuous (V1.3): 1.2 seconds on the final code frame, then a 0.7
+    // second fade back to the documentation home before it plays again.
+    const walk = new Walkthrough(screen, { threshold: 0.55, cycle: { hold: 1200, fade: 700 } });
 
     if (list) {
       const items = Array.from(list.querySelectorAll<HTMLElement>('[data-chapter]'));
@@ -208,9 +219,12 @@ const chapters = docs.chapters.map((c, i) => ({ ...c, number: String(i + 1).padS
     margin: 0 auto;
   }
 
-  /* The line that introduces them: selected views from a broader system. */
+  /* The line that introduces them: selected views from a broader system,
+     centered on the frame (V1.3). */
   .tpm-chapters__label {
     margin: 0;
+    text-align: center;
+    text-wrap: balance;
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.12em;

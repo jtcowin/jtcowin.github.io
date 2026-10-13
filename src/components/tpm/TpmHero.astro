@@ -1,84 +1,189 @@
 ---
 /**
- * 01 Hero (Technical Product Marketing, V1.2): the headline, the supporting
- * paragraph and the seven areas of scope, and nothing else: no media. The
- * headline holds the left of the upper area and the paragraph the right,
- * level with its last line, as before; the scope runs as one centered rail in
- * the lower area (two balanced centered lines where it does not fit), with
- * open space all around, in a hero that fills about one viewport.
+ * 01 Hero (Technical Product Marketing, V1.3): an asymmetrical split. The
+ * headline, the paragraph and the seven areas of scope sit together on the
+ * left, vertically centered in the first screen; on the right, in open space,
+ * one abstract "narrative system" object: a single foundation slab with five
+ * light planes stacked on it, each a little smaller than the one below and
+ * marked with abstract content, the top one in the accent. At rest they sit
+ * together on the foundation; as the pointer moves they lift apart into an
+ * exploded stack, joined by posts and nodes to the layer beneath, and lean
+ * toward the pointer; as it rests they settle back, aligned. One foundation, many
+ * public-facing expressions, nothing labeled. The headline never changes: no
+ * rotating or replaced words.
  *
- * Leaving it (wide, tall-enough screens with motion allowed), over about 0.85
- * of a viewport of scrolling: the hero starts complete and readable. As the
- * visitor scrolls, the headline and paragraph leave with the page, softening
- * as they go, while the scope rail stays where it is and each term, a beat
- * after the one before it, softens and stretches vertically into a thin band
- * (the width of a card's edge) in the accent of the document card it lines up
- * with (the first seven of the Foundation library, in order), so the bands
- * anticipate the cards' colored left edges. The dark ground of the Foundation
- * then rises from below on a soft, eased edge, over the bands, which draw
- * down into it and toward the middle, where the library waits, and fade: the
- * hero ends on the same dark surface the Foundation begins on, and the
- * Foundation's stage rises under the last of it, so the two run together
- * without a cut or an empty screen. Nothing is scrubbed but transforms, opacity and a
- * light softening (3px at most) on seven words; there is no full-screen blur.
+ * The object is SVG moved with transforms: a short loop runs only while it is
+ * settling or following the pointer, never while it is idle, off screen or in
+ * a hidden tab. Reduced motion gets it still, a little apart, so the layers
+ * read; touch screens get its opening settle and no pointer response.
  *
- * Everywhere else (phones, tablets, short screens, reduced motion, no
- * JavaScript) the hero is still and the Foundation's opening crossfades in as
- * it arrives (TpmFlow.astro).
+ * Leaving the hero (wide, tall-enough screens with motion allowed): it holds
+ * for one screen of scrolling while the Foundation's full-width dark surface
+ * rises over it from the bottom, its leading edge slightly rounded until it
+ * settles; the hero's content fades and softens a little as it is covered,
+ * and the Foundation's opening fades up into place (TpmFlow.astro reads the
+ * two values this script hands it). Nothing travels from one section to the
+ * other. Everywhere else the hero reads in normal flow and the Foundation
+ * crossfades in as it arrives (TpmFlow.astro).
  */
 import tpm from '@data/tpm.json';
+import { emphasize } from '@lib/tpm-copy';
 
-const { hero, foundation } = tpm;
-// One band per scope term, in the accents of the first seven document cards,
-// in order from the left.
-const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.documents.length].color);
+const { hero } = tpm;
+const title = emphasize(hero.headline, hero.accent, 'hero headline');
+const copy = emphasize(hero.copy, hero.em, 'hero paragraph');
+
+// ---- the object's geometry (isometric, in its own units) --------------------
+const C = Math.cos(Math.PI / 6);
+type P3 = [number, number, number];
+const iso = ([x, y, z]: P3): [number, number] => [(x - y) * C, (x + y) * 0.5 - z];
+const pts = (corners: P3[]) => corners.map((c) => iso(c).map((v) => v.toFixed(1)).join(',')).join(' ');
+const f = (v: number) => v.toFixed(1);
+
+// The foundation: a slab 280 units square and 22 deep.
+const H = 140;
+const T = 22;
+const slab = {
+  top: pts([[-H, -H, T], [H, -H, T], [H, H, T], [-H, H, T]]),
+  right: pts([[H, -H, T], [H, H, T], [H, H, 0], [H, -H, 0]]),
+  left: pts([[-H, H, T], [H, H, T], [H, H, 0], [-H, H, 0]]),
+  rim: pts([[-H, H, T], [-H, -H, T], [H, -H, T]]),
+};
+
+// Five expressions stacked on it, each smaller than the one below, the top
+// one in the accent. At rest they sit 4 units apart; open, each gap grows by
+// up to 34 and the first lifts 22 off the foundation (the script moves them;
+// the numbers it needs ride on data attributes). k is how far each leans
+// toward the pointer.
+const PT = 5;
+const REST_GAP = 4;
+const LIFT = 22;
+const OPEN_GAP = 34;
+const SIZES = [204, 172, 140, 110, 82];
+const TONES = ['a', 'b', 'a', 'b', 'accent'];
+const MARKS = ['lines', 'block', 'ring', 'pair', ''];
+const planes = SIZES.map((size, i) => {
+  const h = size / 2;
+  const z = T + 6 + i * (PT + REST_GAP);
+  const top = z + PT;
+  const marks = MARKS[i];
+  // Marks on the top face: abstract content, never words.
+  const on = (x: number, y: number): [number, number] => iso([x, y, top]);
+  const line = (y: number, x0: number, x1: number) => {
+    const [a, b] = [on(x0, y), on(x1, y)];
+    return { x1: f(a[0]), y1: f(a[1]), x2: f(b[0]), y2: f(b[1]) };
+  };
+  const lines =
+    marks === 'lines'
+      ? [line(-h * 0.42, -h * 0.62, h * 0.55), line(-h * 0.14, -h * 0.62, h * 0.3), line(h * 0.14, -h * 0.62, h * 0.45)]
+      : marks === 'block'
+        ? [line(h * 0.4, -h * 0.6, h * 0.25)]
+        : marks === 'pair'
+          ? [line(-h * 0.22, -h * 0.55, h * 0.5), line(h * 0.16, -h * 0.55, h * 0.1)]
+          : [];
+  const block = marks === 'block' ? pts([[-h * 0.6, -h * 0.62, top], [h * 0.12, -h * 0.62, top], [h * 0.12, h * 0.12, top], [-h * 0.6, h * 0.12, top]]) : '';
+  const ring = marks === 'ring' ? { cx: f(on(0, 0)[0]), cy: f(on(0, 0)[1]), rx: f(h * 0.4 * Math.SQRT2 * C), ry: f(h * 0.4 * Math.SQRT1_2) } : null;
+  // The posts under this plane, at its left and right corners: from the
+  // surface below (the foundation for the first) up to the plane's underside.
+  const below = i === 0 ? T : T + 6 + (i - 1) * (PT + REST_GAP) + PT;
+  const posts = [
+    [-h, h],
+    [h, -h],
+  ].map(([x, y]) => {
+    const [px, py0] = iso([x, y, below]);
+    const [, py1] = iso([x, y, z]);
+    return { x: f(px), y0: f(py0), y1: f(py1) };
+  });
+  return {
+    size,
+    tone: TONES[i],
+    k: (3 + i * 1.8).toFixed(1),
+    top: pts([[-h, -h, top], [h, -h, top], [h, h, top], [-h, h, top]]),
+    right: pts([[h, -h, top], [h, h, top], [h, h, z], [h, -h, z]]),
+    left: pts([[-h, h, top], [h, h, top], [h, h, z], [-h, h, z]]),
+    shadow: pts([[-h + 4, -h + 4, T], [h + 4, -h + 4, T], [h + 4, h + 4, T], [-h + 4, h + 4, T]]),
+    lines,
+    block,
+    ring,
+    posts,
+  };
+});
 ---
 
 <section class="tpm-hero" data-surface="light" aria-labelledby="tpm-title" data-tpm-hero>
   <div class="tpm-hero__stage">
-    <div class="container tpm-hero__head" data-tpm-hero-copy>
-      <h1 id="tpm-title" class="display tpm-hero__title tpm-in" style="--in: 0">{hero.headline}</h1>
-      <p class="lede tpm-hero__lede tpm-in" style="--in: 1">{hero.copy}</p>
-    </div>
+    <div class="container tpm-hero__grid">
+      <div class="tpm-hero__copy" data-tpm-hero-copy>
+        <h1 id="tpm-title" class="display tpm-hero__title tpm-in" style="--in: 0">
+          {title.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}
+        </h1>
+        <p class="lede tpm-hero__lede tpm-in" style="--in: 1">
+          {copy.map(({ text, em }) => (em ? <strong class="tpm-em">{text}</strong> : text))}
+        </p>
+        <ul class="tpm-hero__scope tpm-in" style="--in: 2" aria-label="Scope of the work" data-tpm-scope>
+          {
+            hero.scope.map((item) => (
+              <li>
+                <span class="tpm-hero__term">{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
 
-    <div class="container tpm-hero__foot">
-      <ul class="tpm-hero__scope tpm-in" style="--in: 2" aria-label="Scope of the work" data-tpm-scope>
-        {
-          hero.scope.map((item) => (
-            <li>
-              <span class="tpm-hero__term" data-term>
-                {item}
-              </span>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-
-    {/* The dark ground of the Foundation, rising under the bands. The header
-        reads it as the surface beneath it from halfway down its soft edge
-        (the mark: no paint of its own), so its controls turn where the ground
-        does. */}
-    <div class="tpm-hero__dusk" aria-hidden="true" data-tpm-dusk>
-      <span class="tpm-hero__dusk-edge"></span>
-      <span class="tpm-hero__dusk-ground"></span>
-      <span class="tpm-hero__dusk-mark" data-surface="dark"></span>
-    </div>
-
-    <div class="tpm-hero__bands" aria-hidden="true" data-tpm-bands>
-      {bands.map((color) => <span class="tpm-hero__band" style={`--band: ${color}`} data-band />)}
+      <div class="tpm-hero__visual" data-tpm-hero-visual>
+        <div class="tpm-hero__object tpm-in" style="--in: 2">
+          <svg
+            class="tpm-object"
+            viewBox="-252 -178 504 330"
+            aria-hidden="true"
+            focusable="false"
+            data-tpm-object
+            data-lift={LIFT}
+            data-gap={OPEN_GAP}
+          >
+            <g data-base>
+              <polygon class="tpm-object__slab-left" points={slab.left} />
+              <polygon class="tpm-object__slab-right" points={slab.right} />
+              <polygon class="tpm-object__slab-top" points={slab.top} />
+              <polyline class="tpm-object__rim" points={slab.rim} />
+              {planes.map((p) => <polygon class="tpm-object__shadow" points={p.shadow} data-shadow />)}
+            </g>
+            {
+              planes.map((p) => (
+                <g class:list={['tpm-object__plane', `tpm-object__plane--${p.tone}`]} data-plane data-k={p.k}>
+                  {p.posts.map((post) => (
+                    <g class="tpm-object__post" data-post data-x={post.x} data-y0={post.y0} data-y1={post.y1}>
+                      <line class="tpm-object__post-line" x1={post.x} y1={post.y0} x2={post.x} y2={post.y1} />
+                      <circle class="tpm-object__node" cx={post.x} cy={post.y0} r="3.2" />
+                    </g>
+                  ))}
+                  <polygon class="tpm-object__side-left" points={p.left} />
+                  <polygon class="tpm-object__side-right" points={p.right} />
+                  <polygon class="tpm-object__face" points={p.top} />
+                  {p.block && <polygon class="tpm-object__mark-block" points={p.block} />}
+                  {p.ring && <ellipse class="tpm-object__mark-ring" cx={p.ring.cx} cy={p.ring.cy} rx={p.ring.rx} ry={p.ring.ry} />}
+                  {p.lines.map((l) => (
+                    <line class="tpm-object__mark" {...l} />
+                  ))}
+                </g>
+              ))
+            }
+          </svg>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  import { addStage, live, onLiveChange, lerp, span, smooth, easeIn, easeInOut } from '@lib/tpm-motion';
+  import { addStage, live, onLiveChange, reducedMotion, clamp, lerp, span, smooth } from '@lib/tpm-motion';
 
   const hero = document.querySelector<HTMLElement>('[data-tpm-hero]');
   const scope = hero?.querySelector<HTMLElement>('[data-tpm-scope]');
 
-  // The scope line is centered and may wrap into two balanced lines; the dot
-  // before an item is hidden where that item opens a line.
+  // The scope rail wraps; the dot before an item is hidden where that item
+  // opens a line.
   if (scope) {
     const items = Array.from(scope.children) as HTMLElement[];
     const mark = () => {
@@ -93,130 +198,213 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
     if ('ResizeObserver' in window) new ResizeObserver(mark).observe(scope);
   }
 
-  if (hero && scope) {
-    const stage = hero.firstElementChild as HTMLElement;
-    const head = hero.querySelector<HTMLElement>('[data-tpm-hero-copy]') as HTMLElement;
-    const terms = Array.from(hero.querySelectorAll<HTMLElement>('[data-term]'));
-    const bands = Array.from(hero.querySelectorAll<HTMLElement>('[data-band]'));
-    const dusk = hero.querySelector<HTMLElement>('[data-tpm-dusk]') as HTMLElement;
+  // ---- the narrative system object --------------------------------------------
+  // s is how far the planes stand apart (0 together, 1 fully open). It eases
+  // toward a target raised by pointer movement and falling away when the
+  // pointer rests; px, py lean the layers toward the pointer, the higher ones
+  // further. The loop runs only while something is still moving.
+  const svg = hero?.querySelector<SVGSVGElement>('[data-tpm-object]');
+  let objectActive = true;
+  const object = (() => {
+    if (!hero || !svg) return null;
+    const LIFT = Number(svg.dataset.lift);
+    const GAP = Number(svg.dataset.gap);
+    const base = svg.querySelector<SVGGElement>('[data-base]') as SVGGElement;
+    const shadows = Array.from(svg.querySelectorAll<SVGPolygonElement>('[data-shadow]'));
+    const planes = Array.from(svg.querySelectorAll<SVGGElement>('[data-plane]')).map((g) => ({
+      g,
+      k: Number(g.dataset.k),
+      x: 0,
+      y: 0,
+      posts: Array.from(g.querySelectorAll<SVGGElement>('[data-post]')).map((post) => ({
+        g: post,
+        line: post.querySelector('line') as SVGLineElement,
+        node: post.querySelector('circle') as SVGCircleElement,
+        x: Number(post.dataset.x),
+        y0: Number(post.dataset.y0),
+      })),
+    }));
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    let s = 0;
+    let target = 0;
+    let activity = 0;
+    let px = 0;
+    let py = 0;
+    let tpx = 0;
+    let tpy = 0;
+    let lastX = Number.NaN;
+    let lastY = Number.NaN;
+    let lastMove = 0;
+    let inView = true;
+    let raf = 0;
+    let then = 0;
 
-    // ---- geometry ---------------------------------------------------------------
-    // Layout offsets relative to the stage, so the transforms written below
-    // never feed back into what is measured.
-    type Spot = { x: number; y: number; h: number };
-    let spots: Spot[] = [];
-    // The terms from left to right (the rail may wrap into two lines), and
-    // where each band settles: under its own term on one line; evenly spaced
-    // across the rail where it wraps, so no two bands run together.
-    let order: number[] = [];
-    let settle: number[] = [];
-    let mid = 0;
-    let edge = 0;
-    const within = (el: HTMLElement) => {
-      let x = 0;
-      let y = 0;
-      for (let n: HTMLElement | null = el; n && n !== stage; n = n.offsetParent as HTMLElement | null) {
-        x += n.offsetLeft;
-        y += n.offsetTop;
-      }
-      return { x, y, w: el.offsetWidth, h: el.offsetHeight };
-    };
-    const measure = () => {
-      reset();
-      spots = terms.map((t) => {
-        const b = within(t);
-        return { x: b.x + b.w / 2, y: b.y + b.h / 2, h: b.h };
+    const draw = () => {
+      const bx = px * 1.6;
+      const by = py * 0.9;
+      base.setAttribute('transform', `translate(${bx.toFixed(2)} ${by.toFixed(2)})`);
+      const posts = smooth(clamp(s * 2.5));
+      planes.forEach((p, i) => {
+        p.x = px * p.k;
+        p.y = -(LIFT + i * GAP) * s + py * p.k * 0.5;
+        p.g.setAttribute('transform', `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)})`);
+        shadows[i].style.opacity = lerp(1, 0.35, smooth(clamp(s * 1.4))).toFixed(3);
+        // Each post stands on the surface below: its foot moves with that
+        // surface, its head with this plane.
+        const footX = (i === 0 ? bx : planes[i - 1].x) - p.x;
+        const footY = (i === 0 ? by : planes[i - 1].y) - p.y;
+        for (const post of p.posts) {
+          post.g.style.opacity = posts.toFixed(3);
+          post.line.setAttribute('x1', (post.x + footX).toFixed(2));
+          post.line.setAttribute('y1', (post.y0 + footY).toFixed(2));
+          post.node.setAttribute('cx', (post.x + footX).toFixed(2));
+          post.node.setAttribute('cy', (post.y0 + footY).toFixed(2));
+        }
       });
-      order = spots.map((_, i) => i).sort((a, b) => spots[a].x - spots[b].x);
-      const wrapped = new Set(spots.map((sp) => Math.round(sp.y))).size > 1;
-      const first = spots[order[0]]?.x ?? 0;
-      const last = spots[order[order.length - 1]]?.x ?? 0;
-      settle = order.map((i, k) => (wrapped && order.length > 1 ? first + ((last - first) * k) / (order.length - 1) : spots[i].x));
-      mid = stage.clientWidth / 2;
-      edge = (dusk.firstElementChild as HTMLElement).offsetHeight;
     };
+
+    const frame = (now: number) => {
+      raf = 0;
+      const dt = Math.min(0.05, Math.max(0.001, (now - (then || now)) / 1000));
+      then = now;
+      if (now - lastMove > 120) activity *= Math.exp(-dt / 0.5);
+      if (activity < 0.01) activity = 0;
+      target = objectActive ? 0.8 * smooth(clamp(activity)) : 0;
+      if (!objectActive) {
+        tpx = 0;
+        tpy = 0;
+      }
+      // The lean follows the pointer while it moves and relaxes with the
+      // separation, so at rest the stack is aligned again.
+      const follow = smooth(clamp(activity * 2));
+      const lx = tpx * follow;
+      const ly = tpy * follow;
+      s += (target - s) * (1 - Math.exp(-dt / (target > s ? 0.16 : 0.55)));
+      px += (lx - px) * (1 - Math.exp(-dt / 0.3));
+      py += (ly - py) * (1 - Math.exp(-dt / 0.3));
+      // Settled once what is left is under half a pixel: it lands exactly and
+      // the loop stops.
+      const settled = activity === 0 && Math.abs(target - s) < 0.002 && Math.abs(lx - px) < 0.004 && Math.abs(ly - py) < 0.004;
+      if (settled) {
+        s = target;
+        px = lx;
+        py = ly;
+      }
+      draw();
+      if (!settled && inView && !document.hidden) raf = requestAnimationFrame(frame);
+      else then = 0;
+    };
+    const run = () => {
+      if (!raf && inView && !document.hidden && !reducedMotion()) raf = requestAnimationFrame(frame);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType === 'touch' || !fine.matches || reducedMotion() || !inView || !objectActive) return;
+      const r = svg.getBoundingClientRect();
+      if (!Number.isNaN(lastX)) activity = Math.min(1, activity + Math.hypot(e.clientX - lastX, e.clientY - lastY) / 320);
+      lastX = e.clientX;
+      lastY = e.clientY;
+      lastMove = performance.now();
+      tpx = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.9), -1, 1);
+      tpy = clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 1.2), -1, 1);
+      run();
+    };
+    const rest = () => {
+      tpx = 0;
+      tpy = 0;
+      lastX = Number.NaN;
+      run();
+    };
+
+    const still = () => {
+      // Reduced motion: no loop and no pointer, the layers held a little apart.
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      s = 0.32;
+      px = 0;
+      py = 0;
+      draw();
+    };
+
+    if (reducedMotion()) still();
+    else {
+      // The opening: the planes arrive a little apart and settle together.
+      s = 0.7;
+      draw();
+      window.setTimeout(run, 280);
+    }
+
+    window.addEventListener('pointermove', onMove, { passive: true });
+    document.documentElement.addEventListener('pointerleave', rest);
+    window.addEventListener('blur', rest);
+    document.addEventListener('visibilitychange', () => (document.hidden ? undefined : run()));
+    window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', () => (reducedMotion() ? still() : run()));
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView) run();
+        else if (raf) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+          then = 0;
+        }
+      }).observe(hero);
+    }
+    return { wake: run };
+  })();
+
+  // ---- leaving the hero: the Foundation rises over it ---------------------------
+  if (hero) {
+    const copyBox = hero.querySelector<HTMLElement>('[data-tpm-hero-copy]') as HTMLElement;
+    const visual = hero.querySelector<HTMLElement>('[data-tpm-hero-visual]') as HTMLElement;
+    const flow = document.querySelector<HTMLElement>('[data-tpm-flow]');
+    const fading = [copyBox, visual];
 
     const reset = () => {
-      for (const el of [head, scope, dusk, ...terms, ...bands]) {
-        el.style.transform = '';
+      for (const el of fading) {
         el.style.opacity = '';
+        el.style.transform = '';
         el.style.filter = '';
-        el.style.visibility = '';
+        el.style.willChange = '';
       }
-      scope.style.removeProperty('--dots');
+      flow?.style.removeProperty('--lead-r');
+      flow?.style.removeProperty('--lead-shadow');
+      flow?.style.removeProperty('--rise');
     };
 
-    // ---- per frame ----------------------------------------------------------------
-    // p runs from 0 to 1 over the hero's hold (rect.height - vh of scrolling).
-    // At 0 the hero is whole. The headline and paragraph leave with the page
-    // as if nothing held them, softening as they go; each term, a beat after
-    // the one before it, narrows and stretches into its band, which grows up
-    // from the rail; the dark ground rises over the bands on its soft edge;
-    // the bands draw down into it and toward the middle, and fade.
-    const update = (p: number, rect: DOMRect, vh: number) => {
-      const run = Math.max(0, rect.height - vh);
-      const soft = smooth(span(p, 0.14, 0.44));
-      head.style.transform = p > 0 ? `translate3d(0, ${(-p * run).toFixed(1)}px, 0)` : '';
-      head.style.opacity = soft > 0 ? (1 - soft).toFixed(3) : '';
-      head.style.visibility = soft >= 0.999 ? 'hidden' : '';
-      scope.style.setProperty('--dots', (1 - smooth(span(p, 0.06, 0.22))).toFixed(3));
-
-      // The dark ground: from below the hero to over all of it, its soft top
-      // edge ahead of it.
-      const rise = smooth(span(p, 0.3, 0.95));
-      dusk.style.transform = `translate3d(0, ${lerp(vh, -edge, rise).toFixed(2)}px, 0)`;
-
-      const sink = easeInOut(span(p, 0.55, 1));
-      const fade = 1 - smooth(span(p, 0.78, 0.96));
-      // Left to right: the k-th term from the left turns into the k-th band,
-      // in the k-th card's accent.
-      order.forEach((i, k) => {
-        const term = terms[i];
-        const t = span(p, 0.08 + 0.024 * k, 0.42 + 0.024 * k);
-        const e = easeIn(t);
-        term.style.transform = t > 0 ? `scale(${lerp(1, 0.06, e).toFixed(4)}, ${lerp(1, 2.4, e).toFixed(4)})` : '';
-        term.style.filter = t > 0 ? `blur(${(3 * smooth(t)).toFixed(2)}px)` : '';
-        const gone = smooth(span(t, 0.4, 0.85));
-        term.style.opacity = gone > 0 ? (1 - gone).toFixed(3) : '';
-
-        const band = bands[k];
-        const s = spots[i];
-        if (!band || !s) return;
-        const grow = smooth(span(t, 0.25, 1));
-        const on = smooth(span(t, 0.25, 0.7));
-        const length = lerp(s.h * 2, vh * 0.44, grow) * (1 - 0.25 * sink);
-        const bottom = s.y + s.h * 0.9 + vh * 0.05 * grow + vh * 0.4 * sink;
-        const home = lerp(s.x, settle[k], grow);
-        const x = lerp(home, mid + (home - mid) * 0.72, sink);
-        const opacity = 0.9 * on * fade;
-        band.style.opacity = opacity > 0.001 ? opacity.toFixed(3) : '0';
-        band.style.transform = `translate3d(${(x - 2).toFixed(2)}px, ${(bottom - length).toFixed(2)}px, 0) scaleY(${(length / vh).toFixed(4)})`;
-      });
+    // p runs from 0 to 1 over the one screen the stage holds, which is
+    // exactly the Foundation's rise from the bottom of the screen to the top.
+    const update = (p: number) => {
+      const fade = smooth(span(p, 0.15, 0.95));
+      const soft = smooth(span(p, 0.3, 1));
+      const lift = smooth(p);
+      for (const el of fading) {
+        el.style.willChange = p > 0 && p < 1 ? 'opacity, transform, filter' : '';
+        el.style.opacity = fade > 0 ? (1 - 0.8 * fade).toFixed(3) : '';
+        el.style.transform = lift > 0 ? `translate3d(0, ${(-26 * lift).toFixed(2)}px, 0) scale(${(1 - 0.02 * lift).toFixed(4)})` : '';
+        el.style.filter = soft > 0.002 ? `blur(${(2 * soft).toFixed(2)}px)` : '';
+      }
+      // The surface's leading edge rounds off its corners until it settles
+      // (its shadow only while it rises), and the Foundation's opening fades
+      // up into place (32px) as it does.
+      flow?.style.setProperty('--lead-r', `${(28 * (1 - smooth(span(p, 0.55, 1)))).toFixed(2)}px`);
+      flow?.style.setProperty('--lead-shadow', (smooth(span(p, 0.01, 0.1)) * (1 - smooth(span(p, 0.85, 1)))).toFixed(3));
+      flow?.style.setProperty('--rise', smooth(span(p, 0.5, 1)).toFixed(3));
+      const was = objectActive;
+      objectActive = p < 0.25;
+      if (was !== objectActive) object?.wake();
     };
 
     const apply = () => {
       const on = live();
       hero.classList.toggle('is-live', on);
       reset();
-      if (on) {
-        measure();
-        window.dispatchEvent(new Event('scroll'));
-      }
+      if (on) window.dispatchEvent(new Event('scroll'));
     };
 
     apply();
-    document.fonts?.ready.then(() => {
-      if (live()) apply();
-    });
-    addStage(hero, update);
+    addStage(hero, (p) => update(p));
     onLiveChange(apply);
-    let t = 0;
-    window.addEventListener('resize', () => {
-      window.clearTimeout(t);
-      t = window.setTimeout(() => {
-        if (live()) apply();
-      }, 140);
-    });
   }
 </script>
 
@@ -233,20 +421,22 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
     }
   }
 
+  /* Clear of the header row, which floats over the top of the hero. */
   .tpm-hero__stage {
-    position: relative;
     display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: clamp(3.5rem, 2.5rem + 6vh, 7rem);
-    min-height: var(--view-h);
-    /* Clear of the header row, which floats over the top of the hero. */
-    padding-block: calc(var(--header-row) + clamp(2.5rem, 9vh, 7rem)) clamp(3rem, 9vh, 6.5rem);
+    align-items: center;
+    padding-block: calc(var(--header-row) + clamp(2rem, 5vh, 3.5rem)) clamp(3rem, 8vh, 5rem);
   }
 
-  .tpm-hero__head {
+  .tpm-hero__grid {
     display: grid;
-    gap: var(--space-5);
+    gap: clamp(2.5rem, 2rem + 3vw, 4rem);
+  }
+
+  .tpm-hero__copy {
+    display: grid;
     align-content: center;
+    gap: clamp(1.25rem, 1rem + 1vw, 2rem);
   }
 
   .tpm-hero__title {
@@ -259,24 +449,20 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
     font-size: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
   }
 
-  /* Seven areas of work, centered on the page: one rail where they fit, two
-     balanced lines where they do not, never smaller type. A middle dot
-     (skipped by assistive technology) sits in the space before each item but
-     the first, and the script hides it where an item opens a line. */
-  .tpm-hero__foot {
-    text-align: center;
-  }
-
+  /* Seven areas of work under the paragraph, never smaller type: a rail that
+     wraps where it must. A middle dot (skipped by assistive technology) sits
+     in the space before each item but the first, and the script hides it
+     where an item opens a line. */
   .tpm-hero__scope {
-    --gap: 2.2em;
-    margin: 0;
+    --gap: 2em;
+    max-width: 38rem;
+    margin: clamp(0.25rem, 1vh, 0.75rem) 0 0;
     padding: 0;
     list-style: none;
-    text-wrap: balance;
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.12em;
-    line-height: 2;
+    line-height: 2.1;
     text-transform: uppercase;
     color: var(--ink-2);
   }
@@ -284,7 +470,7 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
   .tpm-hero__scope li {
     position: relative;
     display: inline-block;
-    margin-inline: calc(var(--gap) / 2);
+    margin-right: var(--gap);
     white-space: nowrap;
   }
 
@@ -297,22 +483,131 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
     letter-spacing: 0;
     text-align: center;
     color: var(--ink-3);
-    opacity: var(--dots, 1);
   }
 
   .tpm-hero__scope li.is-line-start::before {
     visibility: hidden;
   }
 
-  .tpm-hero__term {
-    display: inline-block;
-    transform-origin: 50% 50%;
+  /* ---- the object --------------------------------------------------------------------- */
+  .tpm-hero__visual {
+    display: grid;
+    place-items: center;
   }
 
-  /* The bands and the rising ground exist only for the transition. */
-  .tpm-hero__dusk,
-  .tpm-hero__bands {
-    display: none;
+  .tpm-hero__object {
+    width: 100%;
+    max-width: 28rem;
+  }
+
+  /* The box fits the object at rest; opening, its planes rise above it into
+     the open space (overflow stays visible). */
+  .tpm-object {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .tpm-object__slab-top {
+    fill: #1f4546;
+  }
+
+  .tpm-object__slab-right {
+    fill: #17393a;
+  }
+
+  .tpm-object__slab-left {
+    fill: #112b2c;
+  }
+
+  .tpm-object__rim {
+    fill: none;
+    stroke: rgba(237, 240, 239, 0.14);
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+  }
+
+  .tpm-object__shadow {
+    fill: #0b2223;
+    fill-opacity: 0.32;
+  }
+
+  .tpm-object__post {
+    opacity: 0;
+  }
+
+  .tpm-object__post-line {
+    stroke: #25313a;
+    stroke-opacity: 0.45;
+    stroke-width: 1.3;
+    stroke-dasharray: 3 4;
+    stroke-linecap: round;
+  }
+
+  .tpm-object__node {
+    fill: #4f918a;
+  }
+
+  .tpm-object__face {
+    stroke: rgba(37, 49, 58, 0.2);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .tpm-object__plane--a .tpm-object__face {
+    fill: #fbfaf7;
+  }
+
+  .tpm-object__plane--a .tpm-object__side-right {
+    fill: #dcd7cc;
+  }
+
+  .tpm-object__plane--a .tpm-object__side-left {
+    fill: #cbc5b8;
+  }
+
+  .tpm-object__plane--b .tpm-object__face {
+    fill: #e9eeed;
+  }
+
+  .tpm-object__plane--b .tpm-object__side-right {
+    fill: #c9d2d2;
+  }
+
+  .tpm-object__plane--b .tpm-object__side-left {
+    fill: #b6c0c1;
+  }
+
+  .tpm-object__plane--accent .tpm-object__face {
+    fill: #4f918a;
+    stroke: rgba(13, 15, 16, 0.12);
+  }
+
+  .tpm-object__plane--accent .tpm-object__side-right {
+    fill: #3d766f;
+  }
+
+  .tpm-object__plane--accent .tpm-object__side-left {
+    fill: #305f5a;
+  }
+
+  .tpm-object__mark {
+    stroke: rgba(37, 49, 58, 0.26);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+  }
+
+  .tpm-object__mark-block {
+    fill: #1f4546;
+    fill-opacity: 0.16;
+  }
+
+  .tpm-object__mark-ring {
+    fill: none;
+    stroke: #4f918a;
+    stroke-opacity: 0.55;
+    stroke-width: 2.4;
   }
 
   /* ---- entrance -------------------------------------------------------------------- */
@@ -321,35 +616,35 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
     animation-delay: calc(80ms + var(--in, 0) * 90ms);
   }
 
-  /* ---- wide screens: the split opening --------------------------------------------
-     The headline holds the left of the upper area and the paragraph the right,
-     level with its last line; the scope rail sits low and centered. */
+  /* ---- wide screens: the split ---------------------------------------------------------
+     Copy on the left, the object on the right in open space, the pair centered
+     in the first screen. */
   @media (min-width: 60rem) {
-    .tpm-hero__head {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      gap: clamp(2rem, 5vw, 6rem);
-      align-items: end;
+    .tpm-hero__stage {
+      min-height: var(--view-h);
+      padding-block: calc(var(--header-row) + clamp(1.5rem, 4vh, 3rem)) clamp(2rem, 6vh, 4rem);
     }
 
-    /* Two balanced lines across the wider column. */
+    .tpm-hero__grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: center;
+      gap: clamp(2rem, 4vw, 5.5rem);
+    }
+
     .tpm-hero__title {
       max-width: none;
     }
 
-    .tpm-hero__lede {
-      justify-self: end;
-      padding-bottom: 0.35rem;
+    .tpm-hero__object {
+      max-width: min(100%, 38rem);
     }
   }
 
-  /* ---- live: the hero holds while it resolves into the Foundation ------------------- */
+  /* ---- live: the hero holds while the Foundation rises over it -------------------- */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
-    /* 0.85 of a screen to resolve; the Foundation's dark stage rises under
-       the last 0.15 of it, where the hero is already dark, so its opening
-       follows without an empty screen between them. */
     .tpm-hero.is-live {
-      height: calc(var(--view-h) * 1.85);
-      margin-bottom: calc(var(--view-h) * -0.15);
+      height: calc(var(--view-h) * 2);
+      margin-bottom: calc(var(--view-h) * -1);
     }
 
     .tpm-hero.is-live .tpm-hero__stage {
@@ -357,84 +652,6 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
       top: 0;
       height: var(--view-h);
       overflow: hidden;
-    }
-
-    .tpm-hero.is-live .tpm-hero__dusk {
-      position: absolute;
-      inset: 0 0 auto;
-      z-index: 2;
-      display: grid;
-      grid-template-rows: auto var(--view-h);
-      height: auto;
-      pointer-events: none;
-      transform: translate3d(0, var(--view-h), 0);
-      will-change: transform;
-    }
-
-    /* An eased edge (an ease-in-out scrim, not a straight ramp), so the
-       light gives way to the dark with no band at either end of it. */
-    .tpm-hero.is-live .tpm-hero__dusk-edge {
-      display: block;
-      height: calc(var(--view-h) * 0.42);
-      background: linear-gradient(
-        to bottom,
-        rgba(13, 15, 16, 0) 0%,
-        rgba(13, 15, 16, 0.013) 8.1%,
-        rgba(13, 15, 16, 0.049) 15.5%,
-        rgba(13, 15, 16, 0.104) 22.5%,
-        rgba(13, 15, 16, 0.175) 29%,
-        rgba(13, 15, 16, 0.259) 35.3%,
-        rgba(13, 15, 16, 0.352) 41.2%,
-        rgba(13, 15, 16, 0.45) 47.1%,
-        rgba(13, 15, 16, 0.55) 52.9%,
-        rgba(13, 15, 16, 0.648) 58.8%,
-        rgba(13, 15, 16, 0.741) 64.7%,
-        rgba(13, 15, 16, 0.825) 71%,
-        rgba(13, 15, 16, 0.896) 77.5%,
-        rgba(13, 15, 16, 0.951) 84.5%,
-        rgba(13, 15, 16, 0.987) 91.9%,
-        var(--c-ink) 100%
-      );
-    }
-
-    .tpm-hero.is-live .tpm-hero__dusk-ground {
-      display: block;
-      background: var(--c-ink);
-    }
-
-    /* From halfway down the edge to the bottom of the ground: what the header
-       reads as the dark surface. Unpainted. */
-    .tpm-hero.is-live .tpm-hero__dusk-mark {
-      position: absolute;
-      inset: calc(var(--view-h) * 0.21) 0 0;
-      display: block;
-      background: none;
-    }
-
-    .tpm-hero.is-live .tpm-hero__bands {
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      display: block;
-      pointer-events: none;
-    }
-
-    /* Each band is a 4px stroke, the width of a card's left edge, one viewport
-       tall and scaled to its length from the top; soft at both ends. */
-    .tpm-hero.is-live .tpm-hero__band {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: var(--view-h);
-      opacity: 0;
-      background: linear-gradient(to bottom, transparent 0%, var(--band) 16%, var(--band) 74%, transparent 100%);
-      transform-origin: 50% 0;
-      will-change: transform, opacity;
-    }
-
-    .tpm-hero.is-live .tpm-hero__term {
-      will-change: transform, opacity, filter;
     }
   }
 </style>

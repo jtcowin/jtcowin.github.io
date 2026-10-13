@@ -853,10 +853,12 @@ for (const slug of ['creator-campaigns', 'events-video']) {
 }
 
 // ------------------------------------------------ Technical Product Marketing
-// Version 1.1 (John's TPM V1.1 brief, October 12, 2026): the case study's own
-// page through 01 Hero, 02 Foundation, 03 the transitional statement, 04
-// Website and 05 Technical documentation, then Contact and the footer. Copy
-// is checked word for word against the brief and the approved concept.
+// Version 1.3 (John's TPM V1.1, V1.2 and V1.3 briefs and the V1.2 delta,
+// October 12 and 13, 2026): the case study's own page through 01 Hero, 02
+// Foundation, 03 the transitional statement, 04 Website, 05 Technical
+// documentation, 06 the flagship animation campaign, 07 Selected Writing and
+// 08 the conclusion, then Contact and the footer. Copy is checked word for
+// word against the briefs and the approved concept.
 const tpmPage = fs.readFileSync(path.join(dist, 'work/technical-marketing/index.html'), 'utf8');
 const tpmData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/tpm.json'), 'utf8'));
 const norm = (t) => (t || '').replace(/[‘’]/g, "'");
@@ -876,13 +878,17 @@ const TPM = {
 };
 if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not use the shared case-study hero (cs-hero)');
 
-// ---- 01 Hero (V1.2 delta): the headline, the paragraph and the seven scope
-// terms, and nothing else: no kicker, no media, no control (the animation
-// lives in 06). The scope rail is centered and balanced. Leaving the hero (the
-// live choreography only), each term resolves into a band in the accent of a
-// Foundation card, the first seven in order, over a dark ground that rises
-// from below, which the header reads as a dark surface, all within about 0.7
-// to 1 viewport of scrolling.
+// ---- 01 Hero (V1.3): an asymmetrical split. The headline, the paragraph and
+// the seven scope terms together on the left, vertically centered in the
+// first screen; on the right, in open space, one abstract narrative-system
+// object (SVG moved with transforms: no WebGL, no labels), still for reduced
+// motion and paused off screen (the script checks are with the others below).
+// No kicker, no media, no control; the headline never changes. Leaving the
+// hero (the live choreography only), the Foundation's full-width surface rises
+// over it, its leading edge slightly rounded, as the hero's content fades and
+// softens a little and the Foundation headline fades up 24 to 40px: a layered
+// reveal within about 0.8 to 1.2 viewports, nothing passing from one section
+// to the other.
 if (/tpm-hero__kicker/.test(tpmPage)) failures.push('[tpm] the hero carries no kicker');
 if (tpmText(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) !== TPM.headline) failures.push(`[tpm] the headline must read "${TPM.headline}"`);
 if (tpmText(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.copy) failures.push('[tpm] the hero must carry the approved supporting sentence');
@@ -891,26 +897,41 @@ if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the
 if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned page carries no "My role" line');
 const tpmHeroHtml = (tpmPage.match(/<section class="tpm-hero"[\s\S]*?<\/section>/) || [''])[0];
 if (!tpmHeroHtml) failures.push('[tpm] the page opens with its own hero');
-if (/<(?:video|img|picture|button|iframe)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media and no control (the animation plays in full in 06)');
+if (/<(?:video|img|picture|button|iframe|canvas)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media, canvas or control (the animation plays in full in 06)');
 const assetIds = (JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || []).map((a) => a.id);
 if (/bolt-in-60-seconds-hero/.test(tpmPage) || assetIds.includes('tm-bolt-60-loop')) failures.push('[tpm] the short hero loop and its poster are gone from the page and the manifest');
 for (const gone of ['public/media/bolt-in-60-seconds-hero-loop.mp4', 'public/media/bolt-in-60-seconds-hero-loop-720.mp4', 'src/assets/technical-marketing/bolt-in-60-seconds-hero-poster.jpg']) {
   if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
 }
-const heroBands = [...tpmHeroHtml.matchAll(/<span class="tpm-hero__band[^"]*"[^>]*>/g)].map((m) => ((m[0].match(/--band:\s*(#[0-9a-f]{6})/i) || [])[1] || '').toLowerCase());
-const firstSeven = tpmData.foundation.documents.slice(0, 7).map((d) => d.color.toLowerCase());
-if (JSON.stringify(heroBands) !== JSON.stringify(firstSeven)) failures.push(`[tpm] the hero's seven bands take the first seven card accents, in order (found ${heroBands.join(' ') || 'none'})`);
-if (!/<div class="tpm-hero__bands[^"]*"[^>]*aria-hidden="true"/.test(tpmHeroHtml)) failures.push('[tpm] the bands are decorative: aria-hidden');
-const duskHtml = (tpmHeroHtml.match(/<div class="tpm-hero__dusk[\s\S]*?<\/div>/) || [''])[0];
-if (!/^<div class="tpm-hero__dusk[^"]*"[^>]*aria-hidden="true"/.test(duskHtml) || !/data-surface="dark"/.test(duskHtml)) failures.push('[tpm] the rising dark ground is decorative and reads to the header as the dark surface');
-const heroRun = tpmRules(/^\.tpm-hero\.is-live$/).map((r) => Number((r.body.match(/height:\s*calc\(var\(--view-h\)\s*\*\s*([\d.]+)\)/) || [])[1])).find((v) => v > 0);
-if (!(heroRun >= 1.7 && heroRun <= 2)) failures.push(`[tpm] leaving the hero takes about 0.7 to 1 viewport of scrolling (found ${heroRun ? (heroRun - 1).toFixed(2) : 'none'})`);
-if (!CSS_RULES.some((r) => !r.at && bare(r.sel).split(',').map((x) => x.trim()).includes('.tpm-hero__dusk') && bare(r.sel).split(',').map((x) => x.trim()).includes('.tpm-hero__bands') && /display:\s*none/.test(r.body))) failures.push('[tpm] the bands and the rising ground exist only for the live transition');
-const duskEdge = tpmRules(/^\.tpm-hero\.is-live \.tpm-hero__dusk-edge$/).map((r) => r.body).join(';');
-if ((duskEdge.match(/%/g) || []).length < 12) failures.push('[tpm] the dark ground rises on an eased edge (a many-stop scrim), not a straight ramp');
-if (!tpmRules(/^\.tpm-hero__foot$/).some((r) => /text-align:\s*center/.test(r.body))) failures.push('[tpm] the scope line is centered on the page');
-if (!tpmRules(/^\.tpm-hero__scope$/).some((r) => /text-wrap:\s*balance/.test(r.body))) failures.push('[tpm] the scope line wraps into balanced lines');
+const heroCopyAt = tpmHeroHtml.indexOf('class="tpm-hero__copy');
+const heroVisualAt = tpmHeroHtml.indexOf('class="tpm-hero__visual');
+const heroCopyHtml = heroCopyAt < 0 || heroVisualAt < 0 ? '' : tpmHeroHtml.slice(heroCopyAt, heroVisualAt);
+if (!heroCopyHtml || !/<h1 id="tpm-title"/.test(heroCopyHtml) || !/tpm-hero__lede/.test(heroCopyHtml) || !/tpm-hero__scope/.test(heroCopyHtml)) failures.push('[tpm] the headline, the paragraph and the scope sit together in the copy column, before the object');
+const heroGrid = tpmRules(/^\.tpm-hero__grid$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+if (!/grid-template-columns:\s*minmax\(0,\s*7fr\)\s*minmax\(0,\s*5fr\)/.test(heroGrid) || !/align-items:\s*center/.test(heroGrid)) failures.push('[tpm] wide screens split the hero asymmetrically, copy and object centered on each other');
+if (!tpmRules(/^\.tpm-hero__stage$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*var\(--view-h\)/.test(r.body)) || !tpmRules(/^\.tpm-hero__stage$/).some((r) => !r.at && /align-items:\s*center/.test(r.body))) failures.push('[tpm] the split is vertically centered in the first screen');
+const objectSvg = (tpmHeroHtml.match(/<svg\b[^>]*class="tpm-object"[\s\S]*?<\/svg>/) || [''])[0];
+if (!objectSvg || !/aria-hidden="true"/.test((objectSvg.match(/<svg\b[^>]*>/) || [''])[0]) || !/\bdata-tpm-object\b/.test(objectSvg)) failures.push('[tpm] the narrative-system object is one decorative SVG, hidden from assistive technology');
+if (/<text\b|<foreignObject\b|<image\b/.test(objectSvg)) failures.push('[tpm] the object is abstract: no labels, text or images');
+if ((objectSvg.match(/\bdata-plane\b/g) || []).length !== 5 || (objectSvg.match(/\bdata-base\b/g) || []).length !== 1) failures.push('[tpm] the object is one foundation with five planes on it');
+if (/tpm-hero__band|tpm-hero__dusk|\bdata-band\b|tpm-hero__foot/.test(tpmPage)) failures.push('[tpm] the V1.2 bands, rising ground and centered foot are gone: no fragments, strips or morphing between the sections');
+// One accent in the headline, one emphasis in the paragraph (V1.3).
+const accentsIn = (html) => [...html.matchAll(/<span class="tpm-accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(norm(m[1])));
+const emsIn = (html) => [...html.matchAll(/<strong class="tpm-em"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(norm(m[1])));
+const heroH1 = (tpmPage.match(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) || [, ''])[1];
+if (JSON.stringify(accentsIn(heroH1)) !== JSON.stringify(['the system']) || /</.test(heroH1.replace(/<span class="tpm-accent"[^>]*>|<\/span>/g, ''))) failures.push('[tpm] the hero headline sets "the system" in the accent, and nothing else in it moves or changes');
+const heroLede = (tpmPage.match(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
+if (JSON.stringify(emsIn(heroLede)) !== JSON.stringify(['a clear market narrative'])) failures.push('[tpm] the hero paragraph emphasizes one phrase: a clear market narrative');
 if (tpmRules(/^\.tpm-hero__scope/).some((r) => /font-size:\s*(?:clamp|calc|[\d.]+vw)/.test(r.body))) failures.push('[tpm] the scope line never shrinks its type to fit');
+// Leaving the hero: one held screen (about 0.8 to 1.2 viewports) while the
+// Foundation rises over it.
+const heroRun = tpmRules(/^\.tpm-hero\.is-live$/).map((r) => Number((r.body.match(/height:\s*calc\(var\(--view-h\)\s*\*\s*([\d.]+)\)/) || [])[1])).find((v) => v > 0);
+if (!(heroRun >= 1.8 && heroRun <= 2.2)) failures.push(`[tpm] leaving the hero takes about 0.8 to 1.2 viewports of scrolling (found ${heroRun ? (heroRun - 1).toFixed(2) : 'none'})`);
+if (!tpmRules(/^\.tpm-hero\.is-live$/).some((r) => /margin-bottom:\s*calc\(var\(--view-h\)\s*\*\s*-1\)/.test(r.body))) failures.push('[tpm] the Foundation rises over the held hero: the hero gives its last screen to it');
+if (!tpmRules(/^\.tpm-flow\.is-live$/).some((r) => /border-radius:\s*var\(--lead-r,\s*0px\)\s*var\(--lead-r,\s*0px\)\s*0\s*0/.test(r.body))) failures.push('[tpm] the rising surface keeps a slightly rounded leading edge until it settles');
+const riseRule = tpmRules(/^\.tpm-flow\.is-live \.tpm-foundation__head\s*>\s*\*?$/).map((r) => r.body).join(';');
+const riseBy = Number((riseRule.match(/translate:\s*0\s*calc\(\(1 - var\(--rise,\s*1\)\)\s*\*\s*([\d.]+)px\)/) || [])[1]);
+if (!(riseBy >= 24 && riseBy <= 40) || !/opacity:\s*var\(--rise/.test(riseRule)) failures.push(`[tpm] the Foundation headline fades upward 24 to 40px as the surface settles (found ${riseBy || 'none'})`);
 
 // ---- 02 Foundation: a centered two-line opening, then twelve named documents
 // in the brief's order (display numbers 00 to 11, not their Linear numbers),
@@ -932,9 +953,19 @@ const FOUNDATION = [
 const titleHtml = (tpmPage.match(/<h2 id="tpm-foundation-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1];
 const titleLines = [...titleHtml.matchAll(/<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
 if (JSON.stringify(titleLines) !== JSON.stringify(TPM.foundationLines)) failures.push(`[tpm] 02 is headed in exactly two lines: ${TPM.foundationLines.join(' / ')} (found ${titleLines.join(' / ')})`);
-if (!tpmRules(/^\.tpm-foundation__title span$/).some((r) => /display:\s*block/.test(r.body) && /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] each line of the 02 headline is its own unbroken line');
+if (!tpmRules(/^\.tpm-foundation__title\s*>\s*span$/).some((r) => /display:\s*block/.test(r.body) && /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] each line of the 02 headline is its own unbroken line');
 if (!tpmRules(/^\.tpm-foundation__head$/).some((r) => /text-align:\s*center/.test(r.body))) failures.push('[tpm] the 02 opening is centered');
 if (tpmText(/<p class="tpm-foundation__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.foundationCopy) failures.push('[tpm] 02 must carry the approved paragraph');
+// V1.3: "the foundation." in the accent, one phrase of the paragraph
+// emphasized, and the paragraph at about 700 to 780px.
+const foundationH2 = (tpmPage.match(/<h2 id="tpm-foundation-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1];
+if (JSON.stringify(accentsIn(foundationH2)) !== JSON.stringify(['the foundation.'])) failures.push('[tpm] the 02 headline sets "the foundation." in the accent');
+const foundationP = (tpmPage.match(/<p class="tpm-foundation__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
+if (JSON.stringify(emsIn(foundationP)) !== JSON.stringify(['a shared internal language'])) failures.push('[tpm] the 02 paragraph emphasizes one phrase: a shared internal language');
+const remOf = (body) => Number((body.match(/max-width:\s*([\d.]+)rem/) || [])[1]);
+const measureOk = (rem) => rem * 16 >= 700 && rem * 16 <= 780;
+const foundationMeasure = tpmRules(/^\.tpm-foundation__copy$/).map((r) => remOf(r.body)).find((v) => v > 0);
+if (!measureOk(foundationMeasure)) failures.push(`[tpm] the 02 paragraph keeps a measure of about 700 to 780px (found ${foundationMeasure ? foundationMeasure * 16 : 'none'}px)`);
 const docItems = [...tpmPage.matchAll(/<li class="tpm-doc"[\s\S]*?<\/li>/g)].map((m) => m[0]);
 const docRows = docItems.map((li) => [
   textOf((li.match(/<span class="tpm-doc__num[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]),
@@ -994,9 +1025,27 @@ if (words02 > 80) failures.push(`[tpm] 02 keeps to about 50 to 80 words outside 
 // assistive technology, revealed word by word on screen.
 const stmtHtml = (tpmPage.match(/<div class="tpm-statement"[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
 const stmtSr = textOf(norm((stmtHtml.match(/<p class="sr-only"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]));
-const stmtWords = [...stmtHtml.matchAll(/<span class="tpm-word"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
+// Word by word; a piece split off a word (the colon after the highlighted
+// clause, V1.3) is revealed with that word.
+const stmtPieces = [...stmtHtml.matchAll(/<span class="tpm-word"([^>]*)>([\s\S]*?)<\/span>/g)].map((m) => ({ text: textOf(m[2]), joined: /\bdata-with-previous\b/.test(m[1]) }));
+const stmtWords = stmtPieces.reduce((out, p) => (p.joined && out.length ? [...out.slice(0, -1), out[out.length - 1] + p.text] : [...out, p.text]), []);
 if (stmtSr !== TPM.statement) failures.push('[tpm] 03 must carry the statement word for word');
 if (stmtWords.join(' ') !== TPM.statement) failures.push('[tpm] 03 reveals the statement word by word, every word in order');
+// The page's one animated highlight (V1.3): a restrained translucent teal
+// behind the clause on how the shared language guides every expression,
+// swept in once the statement is complete; not a marker, no bold, no color.
+const markHtml = (stmtHtml.match(/<span class="tpm-mark"[^>]*>((?:\s*<span class="tpm-word"[^>]*>[^<]*<\/span>)*)\s*<\/span>/) || [, ''])[1];
+if (spaced(markHtml) !== 'it guides every expression that follows' || norm(tpmData.statement.highlight) !== 'it guides every expression that follows') failures.push(`[tpm] the highlight sits behind "it guides every expression that follows" (found "${spaced(markHtml)}")`);
+const markRule = tpmRules(/^\.tpm-mark$/).map((r) => r.body).join(';');
+// The muted aqua (#4f918a) at partial opacity, however the minifier writes it.
+const markAlpha = (() => {
+  const hex = markRule.match(/#4f918a([0-9a-f]{2})\b/i);
+  if (hex) return parseInt(hex[1], 16) / 255;
+  const rgba = markRule.match(/rgba?\(\s*79[,\s]+145[,\s]+138\s*[,/]\s*(0?\.\d+)\s*\)/);
+  return rgba ? Number(rgba[1]) : NaN;
+})();
+if (!(markAlpha >= 0.2 && markAlpha <= 0.45) || !/background-size:\s*calc\(var\(--sweep\)\s*\*\s*100%\)/.test(markRule) || /font-weight|color:\s*(?!inherit)/.test(markRule.replace(/background[^;]*/g, ''))) failures.push('[tpm] the highlight is a restrained translucent teal band that sweeps in, with no bold or color change');
+if ((tpmPage.match(/class="tpm-mark"/g) || []).length !== 1) failures.push('[tpm] the page has one highlight');
 if (!/<p class="tpm-statement__copy[^"]*"[^>]*aria-hidden="true"/.test(stmtHtml)) failures.push('[tpm] the word-by-word copy is hidden from assistive technology (the full sentence is read instead)');
 if (/<h[1-6]\b|<svg\b|<img\b|<video\b|<li\b|eyebrow/.test(stmtHtml)) failures.push('[tpm] 03 has no eyebrow, heading, cards, icons, diagram or arrow');
 if (/tpm-line|tpm-words|tpm-site__/.test(tpmPage)) failures.push('[tpm] the arrow-based Shared Product Language sequence is gone');
@@ -1059,6 +1108,18 @@ walkCheck(webHtml, 'website', 'bolt-website-walkthrough.mp4', 'bolt-website-walk
 fileCheck('bolt-website-walkthrough.mp4', 1920, 1080, 10, [46.5, 47.1], 'the approved take runs about 47 s, hero to partnership form, not shortened');
 fileCheck('bolt-website-walkthrough-720.mp4', 1280, 720, 4, [46.5, 47.1], 'the approved take runs about 47 s, hero to partnership form, not shortened');
 posterAt('bolt-website-walkthrough-poster.jpg', 1920, 1080, 'the website poster (the hero at rest)');
+// The live site (V1.3): one quiet button beside the display, never on it,
+// at the display's right edge on the line of its foot; it opens a new tab and
+// says so to assistive technology.
+const liveHtml = (webHtml.match(/<div class="tpm-display__live[^"]*"[^>]*>([\s\S]*?)<\/div>/) || [, ''])[1];
+const liveA = (liveHtml.match(/<a\b[^>]*>[\s\S]*?<\/a>/) || [''])[0];
+const liveTag = (liveA.match(/<a\b[^>]*>/) || [''])[0];
+if (!liveA || !/href="https:\/\/boltliquidity\.io\/"/.test(liveTag) || !/target="_blank"/.test(liveTag) || !/rel="noopener[^"]*"/.test(liveTag) || !/\bbtn--secondary\b/.test(liveTag)) failures.push('[tpm] 04 offers one secondary Visit live site button to boltliquidity.io, in a new tab');
+if (textOf(liveA.replace(/<span class="sr-only"[\s\S]*?<\/span>/, '')) !== 'Visit live site' || !/<svg\b/.test(liveA) || !/<span class="sr-only"[^>]*>\s*\(opens [^)]+ in a new tab\)<\/span>/.test(liveA)) failures.push('[tpm] the live-site button reads Visit live site with its external arrow, and tells assistive technology it opens a new tab');
+const displayInside = (webHtml.match(/<div class="tpm-display__body[\s\S]*?(?=<div class="tpm-display__stand)/) || [''])[0];
+if (!displayInside || /tpm-display__live|Visit live site/.test(displayInside) || webHtml.indexOf('tpm-display__live') < webHtml.indexOf('tpm-display__stand')) failures.push('[tpm] the live-site button sits outside the display, after its stand');
+const WIDE48 = /min-width:\s*48rem|width\s*>=\s*48rem/;
+if (!tpmRules(/^\.tpm-display__live$/).some((r) => WIDE48.test(r.at) && /position:\s*absolute/.test(r.body) && /right:\s*0\b/.test(r.body) && /bottom:\s*0\b/.test(r.body))) failures.push("[tpm] on wide screens the button lines up with the display's right edge and the foot of its stand");
 
 const docsHtml = caseHtml('tpm-docs');
 if (!/data-surface="light-return"/.test((docsHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 05 opens its own chapter on its own surface');
@@ -1089,6 +1150,7 @@ if (chapterTitles.join(' | ') !== 'Documentation overview | Interactive architec
 // spotlight.
 const chaptersLabel = (docsHtml.match(/<p id="tpm-chapters-label"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
 if (textOf(chaptersLabel) !== 'Selected views from a broader documentation system' || !/<ol class="tpm-chapters[^"]*"[^>]*aria-labelledby="tpm-chapters-label"/.test(docsHtml)) failures.push('[tpm] the chapters are introduced as "Selected views from a broader documentation system", which also names the list');
+if (!tpmRules(/^\.tpm-chapters__label$/).some((r) => /text-align:\s*center/.test(r.body)) || !tpmRules(/^\.tpm-chapters__wrap$/).some((r) => /max-width:\s*90rem/.test(r.body) && /margin:\s*0 auto/.test(r.body)) || !tpmRules(/^\.tpm-browser$/).some((r) => /max-width:\s*90rem/.test(r.body))) failures.push('[tpm] "Selected views from a broader documentation system" is centered on the frame (V1.3)');
 if (/\b\d+\s*(?:\+\s*)?pages?\b|Architecture Spotlight/i.test(spaced(docsHtml))) failures.push('[tpm] 05 gives no page count and no Architecture Spotlight');
 if (starts[0] !== 0 || starts.some((s, i) => i && s <= starts[i - 1]) || starts.some((s) => s >= docsSec)) failures.push('[tpm] the chapters start at 0 and in order, inside the walkthrough');
 if (!(starts[2] - starts[1] >= starts[1] - starts[0] && starts[2] - starts[1] >= docsSec - starts[2])) failures.push('[tpm] the architecture diagram is the longest moment of the walkthrough');
@@ -1172,9 +1234,115 @@ else {
   const resWant = [['~14%', 'About 14%', 'engagement rate'], ['84%', '', 'of impressions from non-followers'], ['+140%', '', 'website traffic'], ['+153%', '', 'technical-documentation traffic']];
   if (JSON.stringify(resItems) !== JSON.stringify(resWant)) failures.push(`[tpm] the four results, as approved (found ${JSON.stringify(resItems)})`);
   const support = [...res.matchAll(/<ul class="tpm-results__supporting[^"]*"[^>]*>([\s\S]*?)<\/ul>/g)].flatMap((m) => [...m[1].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((l) => [textOf(l[1]), [...l[1].matchAll(/<strong\b[^>]*>([\s\S]*?)<\/strong>/g)].map((b) => textOf(b[1]))]));
-  if (JSON.stringify(support) !== JSON.stringify([['More than 16x typical post reach', ['16x typical post reach']], ['Amplified by Sui Developer and Sui Community Official', ['Sui Developer', 'Sui Community Official']]])) failures.push('[tpm] the supporting results: More than 16x typical post reach; Amplified by Sui Developer and Sui Community Official');
+  // V1.3: the foundation accounts as a group, none of them named.
+  if (JSON.stringify(support) !== JSON.stringify([['More than 16x typical post reach', ['16x typical post reach']], ['Recognized and amplified by key ecosystem foundation accounts', ['key ecosystem foundation accounts']]])) failures.push('[tpm] the supporting results: More than 16x typical post reach; Recognized and amplified by key ecosystem foundation accounts');
+  if (/\bSui\b|Community Official/.test(spaced(res))) failures.push('[tpm] the results name no ecosystem or account');
   if (/84\s*%[^.<]*engagement|of engagements/i.test(spaced(campHtml))) failures.push('[tpm] the 84% is a share of impressions, never of engagements');
 }
+// ---- V1.3 across 04, 05 and 06: Goal, Services and Credits in three equal
+// columns on wide screens (one column below, never a lone entry on a second
+// row), the same in every chapter, labels and first lines aligned; each
+// contribution at a readable measure of about 700 to 780px, running to it
+// rather than balanced shorter, with one phrase emphasized.
+const metaWide = tpmRules(/^\.tpm-meta$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+if (!/grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(metaWide) || /--meta-columns/.test(cssText) || /--meta-columns/.test(tpmPage)) failures.push('[tpm] the metadata row is three equal columns on wide screens, the same in every chapter');
+if (tpmRules(/^\.tpm-meta$/).some((r) => /repeat\(2,/.test(r.body)) || !tpmRules(/^\.tpm-meta$/).some((r) => !r.at && /align-items:\s*start/.test(r.body))) failures.push('[tpm] the metadata row never leaves one entry alone on a second row, and its entries start on one line');
+const contributionMeasure = tpmRules(/^\.tpm-case__contribution$/).map((r) => remOf(r.body)).find((v) => v > 0);
+if (!measureOk(contributionMeasure)) failures.push(`[tpm] the chapter paragraphs keep a measure of about 700 to 780px (found ${contributionMeasure ? contributionMeasure * 16 : 'none'}px)`);
+if (tpmRules(/^\.tpm-case__contribution(?:--center)?$/).some((r) => /text-wrap:\s*balance/.test(r.body))) failures.push('[tpm] the chapter paragraphs run to their measure rather than being balanced shorter');
+for (const [cls, phrase] of [['tpm-website', 'a complete rebuild and launch in two weeks'], ['tpm-docs', 'useful, accurate, and appropriate for public release'], ['tpm-campaign', 'mapped the one-minute narrative from first frame to final CTA']]) {
+  const p = (caseHtml(cls).match(/<p class="tpm-case__contribution[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
+  if (JSON.stringify(emsIn(p)) !== JSON.stringify([phrase])) failures.push(`[tpm] the ${cls.replace('tpm-', '')} paragraph emphasizes one phrase: ${phrase}`);
+}
+
+// ---- 07 Selected Writing (V1.3): after the campaign and before the
+// conclusion, titled plainly; two large editorial rows, alternating (on
+// phones the cover always first), each the article's original cover, its
+// category, its title and an excerpt word for word from it (80 to 120 words).
+// No embeds, links, engagement figures or invented diagrams in this build;
+// the Liquidity Puzzle article is not among them.
+const writingHtml = (tpmPage.match(/<section class="tpm-writing"[\s\S]*?<\/section>/) || [''])[0];
+const tpmAssets = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || [];
+const WRITING = [
+  { title: 'The Missing Price Layer', category: 'Market structure thesis', cover: 'tm-article-2', reversed: false },
+  { title: "DeFi's Billion-Dollar Problem", category: 'Technical product explainer', cover: 'tm-article-1', reversed: true },
+];
+if (!writingHtml) failures.push('[tpm] 07 Selected Writing follows the campaign');
+else {
+  if (textOf((writingHtml.match(/<h2 id="tpm-writing-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1]) !== 'Selected Writing') failures.push('[tpm] 07 is titled Selected Writing');
+  const rows = [...writingHtml.matchAll(/<article class="(tpm-article[^"]*)"[^>]*>([\s\S]*?)<\/article>/g)].map((m) => ({
+    title: textOf(norm((m[2].match(/<h3\b[^>]*>([\s\S]*?)<\/h3>/) || [, ''])[1])),
+    category: textOf((m[2].match(/<p class="tpm-article__category[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]),
+    reversed: /\btpm-article--reversed\b/.test(m[1]),
+    excerpt: [...((m[2].match(/<blockquote\b[^>]*>([\s\S]*?)<\/blockquote>/) || [, ''])[1]).matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map((p) => textOf(norm(p[1]))),
+    img: (m[2].match(/<img\b[^>]*>/) || [''])[0],
+    coverFirst: m[2].indexOf('tpm-article__cover') >= 0 && m[2].indexOf('tpm-article__cover') < m[2].indexOf('tpm-article__text'),
+  }));
+  const shape = (list) => JSON.stringify(list.map((r) => [r.title, r.category, r.reversed]));
+  if (shape(rows) !== shape(WRITING)) failures.push(`[tpm] 07 shows The Missing Price Layer (cover left), then DeFi's Billion-Dollar Problem (cover right) (found ${shape(rows)})`);
+  rows.forEach((r, i) => {
+    const data = (tpmData.writing?.articles || [])[i];
+    const words = r.excerpt.join(' ').split(/\s+/).filter(Boolean).length;
+    if (!data || JSON.stringify(r.excerpt) !== JSON.stringify(data.excerpt.map((x) => textOf(norm(x))))) failures.push(`[tpm] the ${r.title} excerpt is the approved text, paragraph for paragraph`);
+    if (words < 80 || words > 120) failures.push(`[tpm] the ${r.title} excerpt runs 80 to 120 words (found ${words})`);
+    if (!r.coverFirst) failures.push(`[tpm] the ${r.title} cover comes first, so phones show it above the text`);
+    const entry = tpmAssets.find((a) => a.id === WRITING[i]?.cover);
+    if (!entry || entry.permission !== 'approved' || !entry.file || !fs.existsSync(path.join(root, 'src/assets', entry.file)) || data?.cover !== entry.id) failures.push(`[tpm] the ${r.title} cover is its original artwork, approved and on disk`);
+    const alt = decode((r.img.match(/\balt="([^"]*)"/) || [, ''])[1]);
+    if (!r.img || !/loading="lazy"/.test(r.img) || !entry || alt !== entry.alt) failures.push(`[tpm] the ${r.title} cover is a lazy, responsive image with its manifest alt text`);
+  });
+  if (/<a\b|<iframe\b|<embed\b|<object\b|twitter-tweet|platform\.twitter|x\.com\//i.test(writingHtml)) failures.push('[tpm] 07 has no embeds and no links in this build');
+  if (/\b(?:views?|likes?|reposts?|retweets?|impressions?|engagements?|bookmarks?)\b/i.test(spaced(writingHtml))) failures.push('[tpm] 07 shows no engagement figures');
+  if (/<svg\b|<canvas\b/.test(writingHtml)) failures.push('[tpm] 07 carries no diagrams or motifs of its own');
+}
+if (/Liquidity Puzzle/i.test(tpmPage)) failures.push('[tpm] "Bolt Liquidity: Solving DeFi\'s Liquidity Puzzle" is not among the selected writing');
+
+// ---- 08 the conclusion (V1.3): after Selected Writing and before Contact; the
+// approved headline (its second sentence in the accent) and paragraph, then
+// only the way on to the next case study, in the collection's order. No
+// metrics, services, credits or roles.
+const conclusionHtml = (tpmPage.match(/<section class="tpm-conclusion"[\s\S]*?<\/section>/) || [''])[0];
+if (!conclusionHtml) failures.push('[tpm] 08 the conclusion closes the case study');
+else {
+  const h2 = (conclusionHtml.match(/<h2 id="tpm-conclusion-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1];
+  if (spaced(h2) !== 'One foundation. Every expression aligned.' || JSON.stringify(accentsIn(h2)) !== JSON.stringify(['Every expression aligned.'])) failures.push('[tpm] 08 headline: One foundation. Every expression aligned. (its second sentence in the accent)');
+  const conclusionCopy = 'The work began with a shared product language and carried through the website, technical documentation, and flagship campaign, giving every public-facing expression the same strategic foundation.';
+  if (textOf((conclusionHtml.match(/<p class="tpm-conclusion__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]) !== conclusionCopy || tpmData.conclusion?.copy !== conclusionCopy) failures.push('[tpm] 08 carries the approved paragraph');
+  const cases = fs.readdirSync(path.join(root, 'src/content/work')).filter((f) => f.endsWith('.mdx')).map((f) => {
+    const fm = fs.readFileSync(path.join(root, 'src/content/work', f), 'utf8');
+    return { id: f.replace(/\.mdx$/, ''), order: Number((fm.match(/^order:\s*(\d+)/m) || [])[1]), card: (fm.match(/^card:[\s\S]*?^\s+title:\s*"([^"]+)"/m) || [, ''])[1] };
+  }).sort((a, b) => a.order - b.order);
+  const nextCase = cases[(cases.findIndex((c) => c.id === 'technical-marketing') + 1) % cases.length];
+  const links = [...conclusionHtml.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
+  if (links.length !== 1 || links[0][1] !== `${BASE}/work/${nextCase.id}/` || !spaced(links[0][2]).includes(nextCase.card)) failures.push(`[tpm] beneath the conclusion, only the way on to the next case study (${nextCase.card})`);
+  const rest = spaced(conclusionHtml.replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<p class="tpm-conclusion__copy[\s\S]*?<\/p>/, '').replace(/<a\b[\s\S]*?<\/a>/, ''));
+  if (rest) failures.push(`[tpm] the conclusion carries nothing but its headline, its paragraph and the next case study (found "${rest}")`);
+  if (/\d\s*%|\bGoal\b|\bServices\b|\bCredits\b|\bBob\b|My role/.test(spaced(conclusionHtml))) failures.push('[tpm] the conclusion repeats no metrics, services, credits or roles');
+}
+
+// ---- the page's order (V1.3), Contact kept after the conclusion.
+const tpmOrder = [['hero', '<section class="tpm-hero"'], ['foundation', 'data-tpm-flow'], ['website', 'class="tpm-case tpm-website"'], ['documentation', 'class="tpm-case tpm-docs"'], ['campaign', 'class="tpm-case tpm-campaign"'], ['writing', '<section class="tpm-writing"'], ['conclusion', '<section class="tpm-conclusion"'], ['contact', 'id="contact"']].map(([n, s]) => [n, tpmPage.indexOf(s)]);
+if (tpmOrder.some(([, i]) => i < 0) || tpmOrder.some(([, i], k) => k && i < tpmOrder[k - 1][1])) failures.push(`[tpm] the page runs hero, foundation, website, documentation, campaign, writing, conclusion, contact (${tpmOrder.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
+
+// ---- the emphasis system (V1.3): at most one emphasized phrase per
+// paragraph, set a little heavier; the accent color on a few headline phrases,
+// not every headline; never bold, accent and highlight on one phrase; no
+// icons in headlines.
+const tpmArticle = (tpmPage.match(/<article class="tpm"[\s\S]*<\/article>\s*<div class="chapter"/) || [''])[0];
+const tpmParas = [...tpmArticle.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+const tpmHeads = [...tpmArticle.matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/g)].map((m) => ({ level: Number(m[1]), html: m[2] }));
+if (tpmParas.some((p) => (p.match(/class="tpm-em"/g) || []).length > 1)) failures.push('[tpm] no paragraph emphasizes more than one phrase');
+const accented = tpmHeads.filter((h) => h.level <= 2 && /class="tpm-accent"/.test(h.html)).length;
+const headlines = tpmHeads.filter((h) => h.level <= 2).length;
+if (!(accented >= 2 && accented <= 4 && accented < headlines) || (tpmArticle.match(/class="tpm-accent"/g) || []).length !== accented) failures.push(`[tpm] the accent marks one phrase in a few headlines, not every headline (found ${accented} of ${headlines})`);
+if (tpmHeads.some((h) => /tpm-em/.test(h.html)) || tpmParas.some((p) => /tpm-accent/.test(p)) || /tpm-em|tpm-accent|<strong\b|<b\b/.test(markHtml)) failures.push('[tpm] bold, accent and highlight never meet on one phrase');
+if (tpmHeads.some((h) => /<svg\b|<img\b/.test(h.html))) failures.push('[tpm] no icons in headlines');
+const emRule = rulesFor(/^\.tpm-em$/).map((r) => r.body).join(';');
+const accentRule = rulesFor(/^\.tpm-accent$/).map((r) => r.body).join(';');
+const emWeight = Number((emRule.match(/font-weight:\s*(\d+)/) || [])[1]);
+if (!(emWeight >= 500 && emWeight <= 650) || /background|accent/.test(emRule)) failures.push('[tpm] emphasis in a paragraph is a slightly heavier weight, nothing more');
+if (!/color:\s*var\(--accent-ink\)/.test(accentRule) || /font-weight|background/.test(accentRule)) failures.push('[tpm] a headline accent is a change of color only');
+
 // ---- the choreography is an enhancement: every sticky stage and every
 // scroll height needs the script's is-live class, a 60rem minimum width, a
 // minimum height and prefers-reduced-motion: no-preference.
@@ -1206,11 +1374,22 @@ const tpmScripts = pageScripts(tpmPage);
 // The film's controls (06): sound on request, mute or unmute, a silent replay.
 for (const token of ['Unmute', 'volumechange', 'Replay video without sound']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the film's script is missing ${token}`);
 if (!/addEventListener\(\s*[`"']ended[`"']/.test(tpmScripts)) failures.push('[tpm] the walkthroughs hold their last frame when they end');
-// The website walkthrough (V1.2 delta) plays continuously: about a second on
-// the partnership form, a fade back to the hero (its poster, the first frame)
-// and again, never a cut; the documentation still plays once.
+// The walkthroughs play continuously: the website (V1.2 delta) about a second
+// on the partnership form, the documentation (V1.3) a moment on its final
+// page, then a fade back to the first frame (the poster) and again, never a
+// cut; out of view they pause, and nothing in the loop touches the mute state.
 if (!/cycle:\{hold:(?:1e3|1000),fade:(?:[5-9]\d\d)\}/.test(tpmScripts)) failures.push('[tpm] the website walkthrough holds its form for about a second, then fades back to the hero before it replays');
-if (!/\{threshold:\.55\}/.test(tpmScripts)) failures.push('[tpm] the documentation walkthrough plays once (no cycle)');
+if (!/\{threshold:\.55,cycle:\{hold:(?:1e3|1000|1[0-5]\d\d),fade:(?:[5-9]\d\d)\}\}/.test(tpmScripts)) failures.push('[tpm] the documentation walkthrough runs continuously: a moment on its final page, a fade back to the start, and again (V1.3)');
+// The hero's object (V1.3): SVG moved with transforms, its loop running only
+// while something moves, paused off screen and in a hidden tab, still for
+// reduced motion, no pointer response on touch.
+if (/webgl|getContext\(/i.test(tpmScripts)) failures.push('[tpm] no WebGL or canvas drawing: the hero object is SVG moved with transforms');
+for (const token of ['[data-tpm-object]', 'pointermove', 'cancelAnimationFrame', 'requestAnimationFrame']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the hero object's script is missing ${token}`);
+if (!/pointerType===?[`"']touch[`"']/.test(tpmScripts)) failures.push('[tpm] the hero object does not follow touch');
+// The layered reveal hands the Foundation its edge, its shadow and its rise.
+for (const token of ['--lead-r', '--lead-shadow', '--rise']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the layered reveal's script is missing ${token}`);
+// The writing rows' entrance: once, for rows below the screen, never for reduced motion.
+if (!/\.tpm-writing \[data-article\]/.test(tpmScripts) || !/is-pending/.test(tpmScripts)) failures.push('[tpm] the writing rows enter once, as they come into view');
 if (!CSS_RULES.some((r) => /\[data-turn=["']?fade["']?\]\s+\.tpm-walk__video/.test(bare(r.sel)) && /opacity:\s*0\b/.test(r.body) && /transition:\s*opacity/.test(r.body))) failures.push('[tpm] the turn fades the recording out to its poster');
 for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'requestVideoFrameCallback', 'visibilitychange', 'IntersectionObserver', 'is-live', 'NotAllowedError', 'ended', 'Replay']) {
   if (!tpmScripts.includes(token)) failures.push(`[tpm] the page's motion script is missing ${token}`);
@@ -1382,7 +1561,7 @@ for (const f of srcFiles) {
   for (const m of s.matchAll(/<(?:Media|Gallery|Testimonial|LinkCard|ArticleCard|MetricMarker)\b[^>]*\bid=["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/\b(?:heroAsset|ogAsset|asset|poster|gallery|headshot)"?\s*[:=]\s*["']([a-z0-9-]+)["']/g)) idRefs.add(m[1]);
   for (const m of s.matchAll(/ids=\{\[([^\]]+)\]\}/g)) for (const id of m[1].matchAll(/["']([a-z0-9-]+)["']/g)) idRefs.add(id[1]);
-  for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric|media|screen)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
+  for (const m of s.matchAll(/"(portrait|docPanel|websiteFrame|summitStill|metric|media|screen|cover)":\s*"([a-z0-9-]+)"/g)) idRefs.add(m[2]);
   // Select Work card media in each case study's frontmatter.
   if (f.endsWith('.mdx')) {
     for (const m of s.matchAll(/^\s*(?:main|motion):\s*["']([a-z0-9-]+)["']/gm)) idRefs.add(m[1]);

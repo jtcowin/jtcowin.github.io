@@ -650,3 +650,16 @@ button {
   mask-image: radial-gradient(ellipse at 70% 30%, #000 0%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse at 70% 30%, #000 0%, transparent 70%);
 }
+
+/* Technical Product Marketing (V1.3): the copy emphasis system. A few phrases
+   across the page's headlines in the surface's accent color, and at most one
+   phrase per paragraph a little heavier, never both on one phrase (the copy
+   and the phrase live in src/data/tpm.json; src/lib/tpm-copy.ts splits them). */
+.tpm-accent {
+  color: var(--accent-ink);
+}
+
+.tpm-em {
+  font-weight: 600;
+  color: var(--ink);
+}

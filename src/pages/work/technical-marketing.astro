@@ -1,13 +1,13 @@
 ---
 /**
- * Technical Product Marketing, Version 1.2.
+ * Technical Product Marketing, Version 1.3.
  *
- * The rebuilt case study, through its first six sections: 01 Hero (a pinned
- * hero in two states), 02 Foundation (the document library), 03 the
- * transitional statement, 04 Website, 05 Technical documentation and 06 the
- * flagship animation campaign. The chapters after them, Articles first, come
- * once these have been reviewed together; until then the page closes with
- * Contact and the footer, as the homepage does.
+ * The rebuilt case study: 01 Hero (the split hero and its narrative-system
+ * object), 02 Foundation (the document library, rising over the hero),
+ * 03 the transitional statement, 04 Website, 05 Technical documentation,
+ * 06 the flagship animation campaign, 07 Selected Writing (self-contained,
+ * so it can be taken out with its one line here) and 08 the conclusion, then
+ * Contact and the footer, as the homepage closes.
  * Metadata and the Select Work card still come from the case study's
  * frontmatter (src/content/work/technical-marketing.mdx); its older MDX body
  * is no longer rendered.
@@ -23,6 +23,8 @@ import TpmFlow from '@components/tpm/TpmFlow.astro';
 import TpmWebsite from '@components/tpm/TpmWebsite.astro';
 import TpmDocs from '@components/tpm/TpmDocs.astro';
 import TpmCampaign from '@components/tpm/TpmCampaign.astro';
+import TpmWriting from '@components/tpm/TpmWriting.astro';
+import TpmConclusion from '@components/tpm/TpmConclusion.astro';
 
 const entry = await getEntry('work', 'technical-marketing');
 if (!entry) throw new Error('[technical-marketing] the case study entry is missing');
@@ -36,6 +38,8 @@ const d = entry.data;
     <TpmWebsite />
     <TpmDocs />
     <TpmCampaign />
+    <TpmWriting />
+    <TpmConclusion />
   </article>
 
   <div class="chapter" data-surface="brand">

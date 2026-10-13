@@ -1,39 +1,48 @@
 ---
 /**
- * The opening of a work chapter (Technical Product Marketing, V1.1 and V1.2:
+ * The opening of a work chapter (Technical Product Marketing, V1.1 to V1.3:
  * 04 Website, 05 Technical documentation and 06 the flagship animation
  * campaign): the chapter's name or headline, a sparse metadata row (label over
- * value, all across on wide screens, two on mid-size screens, one on phones)
- * and one short paragraph on John's contribution, then the chapter's one
- * dominant visual (the slot), which the chapter lays out itself. The
- * paragraph can be centered beneath the row (06, and since the V1.2 delta 04
- * and 05, which share 06's goal, services and credits row).
+ * value) and one short paragraph on John's contribution, then the chapter's
+ * one dominant visual (the slot), which the chapter lays out itself. The
+ * paragraph can be centered beneath the row (all three chapters since the
+ * V1.2 delta).
+ *
+ * V1.3: the row is three equal columns on wide screens in every chapter, so
+ * Goal, Services and Credits start at the same places down the page, their
+ * labels and first lines aligned and a long entry wrapping inside its column
+ * without widening it (one column on narrower screens, never a lone item on a
+ * second row). The paragraph keeps a readable measure of about 750px, and one
+ * phrase in it may carry the page's emphasis (`em`, see tpm-copy.ts).
  *
  * In the values, **text** sets a name in bold, as the brief does, and a
  * hyphenated compound (V1.2: "conversion-focused") never breaks at its hyphen.
  */
+import { emphasize } from '@lib/tpm-copy';
+
 interface Props {
   id: string;
   title: string;
   meta: Array<{ label: string; value: string[] }>;
   contribution: string;
-  /** The metadata columns on wide screens, as a grid-template-columns value. */
-  columns: string;
+  /** The one phrase of the contribution set a little heavier (V1.3). */
+  em?: string;
   surface: 'light' | 'soft' | 'light-return' | 'dark';
   /** Where the contribution sits: at the start (default) or centered. */
   align?: 'start' | 'center';
   class?: string;
 }
 
-const { id, title, meta, contribution, columns, surface, align = 'start', class: className } = Astro.props;
+const { id, title, meta, contribution, em, surface, align = 'start', class: className } = Astro.props;
 const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong: i % 2 === 1 }));
 const whole = (text: string) => text.split(/(\S*\w-\w\S*)/).map((t, i) => ({ t, keep: i % 2 === 1 }));
+const parts = emphasize(contribution, em, `${title} paragraph`);
 ---
 
 <section class:list={['tpm-case', className]} data-surface={surface} aria-labelledby={id}>
   <div class="container tpm-case__intro">
     <h2 id={id} class="display tpm-case__title">{title}</h2>
-    <dl class="tpm-meta" style={`--meta-columns: ${columns}`}>
+    <dl class="tpm-meta">
       {
         meta.map((item) => (
           <div class="tpm-meta__item">
@@ -51,7 +60,9 @@ const whole = (text: string) => text.split(/(\S*\w-\w\S*)/).map((t, i) => ({ t, 
         ))
       }
     </dl>
-    <p class:list={['tpm-case__contribution', align === 'center' && 'tpm-case__contribution--center']}>{contribution}</p>
+    <p class:list={['tpm-case__contribution', align === 'center' && 'tpm-case__contribution--center']}>
+      {parts.map(({ text, em }) => (em ? <strong class="tpm-em">{text}</strong> : text))}
+    </p>
   </div>
   <slot />
 </section>
@@ -74,6 +85,7 @@ const whole = (text: string) => text.split(/(\S*\w-\w\S*)/).map((t, i) => ({ t, 
   .tpm-meta {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    align-items: start;
     gap: 1.5rem clamp(1.5rem, 3vw, 3rem);
     margin: 0;
   }
@@ -119,21 +131,19 @@ const whole = (text: string) => text.split(/(\S*\w-\w\S*)/).map((t, i) => ({ t, 
     white-space: nowrap;
   }
 
-  @media (min-width: 48rem) {
+  /* Three equal columns (V1.3): the same widths in every chapter, whatever
+     the length of an entry. */
+  @media (min-width: 60rem) {
     .tpm-meta {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 75rem) {
-    .tpm-meta {
-      grid-template-columns: var(--meta-columns);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
   /* ---- the contribution ------------------------------------------------------------ */
+  /* About 750px (V1.3): a readable measure that never stretches across the
+     page; its lines run close to it rather than being balanced shorter. */
   .tpm-case__contribution {
-    max-width: 46rem;
+    max-width: 47rem;
     margin: 0;
     font-size: var(--text-lg);
     line-height: 1.45;
@@ -144,6 +154,5 @@ const whole = (text: string) => text.split(/(\S*\w-\w\S*)/).map((t, i) => ({ t, 
   .tpm-case__contribution--center {
     justify-self: center;
     text-align: center;
-    text-wrap: balance;
   }
 </style>

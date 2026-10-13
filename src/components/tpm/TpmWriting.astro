@@ -1,0 +1,244 @@
+---
+/**
+ * 07 Selected Writing (Technical Product Marketing, V1.3): two articles John
+ * wrote for Bolt Liquidity, as two large editorial rows. Each pairs the
+ * article's original cover artwork with its category, its title and an
+ * excerpt taken word for word from it (80 to 120 words, in its own
+ * paragraphs); the first row has the cover on the left, the second on the
+ * right (on phones the cover always comes first). No embeds, no engagement
+ * figures and, in this first build, no links: the sources are noted in
+ * tpm.json and the asset manifest only.
+ *
+ * Motion is limited to an entrance: as a row comes into view its cover fades
+ * in from a very slight scale and its text from a few pixels lower (not for
+ * reduced motion, and never without the observer that ends it, so without
+ * JavaScript everything simply stands).
+ *
+ * Self-contained, so it can be taken out cleanly: this file, its line in the
+ * page (src/pages/work/technical-marketing.astro), the `writing` block of
+ * tpm.json and the two covers (tm-article-1 and tm-article-2 in
+ * assets.json). A cover without an approved file leaves its row text only.
+ */
+import { Picture } from 'astro:assets';
+import tpm from '@data/tpm.json';
+import { aspectToCss, getAsset, isRenderable, resolveImage } from '@lib/assets';
+
+const { writing } = tpm;
+const articles = writing.articles.map((article, i) => {
+  const media = getAsset(article.cover);
+  const image = isRenderable(media) ? resolveImage(media) : null;
+  const words = article.excerpt.join(' ').split(/\s+/).length;
+  if (words < 80 || words > 120) throw new Error(`[tpm] the excerpt of "${article.title}" runs ${words} words; the brief asks for 80 to 120`);
+  return { ...article, id: `tpm-article-${i + 1}`, media, image, reversed: article.layout === 'cover-right' };
+});
+---
+
+<section class="tpm-writing" data-surface="light-return" aria-labelledby="tpm-writing-title">
+  <div class="container">
+    <h2 id="tpm-writing-title" class="display tpm-writing__title">{writing.title}</h2>
+
+    <div class="tpm-writing__list">
+      {
+        articles.map((a) => (
+          <article class:list={['tpm-article', a.reversed && 'tpm-article--reversed', !a.image && 'tpm-article--text']} aria-labelledby={a.id} data-article>
+            {a.image && (
+              <div class="tpm-article__cover" style={`--cover-aspect: ${aspectToCss(a.media.aspect)}`}>
+                <div class="tpm-article__art">
+                  <Picture
+                    src={a.image}
+                    alt={a.media.alt}
+                    widths={[640, 960, 1280, 1600]}
+                    sizes="(min-width: 60rem) min(56vw, 52rem), 100vw"
+                    formats={['avif', 'webp']}
+                    loading="lazy"
+                    class="tpm-article__img"
+                  />
+                </div>
+              </div>
+            )}
+            <div class="tpm-article__text">
+              <p class="tpm-article__category">{a.category}</p>
+              <h3 id={a.id} class="tpm-article__title">{a.title}</h3>
+              <blockquote class="tpm-article__excerpt">
+                {a.excerpt.map((para) => (
+                  <p>{para}</p>
+                ))}
+              </blockquote>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { reducedMotion } from '@lib/tpm-motion';
+
+  // The entrance, once per row, for rows that start below the screen.
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('.tpm-writing [data-article]'));
+  if (rows.length && !reducedMotion() && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          io.unobserve(entry.target);
+          entry.target.classList.remove('is-pending');
+        }
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -6% 0px' },
+    );
+    for (const row of rows) {
+      if (row.getBoundingClientRect().top < window.innerHeight) continue;
+      row.classList.add('is-pending');
+      io.observe(row);
+    }
+  }
+</script>
+
+<style>
+  .tpm-writing {
+    padding-block: var(--section-y) calc(var(--section-y) * 1.15);
+  }
+
+  .tpm-writing__title {
+    font-size: var(--text-2xl);
+  }
+
+  /* Substantial space between the rows, and before the first. */
+  .tpm-writing__list {
+    display: grid;
+    gap: clamp(4.5rem, 3rem + 6vw, 9.5rem);
+    margin-top: clamp(2.75rem, 2rem + 3.5vw, 5.5rem);
+  }
+
+  /* ---- a row ---------------------------------------------------------------------- */
+  .tpm-article {
+    display: grid;
+    gap: clamp(1.5rem, 1.1rem + 1.6vw, 2.5rem);
+  }
+
+  .tpm-article__cover {
+    aspect-ratio: var(--cover-aspect, 2 / 1);
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: #141618;
+    box-shadow:
+      0 0 0 1px rgba(13, 15, 16, 0.08),
+      0 34px 60px -40px rgba(13, 15, 16, 0.45);
+  }
+
+  .tpm-article__art,
+  .tpm-article__art :global(picture),
+  .tpm-article__cover :global(.tpm-article__img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .tpm-article__cover :global(.tpm-article__img) {
+    object-fit: cover;
+  }
+
+  .tpm-article__text {
+    display: grid;
+    align-content: center;
+    gap: 0;
+    max-width: 31rem;
+  }
+
+  .tpm-article__category {
+    margin: 0 0 0.9rem;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .tpm-article__title {
+    margin: 0 0 clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: var(--text-xl);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    color: var(--heading);
+    text-wrap: balance;
+  }
+
+  /* The article's own words, as they were published. */
+  .tpm-article__excerpt {
+    display: grid;
+    gap: 0.85em;
+    margin: 0;
+    font-size: clamp(1rem, 0.96rem + 0.15vw, 1.0625rem);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .tpm-article__excerpt p {
+    margin: 0;
+  }
+
+  /* ---- wide screens: cover and text side by side, alternating ------------------------ */
+  @media (min-width: 60rem) {
+    .tpm-article {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: center;
+      column-gap: clamp(3rem, 1rem + 5vw, 7.5rem);
+    }
+
+    .tpm-article--reversed {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+
+    .tpm-article--reversed .tpm-article__cover {
+      order: 2;
+    }
+
+    .tpm-article--text {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ---- the entrance (set by the script) ------------------------------------------------ */
+  .tpm-article__cover,
+  .tpm-article__art,
+  .tpm-article__text {
+    transition:
+      opacity 1s var(--ease-out),
+      transform 1.4s var(--ease-out);
+  }
+
+  .tpm-article__text {
+    transition-delay: 0.12s;
+  }
+
+  .tpm-article.is-pending .tpm-article__cover,
+  .tpm-article.is-pending .tpm-article__text {
+    opacity: 0;
+    transition: none;
+  }
+
+  .tpm-article.is-pending .tpm-article__art {
+    transform: scale(1.04);
+    transition: none;
+  }
+
+  .tpm-article.is-pending .tpm-article__text {
+    transform: translate3d(0, 14px, 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tpm-article__cover,
+    .tpm-article__art,
+    .tpm-article__text {
+      transition: none;
+    }
+  }
+</style>

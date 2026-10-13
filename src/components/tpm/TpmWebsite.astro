@@ -15,10 +15,16 @@
  * poster, the recording's first frame), and again, never cutting from the
  * form to the start. It pauses whenever the display leaves the viewport, and
  * a small control pauses and plays; there is no hover or scrubbing. Nothing
- * is laid around or over the display. On phones the hardware goes and the
- * recording runs edge to edge.
+ * is laid over the display. On phones the hardware goes and the recording
+ * runs edge to edge.
+ *
+ * V1.3: one quiet "Visit live site" button beside the display, never on it:
+ * at the display's right edge, on the line of its foot (beneath the
+ * recording, at the right, on phones). It opens the live site in a new tab
+ * and says so to assistive technology.
  */
 import tpm from '@data/tpm.json';
+import ExternalLink from '@components/ExternalLink.astro';
 import TpmCase from './TpmCase.astro';
 import TpmWalkthrough from './TpmWalkthrough.astro';
 
@@ -30,7 +36,7 @@ const { website } = tpm;
   title={website.title}
   meta={website.meta}
   contribution={website.contribution}
-  columns="minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 0.8fr)"
+  em={website.em}
   surface="soft"
   align="center"
   class="tpm-website"
@@ -44,6 +50,9 @@ const { website } = tpm;
     <div class="tpm-display__stand" aria-hidden="true">
       <span class="tpm-display__neck"></span>
       <span class="tpm-display__foot"></span>
+    </div>
+    <div class="tpm-display__live">
+      <ExternalLink href={website.live.url} class="btn btn--secondary tpm-display__link">{website.live.label}</ExternalLink>
     </div>
   </figure>
 </TpmCase>
@@ -153,6 +162,27 @@ const { website } = tpm;
       border-radius: 3px 3px 999px 999px;
       background: linear-gradient(180deg, #30363a 0%, #1b1f22 100%);
       box-shadow: 0 14px 22px -10px rgba(13, 15, 16, 0.45);
+    }
+  }
+
+  /* ---- the live site (V1.3): outside the display, secondary to it ---------------- */
+  .tpm-display__live {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem var(--gutter) 0;
+  }
+
+  /* At the display's right edge, its bottom on the line of the foot. */
+  @media (min-width: 48rem) {
+    .tpm-display {
+      position: relative;
+    }
+
+    .tpm-display__live {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      padding: 0;
     }
   }
 
