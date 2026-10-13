@@ -867,63 +867,47 @@ const spaced = (html) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, '
 const bare = (sel) => sel.replace(/\[data-astro-cid-[^\]]*\]/g, '').replace(/:where\([^)]*\)/g, '');
 const tpmRules = (re) => CSS_RULES.filter((r) => re.test(bare(r.sel)));
 const TPM = {
-  kicker: '02 / Technical Product Marketing',
   headline: 'Building the system behind the message.',
   copy: "I built the strategic foundation that turned Bolt Liquidity's technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
   scope: ['Research', 'Positioning', 'Messaging', 'Claims Governance', 'Technical Documentation', 'Web Content', 'Campaign Direction'],
-  foundationLines: ['Before the message', 'came the foundation.'],
-  foundationCopy: 'Before Bolt Liquidity could be explained externally, it needed a shared internal language. I turned stakeholder interviews and product research into the positioning, claims, proof points, and narrative architecture that guided every public-facing expression.',
-  statement: 'The strategy did not stay in a document. It became the website, technical documentation, articles, campaigns, and content that brought the product to market.',
+  foundationLines: ['Before the message', 'comes the foundation.'],
+  foundationCopy: 'Before a product can be explained externally, it needs a shared internal language. For Bolt Liquidity, I built that language from stakeholder interviews and product research, shaping the positioning, claims, proof points, and narrative architecture behind every public-facing expression.',
+  statement: 'Once the product language is clear, it guides every expression that follows: the website, technical documentation, articles, campaigns, and content that bring the product to market.',
 };
 if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not use the shared case-study hero (cs-hero)');
 
-// ---- 01 Hero: the approved copy, the loop on its poster, the scope centered.
-if (tpmText(/<p class="eyebrow tpm-hero__kicker[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.kicker) failures.push(`[tpm] the kicker must read "${TPM.kicker}" (capitals by CSS)`);
+// ---- 01 Hero (V1.2 delta): the headline, the paragraph and the seven scope
+// terms, and nothing else: no kicker, no media, no control (the animation
+// lives in 06). The scope rail is centered and balanced. Leaving the hero (the
+// live choreography only), each term resolves into a band in the accent of a
+// Foundation card, the first seven in order, over a dark ground that rises
+// from below, which the header reads as a dark surface, all within about 0.7
+// to 1 viewport of scrolling.
+if (/tpm-hero__kicker/.test(tpmPage)) failures.push('[tpm] the hero carries no kicker');
 if (tpmText(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) !== TPM.headline) failures.push(`[tpm] the headline must read "${TPM.headline}"`);
 if (tpmText(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.copy) failures.push('[tpm] the hero must carry the approved supporting sentence');
 const scopeItems = [...((tpmPage.match(/<ul class="tpm-hero__scope[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
 if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the scope line must be all seven areas, ${TPM.scope.join(' · ')} (found ${scopeItems.join(' · ')})`);
 if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned page carries no "My role" line');
 const tpmHeroHtml = (tpmPage.match(/<section class="tpm-hero"[\s\S]*?<\/section>/) || [''])[0];
-const heroVideo = (tpmHeroHtml.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
-const heroVideoTag = (heroVideo.match(/<video\b[^>]*>/) || [''])[0];
-for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'aria-label="']) if (!heroVideoTag.includes(attr)) failures.push(`[tpm] the hero video is missing ${attr}`);
-if (/\b(?:controls|autoplay)\b|\bposter=/.test(heroVideoTag)) failures.push('[tpm] the hero video must not carry controls, autoplay or a poster attribute');
-const heroSources = [...heroVideo.matchAll(/<source\b[^>]*>/g)].map((m) => m[0]);
-if (heroSources.length !== 2 || !/bolt-in-60-seconds-hero-loop-720\.mp4/.test(heroSources[0] || '') || !/media="\(max-width: 47\.99rem\)"/.test(heroSources[0] || '') || !/bolt-in-60-seconds-hero-loop\.mp4/.test(heroSources[1] || '') || /\bmedia=/.test(heroSources[1] || '')) {
-  failures.push('[tpm] the hero video must list the phone loop (max-width 47.99rem) and then the wide-screen loop');
+if (!tpmHeroHtml) failures.push('[tpm] the page opens with its own hero');
+if (/<(?:video|img|picture|button|iframe)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media and no control (the animation plays in full in 06)');
+const assetIds = (JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || []).map((a) => a.id);
+if (/bolt-in-60-seconds-hero/.test(tpmPage) || assetIds.includes('tm-bolt-60-loop')) failures.push('[tpm] the short hero loop and its poster are gone from the page and the manifest');
+for (const gone of ['public/media/bolt-in-60-seconds-hero-loop.mp4', 'public/media/bolt-in-60-seconds-hero-loop-720.mp4', 'src/assets/technical-marketing/bolt-in-60-seconds-hero-poster.jpg']) {
+  if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
 }
-const heroPoster = (tpmHeroHtml.match(/<img\b[^>]*class="tpm-screen__poster"[^>]*>/) || [''])[0];
-if (!heroPoster || !/\balt(?:="")?[\s>]/.test(heroPoster) || !/loading="eager"/.test(heroPoster) || !/fetchpriority="high"/.test(heroPoster) || !/\bsrcset="/.test(heroPoster)) failures.push('[tpm] the hero poster must be an eager, high-priority, responsive picture with empty alt text');
-const loopToggles = tpmPage.match(/<button\b[^>]*\bdata-loop-toggle\b[^>]*>/g) || [];
-if (loopToggles.length !== 1 || !/\bhidden\b/.test(loopToggles[0]) || !/aria-label="Play video: [^"]+"/.test(loopToggles[0])) failures.push('[tpm] the hero loop needs its one labeled control, hidden until its script runs');
-for (const [name, w, h, mb] of [['bolt-in-60-seconds-hero-loop.mp4', 1920, 1080, 6], ['bolt-in-60-seconds-hero-loop-720.mp4', 1280, 720, 2.5]]) {
-  const file = path.join(root, 'public/media', name);
-  if (!fs.existsSync(file)) {
-    failures.push(`[tpm] public/media/${name} not found`);
-    continue;
-  }
-  const f = mp4Facts(file);
-  const sec = mp4Seconds(file);
-  const size = fs.statSync(file).size / 1e6;
-  if (!(Math.abs(sec - 22.1) <= 0.06)) failures.push(`[tpm] ${name} runs ${sec.toFixed(2)} s; the approved loop runs 22.1 s (0:00 to the slide after the reference frame)`);
-  if (f.handlers.includes('soun')) failures.push(`[tpm] ${name} carries an audio track`);
-  if (!f.avc) failures.push(`[tpm] ${name} must be H.264`);
-  if (!(f.top.indexOf('moov') >= 0 && f.top.indexOf('moov') < f.top.indexOf('mdat'))) failures.push(`[tpm] ${name} must keep its index before its data (faststart)`);
-  if (f.width !== w || f.height !== h) failures.push(`[tpm] ${name} is ${f.width}x${f.height}; expected ${w}x${h}`);
-  if (size > mb) failures.push(`[tpm] ${name} is ${size.toFixed(2)} MB; it stays under ${mb} MB`);
-}
-const posterAt = (name, w, h, what) => {
-  const file = path.join(root, 'src/assets/technical-marketing', name);
-  const size = fs.existsSync(file) ? imageSize(file) : null;
-  if (!size || size.width !== w || size.height !== h) failures.push(`[tpm] ${what} must be the ${w}x${h} ${name}`);
-};
-posterAt('bolt-in-60-seconds-hero-poster.jpg', 1920, 1080, 'the hero poster');
-// The entry state: the screen about half the window's width (50 to 56%) with
-// a cap, the scope line centered and balanced over its lines.
-const boxRules = tpmRules(/^\.tpm-hero__box$/).filter((r) => DESKTOP.test(r.at));
-const boxVw = boxRules.map((r) => Number((r.body.match(/width:\s*min\(\s*([\d.]+)vw/) || [])[1])).find((v) => v > 0);
-if (!(boxVw >= 50 && boxVw <= 56) || !boxRules.some((r) => /\d+(?:\.\d+)?rem/.test(r.body))) failures.push(`[tpm] the hero screen starts at about 50 to 56% of the window's width, with a maximum (found ${boxVw || 'none'})`);
+const heroBands = [...tpmHeroHtml.matchAll(/<span class="tpm-hero__band[^"]*"[^>]*>/g)].map((m) => ((m[0].match(/--band:\s*(#[0-9a-f]{6})/i) || [])[1] || '').toLowerCase());
+const firstSeven = tpmData.foundation.documents.slice(0, 7).map((d) => d.color.toLowerCase());
+if (JSON.stringify(heroBands) !== JSON.stringify(firstSeven)) failures.push(`[tpm] the hero's seven bands take the first seven card accents, in order (found ${heroBands.join(' ') || 'none'})`);
+if (!/<div class="tpm-hero__bands[^"]*"[^>]*aria-hidden="true"/.test(tpmHeroHtml)) failures.push('[tpm] the bands are decorative: aria-hidden');
+const duskHtml = (tpmHeroHtml.match(/<div class="tpm-hero__dusk[\s\S]*?<\/div>/) || [''])[0];
+if (!/^<div class="tpm-hero__dusk[^"]*"[^>]*aria-hidden="true"/.test(duskHtml) || !/data-surface="dark"/.test(duskHtml)) failures.push('[tpm] the rising dark ground is decorative and reads to the header as the dark surface');
+const heroRun = tpmRules(/^\.tpm-hero\.is-live$/).map((r) => Number((r.body.match(/height:\s*calc\(var\(--view-h\)\s*\*\s*([\d.]+)\)/) || [])[1])).find((v) => v > 0);
+if (!(heroRun >= 1.7 && heroRun <= 2)) failures.push(`[tpm] leaving the hero takes about 0.7 to 1 viewport of scrolling (found ${heroRun ? (heroRun - 1).toFixed(2) : 'none'})`);
+if (!CSS_RULES.some((r) => !r.at && bare(r.sel).split(',').map((x) => x.trim()).includes('.tpm-hero__dusk') && bare(r.sel).split(',').map((x) => x.trim()).includes('.tpm-hero__bands') && /display:\s*none/.test(r.body))) failures.push('[tpm] the bands and the rising ground exist only for the live transition');
+const duskEdge = tpmRules(/^\.tpm-hero\.is-live \.tpm-hero__dusk-edge$/).map((r) => r.body).join(';');
+if ((duskEdge.match(/%/g) || []).length < 12) failures.push('[tpm] the dark ground rises on an eased edge (a many-stop scrim), not a straight ramp');
 if (!tpmRules(/^\.tpm-hero__foot$/).some((r) => /text-align:\s*center/.test(r.body))) failures.push('[tpm] the scope line is centered on the page');
 if (!tpmRules(/^\.tpm-hero__scope$/).some((r) => /text-wrap:\s*balance/.test(r.body))) failures.push('[tpm] the scope line wraps into balanced lines');
 if (tpmRules(/^\.tpm-hero__scope/).some((r) => /font-size:\s*(?:clamp|calc|[\d.]+vw)/.test(r.body))) failures.push('[tpm] the scope line never shrinks its type to fit');
@@ -967,6 +951,14 @@ const accents = docItems.map((li) => ((li.match(/--doc:\s*(#[0-9a-f]{6})/i) || [
 const icons = docItems.map((li) => (li.match(/<svg\b[^>]*class="tpm-doc__icon[\s\S]*?<\/svg>/) || [''])[0].replace(/\s*data-astro-cid-[\w-]+(?:="[^"]*")?/g, ''));
 if (new Set(accents).size !== docItems.length || accents.some((c) => !c)) failures.push('[tpm] every named document has its own accent color');
 if (new Set(icons.map((s) => (s.match(/\bd="[^"]+"/g) || []).join(''))).size !== docItems.length) failures.push('[tpm] every named document has its own icon');
+// The icons (V1.2 delta): one professional outline family, Phosphor's
+// Regular weight, one per card, no mixed libraries and nothing constructed;
+// the same size, placement and fade on every card (one rule).
+const ICONS = ['chats-circle', 'stack', 'user-focus', 'warning-diamond', 'brain', 'binoculars', 'crosshair', 'fingerprint', 'seal-check', 'tree-structure', 'waveform', 'book-open-text'];
+const iconNames = icons.map((svg) => (svg.match(/data-icon="([^"]+)"/) || [])[1] || '');
+if (JSON.stringify(iconNames) !== JSON.stringify(ICONS)) failures.push(`[tpm] the twelve icons are Phosphor's ${ICONS.join(', ')}, in order (found ${iconNames.join(', ')})`);
+if (icons.some((svg) => !/viewBox="0 0 256 256"/.test(svg) || !/fill="currentColor"/.test(svg) || (svg.match(/<path\b/g) || []).length !== 1)) failures.push('[tpm] every icon is one Phosphor outline path on its 256 grid, drawn in its card\'s accent');
+if (!tpmRules(/^\.tpm-doc__face \.tpm-doc__icon$/).some((r) => /fill-opacity:\s*0?\.\d+/.test(r.body) && /width:\s*[\d.]+%/.test(r.body))) failures.push('[tpm] one rule sizes, places and fades every icon (through fill-opacity)');
 const hexLab = (hex) => {
   const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
   const [r, g, b] = [1, 3, 5].map((i) => lin(parseInt(hex.slice(i, i + 2), 16) / 255));
@@ -1025,6 +1017,11 @@ const walkCheck = (html, what, large, small) => {
   if (!toggle || !/\bhidden\b/.test(toggle) || !/aria-label="Play video: [^"]+"/.test(toggle)) failures.push(`[tpm] the ${what} walkthrough has one labeled control, hidden until its script runs`);
   if (!/<img\b[^>]*class="tpm-walk__poster"[^>]*loading="lazy"|<img\b[^>]*loading="lazy"[^>]*class="tpm-walk__poster"/.test(html)) failures.push(`[tpm] the ${what} walkthrough sits on a lazy, responsive poster`);
 };
+const posterAt = (name, w, h, what) => {
+  const file = path.join(root, 'src/assets/technical-marketing', name);
+  const size = fs.existsSync(file) ? imageSize(file) : null;
+  if (!size || size.width !== w || size.height !== h) failures.push(`[tpm] ${what} must be the ${w}x${h} ${name}`);
+};
 const fileCheck = (name, w, h, mb, [minS, maxS], what) => {
   const file = path.join(root, 'public/media', name);
   if (!fs.existsSync(file)) return failures.push(`[tpm] public/media/${name} not found`);
@@ -1042,10 +1039,21 @@ const fileCheck = (name, w, h, mb, [minS, maxS], what) => {
 const webHtml = caseHtml('tpm-website');
 if (!/data-surface="soft"/.test((webHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 04 opens its own chapter on its own surface');
 if (tpmText(/<h2 id="tpm-website-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Website') failures.push('[tpm] 04 is named Website');
-if (JSON.stringify(metaOf(webHtml)) !== JSON.stringify(expectMeta(tpmData.website.meta)) || tpmData.website.meta.map((m) => m.label).join('|') !== 'Brief|Role / Services|Timeline|Credits') failures.push('[tpm] 04 metadata: Brief, Role / Services, Timeline and Credits, as approved');
-if (/Location/i.test(spaced(webHtml))) failures.push('[tpm] 04 carries no location');
-if (!/<strong\b[^>]*>Bob van der Meer<\/strong>/.test(webHtml)) failures.push('[tpm] the 04 credits name Bob van der Meer in bold');
-if (textOf(norm((webHtml.match(/<p class="tpm-case__contribution[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1])) !== norm(tpmData.website.contribution)) failures.push('[tpm] 04 must carry the approved contribution statement');
+// The V1.2 delta: Goal, Services and Credits only (as 06 has them), the
+// contribution centered beneath them, Bob's name only in the credits.
+const WEB_META = [
+  ['Goal', ["Translate the company's new positioning into a credible, conversion-focused website."]],
+  ['Services', ['Web strategy, information architecture, copywriting, UX direction, and conversion design.']],
+  ['Credits', ['Visual design and development: Bob van der Meer.']],
+];
+const WEB_CONTRIBUTION = 'I mapped the experience from the opening section to the final CTA, wrote the complete website narrative, shaped its scroll behavior and interactions, and defined the partnership journey and form flow. Working closely with design, I guided each revision through a complete rebuild and launch in two weeks.';
+if (JSON.stringify(metaOf(webHtml)) !== JSON.stringify(WEB_META) || JSON.stringify(expectMeta(tpmData.website.meta)) !== JSON.stringify(WEB_META)) failures.push(`[tpm] 04 metadata: Goal, Services and Credits, as approved (found ${JSON.stringify(metaOf(webHtml))})`);
+if (/Timeline|Location|Brief|Role/.test(spaced(webHtml.replace(/<p class="tpm-case__contribution[\s\S]*?<\/p>/, '')))) failures.push('[tpm] 04 carries no timeline, location, brief or role');
+if (!/<strong\b[^>]*>Bob van der Meer<\/strong>\./.test(webHtml)) failures.push('[tpm] the 04 credits name Bob van der Meer in bold, and nothing after his name');
+const webP = webHtml.match(/<p class="(tpm-case__contribution[^"]*)"[^>]*>([\s\S]*?)<\/p>/) || [, '', ''];
+if (textOf(norm(webP[2])) !== WEB_CONTRIBUTION || norm(tpmData.website.contribution) !== WEB_CONTRIBUTION) failures.push('[tpm] 04 must carry the approved contribution statement');
+if (/Bob/.test(webP[2])) failures.push("[tpm] 04 does not repeat Bob's name in the contribution");
+if (!/\btpm-case__contribution--center\b/.test(webP[1])) failures.push('[tpm] the 04 contribution is centered beneath the metadata');
 if (!/class="tpm-display__body/.test(webHtml) || !/<div class="tpm-display__stand[^"]*"[^>]*aria-hidden="true"/.test(webHtml)) failures.push('[tpm] 04 shows the website in a thin-bezel desktop display');
 walkCheck(webHtml, 'website', 'bolt-website-walkthrough.mp4', 'bolt-website-walkthrough-720.mp4');
 fileCheck('bolt-website-walkthrough.mp4', 1920, 1080, 10, [46.5, 47.1], 'the approved take runs about 47 s, hero to partnership form, not shortened');
@@ -1055,9 +1063,18 @@ posterAt('bolt-website-walkthrough-poster.jpg', 1920, 1080, 'the website poster 
 const docsHtml = caseHtml('tpm-docs');
 if (!/data-surface="light-return"/.test((docsHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 05 opens its own chapter on its own surface');
 if (tpmText(/<h2 id="tpm-docs-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Technical documentation') failures.push('[tpm] 05 is named Technical documentation');
-if (JSON.stringify(metaOf(docsHtml)) !== JSON.stringify(expectMeta(tpmData.documentation.meta)) || tpmData.documentation.meta.map((m) => m.label).join('|') !== 'Brief|Goal|Role / Responsibilities|Credits') failures.push('[tpm] 05 metadata: Brief, Goal, Role / Responsibilities and Credits, as approved');
-if (/Timeline/.test(spaced(docsHtml))) failures.push('[tpm] 05 does not repeat the Website timeline');
-if (textOf(norm((docsHtml.match(/<p class="tpm-case__contribution[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1])) !== norm(tpmData.documentation.contribution)) failures.push('[tpm] 05 must carry the approved contribution statement');
+const DOCS_META = [
+  ['Goal', ['Replace fragmented documentation with a clear, connected system for technical audiences while controlling what product information could be made public.']],
+  ['Services', ['Documentation strategy, information architecture, technical writing, content governance, and MDX implementation.']],
+  ['Credits', ['Visual design and interactive implementation: Bob van der Meer.']],
+];
+const DOCS_CONTRIBUTION = 'I rebuilt the documentation from the ground up, moving it from a fragmented GitBook into a connected Mintlify system. I owned the architecture, technical writing, cross-references, calls to action, MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product information useful, accurate, and appropriate for public release.';
+if (JSON.stringify(metaOf(docsHtml)) !== JSON.stringify(DOCS_META) || JSON.stringify(expectMeta(tpmData.documentation.meta)) !== JSON.stringify(DOCS_META)) failures.push(`[tpm] 05 metadata: Goal, Services and Credits, as approved (found ${JSON.stringify(metaOf(docsHtml))})`);
+if (/Timeline|Brief|Role/.test(spaced(docsHtml.replace(/<p class="tpm-case__contribution[\s\S]*?<\/p>/, '')))) failures.push('[tpm] 05 carries no timeline, brief or role');
+const docsP = docsHtml.match(/<p class="(tpm-case__contribution[^"]*)"[^>]*>([\s\S]*?)<\/p>/) || [, '', ''];
+if (textOf(norm(docsP[2])) !== DOCS_CONTRIBUTION || norm(tpmData.documentation.contribution) !== DOCS_CONTRIBUTION) failures.push('[tpm] 05 must carry the approved contribution statement');
+if (/Bob/.test(docsP[2])) failures.push("[tpm] 05 does not repeat Bob's name in the contribution");
+if (!/\btpm-case__contribution--center\b/.test(docsP[1])) failures.push('[tpm] the 05 contribution is centered beneath the metadata');
 if (/tpm-display/.test(docsHtml) || !/class="tpm-browser\b/.test(docsHtml)) failures.push('[tpm] 05 reads in a frameless browser frame, not a second device');
 walkCheck(docsHtml, 'documentation', 'bolt-docs-walkthrough.mp4', 'bolt-docs-walkthrough-720.mp4');
 fileCheck('bolt-docs-walkthrough.mp4', 2560, 1440, 9, [28, 35], 'the documentation edit runs 28 to 35 s');
@@ -1067,7 +1084,12 @@ const chapterItems = [...docsHtml.matchAll(/<li class="tpm-chapter"[^>]*data-sta
 const chapterTitles = chapterItems.map((m) => textOf((m[0].match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [, ''])[1]));
 const docsSec = fs.existsSync(path.join(root, 'public/media/bolt-docs-walkthrough.mp4')) ? mp4Seconds(path.join(root, 'public/media/bolt-docs-walkthrough.mp4')) : 0;
 const starts = chapterItems.map((m) => Number(m[1]));
-if (chapterTitles.join(' | ') !== 'Documentation home | Architecture diagram | Developer SDK') failures.push(`[tpm] the walkthrough's three chapters are the documentation home, the architecture diagram and the SDK (found ${chapterTitles.join(' | ')})`);
+if (chapterTitles.join(' | ') !== 'Documentation overview | Interactive architecture | Developer SDK') failures.push(`[tpm] the walkthrough's three chapters are Documentation overview, Interactive architecture and Developer SDK (found ${chapterTitles.join(' | ')})`);
+// Introduced as selected views from a broader system: no page count, no
+// spotlight.
+const chaptersLabel = (docsHtml.match(/<p id="tpm-chapters-label"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
+if (textOf(chaptersLabel) !== 'Selected views from a broader documentation system' || !/<ol class="tpm-chapters[^"]*"[^>]*aria-labelledby="tpm-chapters-label"/.test(docsHtml)) failures.push('[tpm] the chapters are introduced as "Selected views from a broader documentation system", which also names the list');
+if (/\b\d+\s*(?:\+\s*)?pages?\b|Architecture Spotlight/i.test(spaced(docsHtml))) failures.push('[tpm] 05 gives no page count and no Architecture Spotlight');
 if (starts[0] !== 0 || starts.some((s, i) => i && s <= starts[i - 1]) || starts.some((s) => s >= docsSec)) failures.push('[tpm] the chapters start at 0 and in order, inside the walkthrough');
 if (!(starts[2] - starts[1] >= starts[1] - starts[0] && starts[2] - starts[1] >= docsSec - starts[2])) failures.push('[tpm] the architecture diagram is the longest moment of the walkthrough');
 if (chapterItems.some((m) => !/<button\b[^>]*data-seek[^>]*\bhidden\b|<button\b[^>]*\bhidden\b[^>]*data-seek/.test(m[0]))) failures.push('[tpm] each chapter plays from its point with a button that its script reveals');
@@ -1184,6 +1206,12 @@ const tpmScripts = pageScripts(tpmPage);
 // The film's controls (06): sound on request, mute or unmute, a silent replay.
 for (const token of ['Unmute', 'volumechange', 'Replay video without sound']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the film's script is missing ${token}`);
 if (!/addEventListener\(\s*[`"']ended[`"']/.test(tpmScripts)) failures.push('[tpm] the walkthroughs hold their last frame when they end');
+// The website walkthrough (V1.2 delta) plays continuously: about a second on
+// the partnership form, a fade back to the hero (its poster, the first frame)
+// and again, never a cut; the documentation still plays once.
+if (!/cycle:\{hold:(?:1e3|1000),fade:(?:[5-9]\d\d)\}/.test(tpmScripts)) failures.push('[tpm] the website walkthrough holds its form for about a second, then fades back to the hero before it replays');
+if (!/\{threshold:\.55\}/.test(tpmScripts)) failures.push('[tpm] the documentation walkthrough plays once (no cycle)');
+if (!CSS_RULES.some((r) => /\[data-turn=["']?fade["']?\]\s+\.tpm-walk__video/.test(bare(r.sel)) && /opacity:\s*0\b/.test(r.body) && /transition:\s*opacity/.test(r.body))) failures.push('[tpm] the turn fades the recording out to its poster');
 for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'requestVideoFrameCallback', 'visibilitychange', 'IntersectionObserver', 'is-live', 'NotAllowedError', 'ended', 'Replay']) {
   if (!tpmScripts.includes(token)) failures.push(`[tpm] the page's motion script is missing ${token}`);
 }
@@ -1205,6 +1233,17 @@ for (const f of htmlFiles) {
   if (/>\s*John Cowin\s*<\/a>/.test(headerHtml)) failures.push(`[home] ${rel}: the name no longer leads the header`);
 }
 if (!rulesFor(/\.brand--home\b/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[home] HOME is set in capitals through CSS');
+// The house (TPM V1.2 delta): a small outlined house, Phosphor's House
+// Simple, before the word, decorative, the label's size; a one-pixel rise on
+// hover, none for reduced motion.
+for (const f of htmlFiles) {
+  const rel = path.relative(dist, f);
+  if (rel === 'index.html') continue;
+  const brand = (fs.readFileSync(f, 'utf8').match(/<a\b[^>]*class="brand brand--home"[^>]*>([\s\S]*?)<\/a>/) || [, ''])[1];
+  if (!/^<svg\b[^>]*class="brand__house"[^>]*aria-hidden="true"[^>]*data-icon="house-simple"[\s\S]*?<\/svg>\s*Home\s*$/.test(brand.trim())) failures.push(`[home] ${rel}: a small outlined house leads the HOME link, hidden from assistive technology`);
+}
+if (!rulesFor(/\.brand__house/).some((r) => /width:\s*1\.25em/.test(r.body) && /height:\s*1\.25em/.test(r.body))) failures.push('[home] the house is set at the label\'s optical size');
+if (!rulesFor(/:hover \.brand__house/).some((r) => !r.at && /translateY\(-1px\)/.test(r.body)) || !rulesFor(/:hover \.brand__house/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transform:\s*none/.test(r.body))) failures.push('[home] the house rises a pixel on hover, and not for reduced motion');
 
 // The opening sequence (TPM V1.2, global): homepage only, exactly three
 // phrases ending on "Strategy into execution.", set as the faces of one

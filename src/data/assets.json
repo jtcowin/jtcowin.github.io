@@ -148,24 +148,6 @@
       "variant": "dark"
     },
     {
-      "id": "tm-bolt-60-loop",
-      "page": "work/technical-marketing",
-      "section": "hero",
-      "type": "video",
-      "aspect": "16:9",
-      "label": "Bolt in 60 seconds, opening loop",
-      "filename": "bolt-in-60-seconds-hero-loop.mp4",
-      "file": "bolt-in-60-seconds-hero-loop.mp4",
-      "fileSmall": "bolt-in-60-seconds-hero-loop-720.mp4",
-      "poster": "technical-marketing/bolt-in-60-seconds-hero-poster.jpg",
-      "plate": "#0e1211",
-      "alt": "Bolt Liquidity animation, the opening of Bolt in 60 seconds: Onchain, better pricing comes with a cost. Bigger pools, more TVL, more capital committed to liquidity. That assumes one pool has to do two jobs, create the price and settle the trade. It doesn’t. Then a global market price passes through a smart contract to atomic settlement.",
-      "source": "bolt-in-60-seconds.mp4, cut from the frame-identical 60 second master (Hero animation.mp4); both stay outside the repository. Case-study hero loop: 0:00 to 0:22.06 (frames 0 to 529, 530 frames, 22.1 seconds) as approved, ending on the slide that follows the reference frame John supplied on October 11, 2026 (frame 522). The end-to-start cut was visible, so the last six frames (524 to 529, a quarter second inside that slide) cross-fade back to the opening frame instead of shortening the sequence. Two silent web encodes: 1920 px for wide screens and 1280 px (fileSmall) for phones. Poster: frame 522, the supplied reference frame.",
-      "permission": "approved",
-      "credit": null,
-      "variant": "dark"
-    },
-    {
       "id": "tm-docs-walkthrough",
       "page": "work/technical-marketing",
       "section": "documentation",

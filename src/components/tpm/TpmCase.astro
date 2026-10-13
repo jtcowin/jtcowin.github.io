@@ -6,9 +6,11 @@
  * value, all across on wide screens, two on mid-size screens, one on phones)
  * and one short paragraph on John's contribution, then the chapter's one
  * dominant visual (the slot), which the chapter lays out itself. The
- * paragraph can be centered beneath the row (06).
+ * paragraph can be centered beneath the row (06, and since the V1.2 delta 04
+ * and 05, which share 06's goal, services and credits row).
  *
- * In the values, **text** sets a name in bold, as the brief does.
+ * In the values, **text** sets a name in bold, as the brief does, and a
+ * hyphenated compound (V1.2: "conversion-focused") never breaks at its hyphen.
  */
 interface Props {
   id: string;
@@ -25,6 +27,7 @@ interface Props {
 
 const { id, title, meta, contribution, columns, surface, align = 'start', class: className } = Astro.props;
 const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong: i % 2 === 1 }));
+const whole = (text: string) => text.split(/(\S*\w-\w\S*)/).map((t, i) => ({ t, keep: i % 2 === 1 }));
 ---
 
 <section class:list={['tpm-case', className]} data-surface={surface} aria-labelledby={id}>
@@ -37,7 +40,11 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
             <dt class="tpm-meta__label">{item.label}</dt>
             <dd class="tpm-meta__value">
               {item.value.map((para) => (
-                <p>{rich(para).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
+                <p>
+                  {rich(para).map(({ part, strong }) =>
+                    strong ? <strong>{part}</strong> : whole(part).map(({ t, keep }) => (keep ? <span class="tpm-meta__whole">{t}</span> : t)),
+                  )}
+                </p>
               ))}
             </dd>
           </div>
@@ -105,6 +112,10 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
   .tpm-meta__value strong {
     font-weight: 700;
     color: var(--heading);
+    white-space: nowrap;
+  }
+
+  .tpm-meta__whole {
     white-space: nowrap;
   }
 

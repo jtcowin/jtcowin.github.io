@@ -12,18 +12,18 @@
  * its own `is-live` class only then, so without JavaScript, with reduced
  * motion and on small or short screens every section reads in normal flow.
  *
- * Loops. A muted looping video sits on its poster and stays invisible until
- * its first frame is on screen, then fades in over it. It plays only while
- * its section wants it and it is in view; a hidden tab, reduced motion, a
- * data-saving preference or a refused autoplay leave the poster (the play
- * button still plays on request), and a video that cannot load keeps its
- * poster and loses its button.
- *
- * Walkthroughs. A muted recording that plays once: from its poster, the first
- * time its frame is well inside the viewport; paused whenever the frame
- * leaves the viewport and resumed when it returns; holding its last frame
- * once it ends. Its one control pauses, plays and, at the end, replays. The
- * same preferences and failures leave the poster, as for the loops.
+ * Walkthroughs. A muted recording that sits on its poster, invisible until
+ * its first frame is on screen, and plays from there the first time its frame
+ * is well inside the viewport; paused whenever the frame leaves the viewport
+ * and resumed when it returns. By default it plays once and holds its last
+ * frame, and its one control pauses, plays and, at the end, replays. With a
+ * cycle (Version 1.2, the website) it plays continuously instead: at the end
+ * it holds its last frame for a moment, fades back to its poster (the
+ * recording's first frame) and plays again, never cutting from the end to
+ * the start, and its control only pauses and plays. A hidden tab, reduced
+ * motion, a data-saving preference or a refused autoplay leave the poster
+ * (the control still plays it on request, once through), and a recording
+ * that cannot load keeps its poster and loses its control.
  *
  * Films (Version 1.2). A film with sound that plays the same way, silently at
  * first; a "Play with sound" button stays on it until the reader takes it up,
@@ -90,173 +90,23 @@ export function addStage(el: HTMLElement, update: Update, active: () => boolean 
 window.addEventListener('scroll', schedule, { passive: true });
 window.addEventListener('resize', schedule, { passive: true });
 
-// ---- Loops ------------------------------------------------------------------
+// ---- Media preferences ------------------------------------------------------
 
 type Conn = { saveData?: boolean };
 const saving = () => lessDataMq.matches || Boolean((navigator as Navigator & { connection?: Conn }).connection?.saveData);
-
-export interface LoopOptions {
-  /** Fetch the video at once (the page's hero) rather than as it nears the screen. */
-  eager?: boolean;
-  /** Share of the frame that must be on screen for it to count as in view. */
-  threshold?: number;
-}
-
-export class Loop {
-  readonly root: HTMLElement;
-  readonly video: HTMLVideoElement;
-  private toggle: HTMLButtonElement | null;
-  private label: string;
-  /** Paused by the reader: stays paused until they play it again. */
-  private held = false;
-  /** Started with its button: plays even where nothing autoplays. */
-  private asked = false;
-  /** The browser refused to start it on its own (a power-saving mode). */
-  private blocked = false;
-  private failed = false;
-  private inView = false;
-  /** Whether the section wants it playing now (its entrance is over, or its scene has come). */
-  private wanted = false;
-
-  constructor(root: HTMLElement, options: LoopOptions = {}) {
-    this.root = root;
-    this.video = root.querySelector('video') as HTMLVideoElement;
-    this.toggle = root.querySelector<HTMLButtonElement>('[data-loop-toggle]');
-    this.label = this.toggle?.dataset.label ?? 'video';
-    const { video, toggle } = this;
-    if (!video) return;
-
-    if (toggle) {
-      toggle.hidden = false;
-      toggle.addEventListener('click', () => {
-        if (video.paused) {
-          this.held = false;
-          this.asked = true;
-          this.blocked = false;
-          this.play();
-        } else {
-          this.held = true;
-          this.asked = false;
-          video.pause();
-        }
-      });
-    }
-
-    video.addEventListener('play', () => this.state());
-    video.addEventListener('pause', () => this.state());
-    video.addEventListener('playing', () => this.reveal());
-    const fail = () => {
-      this.failed = true;
-      video.removeAttribute('data-shown');
-      if (toggle) toggle.hidden = true;
-    };
-    video.addEventListener('error', fail);
-    video.querySelector('source:last-of-type')?.addEventListener('error', fail);
-
-    if (options.eager && this.autoplayAllowed()) {
-      video.preload = 'auto';
-      video.load();
-    }
-
-    if ('IntersectionObserver' in window) {
-      const threshold = options.threshold ?? 0.3;
-      new IntersectionObserver(
-        ([entry]) => {
-          this.inView = entry.isIntersecting && entry.intersectionRatio >= threshold - 0.001;
-          this.sync();
-        },
-        { threshold: [0, threshold] },
-      ).observe(root);
-      // Fetch a lazy loop as it comes within a screen of view.
-      if (!options.eager) {
-        const near = new IntersectionObserver(
-          ([entry]) => {
-            if (!entry.isIntersecting) return;
-            near.disconnect();
-            if (this.autoplayAllowed() && video.preload === 'none') {
-              video.preload = 'auto';
-              video.load();
-            }
-          },
-          { rootMargin: '100% 0px 100% 0px' },
-        );
-        near.observe(root);
-      }
-    } else {
-      this.inView = true;
-    }
-
-    document.addEventListener('visibilitychange', () => this.sync());
-    reduceMq.addEventListener?.('change', () => {
-      if (reduceMq.matches && !this.asked) video.pause();
-      this.sync();
-    });
-    this.state();
-  }
-
-  autoplayAllowed() {
-    return !reduceMq.matches && !saving();
-  }
-
-  /** The section's wish: true once the loop should run (if nothing else stops it). */
-  want(wanted: boolean) {
-    if (wanted === this.wanted) return;
-    this.wanted = wanted;
-    this.sync();
-  }
-
-  private sync() {
-    const { video } = this;
-    if (!video || this.failed) return;
-    const go =
-      !document.hidden && this.inView && !this.held && (this.asked || (this.wanted && this.autoplayAllowed() && !this.blocked));
-    if (go && video.paused) this.play();
-    else if (!go && !video.paused) video.pause();
-  }
-
-  private play() {
-    const { video } = this;
-    if (this.failed) return;
-    if (video.preload !== 'auto') video.preload = 'auto';
-    const p = video.play();
-    if (p && typeof p.catch === 'function') {
-      p.catch((error: unknown) => {
-        // Refused by the browser's autoplay rules: not retried on every
-        // scroll, and the button still plays it. (A play interrupted by a
-        // pause is not a refusal.)
-        if (!this.asked && error instanceof DOMException && error.name === 'NotAllowedError') this.blocked = true;
-        this.state();
-      });
-    }
-  }
-
-  /** The video over its poster, from its first frame on screen. */
-  private reveal() {
-    const { video } = this;
-    if (video.hasAttribute('data-shown')) return;
-    const show = () => {
-      if (!this.failed) video.setAttribute('data-shown', '');
-    };
-    const onFrame = (video as HTMLVideoElement & { requestVideoFrameCallback?: (callback: () => void) => number })
-      .requestVideoFrameCallback;
-    if (typeof onFrame === 'function') onFrame.call(video, show);
-    else show();
-  }
-
-  private state() {
-    const { toggle, video } = this;
-    if (!toggle) return;
-    const playing = !video.paused;
-    toggle.dataset.state = playing ? 'playing' : 'paused';
-    toggle.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} video: ${this.label}`);
-  }
-}
 
 // ---- Walkthroughs -----------------------------------------------------------
 
 export interface WalkthroughOptions {
   /** Share of the frame that must be on screen for playback to start or resume. */
   threshold?: number;
+  /**
+   * Play continuously (Version 1.2): at the end, hold the last frame for
+   * `hold` milliseconds, fade back to the poster (the first frame) over `fade`
+   * milliseconds, then play again from the start. Only while autoplay is
+   * allowed and has not been refused; otherwise it plays once through.
+   */
+  cycle?: { hold: number; fade: number };
 }
 
 type WalkState = 'playing' | 'paused' | 'ended';
@@ -278,12 +128,20 @@ export class Walkthrough {
   private inView = false;
   private raf = 0;
   private listeners: Array<(time: number, state: WalkState) => void> = [];
+  private cycle: { hold: number; fade: number } | null;
+  /**
+   * A cycle's turn from the last frame back to the first: holding the last
+   * frame, fading to the poster, then rewinding under it.
+   */
+  private phase: '' | 'hold' | 'fade' | 'rewind' = '';
+  private timer = 0;
 
   constructor(root: HTMLElement, options: WalkthroughOptions = {}) {
     this.root = root;
     this.video = root.querySelector('video') as HTMLVideoElement;
     this.toggle = root.querySelector<HTMLButtonElement>('[data-walk-toggle]');
     this.label = this.toggle?.dataset.label ?? 'video';
+    this.cycle = options.cycle ?? null;
     const { video, toggle } = this;
     if (!video) return;
 
@@ -291,7 +149,19 @@ export class Walkthrough {
       toggle.hidden = false;
       toggle.addEventListener('click', () => {
         if (this.ended) this.seek(0);
-        else if (video.paused) {
+        else if (this.phase) {
+          // During the turn: pausing keeps (or brings back) the last frame;
+          // playing again fades from it to the start and plays.
+          if (this.held) {
+            this.held = false;
+            this.asked = true;
+            this.turn(0);
+          } else {
+            this.held = true;
+            this.asked = false;
+            this.stay();
+          }
+        } else if (video.paused) {
           this.held = false;
           this.asked = true;
           this.blocked = false;
@@ -311,6 +181,12 @@ export class Walkthrough {
       this.tick();
     });
     video.addEventListener('ended', () => {
+      if (this.cycle && this.autoplayAllowed() && !this.blocked) {
+        // Continuous: a moment on the last frame, a fade back to the first,
+        // and it plays again.
+        this.turn(this.cycle.hold);
+        return;
+      }
       // The last frame stays on screen; nothing restarts it but a replay.
       this.ended = true;
       this.state();
@@ -377,6 +253,7 @@ export class Walkthrough {
   seek(time: number) {
     const { video } = this;
     if (!video || this.failed) return;
+    this.cancel();
     this.ended = false;
     this.held = false;
     this.asked = true;
@@ -391,7 +268,69 @@ export class Walkthrough {
 
   private current(): WalkState {
     if (this.ended) return 'ended';
+    // The turn is part of continuous playback.
+    if (this.phase) return this.held ? 'paused' : 'playing';
     return this.video && !this.video.paused ? 'playing' : 'paused';
+  }
+
+  /** A cycle's turn, from the last frame (held for `hold` ms) back to the start. */
+  private turn(hold: number) {
+    const { cycle, root } = this;
+    if (!cycle) return;
+    window.clearTimeout(this.timer);
+    this.phase = 'hold';
+    this.state();
+    root.style.setProperty('--walk-fade', `${cycle.fade}ms`);
+    this.timer = window.setTimeout(() => {
+      this.phase = 'fade';
+      root.dataset.turn = 'fade';
+      this.timer = window.setTimeout(() => this.rewind(), cycle.fade);
+    }, Math.max(0, hold));
+  }
+
+  /** Under the poster, back to the first frame; then the recording over it again. */
+  private rewind() {
+    const { video, root } = this;
+    this.phase = 'rewind';
+    this.timer = 0;
+    let done = false;
+    const back = () => {
+      if (done) return;
+      done = true;
+      video.removeEventListener('seeked', back);
+      requestAnimationFrame(() => {
+        if (this.phase !== 'rewind') return;
+        this.phase = '';
+        delete root.dataset.turn;
+        this.sync();
+        this.state();
+      });
+    };
+    video.addEventListener('seeked', back);
+    try {
+      video.currentTime = 0;
+    } catch {
+      back();
+    }
+  }
+
+  /** Paused during the turn: the last frame stays (a rewind under way finishes first, paused). */
+  private stay() {
+    if (this.phase === 'hold' || this.phase === 'fade') {
+      window.clearTimeout(this.timer);
+      this.timer = 0;
+      this.phase = 'hold';
+      delete this.root.dataset.turn;
+    }
+    this.state();
+  }
+
+  /** Abandons a turn (a seek or a replay takes over). */
+  private cancel() {
+    window.clearTimeout(this.timer);
+    this.timer = 0;
+    this.phase = '';
+    delete this.root.dataset.turn;
   }
 
   private emit() {
@@ -412,7 +351,7 @@ export class Walkthrough {
 
   private sync() {
     const { video } = this;
-    if (!video || this.failed || this.ended) return;
+    if (!video || this.failed || this.ended || this.phase) return;
     const go =
       !document.hidden && this.inView && !this.held && (this.asked || (this.autoplayAllowed() && !this.blocked));
     if (go && video.paused) this.play();

@@ -13,7 +13,8 @@
  * On the homepage the header follows the viewport over the full-bleed hero.
  * That is a progressive enhancement: without JavaScript it stays in the hero
  * and scrolls away with it, in its hero colors, which are always legible
- * there. Inner pages keep an ordinary sticky header with a text home link.
+ * there. Inner pages keep an ordinary sticky header with a home link: a small
+ * outlined house and the word HOME.
  *
  * Hierarchy: Work and About are the lightest controls, Contact is the filled
  * call to action, Resume is the outlined one. The mobile menu is a native
@@ -51,11 +52,18 @@ const links = [
       /* No mark over the hero: the name is already the composition. Inner pages
          still need a way home: a restrained HOME label in the place the name
          used to take, set like the navigation (the capitals are CSS, so it is
-         read as "Home"). */
+         read as "Home"), led since V1.2 by a small outlined house: House
+         Simple from Phosphor Icons 2.1.1 (MIT License, Copyright (c) 2023
+         Phosphor Icons; the notice is in the README), in its Bold weight,
+         whose stroke matches the label's bold capitals where the Regular reads
+         lighter. Decorative: the link's name stays "Home". */
       overlay ? (
         <span class="brand brand--empty" aria-hidden="true" />
       ) : (
         <a href={withBase('/')} class="brand brand--home" aria-current={current === '/' ? 'page' : undefined}>
+          <svg class="brand__house" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false" data-icon="house-simple">
+            <path d="M222.14,105.85l-80-80a20,20,0,0,0-28.28,0l-80,80A19.86,19.86,0,0,0,28,120v96a12,12,0,0,0,12,12H216a12,12,0,0,0,12-12V120A19.86,19.86,0,0,0,222.14,105.85ZM204,204H52V121.65l76-76,76,76Z" />
+          </svg>
           Home
         </a>
       )
@@ -298,6 +306,30 @@ const links = [
     color: var(--nav-ink);
     text-decoration: none;
     background: color-mix(in srgb, var(--nav-bg) 100%, transparent);
+  }
+
+  /* The house (V1.2): the label's optical size, its color, and a one-pixel
+     rise on hover beside the label's color change. No movement for reduced
+     motion. */
+  .brand--home {
+    gap: 0.55em;
+  }
+
+  .brand__house {
+    flex: none;
+    width: 1.25em;
+    height: 1.25em;
+    transition: transform 180ms var(--ease-out);
+  }
+
+  .brand--home:hover .brand__house {
+    transform: translateY(-1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand--home:hover .brand__house {
+      transform: none;
+    }
   }
 
   .brand--empty {

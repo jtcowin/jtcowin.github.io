@@ -1,19 +1,22 @@
 ---
 /**
- * 04 Website (Technical Product Marketing, V1.1): the first complete
- * market-facing expression of the foundation, shown the way the FABRIC case
- * study shows its work (borrowing its restraint and pacing, not its look):
- * its own surface after the dark passage, a sparse metadata row, one short
- * paragraph on John's contribution, then one oversized thin-bezel desktop
- * display, centered in open space, playing the approved walkthrough of the
- * site from the hero to the partnership form.
+ * 04 Website (Technical Product Marketing, V1.1, with the V1.2 delta): the
+ * first complete market-facing expression of the foundation, shown the way
+ * the FABRIC case study shows its work (borrowing its restraint and pacing,
+ * not its look): its own surface after the dark passage, a sparse metadata
+ * row (goal, services, credits, as the flagship has it), one short paragraph
+ * on John's contribution centered beneath it, then one oversized thin-bezel
+ * desktop display, centered in open space, playing the approved walkthrough
+ * of the site from the hero to the partnership form.
  *
  * The display enters with a short, restrained rise. The walkthrough plays
- * once, silently, when the display is well inside the viewport, pauses
- * whenever it leaves, and ends on the partnership form, which it holds; a
- * small control pauses, plays and replays. Nothing is laid around or over
- * the display. On phones the hardware goes and the recording runs edge to
- * edge.
+ * silently and continuously while the display is in view: from the hero to
+ * the partnership form, a second on the form, a fade back to the hero (its
+ * poster, the recording's first frame), and again, never cutting from the
+ * form to the start. It pauses whenever the display leaves the viewport, and
+ * a small control pauses and plays; there is no hover or scrubbing. Nothing
+ * is laid around or over the display. On phones the hardware goes and the
+ * recording runs edge to edge.
  */
 import tpm from '@data/tpm.json';
 import TpmCase from './TpmCase.astro';
@@ -27,8 +30,9 @@ const { website } = tpm;
   title={website.title}
   meta={website.meta}
   contribution={website.contribution}
-  columns="minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 0.6fr) minmax(0, 1.65fr)"
+  columns="minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 0.8fr)"
   surface="soft"
+  align="center"
   class="tpm-website"
 >
   <figure class="tpm-display" data-tpm-display>
@@ -51,7 +55,9 @@ const { website } = tpm;
   const screen = display?.querySelector<HTMLElement>('.tpm-display__screen');
 
   if (display && screen) {
-    new Walkthrough(screen, { threshold: 0.6 });
+    // Continuous: a second on the partnership form, then a 0.7 second fade
+    // back to the hero before it plays again.
+    new Walkthrough(screen, { threshold: 0.6, cycle: { hold: 1000, fade: 700 } });
 
     // A short, restrained rise as the display comes into view (not for
     // reduced motion, and never without the observer that ends it).

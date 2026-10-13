@@ -1,98 +1,79 @@
 ---
 /**
- * 01 Hero (Technical Product Marketing, V1.1): a pinned hero in two states.
+ * 01 Hero (Technical Product Marketing, V1.2): the headline, the supporting
+ * paragraph and the seven areas of scope, and nothing else: no media. The
+ * headline holds the left of the upper area and the paragraph the right,
+ * level with its last line, as before; the scope runs as one centered rail in
+ * the lower area (two balanced centered lines where it does not fit), with
+ * open space all around, in a hero that fills about one viewport.
  *
- * Entry: the kicker, the headline and the supporting sentence in the upper
- * area (headline left, sentence right); below them, centered, a smaller 16:9
- * screen playing the opening 22 seconds of Bolt in 60 seconds as a silent
- * loop, about 54% of the screen's width at most and never so tall that it
- * crowds the copy; and the seven areas of scope centered on the page, on one
- * line or two balanced ones, never shrunk. Clear space separates the three.
- * The copy enters first and the screen a moment later; the loop starts once
- * the screen has arrived, and until then (and for reduced motion, data saving
- * or a refused autoplay) the screen shows the designed poster frame.
+ * Leaving it (wide, tall-enough screens with motion allowed), over about 0.85
+ * of a viewport of scrolling: the hero starts complete and readable. As the
+ * visitor scrolls, the headline and paragraph leave with the page, softening
+ * as they go, while the scope rail stays where it is and each term, a beat
+ * after the one before it, softens and stretches vertically into a thin band
+ * (the width of a card's edge) in the accent of the document card it lines up
+ * with (the first seven of the Foundation library, in order), so the bands
+ * anticipate the cards' colored left edges. The dark ground of the Foundation
+ * then rises from below on a soft, eased edge, over the bands, which draw
+ * down into it and toward the middle, where the library waits, and fade: the
+ * hero ends on the same dark surface the Foundation begins on, so the two run
+ * together without a cut. Nothing is scrubbed but transforms, opacity and a
+ * light softening (3px at most) on seven words; there is no full-screen blur.
  *
- * Scroll: on wide, tall-enough screens with motion allowed the hero holds in
- * place while the screen grows until it fills the viewport. The copy and the
- * scope line stay while the screen begins to grow, so the whole entry has
- * been seen, then give way. Nothing is laid over the animation except its own
- * pause and play control. With reduced motion the entry simply stays as it is.
+ * Everywhere else (phones, tablets, short screens, reduced motion, no
+ * JavaScript) the hero is still and the Foundation's opening crossfades in as
+ * it arrives (TpmFlow.astro).
  */
-import { Picture } from 'astro:assets';
 import tpm from '@data/tpm.json';
-import { getAsset, resolveImage } from '@lib/assets';
-import { withBase } from '@lib/paths';
-import Icon from '@components/Icon.astro';
 
-const { hero } = tpm;
-const loop = getAsset(hero.media);
-const poster = resolveImage(loop);
-const media = (file: string | null | undefined) => (file ? withBase(`/media/${file}`) : null);
-const large = media(loop.file);
-const small = media(loop.fileSmall);
+const { hero, foundation } = tpm;
+// One band per scope term, in the accents of the first seven document cards,
+// in order from the left.
+const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.documents.length].color);
 ---
 
 <section class="tpm-hero" data-surface="light" aria-labelledby="tpm-title" data-tpm-hero>
   <div class="tpm-hero__stage">
     <div class="container tpm-hero__head" data-tpm-hero-copy>
-      <div class="tpm-hero__lead">
-        <p class="eyebrow tpm-hero__kicker tpm-in" style="--in: 0">{hero.kicker}</p>
-        <h1 id="tpm-title" class="display tpm-hero__title tpm-in" style="--in: 1">{hero.headline}</h1>
-      </div>
-      <p class="lede tpm-hero__lede tpm-in" style="--in: 2">{hero.copy}</p>
+      <h1 id="tpm-title" class="display tpm-hero__title tpm-in" style="--in: 0">{hero.headline}</h1>
+      <p class="lede tpm-hero__lede tpm-in" style="--in: 1">{hero.copy}</p>
     </div>
 
-    <div class="tpm-hero__media">
-      <div class="tpm-hero__box" data-tpm-box>
-        <div class="tpm-screen" data-surface="dark" data-tpm-screen style={loop.plate ? `--plate: ${loop.plate}` : undefined}>
-          <div class="tpm-screen__frame">
-            {
-              poster && (
-                <Picture
-                  src={poster}
-                  alt=""
-                  widths={[640, 960, 1280, 1600, 1920]}
-                  sizes="(min-width: 60rem) 70vw, calc(100vw - 2.5rem)"
-                  formats={['avif', 'webp']}
-                  loading="eager"
-                  fetchpriority="high"
-                  class="tpm-screen__poster"
-                />
-              )
-            }
-            <video class="tpm-screen__video" muted loop playsinline preload="none" aria-label={loop.alt}>
-              {small && <source src={small} media="(max-width: 47.99rem)" type="video/mp4" />}
-              {large && <source src={large} type="video/mp4" />}
-            </video>
-          </div>
-        </div>
-        {/* Beside the screen rather than inside it, so it keeps its size while
-            the screen grows; the script keeps it in the screen's visible
-            lower right corner. */}
-        <button type="button" class="tpm-toggle" data-loop-toggle data-label={loop.label} aria-label={`Play video: ${loop.label}`} hidden>
-          <span class="tpm-toggle__play"><Icon name="play" size={12} /></span>
-          <span class="tpm-toggle__pause"><Icon name="pause" size={12} /></span>
-        </button>
-      </div>
-    </div>
-
-    <div class="container tpm-hero__foot" data-tpm-hero-foot>
-      <ul class="tpm-hero__scope tpm-in" style="--in: 3" aria-label="Scope of the work" data-tpm-scope>
-        {hero.scope.map((item) => <li>{item}</li>)}
+    <div class="container tpm-hero__foot">
+      <ul class="tpm-hero__scope tpm-in" style="--in: 2" aria-label="Scope of the work" data-tpm-scope>
+        {
+          hero.scope.map((item) => (
+            <li>
+              <span class="tpm-hero__term" data-term>
+                {item}
+              </span>
+            </li>
+          ))
+        }
       </ul>
+    </div>
+
+    {/* The dark ground of the Foundation, rising under the bands. The header
+        reads it as the surface beneath it from halfway down its soft edge
+        (the mark: no paint of its own), so its controls turn where the ground
+        does. */}
+    <div class="tpm-hero__dusk" aria-hidden="true" data-tpm-dusk>
+      <span class="tpm-hero__dusk-edge"></span>
+      <span class="tpm-hero__dusk-ground"></span>
+      <span class="tpm-hero__dusk-mark" data-surface="dark"></span>
+    </div>
+
+    <div class="tpm-hero__bands" aria-hidden="true" data-tpm-bands>
+      {bands.map((color) => <span class="tpm-hero__band" style={`--band: ${color}`} data-band />)}
     </div>
   </div>
 </section>
 
 <script>
-  import { Loop, addStage, live, onLiveChange, clamp, lerp, span, easeInOut, smooth } from '@lib/tpm-motion';
+  import { addStage, live, onLiveChange, lerp, span, smooth, easeIn, easeInOut } from '@lib/tpm-motion';
 
   const hero = document.querySelector<HTMLElement>('[data-tpm-hero]');
-  const box = hero?.querySelector<HTMLElement>('[data-tpm-box]');
-  const screen = hero?.querySelector<HTMLElement>('[data-tpm-screen]');
-  const head = hero?.querySelector<HTMLElement>('[data-tpm-hero-copy]');
-  const foot = hero?.querySelector<HTMLElement>('[data-tpm-hero-foot]');
-  const toggle = hero?.querySelector<HTMLElement>('[data-loop-toggle]');
   const scope = hero?.querySelector<HTMLElement>('[data-tpm-scope]');
 
   // The scope line is centered and may wrap into two balanced lines; the dot
@@ -111,102 +92,135 @@ const small = media(loop.fileSmall);
     if ('ResizeObserver' in window) new ResizeObserver(mark).observe(scope);
   }
 
-  if (hero && box && screen && head && foot) {
-    // ---- the loop ----------------------------------------------------------
-    // Fetched at once (it is the page's hero) and started once the screen has
-    // arrived, so the designed poster is what the screen first shows.
-    const loop = new Loop(box, { eager: true, threshold: 0.15 });
-    const ENTRANCE_MS = 1300;
-    window.setTimeout(() => loop.want(true), ENTRANCE_MS);
-
-    // ---- the screen grows toward the edges ---------------------------------
-    // Uniform scale and translation only (no layout per frame): from the
-    // screen's place in the hero to a size that covers the viewport, centered.
-    // The visible corner radius eases to nothing as it reaches the edges.
-    let rest = { x: 0, y: 0, w: 1, h: 1 };
-    let radius = 14;
-
-    // Layout offsets, not client rects, so the screen's own entrance (a short
-    // rise) never skews where it rests.
+  if (hero && scope) {
     const stage = hero.firstElementChild as HTMLElement;
-    const measure = () => {
+    const head = hero.querySelector<HTMLElement>('[data-tpm-hero-copy]') as HTMLElement;
+    const terms = Array.from(hero.querySelectorAll<HTMLElement>('[data-term]'));
+    const bands = Array.from(hero.querySelectorAll<HTMLElement>('[data-band]'));
+    const dusk = hero.querySelector<HTMLElement>('[data-tpm-dusk]') as HTMLElement;
+
+    // ---- geometry ---------------------------------------------------------------
+    // Layout offsets relative to the stage, so the transforms written below
+    // never feed back into what is measured.
+    type Spot = { x: number; y: number; h: number };
+    let spots: Spot[] = [];
+    // The terms from left to right (the rail may wrap into two lines), and
+    // where each band settles: under its own term on one line; evenly spaced
+    // across the rail where it wraps, so no two bands run together.
+    let order: number[] = [];
+    let settle: number[] = [];
+    let mid = 0;
+    let edge = 0;
+    const within = (el: HTMLElement) => {
       let x = 0;
       let y = 0;
-      for (let el: HTMLElement | null = box; el && el !== stage; el = el.offsetParent as HTMLElement | null) {
-        x += el.offsetLeft;
-        y += el.offsetTop;
+      for (let n: HTMLElement | null = el; n && n !== stage; n = n.offsetParent as HTMLElement | null) {
+        x += n.offsetLeft;
+        y += n.offsetTop;
       }
-      rest = { x, y, w: box.offsetWidth, h: box.offsetHeight };
-      radius = parseFloat(getComputedStyle(screen).borderTopLeftRadius) || 14;
+      return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+    };
+    const measure = () => {
+      reset();
+      spots = terms.map((t) => {
+        const b = within(t);
+        return { x: b.x + b.w / 2, y: b.y + b.h / 2, h: b.h };
+      });
+      order = spots.map((_, i) => i).sort((a, b) => spots[a].x - spots[b].x);
+      const wrapped = new Set(spots.map((sp) => Math.round(sp.y))).size > 1;
+      const first = spots[order[0]]?.x ?? 0;
+      const last = spots[order[order.length - 1]]?.x ?? 0;
+      settle = order.map((i, k) => (wrapped && order.length > 1 ? first + ((last - first) * k) / (order.length - 1) : spots[i].x));
+      mid = stage.clientWidth / 2;
+      edge = (dusk.firstElementChild as HTMLElement).offsetHeight;
     };
 
     const reset = () => {
-      screen.style.transform = '';
-      screen.style.borderRadius = '';
-      box.style.removeProperty('--lift');
-      if (toggle) toggle.style.transform = '';
-      for (const el of [head, foot]) {
-        el.style.opacity = '';
+      for (const el of [head, scope, dusk, ...terms, ...bands]) {
         el.style.transform = '';
+        el.style.opacity = '';
+        el.style.filter = '';
+        el.style.visibility = '';
       }
+      scope.style.removeProperty('--dots');
     };
 
-    // The first 80% of the run grows the screen; the rest holds it full.
-    const update = (p: number, _rect: DOMRect, vh: number) => {
-      const vw = document.documentElement.clientWidth;
-      const e = easeInOut(span(p, 0, 0.8));
-      const cover = Math.max(vw / rest.w, vh / rest.h);
-      const s = lerp(1, cover, e);
-      const dx = lerp(0, vw / 2 - (rest.x + rest.w / 2), e);
-      const dy = lerp(0, vh / 2 - (rest.y + rest.h / 2), e);
-      screen.style.transform = e > 0 ? `translate3d(${dx.toFixed(2)}px, ${dy.toFixed(2)}px, 0) scale(${s.toFixed(4)})` : '';
-      screen.style.borderRadius = e > 0 ? `${((radius * (1 - e)) / s).toFixed(3)}px` : '';
-      box.style.setProperty('--lift', (1 - clamp(e * 2.2)).toFixed(3));
-      // The control stays in the lower right corner of what is visible of the
-      // screen: its own corner at first, the viewport's once it covers it.
-      if (toggle) {
-        const cx = rest.x + rest.w / 2 + dx;
-        const cy = rest.y + rest.h / 2 + dy;
-        const right = Math.min(cx + (rest.w * s) / 2, vw);
-        const bottom = Math.min(cy + (rest.h * s) / 2, vh);
-        const tx = right - (rest.x + rest.w);
-        const ty = bottom - (rest.y + rest.h);
-        toggle.style.transform = e > 0 ? `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0)` : '';
-      }
-      // The copy above and the scope line below stay while the screen starts
-      // to grow, then give way.
-      const fade = smooth(span(e, 0.14, 0.48));
-      head.style.opacity = fade > 0 ? (1 - fade).toFixed(3) : '';
-      head.style.transform = fade > 0 ? `translate3d(0, ${(-40 * fade).toFixed(2)}px, 0)` : '';
-      foot.style.opacity = fade > 0 ? (1 - fade).toFixed(3) : '';
-      foot.style.transform = fade > 0 ? `translate3d(0, ${(28 * fade).toFixed(2)}px, 0)` : '';
+    // ---- per frame ----------------------------------------------------------------
+    // p runs from 0 to 1 over the hero's hold (rect.height - vh of scrolling).
+    // At 0 the hero is whole. The headline and paragraph leave with the page
+    // as if nothing held them, softening as they go; each term, a beat after
+    // the one before it, narrows and stretches into its band, which grows up
+    // from the rail; the dark ground rises over the bands on its soft edge;
+    // the bands draw down into it and toward the middle, and fade.
+    const update = (p: number, rect: DOMRect, vh: number) => {
+      const run = Math.max(0, rect.height - vh);
+      const soft = smooth(span(p, 0.14, 0.44));
+      head.style.transform = p > 0 ? `translate3d(0, ${(-p * run).toFixed(1)}px, 0)` : '';
+      head.style.opacity = soft > 0 ? (1 - soft).toFixed(3) : '';
+      head.style.visibility = soft >= 0.999 ? 'hidden' : '';
+      scope.style.setProperty('--dots', (1 - smooth(span(p, 0.06, 0.22))).toFixed(3));
+
+      // The dark ground: from below the hero to over all of it, its soft top
+      // edge ahead of it.
+      const rise = smooth(span(p, 0.3, 0.95));
+      dusk.style.transform = `translate3d(0, ${lerp(vh, -edge, rise).toFixed(2)}px, 0)`;
+
+      const sink = easeInOut(span(p, 0.55, 1));
+      const fade = 1 - smooth(span(p, 0.78, 0.96));
+      // Left to right: the k-th term from the left turns into the k-th band,
+      // in the k-th card's accent.
+      order.forEach((i, k) => {
+        const term = terms[i];
+        const t = span(p, 0.08 + 0.024 * k, 0.42 + 0.024 * k);
+        const e = easeIn(t);
+        term.style.transform = t > 0 ? `scale(${lerp(1, 0.06, e).toFixed(4)}, ${lerp(1, 2.4, e).toFixed(4)})` : '';
+        term.style.filter = t > 0 ? `blur(${(3 * smooth(t)).toFixed(2)}px)` : '';
+        const gone = smooth(span(t, 0.4, 0.85));
+        term.style.opacity = gone > 0 ? (1 - gone).toFixed(3) : '';
+
+        const band = bands[k];
+        const s = spots[i];
+        if (!band || !s) return;
+        const grow = smooth(span(t, 0.25, 1));
+        const on = smooth(span(t, 0.25, 0.7));
+        const length = lerp(s.h * 2, vh * 0.44, grow) * (1 - 0.25 * sink);
+        const bottom = s.y + s.h * 0.9 + vh * 0.05 * grow + vh * 0.4 * sink;
+        const home = lerp(s.x, settle[k], grow);
+        const x = lerp(home, mid + (home - mid) * 0.72, sink);
+        const opacity = 0.9 * on * fade;
+        band.style.opacity = opacity > 0.001 ? opacity.toFixed(3) : '0';
+        band.style.transform = `translate3d(${(x - 2).toFixed(2)}px, ${(bottom - length).toFixed(2)}px, 0) scaleY(${(length / vh).toFixed(4)})`;
+      });
     };
 
     const apply = () => {
       const on = live();
       hero.classList.toggle('is-live', on);
       reset();
-      if (on) measure();
+      if (on) {
+        measure();
+        window.dispatchEvent(new Event('scroll'));
+      }
     };
 
     apply();
+    document.fonts?.ready.then(() => {
+      if (live()) apply();
+    });
     addStage(hero, update);
     onLiveChange(apply);
     let t = 0;
     window.addEventListener('resize', () => {
       window.clearTimeout(t);
       t = window.setTimeout(() => {
-        if (!live()) return;
-        reset();
-        measure();
-        window.dispatchEvent(new Event('scroll'));
-      }, 120);
+        if (live()) apply();
+      }, 140);
     });
   }
 </script>
 
 <style>
-  /* ---- the opening screen ------------------------------------------------- */
+  /* ---- the opening screen --------------------------------------------------------- */
   .tpm-hero {
     --view-h: 100vh;
     position: relative;
@@ -219,26 +233,19 @@ const small = media(loop.fileSmall);
   }
 
   .tpm-hero__stage {
+    position: relative;
     display: grid;
-    gap: clamp(2rem, 1.5rem + 2vw, 3rem);
-    align-content: start;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: clamp(3.5rem, 2.5rem + 6vh, 7rem);
     min-height: var(--view-h);
     /* Clear of the header row, which floats over the top of the hero. */
-    padding-block: calc(var(--header-row) + clamp(1.25rem, 3.5vh, 2.5rem)) clamp(1.5rem, 4vh, 2.5rem);
+    padding-block: calc(var(--header-row) + clamp(2.5rem, 9vh, 7rem)) clamp(3rem, 9vh, 6.5rem);
   }
 
   .tpm-hero__head {
     display: grid;
     gap: var(--space-5);
-  }
-
-  .tpm-hero__lead {
-    display: grid;
-    gap: clamp(0.9rem, 2vh, 1.25rem);
-  }
-
-  .tpm-hero__kicker {
-    color: var(--ink-3);
+    align-content: center;
   }
 
   .tpm-hero__title {
@@ -251,7 +258,7 @@ const small = media(loop.fileSmall);
     font-size: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
   }
 
-  /* Seven areas of work, centered on the page: one line where they fit, two
+  /* Seven areas of work, centered on the page: one rail where they fit, two
      balanced lines where they do not, never smaller type. A middle dot
      (skipped by assistive technology) sits in the space before each item but
      the first, and the script hides it where an item opens a line. */
@@ -289,157 +296,34 @@ const small = media(loop.fileSmall);
     letter-spacing: 0;
     text-align: center;
     color: var(--ink-3);
+    opacity: var(--dots, 1);
   }
 
   .tpm-hero__scope li.is-line-start::before {
     visibility: hidden;
   }
 
-  /* ---- the screen ------------------------------------------------------------ */
-  .tpm-hero__media {
-    min-width: 0;
-    padding-inline: var(--gutter);
-    animation: tpm-screen-in 1000ms var(--ease-out) 420ms both;
-  }
-
-  /* The screen's place and size; the screen inside it is what moves. */
-  .tpm-hero__box {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    margin-inline: auto;
-  }
-
-  .tpm-screen {
-    --screen-radius: var(--radius-lg);
-    position: absolute;
-    inset: 0;
-    border-radius: var(--screen-radius);
-    overflow: hidden;
-    background: var(--plate, #0e1211);
+  .tpm-hero__term {
+    display: inline-block;
     transform-origin: 50% 50%;
-    /* A soft lift off the page, eased away as the screen grows (--lift is
-       written by the script; 1 at rest). */
-    box-shadow:
-      0 36px 72px -40px rgba(13, 15, 16, calc(0.6 * var(--lift, 1))),
-      0 14px 28px -18px rgba(13, 15, 16, calc(0.32 * var(--lift, 1)));
   }
 
-  /* A hairline edge, eased away with the shadow as the screen grows. */
-  .tpm-screen::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 0 0 0 1px rgba(237, 240, 239, calc(0.06 * var(--lift, 1)));
-    pointer-events: none;
-  }
-
-  .tpm-screen__frame {
-    position: absolute;
-    inset: 0;
-  }
-
-  .tpm-screen__frame :global(picture),
-  .tpm-screen__poster,
-  .tpm-screen__video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .tpm-screen__poster,
-  .tpm-screen__video {
-    object-fit: cover;
-  }
-
-  /* Invisible until its first frame is on screen, then it fades in over the
-     poster; the poster stays without JavaScript and if the video fails. */
-  .tpm-screen__video {
-    opacity: 0;
-    background: transparent;
-  }
-
-  .tpm-screen__video[data-shown] {
-    opacity: 1;
-    transition: opacity 0.32s var(--ease-out);
-  }
-
-  /* ---- pause and play ---------------------------------------------------------- */
-  .tpm-toggle {
-    position: absolute;
-    right: 0.8rem;
-    bottom: 0.8rem;
-    z-index: 2;
-    display: grid;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0;
-    border: 1px solid rgba(237, 240, 239, 0.35);
-    border-radius: 50%;
-    background: rgba(13, 15, 16, 0.62);
-    color: var(--c-fog);
-    cursor: pointer;
-    backdrop-filter: blur(4px);
-    transition: background-color var(--dur-fast) var(--ease-out);
-  }
-
-  .tpm-toggle:hover {
-    background: rgba(13, 15, 16, 0.85);
-  }
-
-  .tpm-toggle:focus-visible {
-    outline: 2px solid var(--c-fog);
-    outline-offset: 2px;
-  }
-
-  .tpm-toggle__play,
-  .tpm-toggle__pause {
-    display: grid;
-    place-items: center;
-  }
-
-  .tpm-toggle__pause,
-  .tpm-toggle[data-state='playing'] .tpm-toggle__play {
+  /* The bands and the rising ground exist only for the transition. */
+  .tpm-hero__dusk,
+  .tpm-hero__bands {
     display: none;
   }
 
-  .tpm-toggle[data-state='playing'] .tpm-toggle__pause {
-    display: grid;
-  }
-
-  /* ---- entrance: the copy first, the screen a moment later --------------------- */
+  /* ---- entrance -------------------------------------------------------------------- */
   .tpm-in {
     animation: rise-in 760ms var(--ease-out) both;
     animation-delay: calc(80ms + var(--in, 0) * 90ms);
   }
 
-  @keyframes tpm-screen-in {
-    from {
-      opacity: 0;
-      transform: translate3d(0, 28px, 0);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  /* ---- wide screens: the entry state ---------------------------------------------
-     The headline holds the left of the upper area and the sentence the right,
-     level with its last line. The screen is centered in the room between the
-     copy and the scope line: about 54% of the window's width, no wider than
-     60rem, and no taller than that room less clear space above and below it
-     (the room is a size container, so the screen can follow its height). */
+  /* ---- wide screens: the split opening --------------------------------------------
+     The headline holds the left of the upper area and the paragraph the right,
+     level with its last line; the scope rail sits low and centered. */
   @media (min-width: 60rem) {
-    .tpm-hero__stage {
-      --air: clamp(1rem, 4.5vh, 3rem);
-      grid-template-rows: auto minmax(14rem, 1fr) auto;
-      gap: clamp(1rem, 2.4vh, 2rem);
-    }
-
     .tpm-hero__head {
       grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
       gap: clamp(2rem, 5vw, 6rem);
@@ -455,23 +339,12 @@ const small = media(loop.fileSmall);
       justify-self: end;
       padding-bottom: 0.35rem;
     }
-
-    .tpm-hero__media {
-      container-type: size;
-      position: relative;
-      display: grid;
-      place-items: center;
-    }
-
-    .tpm-hero__box {
-      width: min(54vw, 60rem, (100cqh - 2 * var(--air)) * 16 / 9);
-    }
   }
 
-  /* ---- live: the hero holds while the screen fills the viewport ------------------ */
+  /* ---- live: the hero holds while it resolves into the Foundation ------------------- */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
     .tpm-hero.is-live {
-      height: calc(var(--view-h) * 2);
+      height: calc(var(--view-h) * 1.85);
     }
 
     .tpm-hero.is-live .tpm-hero__stage {
@@ -481,9 +354,82 @@ const small = media(loop.fileSmall);
       overflow: hidden;
     }
 
-    /* Above the copy it grows over. */
-    .tpm-hero.is-live .tpm-hero__media {
-      z-index: 1;
+    .tpm-hero.is-live .tpm-hero__dusk {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 2;
+      display: grid;
+      grid-template-rows: auto var(--view-h);
+      height: auto;
+      pointer-events: none;
+      transform: translate3d(0, var(--view-h), 0);
+      will-change: transform;
+    }
+
+    /* An eased edge (an ease-in-out scrim, not a straight ramp), so the
+       light gives way to the dark with no band at either end of it. */
+    .tpm-hero.is-live .tpm-hero__dusk-edge {
+      display: block;
+      height: calc(var(--view-h) * 0.42);
+      background: linear-gradient(
+        to bottom,
+        rgba(13, 15, 16, 0) 0%,
+        rgba(13, 15, 16, 0.013) 8.1%,
+        rgba(13, 15, 16, 0.049) 15.5%,
+        rgba(13, 15, 16, 0.104) 22.5%,
+        rgba(13, 15, 16, 0.175) 29%,
+        rgba(13, 15, 16, 0.259) 35.3%,
+        rgba(13, 15, 16, 0.352) 41.2%,
+        rgba(13, 15, 16, 0.45) 47.1%,
+        rgba(13, 15, 16, 0.55) 52.9%,
+        rgba(13, 15, 16, 0.648) 58.8%,
+        rgba(13, 15, 16, 0.741) 64.7%,
+        rgba(13, 15, 16, 0.825) 71%,
+        rgba(13, 15, 16, 0.896) 77.5%,
+        rgba(13, 15, 16, 0.951) 84.5%,
+        rgba(13, 15, 16, 0.987) 91.9%,
+        var(--c-ink) 100%
+      );
+    }
+
+    .tpm-hero.is-live .tpm-hero__dusk-ground {
+      display: block;
+      background: var(--c-ink);
+    }
+
+    /* From halfway down the edge to the bottom of the ground: what the header
+       reads as the dark surface. Unpainted. */
+    .tpm-hero.is-live .tpm-hero__dusk-mark {
+      position: absolute;
+      inset: calc(var(--view-h) * 0.21) 0 0;
+      display: block;
+      background: none;
+    }
+
+    .tpm-hero.is-live .tpm-hero__bands {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Each band is a 4px stroke, the width of a card's left edge, one viewport
+       tall and scaled to its length from the top; soft at both ends. */
+    .tpm-hero.is-live .tpm-hero__band {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: var(--view-h);
+      opacity: 0;
+      background: linear-gradient(to bottom, transparent 0%, var(--band) 16%, var(--band) 74%, transparent 100%);
+      transform-origin: 50% 0;
+      will-change: transform, opacity;
+    }
+
+    .tpm-hero.is-live .tpm-hero__term {
+      will-change: transform, opacity, filter;
     }
   }
 </style>

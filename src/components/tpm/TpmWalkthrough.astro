@@ -1,13 +1,16 @@
 ---
 /**
- * A walkthrough's screen contents (Technical Product Marketing, V1.1): the
- * poster, the silent recording over it and its one control, filling whatever
- * frame the chapter draws around them (a desktop display for the website, a
- * browser frame for the documentation). The chapter's script runs it with
- * Walkthrough (tpm-motion.ts): it plays once when the frame is well inside
- * the viewport, pauses when it leaves, and holds its last frame; the control
- * pauses, plays and replays. The recording is fetched only as the frame comes
- * near, and a lighter encode serves phones.
+ * A walkthrough's screen contents (Technical Product Marketing, V1.1 and
+ * V1.2): the poster, the silent recording over it and its one control,
+ * filling whatever frame the chapter draws around them (a desktop display for
+ * the website, a browser frame for the documentation). The chapter's script
+ * runs it with Walkthrough (tpm-motion.ts): it plays when the frame is well
+ * inside the viewport and pauses when it leaves. The documentation plays once
+ * and holds its last frame, its control pausing, playing and replaying; the
+ * website plays continuously, holding its last frame for a moment and fading
+ * back to the poster, its first frame, before it plays again, its control
+ * pausing and playing. The recording is fetched only as the frame comes near,
+ * and a lighter encode serves phones.
  */
 import { Picture } from 'astro:assets';
 import { getAsset, resolveImage } from '@lib/assets';
@@ -69,6 +72,15 @@ const small = src(media.fileSmall);
   .tpm-walk__video[data-shown] {
     opacity: 1;
     transition: opacity 0.4s var(--ease-out);
+  }
+
+  /* A continuous walkthrough's turn (the website, V1.2): after a moment on
+     its last frame it fades out to the poster, the recording's first frame;
+     the script then rewinds it under the poster and it fades back in as it
+     plays again, so the end never cuts to the start. */
+  :global([data-turn='fade']) .tpm-walk__video[data-shown] {
+    opacity: 0;
+    transition: opacity var(--walk-fade, 0.7s) ease-in-out;
   }
 
   /* ---- the control: pause, play, replay ----------------------------------------- */

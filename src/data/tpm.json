@@ -1,63 +1,63 @@
 {
-  "_readme": "Technical Product Marketing, Version 1.2: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation and 06 the flagship animation campaign, then Contact. Copy is John's approved wording from the V1 concept and the V1.1 and V1.2 briefs (October 12 and 13, 2026); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
+  "_readme": "Technical Product Marketing, Version 1.2: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation and 06 the flagship animation campaign, then Contact. Copy is John's approved wording from the V1 concept, the V1.1 and V1.2 briefs and the V1.2 delta brief (October 12 and 13, 2026); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
   "hero": {
-    "kicker": "02 / Technical Product Marketing",
+    "_hero": "Headline, paragraph and the seven scope terms only (V1.2 delta): no kicker and no media. As the hero is left, each scope term resolves into a thread in the accent of the document card it lines up with (the first seven, in order).",
     "headline": "Building the system behind the message.",
     "copy": "I built the strategic foundation that turned Bolt Liquidity’s technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
-    "scope": ["Research", "Positioning", "Messaging", "Claims Governance", "Technical Documentation", "Web Content", "Campaign Direction"],
-    "media": "tm-bolt-60-loop"
+    "scope": ["Research", "Positioning", "Messaging", "Claims Governance", "Technical Documentation", "Web Content", "Campaign Direction"]
   },
   "foundation": {
     "_headline": "Always two lines, broken where the brief breaks it.",
-    "headline": ["Before the message", "came the foundation."],
-    "copy": "Before Bolt Liquidity could be explained externally, it needed a shared internal language. I turned stakeholder interviews and product research into the positioning, claims, proof points, and narrative architecture that guided every public-facing expression.",
+    "headline": ["Before the message", "comes the foundation."],
+    "copy": "Before a product can be explained externally, it needs a shared internal language. For Bolt Liquidity, I built that language from stakeholder interviews and product research, shaping the positioning, claims, proof points, and narrative architecture behind every public-facing expression.",
     "_documents": "In the brief's order, from internal input through market understanding, strategic definition, governance and expression. Each document has its own muted accent (its strip and its faded icon) and its own icon; no two neighbors share a hue family. The interview count is not published.",
     "documents": [
-      { "number": "00", "title": "Stakeholder Interviews", "subline": "Cross-functional leadership input", "icon": "conversation", "accent": "coral", "color": "#de8473" },
-      { "number": "01", "title": "Strategic Foundation Brief", "subline": "Product foundations", "icon": "layers", "accent": "mustard", "color": "#d2b156" },
-      { "number": "02", "title": "Target Buyer Analysis", "subline": "Audience and use cases", "icon": "persona-search", "accent": "teal", "color": "#51b8a3" },
-      { "number": "03", "title": "Market Pain Points Research", "subline": "Market tensions and unmet needs", "icon": "search-alert", "accent": "rust", "color": "#c27047" },
-      { "number": "04", "title": "Target Audience Psychology", "subline": "Motivations and decision drivers", "icon": "profile-insight", "accent": "lavender", "color": "#caa0da" },
+      { "number": "00", "title": "Stakeholder Interviews", "subline": "Cross-functional leadership input", "icon": "chats-circle", "accent": "coral", "color": "#de8473" },
+      { "number": "01", "title": "Strategic Foundation Brief", "subline": "Product foundations", "icon": "stack", "accent": "mustard", "color": "#d2b156" },
+      { "number": "02", "title": "Target Buyer Analysis", "subline": "Audience and use cases", "icon": "user-focus", "accent": "teal", "color": "#51b8a3" },
+      { "number": "03", "title": "Market Pain Points Research", "subline": "Market tensions and unmet needs", "icon": "warning-diamond", "accent": "rust", "color": "#c27047" },
+      { "number": "04", "title": "Target Audience Psychology", "subline": "Motivations and decision drivers", "icon": "brain", "accent": "lavender", "color": "#caa0da" },
       { "number": "05", "title": "Competitor Analysis", "subline": "Market context and differentiation", "icon": "binoculars", "accent": "blue", "color": "#669ad6" },
       { "number": "06", "title": "Product Positioning", "subline": "Positioning system", "icon": "crosshair", "accent": "magenta", "color": "#cb72aa" },
       { "number": "07", "title": "Brand Archetype", "subline": "Strategic character", "icon": "fingerprint", "accent": "ochre", "color": "#c48d45" },
-      { "number": "08", "title": "Claims Log", "subline": "Claims and proof", "icon": "shield-check", "accent": "green", "color": "#79b86f" },
-      { "number": "09", "title": "Messaging Hierarchy", "subline": "Messaging architecture", "icon": "hierarchy", "accent": "cyan", "color": "#52b3cb" },
+      { "number": "08", "title": "Claims Log", "subline": "Claims and proof", "icon": "seal-check", "accent": "green", "color": "#79b86f" },
+      { "number": "09", "title": "Messaging Hierarchy", "subline": "Messaging architecture", "icon": "tree-structure", "accent": "cyan", "color": "#52b3cb" },
       { "number": "10", "title": "Brand Tone of Voice", "subline": "Verbal expression", "icon": "waveform", "accent": "rose", "color": "#e090a0" },
-      { "number": "11", "title": "Brand Lexicon", "subline": "Language system", "icon": "book", "accent": "violet", "color": "#8f85d6" }
+      { "number": "11", "title": "Brand Lexicon", "subline": "Language system", "icon": "book-open-text", "accent": "violet", "color": "#8f85d6" }
     ],
     "_depth": "Unlabeled, neutral covers after the last named document: no number, title, subline or icon, only the suggestion that the library runs deeper.",
     "depth": 2
   },
   "statement": {
-    "copy": "The strategy did not stay in a document. It became the website, technical documentation, articles, campaigns, and content that brought the product to market."
+    "copy": "Once the product language is clear, it guides every expression that follows: the website, technical documentation, articles, campaigns, and content that bring the product to market."
   },
   "website": {
     "title": "Website",
     "_meta": "Label and value pairs, in order. **Text** marks a name set in bold.",
     "meta": [
-      { "label": "Brief", "value": ["Rebuild the website around Bolt Liquidity’s new product positioning."] },
-      { "label": "Role / Services", "value": ["Web strategy, information architecture, copywriting, UX direction, conversion design, and design collaboration."] },
-      { "label": "Timeline", "value": ["Two weeks."] },
-      { "label": "Credits", "value": ["Visual design, brand expression, front-end implementation, and deployment: **Bob van der Meer**. Bob handled typography, color, visual banners, implementation, and deployment while collaborating closely with John on the design, interactions, revisions, and final experience."] }
+      { "label": "Goal", "value": ["Translate the company’s new positioning into a credible, conversion-focused website."] },
+      { "label": "Services", "value": ["Web strategy, information architecture, copywriting, UX direction, and conversion design."] },
+      { "label": "Credits", "value": ["Visual design and development: **Bob van der Meer**."] }
     ],
-    "contribution": "I translated Bolt Liquidity’s new positioning into the website’s complete structure and narrative: defining the section architecture, writing every line of copy, shaping key interactions and scroll behavior, and building the CTA and partnership-form flows. I partnered with Bob van der Meer through design revisions, implementation, and launch to deliver the full rebuild in two weeks.",
+    "_contribution": "Centered beneath the metadata. Bob's name is in the credits and is not repeated here.",
+    "contribution": "I mapped the experience from the opening section to the final CTA, wrote the complete website narrative, shaped its scroll behavior and interactions, and defined the partnership journey and form flow. Working closely with design, I guided each revision through a complete rebuild and launch in two weeks.",
     "media": "tm-website-walkthrough"
   },
   "documentation": {
     "title": "Technical documentation",
     "meta": [
-      { "label": "Brief", "value": ["Replace a fragmented, rudimentary GitBook with a complete documentation system aligned to Bolt Liquidity’s new positioning."] },
-      { "label": "Goal", "value": ["Give technical and developer audiences a clear, connected path from product understanding to implementation while controlling which internal technical details could be communicated publicly."] },
-      { "label": "Role / Responsibilities", "value": ["Platform research and selection, documentation strategy, information architecture, technical writing, MDX implementation, cross-referencing, CTA architecture, architecture-diagram direction, public-information governance, GitHub publishing, and collaboration across engineering, liquidity, and design."] },
-      { "label": "Credits", "value": ["Visual design and interactive implementation: **Bob van der Meer**. Bob handled typography, color, branded visual treatments, custom effects, and the final implementation of the interactive architecture diagram in collaboration with John.", "Technical review and validation: Bolt Liquidity engineering and liquidity teams."] }
+      { "label": "Goal", "value": ["Replace fragmented documentation with a clear, connected system for technical audiences while controlling what product information could be made public."] },
+      { "label": "Services", "value": ["Documentation strategy, information architecture, technical writing, content governance, and MDX implementation."] },
+      { "label": "Credits", "value": ["Visual design and interactive implementation: **Bob van der Meer**."] }
     ],
-    "contribution": "I replaced a fragmented GitBook with a new Mintlify documentation system aligned to Bolt Liquidity’s repositioning. I owned the platform research, information architecture, cross-references, calls to action, technical writing, MDX implementation, and GitHub publishing. Working with engineering, liquidity, and design, I translated complex product architecture into a public-facing interactive experience, governed what could be disclosed, and wrote every layer of supporting explanation.",
+    "_contribution": "Centered beneath the metadata. Bob's name is in the credits and is not repeated here.",
+    "contribution": "I rebuilt the documentation from the ground up, moving it from a fragmented GitBook into a connected Mintlify system. I owned the architecture, technical writing, cross-references, calls to action, MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product information useful, accurate, and appropriate for public release.",
     "media": "tm-docs-walkthrough",
-    "_chapters": "The three proof points of the edited walkthrough, with where each begins in it (seconds, at the middle of the cross-fade into it). The notes are drafted from the brief's confirmed facts.",
+    "_chapters": "The three proof points of the edited walkthrough, introduced as selected views from a broader documentation system, with where each begins in it (seconds, at the middle of the cross-fade into it). The notes are drafted from the brief's confirmed facts.",
+    "chaptersLabel": "Selected views from a broader documentation system",
     "chapters": [
-      { "start": 0, "title": "Documentation home", "note": "One branded Mintlify system in place of scattered GitBook pages, organized from product understanding to implementation." },
-      { "start": 10.45, "title": "Architecture diagram", "note": "I developed the early diagram with engineering, validated it with the liquidity team, refined its structure, filtered out internal-only information, briefed design, and wrote every pop-up explanation. Final visual design and interactive implementation: Bob van der Meer." },
+      { "start": 0, "title": "Documentation overview", "note": "One branded Mintlify system in place of scattered GitBook pages, organized from product understanding to implementation." },
+      { "start": 10.45, "title": "Interactive architecture", "note": "I developed the early diagram with engineering, validated it with the liquidity team, refined its structure, filtered out internal-only information, briefed design, and wrote every pop-up explanation. Final visual design and interactive implementation: Bob van der Meer." },
       { "start": 22.95, "title": "Developer SDK", "note": "The existing SDK code was preserved while the surrounding structure, explanations, cross-references, navigation, and presentation were rebuilt." }
     ]
   },

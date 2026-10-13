@@ -1,7 +1,8 @@
 ---
 /**
  * 02 Foundation and 03 the transitional statement (Technical Product
- * Marketing, V1.1), one continuous passage on the dark surface.
+ * Marketing, V1.1, with the V1.2 delta's copy, icons and pacing), one
+ * continuous passage on the dark surface.
  *
  * 02 opens centered, unlike the split hero above it: the headline on exactly
  * two lines, the paragraph beneath it at a readable measure, then a generous
@@ -17,17 +18,20 @@
  * area two lines tall (a longer title wraps into the space below without
  * moving anything), and its subline in a fixed two-line area at the bottom.
  * Each has its own muted accent on its left strip and its faded icon, and its
- * own icon. Nothing of any document's body is shown.
+ * own icon, all twelve from one family (DocIcon.astro). Nothing of any
+ * document's body is shown.
  *
- * 03 is a quiet change of pace: one large block of type and nothing else,
- * revealed word by word as the page scrolls (each word fading in with a
- * slight rise), then held long enough to be read. The Website chapter that
- * follows starts on its own surface.
+ * 03 is a quiet change of pace: one large block of type and nothing else, one
+ * continuous sentence revealed word by word as the page scrolls (each word
+ * fading in with a slight rise), then held long enough to be read. The
+ * Website chapter that follows starts on its own surface.
  *
  * All of it runs in one sticky stage on wide, tall-enough screens with motion
- * allowed (see tpm-motion.ts). Everywhere else, and without JavaScript, the
+ * allowed (see tpm-motion.ts); the hero above hands over to it on the same
+ * dark ground (TpmHero.astro). Everywhere else, and without JavaScript, the
  * same content reads as a still layout: the opening, the library as a grid
- * and the statement in full.
+ * and the statement in full, and (with scripts) the Foundation crossfades in
+ * as it arrives.
  */
 import tpm from '@data/tpm.json';
 import DocIcon, { type DocIconName } from './DocIcon.astro';
@@ -35,14 +39,14 @@ import DocIcon, { type DocIconName } from './DocIcon.astro';
 const { foundation, statement } = tpm;
 const docs = foundation.documents.map((doc) => ({ ...doc, icon: doc.icon as DocIconName }));
 const depth = Array.from({ length: foundation.depth }, (_, k) => k);
-// Word by word; each sentence but the last ends its line, so the second
-// opens a line of its own.
+// Word by word, as one continuous statement; were there a second sentence it
+// would open a line of its own.
 const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < all.length - 1 && /[.!?]$/.test(word) }));
 ---
 
 <div class="tpm-flow" data-surface="dark" data-tpm-flow>
   <div class="tpm-flow__stage">
-    <section class="tpm-foundation" aria-labelledby="tpm-foundation-title">
+    <section class="tpm-foundation" aria-labelledby="tpm-foundation-title" data-tpm-foundation>
       <div class="container tpm-foundation__head" data-flow-head>
         <h2 id="tpm-foundation-title" class="display tpm-foundation__title">
           {foundation.headline.map((line, i) => (i ? [' ', <span>{line}</span>] : <span>{line}</span>))}
@@ -115,8 +119,8 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
       ['spread', 0.5], // the stack opens: the featured spread
       ['rail', 1.45], // the full library moves right to left
       ['exit', 0.4], // the documents and the opening step back
-      ['statement', 0.75], // the statement, word by word
-      ['hold', 0.65], // the whole statement, held to be read
+      ['statement', 0.85], // the statement, word by word
+      ['hold', 0.75], // the whole statement, held to be read
     ];
     const RUN = PHASES.reduce((sum, [, v]) => sum + v, 0);
     const windows = new Map<string, [number, number]>();
@@ -273,6 +277,24 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
       if (live()) apply();
     });
     addStage(flow, (p) => update(p));
+
+    // ---- where the stage does not run ---------------------------------------------
+    // (phones, tablets, short screens, reduced motion): the Foundation's opening
+    // crossfades in as it arrives, once: as its top passes four fifths of the
+    // way down the screen, whatever the section's height.
+    const foundation = flow.querySelector<HTMLElement>('[data-tpm-foundation]');
+    if (foundation && !live() && 'IntersectionObserver' in window && foundation.getBoundingClientRect().top > window.innerHeight * 0.85) {
+      foundation.classList.add('is-waiting');
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          io.disconnect();
+          foundation.classList.remove('is-waiting');
+        },
+        { rootMargin: '0px 0px -20% 0px' },
+      );
+      io.observe(foundation);
+    }
     onLiveChange(apply);
     let t = 0;
     window.addEventListener('resize', () => {
@@ -300,6 +322,20 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
   /* ---- 02 the opening, centered ------------------------------------------------ */
   .tpm-foundation {
     padding-block: var(--section-y) calc(var(--section-y) * 0.6);
+    transition: opacity 0.7s var(--ease-out);
+  }
+
+  /* The still layout's crossfade into the Foundation (set by the script, so
+     never without it). An opacity change, not motion, so it keeps its timing
+     under the site's reduced-motion reset (global.css). */
+  .tpm-foundation.is-waiting {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tpm-foundation {
+      transition-duration: 0.7s !important;
+    }
   }
 
   .tpm-foundation__head {
@@ -378,11 +414,10 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
     width: 66%;
     height: auto;
     color: var(--doc);
-    stroke-width: 1.5px;
-    /* Faded through the stroke rather than the element's opacity, so no
-       layer edge ever shows around the icon. */
-    stroke-opacity: 0.17;
-    transition: stroke-opacity var(--dur) var(--ease-out);
+    /* Faded through the fill rather than the element's opacity, so no layer
+       edge ever shows around the icon. */
+    fill-opacity: 0.17;
+    transition: fill-opacity var(--dur) var(--ease-out);
   }
 
   /* The card's grid: the number in a fixed row (so every number sits on the
@@ -456,7 +491,7 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
     }
 
     .tpm-doc:hover :global(.tpm-doc__icon) {
-      stroke-opacity: 0.27;
+      fill-opacity: 0.27;
     }
   }
 
@@ -466,7 +501,7 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
   }
 
   .tpm-statement__copy {
-    max-width: 19em;
+    max-width: 20em;
     margin: 0;
     font-family: var(--font-display);
     font-weight: 650;
@@ -485,7 +520,7 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
   /* ---- live: one sticky stage ------------------------------------------------------ */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
     .tpm-flow.is-live {
-      height: calc(var(--view-h) * (1 + var(--flow-run, 3.9)));
+      height: calc(var(--view-h) * (1 + var(--flow-run, 4.1)));
     }
 
     .tpm-flow.is-live .tpm-flow__stage {
@@ -500,6 +535,10 @@ const words = statement.copy.split(' ').map((word, i, all) => ({ word, br: i < a
       position: absolute;
       inset: 0;
       padding: 0;
+    }
+
+    .tpm-flow.is-live .tpm-foundation {
+      transition: none;
     }
 
     .tpm-flow.is-live .tpm-foundation__head {
