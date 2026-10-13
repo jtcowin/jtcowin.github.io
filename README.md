@@ -687,8 +687,9 @@ section follows it, revised in place with it.
   rises from below on a soft eased edge (0.42 of a screen, an ease-in-out scrim rather than a straight
   ramp); the header reads it as the dark surface from halfway down that edge, so its controls turn
   where the ground does. From 55% the bands draw down into the dark and toward the middle, where the
-  library opens, fading out by 96%. The hero ends on the same dark ground the Foundation starts on, so
-  there is no cut. No saturated field, no tunnel, no full-screen blur; only transforms and opacity are
+  library opens, fading out by 96%. The hero ends on the same dark ground the Foundation starts on, and
+  the Foundation's stage rises under the last 0.15 of a screen of it (a negative bottom margin on the
+  live hero), so there is no cut and no empty screen between them. No saturated field, no tunnel, no full-screen blur; only transforms and opacity are
   scrubbed (`TpmHero.astro`). Everywhere else (reduced motion, phones, tablets, short windows) the hero
   is still and the Foundation's opening crossfades in (0.7 seconds) as its top passes four fifths of
   the way down the screen.

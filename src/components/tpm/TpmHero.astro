@@ -17,8 +17,9 @@
  * anticipate the cards' colored left edges. The dark ground of the Foundation
  * then rises from below on a soft, eased edge, over the bands, which draw
  * down into it and toward the middle, where the library waits, and fade: the
- * hero ends on the same dark surface the Foundation begins on, so the two run
- * together without a cut. Nothing is scrubbed but transforms, opacity and a
+ * hero ends on the same dark surface the Foundation begins on, and the
+ * Foundation's stage rises under the last of it, so the two run together
+ * without a cut or an empty screen. Nothing is scrubbed but transforms, opacity and a
  * light softening (3px at most) on seven words; there is no full-screen blur.
  *
  * Everywhere else (phones, tablets, short screens, reduced motion, no
@@ -343,8 +344,12 @@ const bands = hero.scope.map((_, i) => foundation.documents[i % foundation.docum
 
   /* ---- live: the hero holds while it resolves into the Foundation ------------------- */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
+    /* 0.85 of a screen to resolve; the Foundation's dark stage rises under
+       the last 0.15 of it, where the hero is already dark, so its opening
+       follows without an empty screen between them. */
     .tpm-hero.is-live {
       height: calc(var(--view-h) * 1.85);
+      margin-bottom: calc(var(--view-h) * -0.15);
     }
 
     .tpm-hero.is-live .tpm-hero__stage {
