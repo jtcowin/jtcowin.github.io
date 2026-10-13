@@ -1,53 +1,80 @@
 ---
 /**
- * The homepage opening sequence: three short beats on the ink ground,
- * "Product complexity.", "Market clarity.", "Welcome.", then the overlay
- * fades and the hero settles in beneath it, about 1.6 seconds in all.
+ * The homepage opening sequence (Version 1.2): three phrases on the ink
+ * ground, "Product complexity.", "Market clarity." and "Strategy into
+ * execution.", set as the faces of one restrained vertical cylinder. Each
+ * phrase turns forward from below, sharpening and coming to full strength,
+ * settles flat and sharp, and holds to be read; then it turns upward and away,
+ * fading and softening a little, as the next one arrives. The last phrase
+ * holds a little longer, turns gently upward and dissolves; then the ground
+ * clears, and the hero beneath it, already loaded, rises a few pixels from
+ * slight softness into place while its headline and the navigation fade in.
+ * About 3.8 seconds in all, a little less on phones.
  *
- * It plays on the homepage only, once per browsing session (the tab's
- * session storage), and never for reduced motion. An inline script in the
- * head decides before the first paint, by adding the `intro` class to the
- * document, so a visitor it skips never sees it, and a return to the homepage
- * from a case study does not replay it. Nothing waits for it: the hero's
- * photograph and videos load as usual underneath, and scrolling, a click, a
- * tap or a key dismisses it at once. It is decorative and hidden from
- * assistive technology; without JavaScript it never appears, and it ends by
- * itself even if the script below never runs.
+ * It plays on the homepage only, once per browsing session (the tab's session
+ * storage). An inline script in the head decides before the first paint, by
+ * adding the `intro` class to the document, so a visitor it skips never sees
+ * it: a return to the homepage, a visit that began on another page of the
+ * site, and a link to a section all go straight to the page. A tab opened in
+ * the background waits to start until it is shown. Nothing waits for it: the
+ * hero's photograph loads as usual underneath (and is preloaded, see
+ * index.astro), and scrolling, a click, a tap or a key dismisses it at once.
+ * With reduced motion it shows the final phrase briefly, still, then
+ * crossfades straight to the hero.
+ *
+ * The timing lives in custom properties on the document (`--intro-*`, below),
+ * which the hero (Hero.astro) and the header (Header.astro) read for their
+ * part of the handoff. It is decorative and hidden from assistive technology;
+ * without JavaScript it never appears, and it ends by itself even if the
+ * script below never runs.
  */
-const BEATS = ['Product complexity.', 'Market clarity.', 'Welcome.'];
+const PHRASES = ['Product complexity.', 'Market clarity.', 'Strategy into execution.'];
 ---
 
 <div class="intro" aria-hidden="true" data-intro>
-  <div class="container intro__inner">
-    {BEATS.map((beat, i) => <p class={`intro__beat intro__beat--${i + 1}`}>{beat}</p>)}
+  <div class="intro__ground"></div>
+  <div class="intro__drum">
+    {PHRASES.map((phrase, i) => <p class={`intro__face intro__face--${i + 1}`}>{phrase}</p>)}
   </div>
 </div>
 
 <script>
   // Dismissal and clean-up. The sequence itself is CSS, timed from the first
   // paint; this ends it early on the first sign of intent and removes the
-  // overlay once it has faded.
+  // overlay once it has gone.
   const root = document.documentElement;
   const overlay = document.querySelector<HTMLElement>('[data-intro]');
 
   if (overlay && root.classList.contains('intro')) {
     const events: Array<keyof WindowEventMap> = ['wheel', 'touchstart', 'pointerdown', 'keydown', 'scroll'];
-    // Once it has faded the overlay goes. The hero's hold stays in place: its
-    // entrance is already running on that timing, and dropping the delay now
-    // would make it jump.
-    const finish = () => {
-      root.classList.remove('intro', 'intro-skip');
-      overlay.remove();
+    const ground = overlay.querySelector<HTMLElement>('.intro__ground');
+    const stop = () => {
       for (const type of events) window.removeEventListener(type, skip, true);
     };
+    // Once the ground has begun to clear, the handoff is already under way and
+    // ends within a moment; cutting it short then would only make it jump.
+    const clearing = () => {
+      const clear = ground?.getAnimations?.().find((a) => (a as CSSAnimation).animationName === 'intro-clear');
+      if (!clear) return false;
+      const delay = Number(clear.effect?.getTiming().delay) || 0;
+      return (Number(clear.currentTime) || 0) >= delay;
+    };
     function skip() {
-      if (root.classList.contains('intro-skip')) return;
+      stop();
+      if (root.classList.contains('intro-skip') || clearing()) return;
+      // The overlay fades at once, as it stands, and the hero's entrance,
+      // timed from the handoff, is brought forward to now, so the hero is in
+      // place beneath it (see Hero.astro and Header.astro).
       root.classList.add('intro-skip');
-      // The hero no longer waits for the sequence: its entrance picks up from
-      // where its clock already is, under the fading ground.
-      root.classList.remove('intro-hold');
-      for (const type of events) window.removeEventListener(type, skip, true);
     }
+    // When the overlay has gone it is removed. The hero keeps its timing
+    // classes: its entrance is running on them, and dropping them now would
+    // make it jump.
+    const finish = () => {
+      stop();
+      root.classList.remove('intro');
+      overlay.remove();
+    };
     for (const type of events) window.addEventListener(type, skip, { capture: true, passive: true });
     overlay.addEventListener('animationend', (event) => {
       if (event.target === overlay) finish();
@@ -58,6 +85,66 @@ const BEATS = ['Product complexity.', 'Market clarity.', 'Welcome.'];
 </script>
 
 <style>
+  /* ---- the timing --------------------------------------------------------------
+     On the document, so the hero and the header can read their part of the
+     handoff. Turns of 400 to 550 ms, reading holds of 550 to 700 ms from the
+     moment a phrase settles, the last hold a little longer. The last phrase
+     starts to leave at --intro-x; the ground starts to clear a beat later, at
+     --intro-reveal, once the phrase has mostly gone, and the hero's entrance
+     (--intro-hero, read by Hero.astro and Header.astro) starts with it. The
+     whole sequence, with the handoff into the hero, takes about 3.8 seconds
+     (3.7 on phones). */
+  :global(html.intro-hold) {
+    --intro-lead: 40ms; /* the ground alone, before the first phrase turns in */
+    --intro-in: 400ms; /* the first phrase turning into place */
+    --intro-read: 550ms; /* each reading hold, once a phrase has settled */
+    --intro-turn: 440ms; /* each turn from one phrase to the next */
+    --intro-last: 610ms; /* the final phrase's hold, a little longer */
+    --intro-out: 380ms; /* the final phrase turning away */
+    --intro-gap: 110ms; /* from the last phrase leaving to the ground clearing */
+    --intro-clear: 480ms; /* the ground dissolving */
+    --intro-settle: 640ms; /* the hero rising into place */
+    --intro-rise: 14px;
+    --intro-soft: 6px;
+
+    /* The two turns, the last phrase leaving, and the hero revealed. */
+    --intro-t1: calc(var(--intro-lead) + var(--intro-in) + var(--intro-read));
+    --intro-t2: calc(var(--intro-t1) + var(--intro-turn) + var(--intro-read));
+    --intro-x: calc(var(--intro-t2) + var(--intro-turn) + var(--intro-last));
+    --intro-reveal: calc(var(--intro-x) + var(--intro-gap));
+    --intro-hero: var(--intro-reveal);
+  }
+
+  /* Phones: a little shorter, every hold and turn still inside its range. */
+  @media (max-width: 47.99rem) {
+    :global(html.intro-hold) {
+      --intro-lead: 40ms;
+      --intro-in: 400ms;
+      --intro-read: 550ms;
+      --intro-turn: 400ms;
+      --intro-last: 570ms;
+      --intro-out: 360ms;
+      --intro-gap: 110ms;
+      --intro-clear: 460ms;
+      --intro-settle: 620ms;
+      --intro-soft: 4px;
+    }
+  }
+
+  /* Reduced motion: the final phrase, still, then a crossfade. */
+  :global(html.intro-still) {
+    --intro-reveal: 1100ms;
+    --intro-clear: 450ms;
+  }
+
+  /* Dismissed: the overlay fades as it stands (below) and the hero's entrance
+     is due now, so the hero is in place beneath it (after the rules above, so
+     it wins over them). */
+  :global(html.intro-skip) {
+    --intro-hero: 0ms;
+  }
+
+  /* ---- the overlay -------------------------------------------------------------- */
   .intro {
     display: none;
   }
@@ -67,110 +154,210 @@ const BEATS = ['Product complexity.', 'Market clarity.', 'Welcome.'];
     inset: 0;
     z-index: 200;
     display: grid;
-    align-items: center;
-    background: var(--c-ink);
+    place-items: center;
+    overflow: hidden;
     color: #f2f1ec;
-    animation: intro-out 1600ms linear both;
+    /* Gone at the end of the timeline even if no script ever runs. */
+    animation: intro-done 1ms linear calc(var(--intro-reveal) + var(--intro-clear)) forwards;
   }
 
-  :global(html.intro-skip) .intro {
-    animation: intro-skip 260ms var(--ease-out) both;
+  /* The ground is its own layer, so the last phrase can dissolve a beat ahead
+     of it. */
+  .intro__ground {
+    position: absolute;
+    inset: 0;
+    background: var(--c-ink);
   }
 
-  .intro__inner {
+  :global(html.intro) .intro__ground {
+    animation: intro-clear var(--intro-clear) cubic-bezier(0.4, 0, 0.6, 1) var(--intro-reveal) both;
+  }
+
+  /* ---- the cylinder ----------------------------------------------------------------
+     The faces share one place, so every phrase is anchored to the same center
+     of the screen. Each turns about an axis a little behind the screen, which
+     makes them consecutive faces of one drum: the one leaving moves up and
+     away, the one arriving comes up from below. The type is the portfolio's
+     display face, lighter and smaller than its headlines, sized so the longest
+     phrase keeps to one line (it is 10.5em long). Archivo's capitals sit
+     centered in a line box of 1. */
+  .intro__drum {
+    --intro-a: 50deg; /* the angle between two faces */
+    --intro-r: 1.2em; /* the drum's radius: faces meet edge to edge */
+
+    position: relative;
     display: grid;
+    place-items: center;
+    width: 100%;
+    padding-inline: var(--gutter);
+    /* A distant viewpoint, so the turn reads as a drum rather than a spin. */
+    perspective: 22em;
+    font-family: var(--font-display);
+    font-weight: 450;
+    font-stretch: 100%;
+    font-size: min(clamp(1.625rem, 1.15rem + 1.8vw, 3.25rem), calc((100vw - 2 * var(--gutter)) / 10.9));
+    line-height: 1;
+    letter-spacing: 0;
   }
 
-  /* The beats share one place and follow each other there. */
-  .intro__beat {
+  .intro__face {
     grid-area: 1 / 1;
     margin: 0;
-    font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-stretch: var(--display-stretch);
-    font-size: clamp(2.5rem, 1.2rem + 5.2vw, 6.5rem);
-    line-height: 1;
-    letter-spacing: -0.012em;
+    white-space: nowrap;
+    text-align: center;
     opacity: 0;
-    animation: 1600ms var(--ease-out) both;
+    transform-origin: 50% 50% calc(-1 * var(--intro-r));
+    backface-visibility: hidden;
   }
 
-  .intro__beat--1 {
-    animation-name: intro-beat-1;
+  :global(html.intro) .intro__face {
+    will-change: transform, opacity, filter;
   }
 
-  .intro__beat--2 {
-    animation-name: intro-beat-2;
+  /* One smooth curve for the turn, so the two faces move as one body; no
+     bounce and no overshoot. The light (opacity and softness) has its own
+     curves and lands on the same frame: a phrase is flat, sharp and at full
+     strength at the moment its hold begins. */
+  :global(html.intro) .intro__face--1 {
+    animation:
+      intro-turn-in var(--intro-in) var(--intro-ease) var(--intro-lead) both,
+      intro-light-in var(--intro-in) var(--intro-light) var(--intro-lead) both,
+      intro-turn-out var(--intro-turn) var(--intro-ease) var(--intro-t1) forwards,
+      intro-light-out var(--intro-turn) var(--intro-dim) var(--intro-t1) forwards;
   }
 
-  .intro__beat--3 {
-    animation-name: intro-beat-3;
+  :global(html.intro) .intro__face--2 {
+    animation:
+      intro-turn-in var(--intro-turn) var(--intro-ease) var(--intro-t1) both,
+      intro-light-in var(--intro-turn) var(--intro-light) var(--intro-t1) both,
+      intro-turn-out var(--intro-turn) var(--intro-ease) var(--intro-t2) forwards,
+      intro-light-out var(--intro-turn) var(--intro-dim) var(--intro-t2) forwards;
   }
 
-  /* 1600ms in all: each beat rises in over about 200ms and holds; the first
-     two leave as the next arrives; Welcome. stays and fades with the ground,
-     which clears from about 1.2s, as the hero settles in beneath it. */
-  @keyframes intro-beat-1 {
-    0%,
-    4% {
-      opacity: 0;
-      transform: translate3d(0, 16px, 0);
+  :global(html.intro) .intro__face--3 {
+    animation:
+      intro-turn-in var(--intro-turn) var(--intro-ease) var(--intro-t2) both,
+      intro-light-in var(--intro-turn) var(--intro-light) var(--intro-t2) both,
+      intro-turn-away var(--intro-out) var(--intro-ease) var(--intro-x) forwards,
+      intro-light-out var(--intro-out) var(--intro-dissolve) var(--intro-x) forwards;
+  }
+
+  /* The phrase leaving dims a little ahead of the turn and the one arriving
+     brightens a little behind it, so mid-turn neither competes; the last
+     phrase dissolves early in its turn, before the ground clears. */
+  :global(html.intro) .intro__drum {
+    --intro-ease: cubic-bezier(0.45, 0, 0.2, 1);
+    --intro-light: cubic-bezier(0.45, 0, 0.35, 1);
+    --intro-dim: cubic-bezier(0.25, 0, 0.45, 1);
+    --intro-dissolve: cubic-bezier(0.1, 0, 0.35, 1);
+  }
+
+  /* Reduced motion: no turns. The final phrase stands alone, then fades with
+     the ground. */
+  :global(html.intro-still) .intro__face {
+    animation: none;
+  }
+
+  :global(html.intro-still) .intro__face--3 {
+    opacity: 1;
+  }
+
+  :global(html.intro-still) .intro__drum,
+  :global(html.intro-still) .intro__ground {
+    animation: intro-clear var(--intro-clear) linear var(--intro-reveal) both;
+  }
+
+  /* The site's reduced-motion reset ends every animation at once (global.css);
+     this crossfade, which is no motion, keeps its timing. */
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.intro-still) .intro {
+      animation-duration: 1ms !important;
+      animation-delay: calc(var(--intro-reveal) + var(--intro-clear)) !important;
     }
-    16%,
-    29% {
-      opacity: 1;
+
+    :global(html.intro-still) .intro__drum,
+    :global(html.intro-still) .intro__ground {
+      animation-duration: var(--intro-clear) !important;
+      animation-delay: var(--intro-reveal) !important;
+    }
+
+    :global(html.intro-still.intro-skip) .intro {
+      animation-delay: 0ms !important;
+    }
+  }
+
+  /* Dismissed: the overlay fades at once (last, so it wins over every other
+     ending). */
+  :global(html.intro-skip) .intro {
+    animation: intro-skip 220ms var(--ease-out) forwards;
+  }
+
+  /* A tab opened in the background holds everything until it is shown. */
+  :global(html.intro-wait) :global(*) {
+    animation-play-state: paused !important;
+  }
+
+  @keyframes intro-turn-in {
+    from {
+      transform: rotateX(calc(-1 * var(--intro-a)));
+    }
+    to {
       transform: none;
     }
-    37%,
-    100% {
-      opacity: 0;
-      transform: translate3d(0, -10px, 0);
-    }
   }
 
-  @keyframes intro-beat-2 {
-    0%,
-    34% {
-      opacity: 0;
-      transform: translate3d(0, 16px, 0);
-    }
-    46%,
-    59% {
-      opacity: 1;
+  @keyframes intro-turn-out {
+    from {
       transform: none;
     }
-    67%,
-    100% {
-      opacity: 0;
-      transform: translate3d(0, -10px, 0);
+    to {
+      transform: rotateX(var(--intro-a));
     }
   }
 
-  @keyframes intro-beat-3 {
-    0%,
-    64% {
-      opacity: 0;
-      transform: translate3d(0, 16px, 0);
-    }
-    76%,
-    100% {
-      opacity: 1;
+  /* The last phrase leaves on a gentler turn. */
+  @keyframes intro-turn-away {
+    from {
       transform: none;
     }
+    to {
+      transform: rotateX(calc(var(--intro-a) * 0.6));
+    }
   }
 
-  @keyframes intro-out {
-    0%,
-    76% {
+  @keyframes intro-light-in {
+    from {
+      opacity: 0;
+      filter: blur(0.06em);
+    }
+    to {
       opacity: 1;
-      visibility: visible;
+      filter: none;
     }
-    99.9% {
-      opacity: 0;
-      visibility: visible;
+  }
+
+  @keyframes intro-light-out {
+    from {
+      opacity: 1;
+      filter: none;
     }
-    100% {
+    to {
       opacity: 0;
+      filter: blur(0.06em);
+    }
+  }
+
+  @keyframes intro-clear {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes intro-done {
+    to {
       visibility: hidden;
     }
   }
@@ -178,7 +365,6 @@ const BEATS = ['Product complexity.', 'Market clarity.', 'Welcome.'];
   @keyframes intro-skip {
     from {
       opacity: 1;
-      visibility: visible;
     }
     99.9% {
       opacity: 0;
@@ -187,12 +373,6 @@ const BEATS = ['Product complexity.', 'Market clarity.', 'Welcome.'];
     to {
       opacity: 0;
       visibility: hidden;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    :global(html.intro) .intro {
-      display: none;
     }
   }
 </style>

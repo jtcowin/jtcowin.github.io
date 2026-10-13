@@ -86,6 +86,8 @@ const { website } = tpm;
   .tpm-display.is-pending {
     opacity: 0;
     transform: translate3d(0, 48px, 0) scale(0.97);
+    /* Hidden at once, so it never fades out on its way to the entrance. */
+    transition: none;
   }
 
   .tpm-display__screen {

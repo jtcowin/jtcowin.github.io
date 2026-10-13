@@ -1,12 +1,13 @@
 ---
 /**
- * Technical Product Marketing, Version 1.1.
+ * Technical Product Marketing, Version 1.2.
  *
- * The rebuilt case study, through its first five sections: 01 Hero (a pinned
+ * The rebuilt case study, through its first six sections: 01 Hero (a pinned
  * hero in two states), 02 Foundation (the document library), 03 the
- * transitional statement, 04 Website and 05 Technical documentation. The
- * chapters after them come once these have been reviewed together; until
- * then the page closes with Contact and the footer, as the homepage does.
+ * transitional statement, 04 Website, 05 Technical documentation and 06 the
+ * flagship animation campaign. The chapters after them, Articles first, come
+ * once these have been reviewed together; until then the page closes with
+ * Contact and the footer, as the homepage does.
  * Metadata and the Select Work card still come from the case study's
  * frontmatter (src/content/work/technical-marketing.mdx); its older MDX body
  * is no longer rendered.
@@ -21,6 +22,7 @@ import TpmHero from '@components/tpm/TpmHero.astro';
 import TpmFlow from '@components/tpm/TpmFlow.astro';
 import TpmWebsite from '@components/tpm/TpmWebsite.astro';
 import TpmDocs from '@components/tpm/TpmDocs.astro';
+import TpmCampaign from '@components/tpm/TpmCampaign.astro';
 
 const entry = await getEntry('work', 'technical-marketing');
 if (!entry) throw new Error('[technical-marketing] the case study entry is missing');
@@ -33,6 +35,7 @@ const d = entry.data;
     <TpmFlow />
     <TpmWebsite />
     <TpmDocs />
+    <TpmCampaign />
   </article>
 
   <div class="chapter" data-surface="brand">

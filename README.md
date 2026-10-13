@@ -5,25 +5,28 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Technical Product Marketing Version 1.1 in review.** Version 2.0 and the Technical Product
-Marketing Version 1 checkpoint are published. Version 1.1 is committed locally through the page's first
-five sections and not pushed until they have been reviewed together in the browser; the chapters after
-Technical documentation come next. Placeholders render only in `npm run dev`; production builds hide
+**Status: Technical Product Marketing Version 1.2 in review.** Version 2.0 and the Technical Product
+Marketing Version 1.1 checkpoint are published. Version 1.2 (the new opening sequence and the flagship
+animation campaign) is committed locally and not pushed until it has been reviewed in the browser;
+Articles and the chapters after it come next. Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
 
-Technical Product Marketing replaces the case study's page with its own, now at Version 1.1, built
-through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website and 05 Technical
-documentation (see [Technical Product Marketing, Version 1.1](#technical-product-marketing-version-11)).
-The hero starts with a smaller screen under the copy, playing the opening 22 seconds of Bolt in 60
-seconds, and grows it to fill the viewport as the page scrolls; the foundation opens centered, then
-from a compact stack into a library of twelve named documents, each with its own accent and icon,
-moving right to left; one statement follows, revealed word by word; then the website plays in an
-oversized desktop display and the documentation in a large browser frame, each walkthrough once, from
-its poster. Contact and the footer close the page. Two site-wide changes came with Version 1: inner
-pages lead their header with a restrained HOME link in place of the name, and the homepage opens, once
-per browsing session, with a 1.6-second sequence of three beats: "Product complexity.", "Market
-clarity." and "Welcome."
+Technical Product Marketing replaces the case study's page with its own, now at Version 1.2, built
+through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation
+and 06 the flagship animation campaign (see [Technical Product Marketing, Version
+1.2](#technical-product-marketing-version-12)). The hero starts with a smaller screen under the copy,
+playing the opening 22 seconds of Bolt in 60 seconds, and grows it to fill the viewport as the page
+scrolls; the foundation opens centered, then from a compact stack into a library of twelve named
+documents, each with its own accent and icon, moving right to left; one statement follows, revealed
+word by word; then the website plays in an oversized desktop display and the documentation in a large
+browser frame, each walkthrough once, from its poster; then the complete one-minute film plays in a
+nearly full-width frame on the dark ground, silently until the reader asks for sound, above its launch
+results. Contact and the footer close the page. Two site-wide changes came with Version 1: inner pages
+lead their header with a restrained HOME link in place of the name, and the homepage opens, once per
+browsing session, with a short sequence; since Version 1.2 it is three phrases, "Product complexity.",
+"Market clarity." and "Strategy into execution.", turning as the faces of one restrained cylinder and
+handing over to the hero in about 3.8 seconds.
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -169,13 +172,16 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
   `fallback` stand-ins, and optional `focus`). `role` (optional) is the one-line "My role:" summary
   under the intro (see Case-study roles below).
-- **Technical Product Marketing** (Version 1.1): `src/data/tpm.json` holds the hero copy and scope
+- **Technical Product Marketing** (Version 1.2): `src/data/tpm.json` holds the hero copy and scope
   line, the foundation's two headline lines and paragraph, the twelve documents in order (display
   number, title, subline, icon, accent name and color) and the number of blank covers, the statement,
   and for Website and Technical documentation their name, metadata (label and paragraphs; `**name**`
   sets a name in bold), contribution statement and walkthrough asset, with the documentation's three
-  chapters (start in seconds, title and note). The page's metadata and its Select Work card still come
-  from the case study's frontmatter; its older MDX body is no longer rendered.
+  chapters (start in seconds, title and note); `campaign` holds the flagship chapter's headline,
+  metadata, contribution, film asset and results (the label, the four figures, each with an optional
+  `spoken` form for screen readers, and the supporting lines). The page's metadata and its Select Work
+  card still come from the case study's frontmatter; its older MDX body is no longer rendered. The
+  opening sequence's three phrases are in `src/components/Intro.astro`.
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -397,7 +403,7 @@ included) is tracked or shipped; and the trust bar shows seven logo files, Ambur
 supplied SVG byte for byte, carrying its optical sizing.
 
 The Technical Product Marketing checks are listed with the page (see [Technical Product Marketing,
-Version 1.1](#technical-product-marketing-version-11)).
+Version 1.2](#technical-product-marketing-version-12)).
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -647,16 +653,18 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
 
-### Technical Product Marketing, Version 1.1
+### Technical Product Marketing, Version 1.2
 
-John's TPM V1.1 brief (October 12, 2026), built through its first five sections: 01 Hero, 02
-Foundation, 03 the transitional statement, 04 Website and 05 Technical documentation, then Contact and
-the footer. The page is `src/pages/work/technical-marketing.astro` with `src/components/tpm/` (TpmHero;
-TpmFlow for 02 and 03; TpmWebsite and TpmDocs, which share TpmCase for their opening and TpmWalkthrough
-for their player; DocIcon), its copy and library in `src/data/tpm.json` and its motion in
-`src/lib/tpm-motion.ts`; `src/pages/work/[slug].astro` no longer builds this case study. The page runs
-up under the header row (`--header-row`), so its opening screen is the whole viewport. The brief itself
-is kept and revised in place outside the repository; this section follows it.
+John's TPM brief, Version 1.2 (October 13, 2026; Version 1.1 was October 12), built through its first
+six sections: 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical
+documentation and 06 the flagship animation campaign, then Contact and the footer; 00, the homepage
+opening sequence, is site-wide. The page is `src/pages/work/technical-marketing.astro` with
+`src/components/tpm/` (TpmHero; TpmFlow for 02 and 03; TpmWebsite, TpmDocs and TpmCampaign, which share
+TpmCase for their opening; TpmWalkthrough, the walkthroughs' player; DocIcon), its copy and library in
+`src/data/tpm.json` and its motion in `src/lib/tpm-motion.ts`; `src/pages/work/[slug].astro` no longer
+builds this case study. The page runs up under the header row (`--header-row`), so its opening screen
+is the whole viewport. The brief itself is kept and revised in place outside the repository; this
+section follows it, revised in place with it.
 
 - **01 Hero, entry** (light surface): the kicker "02 / TECHNICAL PRODUCT MARKETING" (capitals by CSS)
   and the headline on the left of the upper area with the supporting sentence on the right; below them,
@@ -768,19 +776,85 @@ is kept and revised in place outside the repository; this section follows it.
   minimum height and no reduced motion. Without it (phones, tablets, short windows, reduced motion, no
   JavaScript) every section reads in normal flow: the hero's entry state, the library as a grid with the
   covers at its end, and the statement in full; the Website and Technical documentation chapters are the
-  same everywhere. Reduced motion and data saving autoplay nothing (the controls still play on request);
-  phones get the 720p encodes. Checked live at 1024x768, 1280x720, 1366x768, 1440x900 and 1920x1080, and
-  still at 390x844 and at 1440x900 with reduced motion.
+  same everywhere, as is the flagship chapter. Reduced motion and data saving autoplay nothing (the
+  controls still play on request, and Play with sound plays the film with sound); phones get the 720p
+  encodes. Checked live at 1024x768, 1280x720, 1366x768, 1440x900 and 1920x1080, and still at 390x844
+  and at 1440x900 with reduced motion.
 - **HOME** (every page but the homepage): the header leads with a HOME link to the homepage in place
   of the name, in the navigation's pill and padding and the small tracked capitals the site keeps for
   labels (the capitals are CSS, so it reads as "Home").
-- **The opening sequence** (homepage only): three beats on the ink ground, "Product complexity.",
-  "Market clarity.", "Welcome.", each rising in over about 200ms, then the ground clears from about 1.2
-  seconds as the hero settles in beneath it, 1.6 seconds in all. An inline script in the head decides
-  before the first paint, once per browsing session (`sessionStorage`, `jc-intro`), never for reduced
-  motion, so a return from a case study does not replay it. Nothing waits for it: the photograph and
-  the videos load underneath as usual. Scrolling, a click, a tap or any key ends it at once. It is
-  `aria-hidden`, and it ends by itself even if its script never runs.
+- **06 Flagship animation campaign** (dark surface, its own chapter, after Technical documentation
+  and before Articles): the headline "One minute to make the product clear.", the metadata row (Goal,
+  Services and Credits, Bob van der Meer in bold), and the contribution statement centered beneath it
+  (Bob's name is in the credits only). Then the film in a large 16:9 frame with no device around it:
+  nearly the full width (95% at 1440x900), held to the height of the screen below the header so the
+  whole frame is in view at once (86% wide at 1366x768), never wider than 120rem, entering with a short
+  rise, and edge to edge on phones. Beneath it, centered, the results under "First 48 hours after
+  launch": ~14% engagement rate (read as "About 14%"), 84% of impressions from non-followers (a share
+  of impressions, never of engagements), +140% website traffic and +153% technical-documentation
+  traffic, four across on wide screens and two by two below 60rem; then "More than 16x typical post
+  reach" and "Amplified by Sui Developer and Sui Community Official", the figures and the accounts in
+  bold.
+- **The film**: `bolt-in-60-seconds.mp4` from the Portfolio folder, the approved optimized cut (60.0
+  seconds, 1920x1080 at 23.976 fps, H.264 with AAC stereo), complete and uncut, its music, voiceover and
+  sound-effects mix untouched; the larger master (Hero animation.mp4) and the hero loop are not used,
+  and no file under the master's name is tracked. Wide screens get `bolt-in-60-seconds-film.mp4`, a
+  lossless remux (the same video and audio streams bit for bit, 16.2 MB, with the editing
+  application's project metadata removed and the index moved to the front so playback starts while it
+  downloads); phones get `bolt-in-60-seconds-film-720.mp4`, 1280x720, H.264 High at CRF 24 with
+  animation tuning (SSIM 0.997 against the source), its audio stream copied unchanged, 6.1 MB. Poster:
+  `hero-thumbnail.png` from the Portfolio folder, the film's own thumbnail, 1920x1080
+  (`bolt-in-60-seconds-film-poster.png`). The copies in the repository also carry the content
+  credentials (a signed C2PA manifest of about 6 KB) that the Claude app attaches to the files it
+  delivers; the picture and sound are unchanged.
+- **Sound and playback** (`Film` in `tpm-motion.ts`): fetched as the frame comes within a screen of
+  view; muted autoplay once at least half the frame is in view (never for reduced motion, data saving or
+  a browser that refuses), paused whenever the frame leaves (under 20% visible) and resumed when it
+  returns; it plays once, holds its final frame (the Bolt Liquidity end card) and never loops. A white
+  "Play with sound" button with a speaker icon and its text label stays on the film, at its lower left
+  (beneath it on phones, where the film is small), for as long as it plays silently, with a small pause,
+  play or replay beside it. Taking it up starts the film again from 00:00 with sound, and standard
+  controls replace it: Mute or Unmute, Pause or Play, and Replay; once the film has ended, Replay alone
+  remains. A keyboard reader's focus moves from the button to Pause. Without JavaScript the film keeps
+  its poster and the browser's own controls.
+- **Captions**: checked against the narration (transcribed and matched to the picture): every spoken
+  line also appears on screen, as kinetic type ("Better pricing comes with a cost.", "Bigger pools",
+  "More TVL", "More capital committed to liquidity", "That assumes one pool has to do two jobs",
+  "Create the price" and "Settle the trade", "It doesn't", "It just provides the inventory", "The
+  result", "100x daily capital turnover", "Launching an asset", "Building a market", "Expanding a DeFi
+  product", "Liquidity, product, ecosystem, growth" and "That's how you build real onchain markets with
+  far less capital.") or as a labeled diagram (the global market price passing through a smart contract
+  to atomic settlement, while the narration says Bolt brings price discovery onchain, makes it
+  executable and settles atomically; trades 1, 2 and 3 drawing on one pool for "the same capital can
+  support one trade, then another, then another"). No essential information is carried by the voice
+  alone, so, as the brief allows, no caption track ships and nothing is shown on screen. An optional CC
+  track, off by default, is one `<track>` and a control to add if wanted.
+- **00 The opening sequence** (homepage only): "Welcome." is gone; exactly three phrases, "Product
+  complexity.", "Market clarity." and "Strategy into execution.", centered in the viewport on one
+  shared center, in the portfolio's display face (Archivo) at weight 450 and full width rather than the
+  headlines' 700, about 44px at 1440 wide (26px on phones), and sized so "Strategy into execution."
+  (10.5em) always keeps to one line. They are consecutive faces of one restrained vertical cylinder
+  (50 degrees between faces, an axis 1.2em behind the screen, a distant 22em perspective): each phrase
+  turns forward from below, sharpening and coming to full strength, settles flat and sharp, and holds;
+  then it turns upward and away, fading and softening a little, as the next arrives, on one smooth
+  curve with no bounce or overshoot. Timing on wide screens: the first phrase turns in over 400ms,
+  reading holds of 550ms from the moment a phrase settles, turns of 440ms, a final hold of 610ms; then
+  "Strategy into execution." turns gently upward and dissolves (380ms), and 110ms later the ground
+  clears (480ms) as the hero, already loaded beneath it, rises 14px from slight softness (6px blur, 102
+  to 100% scale) into place over 640ms, its name, then the navigation, then its information fading in
+  60, 120 and 180ms after it starts: 3.79 seconds in all. Phones run a little shorter (3.67 seconds,
+  turns of 400ms, a final hold of 570ms). With reduced motion the final phrase stands still for 1.1
+  seconds, then crossfades straight to the hero (450ms). The timing is a set of custom properties on
+  the document (`--intro-*` in `Intro.astro`), which `Hero.astro` and `Header.astro` read for the
+  handoff.
+- **When it plays**: an inline script in the head decides before the first paint, once per browsing
+  session (`sessionStorage`, `jc-intro`): never on a return to the homepage, never for a visit that
+  began on another page of the site (a same-origin referrer) and never for a link to a section; a tab
+  opened in the background holds it until it is shown. Nothing waits for it: the hero photograph (both
+  layers, as AVIF, exactly as the hero's pictures request them) and the two faces of the first screen
+  are preloaded, and the videos load as usual. Scrolling, a click, a tap or any key dismisses it at once
+  (the overlay fades in 220ms over a hero already in place); once the ground has begun to clear, the
+  handoff simply finishes. It is `aria-hidden`, and it ends by itself even if its script never runs.
 - **Checks**: `verify.mjs` holds the approved copy word for word (the hero, the two-line foundation
   headline, the paragraph, the statement, both chapters' metadata and contribution statements); the
   scope line's seven areas, centering and balance, and the screen's 50 to 56% start with a cap; the
@@ -792,8 +866,20 @@ is kept and revised in place outside the repository; this section follows it.
   H.264, silent, fast start, dimensions, sizes), the chapters (titles, order, the diagram longest, their
   buttons), the loop files and the hero's video and poster markup, the `is-live`, width, height and
   motion guards on every sticky rule, no vertical text, the motion script's guards (including the hold
-  on the last frame), the closing Contact frame, HOME on every inner page and not on the homepage, and
-  the opening sequence's beats, length, session and motion guards and its homepage-only placement.
+  on the last frame), the closing Contact frame, HOME on every inner page and not on the homepage. For
+  06: its place after 05, its surface, headline, metadata and centered contribution (no second mention
+  of Bob), the frame (no device, nearly full width at 16:9), the film's markup (muted, inline, no loop
+  or autoplay, native controls for no script, phone encode first, no caption track, a lazy poster), the
+  Play with sound button (text, speaker icon, prominence) and the standard controls, the files (60
+  seconds, H.264 with its audio, fast start, dimensions, sizes, no project metadata, never the master or
+  the loop), and the results word for word, with the 84% only ever of impressions. For 00: the three
+  phrases (no Welcome.), the display face lighter than the headlines, one line, one center, the drum
+  (perspective, an axis behind the screen, rotations from and to only, curves that never overshoot),
+  every hold and turn inside its range on wide screens and phones, 3.2 to 3.8 seconds in all, phones no
+  longer, the last phrase gone before the ground has cleared, the hero's 12 to 16px rise, 102% and
+  softness, the name, navigation and information in that order, the still crossfade for reduced motion,
+  the head decision's guards, the preloads matching the hero's pictures and the stylesheet's faces, the
+  dismissal events and the homepage-only placement.
 
 ### Case-study roles
 
@@ -821,15 +907,16 @@ src/
   data/                 site.json, home.json, logos.json, assets.json, tpm.json (Technical Product Marketing)
   assets/               images by page and section; reel/ (the 24 reel stills), stack/ (the 18 logos)
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution),
-                        tpm-motion.ts (the Technical Product Marketing page's stages, loops and
-                        walkthroughs)
+                        tpm-motion.ts (the Technical Product Marketing page's stages, loops,
+                        walkthroughs and film)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
   components/           Intro (the homepage opening sequence), Hero, About, LogoBar, WorkPanels
                         (Select Work), WorkReel, Capabilities (From positioning to production),
                         Contact, Media, …
   components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 the statement), TpmWebsite, TpmDocs,
-                        TpmCase (a chapter's opening), TpmWalkthrough (its player), DocIcon
+                        TpmCampaign (06), TpmCase (a chapter's opening), TpmWalkthrough (the
+                        walkthroughs' player), DocIcon
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
   pages/                index, work/technical-marketing, work/[slug] (the other case studies), 404,
                         robots.txt, site.webmanifest

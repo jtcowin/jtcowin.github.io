@@ -1,5 +1,5 @@
 {
-  "_readme": "Technical Product Marketing, Version 1.1: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website and 05 Technical documentation, then Contact. Copy is John's approved wording from the V1 concept and the V1.1 brief (October 12, 2026); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
+  "_readme": "Technical Product Marketing, Version 1.2: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation and 06 the flagship animation campaign, then Contact. Copy is John's approved wording from the V1 concept and the V1.1 and V1.2 briefs (October 12 and 13, 2026); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
   "hero": {
     "kicker": "02 / Technical Product Marketing",
     "headline": "Building the system behind the message.",
@@ -60,5 +60,28 @@
       { "start": 10.45, "title": "Architecture diagram", "note": "I developed the early diagram with engineering, validated it with the liquidity team, refined its structure, filtered out internal-only information, briefed design, and wrote every pop-up explanation. Final visual design and interactive implementation: Bob van der Meer." },
       { "start": 22.95, "title": "Developer SDK", "note": "The existing SDK code was preserved while the surrounding structure, explanations, cross-references, navigation, and presentation were rebuilt." }
     ]
+  },
+  "campaign": {
+    "_title": "The chapter's headline, in place of a name: 06 Flagship animation campaign.",
+    "title": "One minute to make the product clear.",
+    "meta": [
+      { "label": "Goal", "value": ["Create a flagship product explanation that could anchor the brand’s X profile, build awareness across the target ecosystem, and direct interest toward the website and technical documentation."] },
+      { "label": "Services", "value": ["Campaign concept, narrative strategy, storyboarding, voiceover direction, creative direction, and distribution strategy."] },
+      { "label": "Credits", "value": ["Animation and visual production: **Bob van der Meer**."] }
+    ],
+    "_contribution": "Centered beneath the metadata. Bob's name is in the credits and is not repeated here.",
+    "contribution": "I conceived the campaign, mapped the one-minute narrative from first frame to final CTA, built the storyboard, and recorded reference voiceover tracks that guided the finished AI-generated narration. I worked closely with design through each revision, then coordinated amplification across partners, ecosystem accounts, and creators.",
+    "media": "tm-bolt-60-film",
+    "_results": "The launch post's first 48 hours. The 84 percent is a share of impressions (reach beyond the followers), never of engagements. **Text** is set in bold; spoken is what a screen reader says in place of a value with a symbol it would read aloud.",
+    "results": {
+      "label": "First 48 hours after launch",
+      "primary": [
+        { "value": "~14%", "spoken": "About 14%", "label": "engagement rate" },
+        { "value": "84%", "label": "of impressions from non-followers" },
+        { "value": "+140%", "label": "website traffic" },
+        { "value": "+153%", "label": "technical-documentation traffic" }
+      ],
+      "supporting": ["More than **16x typical post reach**", "Amplified by **Sui Developer** and **Sui Community Official**"]
+    }
   }
 }

@@ -9,8 +9,24 @@ import Capabilities from '@components/Capabilities.astro';
 import Contact from '@components/Contact.astro';
 import Intro from '@components/Intro.astro';
 import home from '@data/home.json';
+import { getImage } from 'astro:assets';
+import { getAsset, resolveImage } from '@lib/assets';
+import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import manropeLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
 
 const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+
+// The hero's two photographic layers (Hero.astro), preloaded with the same
+// widths and format its pictures request, so the opening sequence hands over
+// to a composition that is already on screen beneath it.
+const heroLayers = (
+  await Promise.all(
+    [home.hero.portrait, home.hero.foreground].map(async (id) => {
+      const src = resolveImage(getAsset(id));
+      return src ? getImage({ src, widths: [640, 960, 1280, 1536], format: 'avif' }) : null;
+    }),
+  )
+).filter((image) => image !== null);
 
 /**
  * Surfaces are handed out by position, not by section. The hero is surface 01
@@ -35,20 +51,44 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
 ---
 
 <BaseLayout path="/" ogAsset="og-home" footerSurface={S.contact}>
-  {/* The opening sequence: decided before the first paint (see Intro.astro),
-      once per browsing session, never for reduced motion. */}
+  {/* The opening sequence (see Intro.astro): decided before the first paint,
+      once per browsing session. A visit that began on another page of the
+      site, or a link to a section, goes straight to the page; reduced motion
+      gets the still version; a tab opened in the background waits until it
+      is shown. */}
   <script is:inline slot="head">
     (function () {
       try {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (window.sessionStorage.getItem('jc-intro')) return;
-        window.sessionStorage.setItem('jc-intro', '1');
-        document.documentElement.classList.add('intro', 'intro-hold');
+        var d = document.documentElement;
+        var s = window.sessionStorage;
+        if (s.getItem('jc-intro')) return;
+        s.setItem('jc-intro', '1');
+        if (window.location.hash) return;
+        var from = document.referrer;
+        if (from && new URL(from).origin === window.location.origin) return;
+        d.classList.add('intro', 'intro-hold');
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('intro-still');
+        if (document.visibilityState === 'hidden') {
+          d.classList.add('intro-wait');
+          document.addEventListener('visibilitychange', function wake() {
+            if (document.visibilityState !== 'visible') return;
+            d.classList.remove('intro-wait');
+            document.removeEventListener('visibilitychange', wake);
+          });
+        }
       } catch (e) {
         /* no session storage: no sequence, rather than one on every visit */
       }
     })();
   </script>
+  {/* The faces of the first screen and the hero photograph, fetched first. */}
+  <link rel="preload" as="font" type="font/woff2" href={archivoLatin} crossorigin slot="head" />
+  <link rel="preload" as="font" type="font/woff2" href={manropeLatin} crossorigin slot="head" />
+  {
+    heroLayers.map((image) => (
+      <link rel="preload" as="image" type="image/avif" imagesrcset={image.srcSet.attribute} imagesizes="100vw" fetchpriority="high" slot="head" />
+    ))
+  }
   <Intro />
   <Hero />
 

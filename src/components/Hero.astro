@@ -394,16 +394,75 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     }
   }
 
-  /* While the homepage opening sequence plays (Intro.astro), the hero's
-     entrance waits for its ground to clear, so the photograph settles and
-     the descriptor arrives as the sequence fades. */
-  :global(html.intro-hold) .hero__photo .hero__img,
-  :global(html.intro-hold) .hero__subject .hero__img {
-    animation-delay: 1150ms;
+  /* ---- the handoff from the opening sequence (Intro.astro) --------------------
+     The sequence clears at --intro-hero, set on the document. The hero is
+     already loaded beneath it; from that moment the composition rises
+     --intro-rise (14px) and settles, the photograph moving from slight
+     softness to full clarity with a 102 to 100 percent scale correction,
+     and the name and the information fade in with a minimal stagger, the
+     navigation between them (Header.astro). Every layer moves together, so
+     the subject stays registered with the frame behind him. The fills only
+     reach backwards, so once the handoff ends nothing holds the hero. With
+     reduced motion the sequence is a still crossfade and none of this runs. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.intro-hold) .hero__photo .hero__img,
+    :global(html.intro-hold) .hero__subject .hero__img {
+      animation: none;
+    }
+
+    :global(html.intro-hold) .hero__photo,
+    :global(html.intro-hold) .hero__subject {
+      animation: hero-reveal var(--intro-settle) var(--hero-handoff) var(--intro-hero) backwards;
+    }
+
+    :global(html.intro-hold) .hero__behind,
+    :global(html.intro-hold) .hero__veil,
+    :global(html.intro-hold) .hero__rule--front {
+      animation: hero-rise var(--intro-settle) var(--hero-handoff) var(--intro-hero) backwards;
+    }
+
+    :global(html.intro-hold) .hero__name {
+      animation: hero-fade 480ms var(--ease-out) calc(var(--intro-hero) + 60ms) backwards;
+    }
+
+    :global(html.intro-hold) .hero__info {
+      animation: hero-rise-fade 470ms var(--ease-out) calc(var(--intro-hero) + 180ms) backwards;
+    }
+
+    :global(html.intro-hold) .hero {
+      --hero-handoff: cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
   }
 
-  :global(html.intro-hold) .hero__info {
-    animation-delay: calc(1150ms + 620ms);
+  @keyframes hero-reveal {
+    from {
+      transform: translate3d(0, var(--intro-rise, 14px), 0) scale(1.02);
+      filter: blur(var(--intro-soft, 6px));
+    }
+    to {
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @keyframes hero-rise {
+    from {
+      transform: translate3d(0, var(--intro-rise, 14px), 0) scale(1.02);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes hero-rise-fade {
+    from {
+      opacity: 0;
+      transform: translate3d(0, var(--intro-rise, 14px), 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

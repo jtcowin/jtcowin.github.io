@@ -143,6 +143,8 @@ const chapters = docs.chapters.map((c, i) => ({ ...c, number: String(i + 1).padS
   .tpm-browser.is-pending {
     opacity: 0;
     transform: translate3d(0, 40px, 0);
+    /* Hidden at once, so it never fades out on its way to the entrance. */
+    transition: none;
   }
 
   .tpm-browser__bar {

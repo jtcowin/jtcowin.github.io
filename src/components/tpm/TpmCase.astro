@@ -1,10 +1,12 @@
 ---
 /**
- * The opening of a work chapter (Technical Product Marketing, V1.1: 04 Website
- * and 05 Technical documentation): the chapter's name, a sparse metadata row
- * (label over value, four across on wide screens, two on mid-size screens,
- * one on phones) and one short paragraph on John's contribution, then the
- * chapter's one dominant visual (the slot), which the chapter lays out itself.
+ * The opening of a work chapter (Technical Product Marketing, V1.1 and V1.2:
+ * 04 Website, 05 Technical documentation and 06 the flagship animation
+ * campaign): the chapter's name or headline, a sparse metadata row (label over
+ * value, all across on wide screens, two on mid-size screens, one on phones)
+ * and one short paragraph on John's contribution, then the chapter's one
+ * dominant visual (the slot), which the chapter lays out itself. The
+ * paragraph can be centered beneath the row (06).
  *
  * In the values, **text** sets a name in bold, as the brief does.
  */
@@ -15,11 +17,13 @@ interface Props {
   contribution: string;
   /** The metadata columns on wide screens, as a grid-template-columns value. */
   columns: string;
-  surface: 'light' | 'soft' | 'light-return';
+  surface: 'light' | 'soft' | 'light-return' | 'dark';
+  /** Where the contribution sits: at the start (default) or centered. */
+  align?: 'start' | 'center';
   class?: string;
 }
 
-const { id, title, meta, contribution, columns, surface, class: className } = Astro.props;
+const { id, title, meta, contribution, columns, surface, align = 'start', class: className } = Astro.props;
 const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong: i % 2 === 1 }));
 ---
 
@@ -40,7 +44,7 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
         ))
       }
     </dl>
-    <p class="tpm-case__contribution">{contribution}</p>
+    <p class:list={['tpm-case__contribution', align === 'center' && 'tpm-case__contribution--center']}>{contribution}</p>
   </div>
   <slot />
 </section>
@@ -101,6 +105,7 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
   .tpm-meta__value strong {
     font-weight: 700;
     color: var(--heading);
+    white-space: nowrap;
   }
 
   @media (min-width: 48rem) {
@@ -123,5 +128,11 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     line-height: 1.45;
     color: var(--ink);
     text-wrap: pretty;
+  }
+
+  .tpm-case__contribution--center {
+    justify-self: center;
+    text-align: center;
+    text-wrap: balance;
   }
 </style>

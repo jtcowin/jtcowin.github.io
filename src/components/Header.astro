@@ -492,4 +492,23 @@ const links = [
       transition: none;
     }
   }
+
+  /* The homepage opening sequence (Intro.astro): the navigation fades in as
+     the sequence hands over to the hero, between the hero's name and its
+     information (Hero.astro). The fill only reaches backwards, so nothing
+     holds the header afterwards. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.intro-hold) .site-header {
+      animation: header-in 480ms var(--ease-out) calc(var(--intro-hero) + 120ms) backwards;
+    }
+  }
+
+  @keyframes header-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 </style>

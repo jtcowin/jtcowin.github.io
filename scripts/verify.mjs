@@ -1073,6 +1073,86 @@ if (!(starts[2] - starts[1] >= starts[1] - starts[0] && starts[2] - starts[1] >=
 if (chapterItems.some((m) => !/<button\b[^>]*data-seek[^>]*\bhidden\b|<button\b[^>]*\bhidden\b[^>]*data-seek/.test(m[0]))) failures.push('[tpm] each chapter plays from its point with a button that its script reveals');
 if (!/Bob van der Meer/.test(chapterItems[1]?.[0] || '')) failures.push('[tpm] the diagram chapter credits Bob van der Meer for its final design and build');
 
+// ---- 06 the flagship animation campaign (V1.2): the headline, then Goal,
+// Services and Credits, the contribution centered beneath them (Bob's name
+// only in the credits), then the complete film, with its sound, in a large,
+// nearly full-width 16:9 frame and no device, and the launch results. The
+// film plays silently once in view; "Play with sound" restarts it from 00:00
+// with sound, then standard controls take its place; it never loops, and its
+// native controls serve readers without scripts. No caption track: every
+// spoken line is also on screen (see the manifest's source note).
+const campHtml = caseHtml('tpm-campaign');
+const CAMP = tpmData.campaign || {};
+const campAt = tpmPage.indexOf('class="tpm-case tpm-campaign"');
+if (!campHtml) failures.push('[tpm] 06 the flagship animation campaign must follow the documentation');
+else {
+  if (!(tpmPage.indexOf('class="tpm-case tpm-docs"') < campAt && campAt < tpmPage.indexOf('id="contact"'))) failures.push('[tpm] 06 comes right after 05 Technical documentation, before what follows it');
+  if (!/data-surface="dark"/.test((campHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 06 plays on the dark ground');
+  if (tpmText(/<h2 id="tpm-campaign-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'One minute to make the product clear.') failures.push('[tpm] 06 headline: One minute to make the product clear.');
+  const campMeta = [
+    ['Goal', ["Create a flagship product explanation that could anchor the brand's X profile, build awareness across the target ecosystem, and direct interest toward the website and technical documentation."]],
+    ['Services', ['Campaign concept, narrative strategy, storyboarding, voiceover direction, creative direction, and distribution strategy.']],
+    ['Credits', ['Animation and visual production: Bob van der Meer.']],
+  ];
+  if (JSON.stringify(metaOf(campHtml)) !== JSON.stringify(campMeta) || JSON.stringify(expectMeta(CAMP.meta || [])) !== JSON.stringify(campMeta)) failures.push('[tpm] 06 metadata: Goal, Services and Credits, as approved');
+  if (!/<strong\b[^>]*>Bob van der Meer<\/strong>/.test(campHtml)) failures.push('[tpm] the 06 credits name Bob van der Meer in bold');
+  const campContribution = 'I conceived the campaign, mapped the one-minute narrative from first frame to final CTA, built the storyboard, and recorded reference voiceover tracks that guided the finished AI-generated narration. I worked closely with design through each revision, then coordinated amplification across partners, ecosystem accounts, and creators.';
+  const campP = (campHtml.match(/<p class="(tpm-case__contribution[^"]*)"[^>]*>([\s\S]*?)<\/p>/) || [, '', '']);
+  if (textOf(norm(campP[2])) !== campContribution || norm(CAMP.contribution) !== campContribution) failures.push('[tpm] 06 must carry the approved contribution statement');
+  if (/Bob/.test(campP[2])) failures.push("[tpm] 06 does not repeat Bob's name in the contribution");
+  if (!/\btpm-case__contribution--center\b/.test(campP[1]) || !tpmRules(/^\.tpm-case__contribution--center$/).some((r) => /text-align:\s*center/.test(r.body) && /justify-self:\s*center/.test(r.body))) failures.push('[tpm] the 06 contribution is centered beneath the metadata');
+  // The frame: no device, nearly the full width, 16:9, all of it on screen.
+  if (/tpm-display|tpm-browser|bezel|phone|device/i.test(campHtml.replace(/<p\b[\s\S]*?<\/p>/g, ''))) failures.push('[tpm] 06 shows the film in a frame, with no device, browser or phone around it');
+  const filmW = tpmRules(/^\.tpm-film$/).map((r) => r.body).join(';');
+  if (!/width:\s*min\(100% - 2 \* var\(--film-edge\)/.test(filmW) || !/\*\s*16\s*\/\s*9/.test(filmW)) failures.push('[tpm] the film frame runs nearly the full width, held to the screen height at 16:9');
+  if (!tpmRules(/^\.tpm-film__screen$/).some((r) => /aspect-ratio:\s*16\s*\/\s*9/.test(r.body))) failures.push('[tpm] the film keeps its native 16:9');
+  const film = (campHtml.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
+  const filmTag = (film.match(/<video\b[^>]*>/) || [''])[0];
+  for (const attr of ['muted', 'playsinline', 'preload="none"', 'controls', 'aria-label="']) if (!filmTag.includes(attr)) failures.push(`[tpm] the film is missing ${attr}`);
+  if (/\b(?:loop|autoplay)\b|\bposter=/.test(filmTag)) failures.push('[tpm] the film plays once from its script: no loop, autoplay or poster attribute');
+  if (/<track\b/.test(campHtml) || /transcript/i.test(spaced(campHtml))) failures.push('[tpm] the film carries no captions or transcript on screen (every spoken line is also on screen)');
+  const filmSources = [...film.matchAll(/<source\b[^>]*>/g)].map((m) => m[0]);
+  if (filmSources.length !== 2 || !filmSources[0].includes('bolt-in-60-seconds-film-720.mp4') || !/media="\(max-width: 47\.99rem\)"/.test(filmSources[0]) || !filmSources[1].includes('bolt-in-60-seconds-film.mp4') || /\bmedia=/.test(filmSources[1])) failures.push('[tpm] the film lists the phone encode, then the wide-screen one');
+  if (/bolt-in-60-seconds\.mp4|bolt-in-60-seconds-hero-loop|Hero animation/.test(film)) failures.push('[tpm] the film is the optimized full cut, not the master or the shortened loop');
+  if (!/<img\b[^>]*class="tpm-film__poster"[^>]*loading="lazy"|<img\b[^>]*loading="lazy"[^>]*class="tpm-film__poster"/.test(campHtml)) failures.push('[tpm] the film sits on its lazy, responsive poster');
+  posterAt('bolt-in-60-seconds-film-poster.png', 1920, 1080, 'the film poster (hero-thumbnail.png)');
+  const soundBtn = (campHtml.match(/<button\b[^>]*\bdata-film-sound\b[^>]*>[\s\S]*?<\/button>/) || [''])[0];
+  if (!soundBtn || !/\bhidden\b/.test((soundBtn.match(/<button\b[^>]*>/) || [''])[0]) || textOf(soundBtn) !== 'Play with sound' || !/<svg\b[\s\S]*?<path d="M2\.5 6\.25h2\.1L8 3\.25v9\.5L4\.6 9\.75H2\.5zM10\.4/.test(soundBtn)) failures.push('[tpm] the film carries a Play with sound button with a speaker icon and its text label, revealed by its script');
+  const controlsHtml = (campHtml.match(/<div class="tpm-film__controls"[\s\S]*?<\/div>/) || [''])[0];
+  if (!/\bhidden\b/.test((controlsHtml.match(/<div\b[^>]*>/) || [''])[0]) || [...controlsHtml.matchAll(/<button\b[\s\S]*?<\/button>/g)].map((m) => textOf(m[0])).join(' | ') !== 'Mute | Pause | Replay') failures.push('[tpm] once there is sound, the film has standard controls: mute or unmute, pause, replay');
+  if (!tpmRules(/^\.tpm-film__sound$/).some((r) => /background:\s*#f2f1ec/.test(r.body) && /color:\s*var\(--c-ink\)/.test(r.body) && /min-height:\s*2\.75rem/.test(r.body))) failures.push('[tpm] Play with sound is prominent and high-contrast, a full touch target');
+  // The files: the complete film with its mix, under a name that is not the master's.
+  const filmFile = (name, w, h, mb) => {
+    const file = path.join(root, 'public/media', name);
+    if (!fs.existsSync(file)) return failures.push(`[tpm] public/media/${name} not found`);
+    const f = mp4Facts(file);
+    const sec = mp4Seconds(file);
+    const size = fs.statSync(file).size / 1e6;
+    if (!(sec >= 59.9 && sec <= 60.1)) failures.push(`[tpm] ${name} runs ${sec.toFixed(2)} s; the complete one-minute film`);
+    if (!f.handlers.includes('soun')) failures.push(`[tpm] ${name} must keep the film's music, voiceover and sound effects`);
+    if (!f.avc) failures.push(`[tpm] ${name} must be H.264`);
+    if (!(f.top.indexOf('moov') >= 0 && f.top.indexOf('moov') < f.top.indexOf('mdat'))) failures.push(`[tpm] ${name} must keep its index before its data (faststart)`);
+    if (f.width !== w || f.height !== h) failures.push(`[tpm] ${name} is ${f.width}x${f.height}; expected ${w}x${h}`);
+    if (size > mb) failures.push(`[tpm] ${name} is ${size.toFixed(2)} MB; it stays under ${mb} MB`);
+    if (fs.readFileSync(file).includes('Adobe Premiere')) failures.push(`[tpm] ${name} still carries the editing application's metadata`);
+  };
+  filmFile('bolt-in-60-seconds-film.mp4', 1920, 1080, 17);
+  filmFile('bolt-in-60-seconds-film-720.mp4', 1280, 720, 7);
+  // The results: the first 48 hours, four figures and two supporting lines.
+  const res = (campHtml.match(/<div class="container tpm-results[\s\S]*$/) || [''])[0];
+  if (textOf((res.match(/<h3\b[^>]*class="tpm-results__label"[^>]*>([\s\S]*?)<\/h3>/) || [, ''])[1]) !== 'First 48 hours after launch') failures.push('[tpm] the results are labeled First 48 hours after launch');
+  const resItems = [...res.matchAll(/<li class="tpm-results__item"[^>]*>([\s\S]*?)<\/li>/g)].map((m) => {
+    const v = (m[1].match(/<span class="tpm-results__value"[^>]*>([\s\S]*?)<\/span>\s*<span class="tpm-results__what/) || [, ''])[1];
+    const seen = textOf((v.match(/<span aria-hidden="true"[^>]*>([\s\S]*?)<\/span>/) || [, v])[1]);
+    const heard = textOf((v.match(/<span class="sr-only"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]);
+    return [seen, heard, textOf((m[1].match(/<span class="tpm-results__what"[^>]*>([\s\S]*?)<\/span>\s*$/) || [, ''])[1])];
+  });
+  const resWant = [['~14%', 'About 14%', 'engagement rate'], ['84%', '', 'of impressions from non-followers'], ['+140%', '', 'website traffic'], ['+153%', '', 'technical-documentation traffic']];
+  if (JSON.stringify(resItems) !== JSON.stringify(resWant)) failures.push(`[tpm] the four results, as approved (found ${JSON.stringify(resItems)})`);
+  const support = [...res.matchAll(/<ul class="tpm-results__supporting[^"]*"[^>]*>([\s\S]*?)<\/ul>/g)].flatMap((m) => [...m[1].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((l) => [textOf(l[1]), [...l[1].matchAll(/<strong\b[^>]*>([\s\S]*?)<\/strong>/g)].map((b) => textOf(b[1]))]));
+  if (JSON.stringify(support) !== JSON.stringify([['More than 16x typical post reach', ['16x typical post reach']], ['Amplified by Sui Developer and Sui Community Official', ['Sui Developer', 'Sui Community Official']]])) failures.push('[tpm] the supporting results: More than 16x typical post reach; Amplified by Sui Developer and Sui Community Official');
+  if (/84\s*%[^.<]*engagement|of engagements/i.test(spaced(campHtml))) failures.push('[tpm] the 84% is a share of impressions, never of engagements');
+}
 // ---- the choreography is an enhancement: every sticky stage and every
 // scroll height needs the script's is-live class, a 60rem minimum width, a
 // minimum height and prefers-reduced-motion: no-preference.
@@ -1101,6 +1181,8 @@ const pageScripts = (html) => {
   return out.join('\n');
 };
 const tpmScripts = pageScripts(tpmPage);
+// The film's controls (06): sound on request, mute or unmute, a silent replay.
+for (const token of ['Unmute', 'volumechange', 'Replay video without sound']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the film's script is missing ${token}`);
 if (!/addEventListener\(\s*[`"']ended[`"']/.test(tpmScripts)) failures.push('[tpm] the walkthroughs hold their last frame when they end');
 for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'requestVideoFrameCallback', 'visibilitychange', 'IntersectionObserver', 'is-live', 'NotAllowedError', 'ended', 'Replay']) {
   if (!tpmScripts.includes(token)) failures.push(`[tpm] the page's motion script is missing ${token}`);
@@ -1124,29 +1206,99 @@ for (const f of htmlFiles) {
 }
 if (!rulesFor(/\.brand--home\b/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[home] HOME is set in capitals through CSS');
 
-// The opening sequence (TPM V1, global): homepage only, three beats, about
-// 1.2 to 1.8 seconds, once per browsing session, never for reduced motion,
-// decided before the first paint, dismissed by any intent, hidden from
-// assistive technology, and never holding anything back from loading.
+// The opening sequence (TPM V1.2, global): homepage only, exactly three
+// phrases ending on "Strategy into execution.", set as the faces of one
+// restrained vertical cylinder, centered, smaller and lighter than the display
+// headlines and one line long; turns of 400 to 550 ms, reading holds of 550 to
+// 700 ms, the last a little longer, about 3.2 to 3.8 seconds in all with the
+// handoff into the hero (which rises 12 to 16 px from slight softness, with a
+// 102 to 100 percent correction, as its name and the navigation fade in, in
+// that order); once per browsing session, decided before the first paint,
+// never for a visit that began inside the site or a link to a section, a
+// still crossfade for reduced motion, dismissed by any intent, hidden from
+// assistive technology, the hero photograph and the faces preloaded.
 const introHtml = (home.match(/<div class="intro"[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
-const beats = [...introHtml.matchAll(/<p class="intro__beat[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
-if (beats.join(' | ') !== 'Product complexity. | Market clarity. | Welcome.') failures.push(`[intro] the opening sequence must be Product complexity. / Market clarity. / Welcome. (found ${beats.join(' / ') || 'none'})`);
+const faces = [...introHtml.matchAll(/<p class="intro__face[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
+if (faces.join(' | ') !== 'Product complexity. | Market clarity. | Strategy into execution.') failures.push(`[intro] the opening sequence must be Product complexity. / Market clarity. / Strategy into execution. (found ${faces.join(' / ') || 'none'})`);
+if (/Welcome\./.test(introHtml) || /intro__beat/.test(home)) failures.push('[intro] Welcome. is gone from the opening sequence');
 if (!/<div class="intro"[^>]*aria-hidden="true"/.test(home)) failures.push('[intro] the opening sequence is decorative: aria-hidden');
 const headHome = (home.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
 const introHead = [...headHome.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('jc-intro')) || '';
-for (const token of ['prefers-reduced-motion: reduce', 'sessionStorage', 'jc-intro', "classList.add('intro'"]) if (!introHead.includes(token)) failures.push(`[intro] the head decision is missing "${token}"`);
-const introRules = rulesFor(/\.intro\b/);
-// The shorthand may come out in any order (minified: "1.6s linear both intro-out").
-const introMs = introRules
-  .map((r) => (r.body.match(/animation:\s*([^;]*)/) || [])[1])
-  .filter((v) => v && /\bintro-out\b/.test(v))
-  .map((v) => {
-    const m = v.match(/(?:^|\s)([\d.]+)(ms|s)\b/);
-    return m ? Number(m[1]) * (m[2] === 's' ? 1000 : 1) : NaN;
-  });
-if (!introMs.length || introMs.some((ms) => ms < 1200 || ms > 1800)) failures.push(`[intro] the sequence runs about 1.2 to 1.8 seconds (found ${introMs.join(', ') || 'none'} ms)`);
+for (const token of ['prefers-reduced-motion: reduce', 'sessionStorage', 'jc-intro', "classList.add('intro', 'intro-hold')", 'intro-still', 'document.referrer', 'location.hash', 'visibilityState', 'intro-wait']) if (!introHead.includes(token)) failures.push(`[intro] the head decision is missing "${token}"`);
+// The session flag is set before any reason to skip, so it never plays later in a visit that began elsewhere on the site.
+if (introHead.indexOf("setItem('jc-intro'") < 0 || introHead.indexOf("setItem('jc-intro'") > introHead.indexOf('location.hash')) failures.push('[intro] the session flag is set before the sequence decides to skip');
+const ms = (v) => {
+  const m = String(v).trim().match(/^(-?[\d.]+)(ms|s)$/);
+  return m ? Number(m[1]) * (m[2] === 's' ? 1000 : 1) : NaN;
+};
+const varsOf = (body) => Object.fromEntries([...body.matchAll(/--intro-([a-z0-9]+):\s*([^;]+)/g)].map((m) => [m[1], m[2].trim()]));
+const holdRules = rulesFor(/^html\.intro-hold$/);
+const PHONE = /max-width:\s*47\.99rem|width\s*<\s*48rem|width\s*<=\s*47\.99rem/;
+const baseVars = varsOf(holdRules.filter((r) => !r.at).map((r) => r.body).join(';'));
+const phoneVars = { ...baseVars, ...varsOf(holdRules.filter((r) => PHONE.test(r.at)).map((r) => r.body).join(';')) };
+const hero = (name) => rulesFor(new RegExp(`^html\\.intro-hold \\.${name}\\b`)).filter((r) => MOTION_OK.test(r.at));
+const handoff = (re) => {
+  const rule = CSS_RULES.find((r) => MOTION_OK.test(r.at) && re.test(r.sel) && /animation:/.test(r.body));
+  const v = rule ? (rule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
+  const dur = ms((v.match(/(?:^|\s)(-?[\d.]+m?s)\b/) || [])[1] || '');
+  const off = ms((v.match(/calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1] || '0ms');
+  return { v, dur, off };
+};
+const nameIn = handoff(/^html\.intro-hold \.hero__name\b/);
+const navIn = handoff(/^html\.intro-hold \.site-header\b/);
+const infoIn = handoff(/^html\.intro-hold \.hero__info\b/);
+for (const [label, vars] of [['wide screens', baseVars], ['phones', phoneVars]]) {
+  const t = Object.fromEntries(['lead', 'in', 'read', 'turn', 'last', 'out', 'gap', 'clear', 'settle'].map((k) => [k, ms(vars[k])]));
+  if (Object.values(t).some((x) => Number.isNaN(x))) {
+    failures.push(`[intro] ${label}: every timing value must be set (${JSON.stringify(vars)})`);
+    continue;
+  }
+  if (t.read < 550 || t.read > 700) failures.push(`[intro] ${label}: each reading hold runs 550 to 700 ms (found ${t.read})`);
+  if (t.last <= t.read || t.last > 760) failures.push(`[intro] ${label}: the final hold is a little longer than the others (found ${t.last} after ${t.read})`);
+  for (const [k, v] of [['first turn', t.in], ['turn', t.turn]]) if (v < 400 || v > 550) failures.push(`[intro] ${label}: each ${k} runs 400 to 550 ms (found ${v})`);
+  const reveal = t.lead + t.in + 2 * (t.read + t.turn) + t.last + t.gap;
+  const total = reveal + Math.max(t.settle, nameIn.off + nameIn.dur, navIn.off + navIn.dur, infoIn.off + infoIn.dur);
+  if (!(total >= 3200 && total <= 3800)) failures.push(`[intro] ${label}: the whole sequence with the handoff runs about 3.2 to 3.8 seconds (found ${total} ms)`);
+  if (t.out >= t.gap + t.clear) failures.push(`[intro] ${label}: the last phrase dissolves before the ground has cleared`);
+  if (label === 'phones' && total > (() => {
+    const b = Object.fromEntries(['lead', 'in', 'read', 'turn', 'last', 'gap', 'settle'].map((k) => [k, ms(baseVars[k])]));
+    return b.lead + b.in + 2 * (b.read + b.turn) + b.last + b.gap + Math.max(b.settle, nameIn.off + nameIn.dur, navIn.off + navIn.dur, infoIn.off + infoIn.dur);
+  })()) failures.push('[intro] phones: the sequence is no longer than on wide screens');
+}
+const rise = Number((baseVars.rise || '').replace('px', ''));
+if (!(rise >= 12 && rise <= 16)) failures.push(`[intro] the hero rises 12 to 16 px (found ${baseVars.rise})`);
+if (!(nameIn.off < navIn.off && navIn.off < infoIn.off) || infoIn.off > 300) failures.push('[intro] the hero name, then the navigation, then its information fade in with a minimal stagger');
+for (const [k, re] of [['photo', /^html\.intro-hold \.hero__photo\b/], ['subject', /^html\.intro-hold \.hero__subject\b/]]) {
+  if (!CSS_RULES.some((r) => MOTION_OK.test(r.at) && r.sel.split(',').some((x) => re.test(x.trim())) && /hero-reveal/.test(r.body) && /var\(--intro-hero\)/.test(r.body))) failures.push(`[intro] the hero ${k} reveals with the handoff`);
+}
+const keyframes = (name) => (cssText.replace(/\/\*[\s\S]*?\*\//g, '').match(new RegExp(`@keyframes ${name}\\s*\\{((?:[^{}]*\\{[^{}]*\\})*)[^{}]*\\}`)) || [, ''])[1];
+const reveal = keyframes('hero-reveal');
+if (!/scale\(1\.02\)/.test(reveal) || !/blur\(/.test(reveal) || !/translate3d\(0,\s*var\(--intro-rise/.test(reveal)) failures.push('[intro] the hero reveal: a 14 px rise, a 102 percent correction and slight softness');
+// The turns: a rotation about a horizontal axis behind the screen, from and to only (no overshoot), on curves that never leave 0 to 1.
+for (const name of ['intro-turn-in', 'intro-turn-out', 'intro-turn-away']) {
+  const k = keyframes(name);
+  const stops = [...k.matchAll(/(^|\})\s*([^{}]+)\{/g)].map((m) => m[2].trim());
+  if (!/rotateX\(/.test(k) || stops.some((x) => !/^(from|to|0%|100%)$/.test(x))) failures.push(`[intro] ${name} turns about a horizontal axis, from and to only (found ${stops.join(', ') || 'none'})`);
+}
+const drum = rulesFor(/^\.intro__drum\b/).map((r) => r.body).join(';');
+const easings = [...(rulesFor(/^html\.intro \.intro__drum\b/).map((r) => r.body).join(';') + drum).matchAll(/cubic-bezier\(([^)]*)\)/g)].map((m) => m[1].split(',').map(Number));
+if (!easings.length || easings.some(([, y1, , y2]) => y1 < 0 || y1 > 1 || y2 < 0 || y2 > 1)) failures.push('[intro] the turns ease without bounce or overshoot');
+if (!/perspective:/.test(drum) || !/transform-origin:\s*50% 50% calc\(-1 \* var\(--intro-r\)\)/.test(rulesFor(/^\.intro__face\b/).map((r) => r.body).join(';'))) failures.push('[intro] the phrases are faces of one drum: a perspective and an axis behind the screen');
+const weight = Number((drum.match(/font-weight:\s*(\d+)/) || [])[1]);
+if (!(weight < 700) || !/font-family:\s*var\(--font-display\)/.test(drum)) failures.push(`[intro] the phrases use the portfolio's display face, lighter than its headlines (found ${weight})`);
+const maxRem = Number((drum.match(/clamp\([^,]+,[^,]+,\s*([\d.]+)rem\)/) || [])[1]);
+const lineEm = Number((drum.match(/\(100vw - 2 \* var\(--gutter\)\)\s*\/\s*([\d.]+)/) || [])[1]);
+if (!(maxRem <= 3.5) || !(lineEm >= 10.6)) failures.push(`[intro] the phrases are smaller than before and Strategy into execution. keeps to one line (max ${maxRem}rem, line bound ${lineEm}em)`);
+if (!/place-items:\s*center/.test(drum) || !/white-space:\s*nowrap/.test(rulesFor(/^\.intro__face\b/).map((r) => r.body).join(';'))) failures.push('[intro] every phrase is centered, on one line, at one center');
+if (!rulesFor(/^html\.intro-still \.intro__face--3\b/).some((r) => /opacity:\s*1/.test(r.body)) || !CSS_RULES.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /^html\.intro-still/.test(r.sel) && /animation-delay:/.test(r.body))) failures.push('[intro] reduced motion: the final phrase, still, then a timed crossfade');
 const introScript = scriptsText.find((t) => t.includes('intro-skip')) || '';
 for (const token of ['wheel', 'touchstart', 'pointerdown', 'keydown', 'scroll']) if (!introScript.includes(token)) failures.push(`[intro] the sequence must end on "${token}"`);
+// Preloaded: the hero photograph's two layers, exactly as its pictures request them, and the two faces of the first screen.
+const heroAvif = [...home.matchAll(/<source[^>]*srcset="([^"]*)"[^>]*type="image\/avif"/g)].map((m) => m[1]);
+const preImages = [...headHome.matchAll(/<link rel="preload" as="image" type="image\/avif" imagesrcset="([^"]*)" imagesizes="100vw"/g)].map((m) => m[1]);
+if (preImages.length !== 2 || preImages.some((x) => !heroAvif.includes(x)) || !preImages.some((x) => /portrait/.test(x)) || !preImages.some((x) => /foreground/.test(x))) failures.push('[intro] the hero photograph (both layers) is preloaded as its pictures request it');
+const preFonts = [...headHome.matchAll(/<link rel="preload" as="font" type="font\/woff2" href="([^"]+)" crossorigin/g)].map((m) => m[1]);
+if (preFonts.length !== 2 || preFonts.some((x) => !fs.existsSync(path.join(dist, x.replace(BASE, ''))) || !cssText.includes(path.basename(x)))) failures.push('[intro] the two faces of the first screen are preloaded, as the stylesheet requests them');
 for (const f of htmlFiles) {
   if (path.relative(dist, f) === 'index.html') continue;
   const html = fs.readFileSync(f, 'utf8');

@@ -24,6 +24,11 @@
  * leaves the viewport and resumed when it returns; holding its last frame
  * once it ends. Its one control pauses, plays and, at the end, replays. The
  * same preferences and failures leave the poster, as for the loops.
+ *
+ * Films (Version 1.2). A film with sound that plays the same way, silently at
+ * first; a "Play with sound" button stays on it until the reader takes it up,
+ * then starts it again from the beginning with sound, and standard controls
+ * (mute or unmute, pause or play, replay) take its place.
  */
 
 export const LIVE_QUERY = '(min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference)';
@@ -449,5 +454,266 @@ export class Walkthrough {
       toggle.setAttribute('aria-label', `${verb} video: ${this.label}`);
     }
     if (this.video) this.emit();
+  }
+}
+
+// ---- Films ------------------------------------------------------------------
+
+export interface FilmOptions {
+  /** Share of the frame that must be on screen for it to count as in view. */
+  threshold?: number;
+}
+
+/** Silent until the reader asks for sound; from then on, with sound. */
+type FilmMode = 'muted' | 'sound';
+export type FilmState = 'idle' | 'playing' | 'paused' | 'ended';
+
+/**
+ * The flagship film (06). It plays once, silently, from its poster when its
+ * frame is well inside the viewport (never for reduced motion, a data-saving
+ * preference or a browser that refuses), pauses whenever the frame leaves the
+ * viewport and resumes when it returns, and holds its last frame at the end;
+ * it never loops. While it is silent, "Play with sound" stays on it, with a
+ * small pause, play or replay beside it; taking it up starts the film again
+ * from 00:00 with sound, and the standard controls replace it: mute or unmute,
+ * pause or play, and replay, the last alone once the film has ended. The
+ * native controls in the markup serve readers without JavaScript and are
+ * removed here.
+ */
+export class Film {
+  readonly root: HTMLElement;
+  readonly video: HTMLVideoElement;
+  private mode: FilmMode = 'muted';
+  /** Paused by the reader: stays paused until they play it again. */
+  private held = false;
+  /** Started by the reader: with sound, with a play, or with a replay. */
+  private asked = false;
+  /** The browser refused to start it on its own. */
+  private blocked = false;
+  private failed = false;
+  private started = false;
+  /** Played to the end: it holds its last frame and waits for a replay. */
+  private ended = false;
+  private inView = false;
+  private label: string;
+  private sound: HTMLButtonElement | null;
+  private quiet: HTMLButtonElement | null;
+  private controls: HTMLElement | null;
+  private mute: HTMLButtonElement | null;
+  private toggle: HTMLButtonElement | null;
+  private replay: HTMLButtonElement | null;
+
+  constructor(root: HTMLElement, options: FilmOptions = {}) {
+    this.root = root;
+    this.video = root.querySelector('video') as HTMLVideoElement;
+    const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
+    this.sound = q<HTMLButtonElement>('[data-film-sound]');
+    this.quiet = q<HTMLButtonElement>('[data-film-quiet]');
+    this.controls = q<HTMLElement>('[data-film-controls]');
+    this.mute = q<HTMLButtonElement>('[data-film-mute]');
+    this.toggle = q<HTMLButtonElement>('[data-film-play]');
+    this.replay = q<HTMLButtonElement>('[data-film-replay]');
+    this.label = root.dataset.label ?? 'film';
+    const { video } = this;
+    if (!video) return;
+
+    // The custom controls replace the native ones from here on.
+    video.removeAttribute('controls');
+    video.muted = true;
+
+    this.sound?.addEventListener('click', () => this.withSound());
+    this.quiet?.addEventListener('click', () => {
+      if (this.ended) this.restart();
+      else if (video.paused) this.resume();
+      else this.hold();
+    });
+    this.toggle?.addEventListener('click', () => (video.paused ? this.resume() : this.hold()));
+    this.mute?.addEventListener('click', () => {
+      video.muted = !video.muted;
+      this.render();
+    });
+    this.replay?.addEventListener('click', () => this.restart());
+
+    for (const type of ['play', 'pause', 'volumechange'] as const) video.addEventListener(type, () => this.render());
+    video.addEventListener('playing', () => {
+      this.started = true;
+      this.reveal();
+      this.render();
+    });
+    video.addEventListener('ended', () => {
+      // The last frame stays on screen; nothing restarts it but a replay.
+      this.ended = true;
+      this.render();
+    });
+    const fail = () => {
+      this.failed = true;
+      video.removeAttribute('data-shown');
+      root.setAttribute('data-failed', '');
+      this.render();
+    };
+    video.addEventListener('error', fail);
+    video.querySelector('source:last-of-type')?.addEventListener('error', fail);
+
+    const threshold = options.threshold ?? 0.5;
+    if ('IntersectionObserver' in window) {
+      // In view once most of the frame is on screen; out of view only once
+      // little of it is left, so a small scroll does not stop and start it.
+      new IntersectionObserver(
+        ([entry]) => {
+          const r = entry.isIntersecting ? entry.intersectionRatio : 0;
+          if (r >= threshold - 0.001) this.inView = true;
+          else if (r < 0.2) this.inView = false;
+          this.sync();
+        },
+        { threshold: [0, 0.2, threshold] },
+      ).observe(root);
+      // Fetched as it comes within a screen of view, if it may start itself.
+      const near = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          near.disconnect();
+          if (this.autoplayAllowed() && video.preload === 'none') {
+            video.preload = 'auto';
+            video.load();
+          }
+        },
+        { rootMargin: '100% 0px 100% 0px' },
+      );
+      near.observe(root);
+    } else {
+      this.inView = true;
+    }
+
+    document.addEventListener('visibilitychange', () => this.sync());
+    reduceMq.addEventListener?.('change', () => {
+      if (reduceMq.matches && !this.asked) video.pause();
+      this.sync();
+    });
+    this.render();
+  }
+
+  autoplayAllowed() {
+    return !reduceMq.matches && !saving();
+  }
+
+  /** From 00:00, with sound: the reader's gesture allows it. */
+  private withSound() {
+    const { video } = this;
+    if (this.failed) return;
+    const focused = document.activeElement === this.sound;
+    this.mode = 'sound';
+    video.muted = false;
+    video.volume = 1;
+    this.restart();
+    this.render();
+    // The button is gone; a keyboard reader's place moves to the pause control.
+    if (focused) this.toggle?.focus({ preventScroll: true });
+  }
+
+  private restart() {
+    const { video } = this;
+    if (this.failed) return;
+    this.ended = false;
+    try {
+      video.currentTime = 0;
+    } catch {
+      /* not seekable yet: it starts from the beginning anyway */
+    }
+    this.resume();
+  }
+
+  private resume() {
+    this.held = false;
+    this.asked = true;
+    this.blocked = false;
+    // The reader is looking at it, whatever share of it is on screen.
+    this.inView = true;
+    this.play();
+  }
+
+  private hold() {
+    this.held = true;
+    this.video.pause();
+  }
+
+  private sync() {
+    const { video } = this;
+    if (!video || this.failed || this.ended) return;
+    const go =
+      !document.hidden && this.inView && !this.held && (this.asked || (this.autoplayAllowed() && !this.blocked));
+    if (go && video.paused) this.play();
+    else if (!go && !video.paused) video.pause();
+  }
+
+  private play() {
+    const { video } = this;
+    if (this.failed) return;
+    if (video.preload !== 'auto') video.preload = 'auto';
+    const p = video.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+          // Refused on its own: the poster and the button stay. Refused with
+          // sound on a return to view: it waits, paused, for the reader.
+          if (this.asked) this.held = true;
+          else this.blocked = true;
+        }
+        this.render();
+      });
+    }
+  }
+
+  private reveal() {
+    const { video } = this;
+    if (video.hasAttribute('data-shown')) return;
+    const show = () => {
+      if (!this.failed) video.setAttribute('data-shown', '');
+    };
+    const onFrame = (video as HTMLVideoElement & { requestVideoFrameCallback?: (callback: () => void) => number })
+      .requestVideoFrameCallback;
+    if (typeof onFrame === 'function') onFrame.call(video, show);
+    else show();
+  }
+
+  private current(): FilmState {
+    if (this.ended) return 'ended';
+    if (!this.video.paused) return 'playing';
+    return this.started ? 'paused' : 'idle';
+  }
+
+  private render() {
+    const state = this.current();
+    const { root, video, mode, failed } = this;
+    root.dataset.mode = mode;
+    root.dataset.state = state;
+    const show = (el: HTMLElement | null, on: boolean) => {
+      if (el && el.hidden === on) el.hidden = !on;
+    };
+    // Silent: the call to play with sound, and a small pause, play or replay
+    // once the film has started.
+    show(this.sound, !failed && mode === 'muted');
+    show(this.quiet, !failed && mode === 'muted' && state !== 'idle');
+    if (this.quiet) {
+      this.quiet.dataset.state = state;
+      const verb = state === 'playing' ? 'Pause video' : state === 'ended' ? 'Replay video without sound' : 'Play video without sound';
+      this.quiet.setAttribute('aria-label', `${verb}: ${this.label}`);
+    }
+    // With sound: the standard controls, and only the replay once it has ended.
+    show(this.controls, !failed && mode === 'sound');
+    const ended = state === 'ended';
+    const focused = document.activeElement;
+    show(this.mute, !ended);
+    show(this.toggle, !ended);
+    if (ended && (focused === this.mute || focused === this.toggle)) this.replay?.focus({ preventScroll: true });
+    if (this.mute) {
+      this.mute.dataset.muted = String(video.muted);
+      const text = this.mute.querySelector('[data-text]');
+      if (text) text.textContent = video.muted ? 'Unmute' : 'Mute';
+    }
+    if (this.toggle) {
+      this.toggle.dataset.state = state;
+      const text = this.toggle.querySelector('[data-text]');
+      if (text) text.textContent = state === 'playing' ? 'Pause' : 'Play';
+    }
   }
 }

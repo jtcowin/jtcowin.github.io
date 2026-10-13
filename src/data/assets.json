@@ -184,6 +184,24 @@
       "variant": "dark"
     },
     {
+      "id": "tm-bolt-60-film",
+      "page": "work/technical-marketing",
+      "section": "campaign",
+      "type": "video",
+      "aspect": "16:9",
+      "label": "Bolt in 60 Seconds",
+      "filename": "bolt-in-60-seconds-film.mp4",
+      "file": "bolt-in-60-seconds-film.mp4",
+      "fileSmall": "bolt-in-60-seconds-film-720.mp4",
+      "poster": "technical-marketing/bolt-in-60-seconds-film-poster.png",
+      "plate": "#0f1213",
+      "alt": "Bolt in 60 Seconds, the one-minute animated explanation of Bolt Liquidity, with music, voiceover and sound effects.",
+      "source": "bolt-in-60-seconds.mp4 from the Portfolio folder (60.0 s, 1920x1080 at 23.976 fps, H.264 with AAC stereo audio, 16.4 MB), the approved optimized film; it stays outside the repository under its own name. The full film, uncut: no trim, no re-grade and no change to the music, voiceover and sound-effects mix. Wide screens get a lossless remux of it (the same video and audio streams, bit for bit, with the editing application's metadata removed and the index moved to the front so playback starts while it downloads); phones (fileSmall) get a 1280x720 H.264 encode of the same picture with the audio stream copied unchanged. Poster: hero-thumbnail.png from the Portfolio folder, the film's own thumbnail. Narration check (V1.2): every spoken line appears on screen as type or as a labeled diagram (the price, contract and settlement steps, and trades 1 to 3 drawing on one pool), so no caption track ships; see the README.",
+      "permission": "approved",
+      "credit": "Animation and visual production: Bob van der Meer.",
+      "variant": "dark"
+    },
+    {
       "id": "tm-website-walkthrough",
       "page": "work/technical-marketing",
       "section": "website",
