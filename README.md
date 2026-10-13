@@ -17,8 +17,8 @@ Technical Product Marketing replaces the case study's page with its own, now at 
 through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation,
 06 the flagship animation campaign, 07 Selected Writing and 08 the conclusion (see [Technical Product
 Marketing, Version 1.3](#technical-product-marketing-version-13)). The hero is a split: the copy on the
-left and, on the right, an abstract narrative-system object whose planes lift apart as the pointer
-moves and settle when it rests; the Foundation's dark surface then rises over it. The foundation opens
+left and, on the right, an abstract narrative-system object whose planes lift slightly apart as the
+pointer moves and settle when it rests; the Foundation's dark surface then rises over it. The foundation opens
 centered, then from a compact stack into a library of twelve named documents, each with its own accent
 and icon, moving right to left; one statement follows, revealed word by word, its key clause then
 highlighted; then the website plays in an oversized desktop display and the documentation in a large
@@ -692,9 +692,10 @@ section follows it, revised in place with it.
 - **The narrative-system object** (`TpmHero.astro`): one teal foundation slab with five light planes
   stacked on it, each a little smaller than the one below and marked with abstract content (lines, a
   block, a ring), the top one in the accent; no words, labels or literal diagram. At rest the planes sit
-  together on the slab; as a fine pointer moves they lift apart into an exploded stack, joined to the
-  layer beneath by dashed posts with small teal nodes, and lean a little toward the pointer (the higher
-  planes further); when the pointer rests they settle back. Bone, slate and teal with one restrained
+  together on the slab; as a fine pointer moves they lift slightly apart into an exploded stack (each
+  gap opening by up to about 19 units of the drawing's 504, the first plane rising about 13 off the
+  slab), joined to the layer beneath by dashed posts with small teal nodes, and lean a little toward the
+  pointer (the higher planes further); when the pointer rests they settle back, aligned. Bone, slate and teal with one restrained
   aqua plane. SVG moved with transforms, no WebGL or canvas; its loop runs only while the planes are
   moving, and stops once they settle, outside the viewport, in a hidden tab and once the Foundation has
   begun to cover the hero. On arrival the planes open slightly and settle together; touch screens get

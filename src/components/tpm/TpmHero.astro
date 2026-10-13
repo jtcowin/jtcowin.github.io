@@ -6,9 +6,9 @@
  * one abstract "narrative system" object: a single foundation slab with five
  * light planes stacked on it, each a little smaller than the one below and
  * marked with abstract content, the top one in the accent. At rest they sit
- * together on the foundation; as the pointer moves they lift apart into an
- * exploded stack, joined by posts and nodes to the layer beneath, and lean
- * toward the pointer; as it rests they settle back, aligned. One foundation, many
+ * together on the foundation; as the pointer moves they lift slightly apart
+ * into an exploded stack, joined by posts and nodes to the layer beneath, and
+ * lean toward the pointer; as it rests they settle back, aligned. One foundation, many
  * public-facing expressions, nothing labeled. The headline never changes: no
  * rotating or replaced words.
  *
@@ -51,14 +51,14 @@ const slab = {
 };
 
 // Five expressions stacked on it, each smaller than the one below, the top
-// one in the accent. At rest they sit 4 units apart; open, each gap grows by
-// up to 34 and the first lifts 22 off the foundation (the script moves them;
-// the numbers it needs ride on data attributes). k is how far each leans
-// toward the pointer.
+// one in the accent. At rest they sit 4 units apart; open (only slightly, as
+// the brief asks), each gap grows by up to 24 and the first lifts 16 off the
+// foundation, at most 0.8 of that (the script moves them; the numbers it needs
+// ride on data attributes). k is how far each leans toward the pointer.
 const PT = 5;
 const REST_GAP = 4;
-const LIFT = 22;
-const OPEN_GAP = 34;
+const LIFT = 16;
+const OPEN_GAP = 24;
 const SIZES = [204, 172, 140, 110, 82];
 const TONES = ['a', 'b', 'a', 'b', 'accent'];
 const MARKS = ['lines', 'block', 'ring', 'pair', ''];
