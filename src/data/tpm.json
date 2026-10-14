@@ -12,7 +12,7 @@
     "_system": "The hero's isometric system (V1.6, replacing the V1.5 Narrative Engine and its signal field): research and inputs on the left, the shared product language at the center as an architectural foundation, the public-facing expressions on the right. Its geometry is src/lib/tpm-iso.ts. `labels` are the few words shown only while the system is engaged (pointer over it, a tap, or its control), keyed by component; `description` is what assistive technology reads for the drawing; `toggle` is the control that shows and hides the labels for keyboards and screen readers.",
     "system": {
       "description": "Stakeholder interviews, product research and foundational marketing documents feed a shared product language, built at the center as an architectural foundation, which carries through to the website, the technical documentation, and campaigns and content.",
-      "labels": { "interviews": "Interviews", "research": "Research", "documents": "Documents", "core": "Shared product language", "website": "Website", "documentation": "Documentation", "campaigns": "Campaigns" },
+      "labels": { "interviews": "Interviews", "research": "Research", "documents": "Analysis", "core": "Shared product language", "website": "Website", "documentation": "Documentation", "campaigns": "Campaigns" },
       "toggle": { "show": "Show the system’s parts", "hide": "Hide the system’s parts" }
     }
   },
@@ -20,7 +20,11 @@
     "_headline": "Always two lines, broken where the brief breaks it.",
     "headline": ["Before the message", "comes the foundation."],
     "accent": "the foundation.",
-    "copy": "Before a product can be explained externally, it needs a shared internal language. For Bolt Liquidity, I built that language from stakeholder interviews and product research, shaping the positioning, claims, proof points, and narrative architecture behind every public-facing expression.",
+    "_copy": "Two paragraphs (the companion pass in the Events V1.1 brief): the first sentence stands alone, with room beneath it; `em` is in the first.",
+    "copy": [
+      "Before a product can be explained externally, it needs a shared internal language.",
+      "For Bolt Liquidity, I built that language from stakeholder interviews and product research, shaping the positioning, claims, proof points, and narrative architecture behind every public-facing expression."
+    ],
     "em": "a shared internal language",
     "_documents": "In the brief's order, from internal input through market understanding, strategic definition, governance and expression. Each document has its own muted accent (its strip and its faded icon) and its own icon; no two neighbors share a hue family. The interview count is not published.",
     "documents": [

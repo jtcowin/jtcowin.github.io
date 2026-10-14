@@ -1,17 +1,19 @@
 ---
 /**
- * 06 Sui Fest (Events, V1.0): faster, more social, outward-facing. The
+ * 06 Sui Fest (Events, V1.1): faster, more social, outward-facing. The
  * headline, the story in one paragraph (not a sponsor, so the moment had to
- * be made), and the Sui Fest video itself with sound, beside the teams in the
- * piece: each team's name is a chapter that starts the video at their
- * interview. Then the stills in a strip with their timecodes, the path the
- * piece took out into the ecosystem, and what it did, in words only: exact
- * figures appear only once verified (an authoring placeholder until then;
- * approved with its value in assets.json, the figure is set beneath them).
- * Not a social feed, and no engagement counts as the centerpiece.
+ * be made), and the Sui Fest video itself at the full measure, muted by
+ * default: it plays silently while well in view (with motion allowed) and the
+ * reader turns the sound on. Then three stills, each a different idea (the
+ * interviewer at a team's booth, Bolt as one voice among many, the color of
+ * the floor), and one compact outcome block that holds how the piece traveled
+ * and what it did, in the brief's words only: exact figures appear only once
+ * verified (an authoring placeholder until then; approved with its value in
+ * assets.json, the figure joins the block). One credit block for the chapter.
+ * V1.1 took out the chapter list of teams and its timestamps, the stills'
+ * timecodes and the line-and-node path.
  */
 import events from '@data/events.json';
-import { momentLabel } from '@lib/ev-copy';
 import EvCue from './EvCue.astro';
 import EvCredits from './EvCredits.astro';
 import EvExtras from './EvExtras.astro';
@@ -32,80 +34,28 @@ const { suifest: s } = events;
       <p class="evf__copy">{s.copy}</p>
     </div>
 
-    <div class="evf__media">
-      <EvPlayer id={s.video} label="Sui Fest interviews" domId="ev-suifest-player" class="evf__player" />
-      <div class="evf__teams">
-        <p class="evf__teams-label" id="ev-teams-label">{s.teamsLabel}</p>
-        <ol class="evf__team-list" aria-labelledby="ev-teams-label">
-          {
-            s.teams.map((t) => (
-              <li>
-                <button type="button" class="evf__team" data-seek={t.at} data-player="ev-suifest-player" aria-label={`${t.name}: play the video from ${momentLabel(t.at)}`}>
-                  <span class="evf__team-at" aria-hidden="true">
-                    {momentLabel(t.at)}
-                  </span>
-                  <span class="evf__team-name">{t.name}</span>
-                </button>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
-    </div>
+    <EvPlayer id={s.video} label="Sui Fest interviews" domId="ev-suifest-player" class="evf__player" ambient />
 
-    <ol class="evf__strip" aria-label="Stills from the video">
+    <ul class="evf__stills" aria-label="Stills from the video">
       {
-        s.stills.map((st, i) => (
-          <li class="evf__still" style={`--i: ${i}`}>
-            <EvSlot id={st.asset} sizes="(min-width: 60rem) 25vw, 50vw" />
-            <span class="evf__still-tc" aria-hidden="true">
-              F {String(i + 1).padStart(2, '0')} · {momentLabel(st.at)}
-            </span>
+        s.stills.map((id) => (
+          <li class="evf__still">
+            <EvSlot id={id} sizes="(min-width: 60rem) 33vw, (min-width: 40rem) 50vw, 100vw" />
           </li>
         ))
       }
-    </ol>
+    </ul>
 
-    <div class="evf__after">
-      <div class="evf__path" data-ev-reveal>
-        <p class="evf__label">How it traveled</p>
-        <ol class="evf__path-list">
-          {
-            s.path.map((step, i) => (
-              <li class="evf__path-step" style={`--i: ${i}`}>
-                <span class="evf__path-dot" aria-hidden="true" />
-                <span>{step}</span>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
-      <div class="evf__results">
-        <p class="evf__label">{s.resultsLabel}</p>
-        <ul class="evf__result-list">
-          {s.results.map((r) => <li>{r}</li>)}
-        </ul>
-        <EvExtras ids={s.pending} bare />
-      </div>
+    <div class="evf__outcome">
+      <p class="evf__label">{s.outcome.label}</p>
+      <p class="evf__lead">{s.outcome.lead}</p>
+      <p class="evf__line">{s.outcome.line}</p>
+      <EvExtras ids={s.pending} bare />
     </div>
 
     <EvCredits items={s.credits} class="evf__credits" />
   </div>
 </section>
-
-<script>
-  import { players, mountPlayers, reducedMotion } from '@lib/ev-media';
-  // A team's name starts the video at that team's interview, with sound.
-  mountPlayers();
-  for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-seek]'))) {
-    b.addEventListener('click', () => {
-      const p = players.get(b.dataset.player ?? '');
-      if (!p) return;
-      p.begin(Number(b.dataset.seek));
-      p.root.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
-    });
-  }
-</script>
 
 <style>
   .evf {
@@ -114,7 +64,7 @@ const { suifest: s } = events;
 
   .evf__inner {
     display: grid;
-    gap: clamp(2.5rem, 5vw, 4rem);
+    gap: clamp(3rem, 6vw, 5rem);
   }
 
   .evf__head {
@@ -141,19 +91,42 @@ const { suifest: s } = events;
     text-wrap: pretty;
   }
 
-  /* ---- the video and the teams in it ---------------------------------------------------- */
-  .evf__media {
+  /* ---- three stills, each its own idea ------------------------------------------------- */
+  .evf__stills {
     display: grid;
-    gap: 1.5rem;
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .evf__teams {
-    display: grid;
-    gap: 0.75rem;
-    align-content: start;
+  @media (min-width: 40rem) {
+    .evf__stills {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .evf__still:first-child {
+      grid-column: 1 / -1;
+    }
   }
 
-  .evf__teams-label,
+  @media (min-width: 60rem) {
+    .evf__stills {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .evf__still:first-child {
+      grid-column: auto;
+    }
+  }
+
+  /* ---- the outcome: how it traveled and what it did, in one block ------------------------- */
+  .evf__outcome {
+    display: grid;
+    gap: 0.9rem;
+    max-width: 46rem;
+  }
+
   .evf__label {
     margin: 0;
     font-size: 0.6875rem;
@@ -163,206 +136,27 @@ const { suifest: s } = events;
     color: var(--ink-3);
   }
 
-  .evf__team-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-    gap: 0;
+  .evf__lead {
     margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .evf__team {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.55rem 0.25rem;
-    border-top: 1px solid var(--line);
-    text-align: left;
-    color: var(--ink-2);
-    transition:
-      color var(--dur-fast) var(--ease-out),
-      background-color var(--dur-fast) var(--ease-out);
-  }
-
-  .evf__team:hover {
-    color: var(--ink);
-    background: var(--bg-elev);
-  }
-
-  .evf__team-at {
-    flex: none;
-    width: 2.75rem;
-    font-size: var(--text-xs);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--accent-ink);
-  }
-
-  .evf__team-name {
-    font-size: var(--text-sm);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  /* ---- the strip of stills ---------------------------------------------------------------- */
-  .evf__strip {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .evf__still {
-    display: grid;
-    gap: 0.45rem;
-  }
-
-  .evf__still-tc {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    font-variant-numeric: tabular-nums;
-    color: var(--ink-3);
-  }
-
-  /* ---- how it traveled, and what it did ------------------------------------------------------ */
-  .evf__after {
-    display: grid;
-    gap: 2.5rem;
-  }
-
-  .evf__path {
-    display: grid;
-    gap: 1rem;
-    align-content: start;
-  }
-
-  .evf__path-list {
-    display: grid;
-    gap: 0.9rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    position: relative;
-  }
-
-  .evf__path-step {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: var(--ink);
-  }
-
-  .evf__path-dot {
-    flex: none;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    border: 1px solid var(--accent-ink);
-    background: var(--bg);
-  }
-
-  .evf__path-step:nth-last-child(-n + 2) .evf__path-dot {
-    background: var(--accent-ink);
-  }
-
-  .evf__results {
-    display: grid;
-    gap: 1rem;
-    align-content: start;
-  }
-
-  .evf__result-list {
-    display: grid;
-    gap: 0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .evf__result-list li {
-    padding: 0.8rem 0;
-    border-top: 1px solid var(--line);
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
-    font-size: var(--text-lg);
-    line-height: 1.2;
+    font-size: var(--text-xl);
+    line-height: 1.12;
     color: var(--heading);
+    text-wrap: balance;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.js) .evf__path:not(.is-in) .evf__path-step {
-      opacity: 0;
-      transform: translate3d(-8px, 0, 0);
-    }
-
-    :global(html.js) .evf__path-step {
-      transition:
-        opacity 0.45s var(--ease-out) calc(var(--i) * 0.12s),
-        transform 0.55s var(--ease-out) calc(var(--i) * 0.12s);
-    }
+  .evf__line {
+    max-width: 38rem;
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
   }
 
-  @media (min-width: 48rem) {
-    .evf__strip {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 60rem) {
-    .evf__media {
-      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
-      column-gap: clamp(1.5rem, 3vw, 3rem);
-      align-items: start;
-    }
-
-    .evf__team-list {
-      grid-template-columns: 1fr;
-    }
-
-    .evf__after {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      column-gap: clamp(2.5rem, 5vw, 6rem);
-    }
-
-    /* Wide: the path runs left to right along one line. */
-    .evf__path-list {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 0.75rem;
-      padding-top: 1.25rem;
-    }
-
-    .evf__path-list::before {
-      content: '';
-      position: absolute;
-      left: 4px;
-      right: 0;
-      top: calc(1.25rem + 4px);
-      height: 1px;
-      background: linear-gradient(to right, var(--line-strong), var(--accent-ink));
-    }
-
-    .evf__path-step {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-      margin-top: -1.25rem;
-      padding-top: 0;
-    }
-
-    .evf__path-dot {
-      position: relative;
-      z-index: 1;
-      margin-top: 1.25rem;
-    }
+  .evf__credits {
+    max-width: 52rem;
   }
 </style>

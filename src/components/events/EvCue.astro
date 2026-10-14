@@ -1,8 +1,9 @@
 ---
 /**
- * A section's cue (Events, V1.0): five small squares, one per stage of the
- * run of show, the stages this section covers lit, and their names. It ties
- * every section back to the run of show without repeating it.
+ * A section's cue (Events, V1.0; V1.1 reads the stages from events.json now
+ * that the run of show has become the transition's one phrase): five small
+ * squares, one per stage (Secure, Build, Capture, Cut, Amplify), the stages
+ * this section covers lit, and their names.
  */
 import events from '@data/events.json';
 
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const { keys, class: className } = Astro.props;
-const stages = events.run.stages;
+const stages = events.stages;
 const lit = stages.map((s) => keys.includes(s.key));
 const names = stages.filter((s) => keys.includes(s.key)).map((s) => s.label);
 ---
@@ -20,7 +21,7 @@ const names = stages.filter((s) => keys.includes(s.key)).map((s) => s.label);
 <p class:list={['ev-cue', className]}>
   <span class="ev-cue__tally" aria-hidden="true">{lit.map((on) => <span class:list={['ev-cue__sq', on && 'is-lit']} />)}</span>
   <span class="ev-cue__names">
-    <span class="sr-only">Run of show: </span>
+    <span class="sr-only">{names.length > 1 ? 'Stages' : 'Stage'}: </span>
     {names.join(' · ')}
   </span>
 </p>

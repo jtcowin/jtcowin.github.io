@@ -2,8 +2,8 @@
 /**
  * 08 The conclusion (Events, V1.0): the end of the portfolio's work narrative.
  * No next case study: this is the third and last, and the page runs straight
- * into Contact. The run of show's five cues return in one row, all lit, as
- * the program's last reading; then the headline (the second sentence in the
+ * into Contact. The five stages' cues return in one row, all lit, as the
+ * program's last reading (V1.1 reads them from events.json `stages`); then the headline (the second sentence in the
  * accent) and one paragraph, with generous room around them. The ground
  * carries on from the dark the page has been playing on and turns, as it
  * goes, to exactly the Contact green (the same OKLab stops as the Technical
@@ -13,7 +13,7 @@
 import events from '@data/events.json';
 import { emphasize } from '@lib/tpm-copy';
 
-const { conclusion: c, run } = events;
+const { conclusion: c, stages } = events;
 const sentences = c.headline.split(/(?<=[.!?])\s+/);
 const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'events conclusion headline') : [{ text: line, em: false }]));
 ---
@@ -22,7 +22,7 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
   <div class="container evc__inner">
     <p class="evc__cues" aria-hidden="true">
       {
-        run.stages.map((s) => (
+        stages.map((s) => (
           <span class="evc__cue">
             <span class="evc__sq" />
             {s.label}

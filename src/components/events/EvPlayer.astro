@@ -9,6 +9,12 @@
  * screen pauses. Thin crop marks at the frame's corners are the page's
  * production accent. Without JavaScript the native controls remain.
  *
+ * An ambient player (V1.1, the Sui Fest video) is muted by default: while it
+ * is well in view, with motion allowed, it plays silently and offers "Sound
+ * on" and its own pause; turning the sound on hands it to the reader, from
+ * where it is, with the full controls. For reduced motion or a data-saving
+ * preference it waits on its poster like any other ("Play with sound").
+ *
  * A pending asset renders its placeholder (in `npm run dev` only) at the same
  * ratio, through EvSlot.
  */
@@ -28,9 +34,11 @@ interface Props {
   class?: string;
   /** Override the frame's ratio; the video is letterboxed into it. */
   aspect?: string;
+  /** Muted by default: plays silently in view, sound at the reader's word. */
+  ambient?: boolean;
 }
 
-const { id, label, domId, class: className, aspect } = Astro.props;
+const { id, label, domId, class: className, aspect, ambient = false } = Astro.props;
 const entry = getAsset(id);
 const ready = isVisible(entry) && entry.type === 'video' && Boolean(entry.file);
 const ratio = aspectToCss(aspect ?? entry.aspect);
@@ -42,9 +50,9 @@ const length = entry.duration ? clockLabel(entry.duration) : '';
 
 {
   ready ? (
-    <figure class:list={['evp', className]} data-evp id={domId} data-label={label} data-state="idle">
+    <figure class:list={['evp', className, ambient && 'evp--ambient']} data-evp id={domId} data-label={label} data-state="idle" data-ambient={ambient ? '' : undefined}>
       <div class="evp__frame" style={`aspect-ratio: ${ratio}`}>
-        <video class="evp__video" controls preload="none" playsinline poster={poster?.src} aria-label={entry.alt}>
+        <video class="evp__video" controls preload="none" playsinline muted={ambient} poster={poster?.src} aria-label={entry.alt}>
           <source src={src} type="video/mp4" />
         </video>
         <div class="evp__surface" data-evp-surface aria-hidden="true" />
@@ -59,6 +67,26 @@ const length = entry.duration ? clockLabel(entry.duration) : '';
           <span>Play with sound</span>
           {length && <span class="evp__len">{length}</span>}
         </button>
+        {
+          ambient && (
+            <>
+              <button type="button" class="evp__start evp__sound" data-evp-sound hidden>
+                <span class="evp__start-icon evp__start-icon--sound">
+                  <Icon name="sound" size={15} />
+                </span>
+                <span>Sound on</span>
+              </button>
+              <button type="button" class="evp__btn evp__hold" data-evp-hold aria-label={`Pause: ${label}`} hidden>
+                <span class="evp__ico evp__ico--pause">
+                  <Icon name="pause" size={14} />
+                </span>
+                <span class="evp__ico evp__ico--play">
+                  <Icon name="play" size={14} />
+                </span>
+              </button>
+            </>
+          )
+        }
         <div class="evp__bar" role="group" aria-label={`Video controls: ${label}`} data-evp-bar hidden>
           <button type="button" class="evp__btn" data-evp-play aria-label={`Pause: ${label}`}>
             <span class="evp__ico evp__ico--pause">
@@ -221,6 +249,30 @@ const length = entry.duration ? clockLabel(entry.duration) : '';
     margin-left: 2px;
   }
 
+  .evp__start-icon--sound :global(svg) {
+    margin-left: 0;
+  }
+
+  /* An ambient player's own pause, a small dark disc at the frame's lower right. */
+  .evp__hold {
+    position: absolute;
+    right: clamp(0.75rem, 3%, 1.5rem);
+    bottom: clamp(0.75rem, 4%, 1.5rem);
+    z-index: 2;
+    border: 1px solid rgba(237, 240, 239, 0.3);
+    background: rgba(13, 15, 16, 0.62);
+    color: #f2f1ec;
+    backdrop-filter: blur(4px);
+  }
+
+  .evp__hold[hidden] {
+    display: none;
+  }
+
+  .evp__hold:hover {
+    background: rgba(13, 15, 16, 0.85);
+  }
+
   .evp__len {
     padding-left: 0.65em;
     border-left: 1px solid rgba(13, 15, 16, 0.18);
@@ -283,6 +335,8 @@ const length = entry.duration ? clockLabel(entry.duration) : '';
 
   [data-evp-play][data-state='playing'] .evp__ico--pause,
   [data-evp-play]:is([data-state='paused'], [data-state='idle']) .evp__ico--play,
+  [data-evp-hold][data-state='playing'] .evp__ico--pause,
+  [data-evp-hold][data-state='paused'] .evp__ico--play,
   [data-evp-play][data-state='ended'] .evp__ico--replay,
   [data-evp-mute][data-muted='false'] .evp__ico--sound,
   [data-evp-mute][data-muted='true'] .evp__ico--muted {

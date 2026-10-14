@@ -1,17 +1,18 @@
 ---
 /**
- * 04 Command the room (Events, V1.0): the Sui Summit presentation. The
- * headline in three beats, one line of context, and the presentation itself
- * as the dominant visual (the session's opening, with sound, at full width).
- * Then three chapters of the work, Fill, Run and Extend, that arrive in turn
- * along one line as they come into view, the public-safe outcome, and the
- * credits beneath. The full recording, a deck preview, the promotional post
- * and a short extracted clip are placeholders (authoring only) until their
- * files and hosting are settled; each appears in its slot once approved.
+ * 04 Command the room (Events, V1.0, kept in V1.1): the Sui Summit
+ * presentation. The headline in three beats, one line of context, and the
+ * presentation itself as the dominant visual (the session's opening, with
+ * sound, at full width). Then three chapters of the work, Fill, Run and
+ * Extend, that arrive in turn along one line as they come into view, and the
+ * public-safe outcome. Its credits joined the one block for the Sui Summit
+ * work at ETHDenver, which closes the production room (V1.1). The full
+ * recording, a deck preview, the promotional post and a short extracted clip
+ * are placeholders (authoring only) until their files and hosting are
+ * settled; each appears in its slot once approved.
  */
 import events from '@data/events.json';
 import EvCue from './EvCue.astro';
-import EvCredits from './EvCredits.astro';
 import EvExtras from './EvExtras.astro';
 import EvPlayer from './EvPlayer.astro';
 
@@ -66,7 +67,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
     <div class="evm__close">
       <p class="evm__outcome">{room.outcome}</p>
-      <EvCredits items={room.credits} />
     </div>
 
     <EvExtras ids={room.pending} class="evm__pending" />
@@ -261,10 +261,5 @@ const pad = (n: number) => String(n).padStart(2, '0');
       column-gap: clamp(1.5rem, 3vw, 3rem);
     }
 
-    .evm__close {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-      column-gap: clamp(2rem, 4vw, 5rem);
-      align-items: start;
-    }
   }
 </style>

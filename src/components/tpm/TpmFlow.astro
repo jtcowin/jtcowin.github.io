@@ -50,7 +50,9 @@ const depth = Array.from({ length: foundation.depth }, (_, k) => k);
 const accentLine = foundation.headline.findIndex((line) => line.includes(foundation.accent));
 if (accentLine < 0) throw new Error('[tpm] the Foundation accent must be in its headline');
 const titleLines = foundation.headline.map((line, i) => (i === accentLine ? emphasize(line, foundation.accent, 'Foundation headline') : [{ text: line, em: false }]));
-const copy = emphasize(foundation.copy, foundation.em, 'Foundation paragraph');
+// Two paragraphs: the first sentence on its own (it carries the emphasis), then the rest.
+const [leadCopy, restCopy] = foundation.copy;
+const copy = emphasize(leadCopy, foundation.em, 'Foundation paragraph');
 
 // Word by word, as one continuous statement; were there a second sentence it
 // would open a line of its own. The highlighted clause (V1.3) must start on a
@@ -89,7 +91,10 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
         <h2 id="tpm-foundation-title" class="display tpm-foundation__title">
           {titleLines.map((line, i) => [i ? ' ' : '', <span>{line.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}</span>])}
         </h2>
-        <p class="tpm-foundation__copy">{copy.map(({ text, em }) => (em ? <strong class="tpm-em">{text}</strong> : text))}</p>
+        <div class="tpm-foundation__copies">
+          <p class="tpm-foundation__copy">{copy.map(({ text, em }) => (em ? <strong class="tpm-em">{text}</strong> : text))}</p>
+          <p class="tpm-foundation__copy">{restCopy}</p>
+        </div>
       </div>
 
       <div class="container tpm-library">
@@ -427,8 +432,17 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
      three even lines rather than four with a short last one. At its 18px size
      that is a longer line than the 24px case paragraphs (about 90 to 100
      characters); the generous leading carries it, and it is only three lines. */
+  /* The first sentence stands alone, with intentional room beneath it, before
+     the second paragraph (Events V1.1 brief, companion pass). */
+  .tpm-foundation__copies {
+    display: grid;
+    justify-items: center;
+    gap: clamp(1.25rem, 0.9rem + 1.2vw, 2rem);
+  }
+
   .tpm-foundation__copy {
     max-width: 52rem;
+    margin: 0;
     font-size: var(--text-md);
     line-height: var(--leading-relaxed);
     color: var(--ink-2);

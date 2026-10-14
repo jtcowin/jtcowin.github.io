@@ -1,113 +1,127 @@
 ---
 /**
- * 03 Build the activation (Events, V1.0): the operational work behind a
- * physical activation. One paragraph, short annotations, and a drawing: a
- * schematic of the activation package in elevation (the sponsorship around
- * it, the host it was coordinated with, the table and booth, the screen and
- * its animation, the merchandise, and the way it all reached the room), drawn
- * in line, labeled as a schematic made for this page, and numbered against
- * the annotations so the words carry it at any width. It is a designed
- * visualization, never presented as a photograph of the real activation.
+ * 03 Build the activation (Events, V1.1): the operational work behind a
+ * physical activation. The headline and one paragraph, then one polished,
+ * original 3D visualization of the activation in place of V1.0's flat
+ * schematic: a dark exhibition room with a large projection on the wall at
+ * left, the booth at the center (a television, a dark fascia carrying the
+ * Bolt Liquidity wordmark from its own SVG, two neat stacks of branded
+ * hoodies), and a restrained conversation area at right. It is rendered for
+ * this page in Blender (scripts/render/), representative and never presented
+ * as a photograph of the real activation, and carries no hotspots or labels.
+ *
+ * Its two screens play their loops while the frame is in view: the
+ * television (the primary motion, bright and legible) and, softer, the
+ * projection on the wall (its texture showing through, its edges soft, at
+ * about a third of the television's intensity). Their light on the room rises
+ * and falls with what they show. Both are muted and inline, load nothing
+ * until the frame comes near, pause out of view or in a hidden tab, and have
+ * one pause control. Reduced motion, a data-saving preference, a small screen
+ * or no JavaScript keep the static render, both screens on their poster
+ * frames (the same composition, made by scripts/render/activation-composite.py).
  *
  * The activation kit (banner, flyer, merchandise, screen loop, table plan,
- * credential, networking) follows the drawing as a coordinated package as
- * soon as any of its genuine materials is approved in assets.json (the screen
- * animation as a silent loop with its own pause control); until then it shows
- * only as labeled placeholders in `npm run dev`.
+ * credential, networking) follows as a coordinated package as soon as any of
+ * its genuine materials is approved in assets.json; until then it shows only
+ * as labeled placeholders in `npm run dev`. The section's credits are in the
+ * one block for the Sui Summit work at ETHDenver, which closes the production
+ * room (V1.1).
  */
+import { getImage, Picture } from 'astro:assets';
 import events from '@data/events.json';
-import { getAsset, isSlotReady, SHOW_PLACEHOLDERS } from '@lib/assets';
+import stage from '@data/ev-activation.json';
+import { getAsset, isSlotReady, isVisible, resolveAssetFile, resolveImage, SHOW_PLACEHOLDERS } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from '@components/Icon.astro';
 import EvCue from './EvCue.astro';
-import EvCredits from './EvCredits.astro';
 import EvSlot from './EvSlot.astro';
 
 const { activation: a } = events;
 const showKit = a.kit.some((id) => isSlotReady(getAsset(id))) || SHOW_PLACEHOLDERS;
-// Where each number sits on the drawing (share of the 720 by 500 view box).
-const at: Record<string, [number, number]> = {
-  package: [18.6, 18],
-  host: [7.2, 33.5],
-  screen: [57.8, 31],
-  merch: [21.5, 52],
-  table: [52, 76],
-  flow: [85.5, 64],
+
+const render = getAsset(a.visual);
+const still = resolveImage(render);
+if (!still || !isVisible(render)) throw new Error('[events] the activation render (assets.json ev-activation-render) must be approved and present');
+const tv = getAsset(a.tv);
+const wall = getAsset(a.wall);
+const layer = (file: string) => {
+  const img = resolveAssetFile(`events-video/activation/${file}`);
+  if (!img) throw new Error(`[events] the activation layer ${file} is missing from src/assets/events-video/activation/`);
+  return img;
 };
+// The live layers (only loaded once a screen that can play them reaches the frame).
+const live = isVisible(tv) && isVisible(wall) && Boolean(tv.file && wall.file);
+const plate = live ? await getImage({ src: layer('activation-plate.jpg'), widths: [1280, 1920, 2560], sizes: '(min-width: 87.5rem) 1310px, 100vw', format: 'webp', quality: 82 }) : null;
+const spillTv = live ? await getImage({ src: layer('activation-spill-tv.jpg'), width: 1280, format: 'webp', quality: 78 }) : null;
+const spillWall = live ? await getImage({ src: layer('activation-spill-wall.jpg'), width: 1280, format: 'webp', quality: 78 }) : null;
+const mask = live ? await getImage({ src: layer('activation-wall-mask.png'), width: 1280, format: 'webp', quality: 85 }) : null;
+const posterOf = async (entry: typeof tv) => {
+  const img = resolveImage(entry);
+  return img ? (await getImage({ src: img, width: Math.min(960, img.width), format: 'webp', quality: 82 })).src : undefined;
+};
+const tvPoster = live ? await posterOf(tv) : undefined;
+const wallPoster = live ? await posterOf(wall) : undefined;
+const [vw, vh] = stage.aspect;
+const quads = JSON.stringify({ tv: stage.tv, wall: stage.wall });
+const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.lum });
 ---
 
 <section class="eva" id="ev-activation" data-surface="light" aria-labelledby="ev-activation-title">
   <div class="container eva__inner">
-    <div class="eva__top">
-      <div class="eva__text">
+    <div class="eva__head">
+      <div class="eva__heading">
         <EvCue keys={a.cues} />
         <h2 id="ev-activation-title" class="display eva__title" data-ev-reveal>
           <span class="ev-cut"><span>{a.headline}</span></span>
         </h2>
-        <p class="eva__copy">{a.copy}</p>
-        <ol class="eva__notes">
-          {
-            a.notes.map((n, i) => (
-              <li class="eva__note">
-                <span class="eva__num" aria-hidden="true">
-                  {i + 1}
-                </span>
-                <span class="eva__note-text">
-                  <strong>{n.label}</strong>
-                  <span>{n.note}</span>
-                </span>
-              </li>
-            ))
-          }
-        </ol>
       </div>
-
-      <figure class="eva__plan" data-ev-reveal>
-        <div class="eva__drawing">
-          <svg viewBox="0 0 720 500" aria-hidden="true" focusable="false" class="eva__svg">
-            <!-- 1 the sponsorship package around the whole booth -->
-            <rect class="eva__l eva__l--dash" x="128" y="88" width="500" height="352" rx="18" />
-            <!-- 2 the host, coordinated with -->
-            <path class="eva__l eva__l--dash" d="M108 214 C 150 214, 160 300, 160 318" />
-            <circle class="eva__l eva__l--accent" cx="90" cy="206" r="18" pathLength="1" />
-            <circle class="eva__fill-accent" cx="90" cy="206" r="5" />
-            <!-- the floor -->
-            <path class="eva__l eva__l--floor" d="M28 440 H692" pathLength="1" />
-            <!-- the banner behind the table -->
-            <rect class="eva__l" x="500" y="112" width="96" height="328" rx="2" pathLength="1" />
-            <rect class="eva__fill-soft" x="510" y="126" width="76" height="16" rx="2" />
-            <path class="eva__l eva__l--thin" d="M512 160 H584 M512 172 H572 M512 184 H580" pathLength="1" />
-            <!-- 5 the table and its cloth -->
-            <path class="eva__l eva__l--bold" d="M150 318 H470" pathLength="1" />
-            <rect class="eva__l" x="156" y="318" width="308" height="122" rx="2" pathLength="1" />
-            <circle class="eva__l eva__l--accent" cx="310" cy="380" r="16" pathLength="1" />
-            <!-- 3 the screen and its animation -->
-            <rect class="eva__l eva__l--bold" x="240" y="176" width="160" height="100" rx="6" pathLength="1" />
-            <path class="eva__l" d="M320 276 V318 M296 318 H344" pathLength="1" />
-            <path class="eva__l eva__l--accent" d="M258 238 C 278 204, 292 204, 308 226 S 340 256, 356 222 S 376 200, 384 214" pathLength="1" />
-            <path class="eva__l eva__l--thin" d="M258 258 H300" pathLength="1" />
-            <!-- 4 the merchandise: folded shirts and a tote -->
-            <path class="eva__l" d="M170 318 V298 H232 V318 M174 298 V284 H228 V298 M178 284 V272 H224 V284" pathLength="1" />
-            <path class="eva__l" d="M408 318 L414 270 H446 L452 318 M420 270 C 420 254, 440 254, 440 270" pathLength="1" />
-            <!-- 6 the way it reaches the room -->
-            <path class="eva__l eva__l--accent eva__l--dash" d="M452 300 C 520 300, 560 330, 616 360" />
-            <path class="eva__l eva__l--accent eva__l--dash" d="M232 304 C 180 304, 120 340, 82 372" />
-            <circle class="eva__l" cx="640" cy="368" r="10" pathLength="1" />
-            <path class="eva__l" d="M622 404 C 622 384, 658 384, 658 404" pathLength="1" />
-            <circle class="eva__l" cx="676" cy="380" r="9" pathLength="1" />
-            <path class="eva__l" d="M660 412 C 660 394, 692 394, 692 412" pathLength="1" />
-            <circle class="eva__l" cx="62" cy="380" r="10" pathLength="1" />
-            <path class="eva__l" d="M44 416 C 44 396, 80 396, 80 416" pathLength="1" />
-          </svg>
-          {
-            a.notes.map((n, i) => (
-              <span class="eva__pin" style={`left: ${at[n.key][0]}%; top: ${at[n.key][1]}%; --i: ${i}`} aria-hidden="true">
-                {i + 1}
-              </span>
-            ))
-          }
-        </div>
-        <figcaption class="eva__caption">{a.schematicLabel}</figcaption>
-      </figure>
+      <p class="eva__copy">{a.copy}</p>
     </div>
+
+    <figure class="eva__viz" data-ev-activation>
+      <div class="eva__stage" style={`aspect-ratio: ${vw} / ${vh}; --wall-a: ${stage.wallOpacity}`} data-ev-stage data-quads={quads} data-glow={glow}>
+        <Picture
+          src={still}
+          alt={render.alt}
+          widths={[640, 960, 1280, 1920, 2560].filter((w) => w <= still.width)}
+          sizes="(min-width: 87.5rem) 1310px, 100vw"
+          formats={['avif', 'webp']}
+          loading="lazy"
+          decoding="async"
+          class="eva__still"
+        />
+        {
+          live && plate && spillTv && spillWall && mask && (
+            <div class="eva__live" data-ev-live hidden aria-hidden="true">
+              <img class="eva__plate" src={plate.src} srcset={plate.srcSet.attribute} sizes="(min-width: 87.5rem) 1310px, 100vw" alt="" loading="lazy" decoding="async" />
+              <div class="eva__wall" style={`-webkit-mask-image: url(${mask.src}); mask-image: url(${mask.src})`}>
+                <video class="eva__screen" data-screen="wall" width="960" height="640" muted loop playsinline preload="none" poster={wallPoster}>
+                  <source src={withBase(`/media/${wall.file}`)} type="video/mp4" />
+                </video>
+              </div>
+              <img class="eva__spill" data-spill="wall" src={spillWall.src} alt="" loading="lazy" decoding="async" />
+              <img class="eva__spill" data-spill="tv" src={spillTv.src} alt="" loading="lazy" decoding="async" />
+              <video class="eva__screen eva__tv" data-screen="tv" width="960" height="540" muted loop playsinline preload="none" poster={tvPoster}>
+                <source src={withBase(`/media/${tv.file}`)} type="video/mp4" />
+              </video>
+            </div>
+          )
+        }
+        {
+          live && (
+            <button type="button" class="eva__toggle" data-ev-stage-toggle aria-label="Pause: the activation’s screens" data-state="paused" hidden>
+              <span class="eva__ico eva__ico--pause">
+                <Icon name="pause" size={12} />
+              </span>
+              <span class="eva__ico eva__ico--play">
+                <Icon name="play" size={12} />
+              </span>
+            </button>
+          )
+        }
+      </div>
+      <figcaption class="eva__caption">{a.caption}</figcaption>
+    </figure>
 
     {
       showKit && (
@@ -118,10 +132,14 @@ const at: Record<string, [number, number]> = {
         </div>
       )
     }
-
-    <EvCredits items={a.credits} class="eva__credits" />
   </div>
 </section>
+
+<script>
+  import { mountActivation } from '@lib/ev-stage';
+  const root = document.querySelector<HTMLElement>('[data-ev-activation]');
+  if (root) mountActivation(root);
+</script>
 
 <style>
   .eva {
@@ -133,9 +151,14 @@ const at: Record<string, [number, number]> = {
     gap: clamp(2.5rem, 5vw, 4rem);
   }
 
-  .eva__text {
+  .eva__head {
     display: grid;
     gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  }
+
+  .eva__heading {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.5rem);
     align-content: start;
   }
 
@@ -153,124 +176,125 @@ const at: Record<string, [number, number]> = {
     text-wrap: pretty;
   }
 
-  .eva__notes {
-    display: grid;
-    gap: 0.85rem;
-    margin: 0.5rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .eva__note {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem;
-    align-items: start;
-  }
-
-  .eva__num,
-  .eva__pin {
-    display: grid;
-    place-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 50%;
-    background: var(--c-teal);
-    color: var(--c-bone);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-
-  .eva__note-text {
-    display: grid;
-    gap: 0.1rem;
-    font-size: var(--text-sm);
-    line-height: 1.45;
-  }
-
-  .eva__note-text strong {
-    font-weight: 700;
-    color: var(--ink);
-  }
-
-  .eva__note-text span {
-    color: var(--ink-3);
-  }
-
-  /* ---- the schematic ------------------------------------------------------------------ */
-  .eva__plan {
+  /* ---- the visualization ----------------------------------------------------------- */
+  .eva__viz {
     display: grid;
     gap: 0.85rem;
     margin: 0;
   }
 
-  .eva__drawing {
+  .eva__stage {
     position: relative;
-    aspect-ratio: 720 / 500;
+    overflow: hidden;
+    isolation: isolate;
+    max-width: 100%;
     border-radius: var(--radius-lg);
-    background:
-      linear-gradient(to right, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px) 0 0 / 40px 40px,
-      linear-gradient(to bottom, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px) 0 0 / 40px 40px,
-      var(--bg-elev);
-    border: 1px solid var(--line);
+    background: #0b0c0d;
   }
 
-  .eva__svg {
+  .eva__still,
+  .eva__stage :global(picture),
+  .eva__live,
+  .eva__plate,
+  .eva__spill,
+  .eva__wall {
     position: absolute;
     inset: 0;
+    display: block;
     width: 100%;
     height: 100%;
   }
 
-  .eva__l {
-    fill: none;
-    stroke: #25313a;
-    stroke-opacity: 0.62;
-    stroke-width: 1.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
+  .eva__stage :global(.eva__still) {
+    object-fit: cover;
   }
 
-  .eva__l--thin {
-    stroke-opacity: 0.35;
-    stroke-width: 1;
+  /* Live: the room without its screens' pictures, then the projection (its
+     texture and soft edges are its mask), the screens' light on the room, and
+     the television on top. The layers fade in over the still render once they
+     are ready, the same composition, so nothing seems to change but motion. */
+  .eva__live {
+    opacity: 0;
+    transition: opacity 0.4s ease;
   }
 
-  .eva__l--bold {
-    stroke-opacity: 0.8;
-    stroke-width: 2;
+  .eva__stage.is-live .eva__live {
+    opacity: 1;
   }
 
-  .eva__l--floor {
-    stroke-opacity: 0.3;
+  .eva__plate {
+    object-fit: cover;
   }
 
-  .eva__l--accent {
-    stroke: #1f4546;
-    stroke-opacity: 0.9;
-    stroke-width: 1.8;
+  .eva__wall {
+    mix-blend-mode: screen;
+    opacity: var(--wall-a, 0.4);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
   }
 
-  .eva__l--dash {
-    stroke-dasharray: 4 5;
+  .eva__spill {
+    object-fit: cover;
+    mix-blend-mode: screen;
+    opacity: 0;
+    will-change: opacity;
   }
 
-  .eva__fill-accent {
-    fill: #1f4546;
-  }
-
-  .eva__fill-soft {
-    fill: #1f4546;
-    fill-opacity: 0.18;
-  }
-
-  .eva__pin {
+  /* Each screen's video is drawn at its own size and mapped onto its corners by
+     the script (a perspective transform from the render's geometry). */
+  .eva__screen {
     position: absolute;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 0 3px var(--bg-elev);
+    left: 0;
+    top: 0;
+    display: block;
+    width: 960px;
+    height: 540px;
+    max-width: none;
+    object-fit: fill;
+    transform-origin: 0 0;
+    background: #000;
+  }
+
+  .eva__wall .eva__screen {
+    height: 640px;
+  }
+
+  .eva__toggle {
+    position: absolute;
+    right: clamp(0.6rem, 1.6%, 1rem);
+    bottom: clamp(0.6rem, 3%, 1rem);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid rgba(237, 240, 239, 0.3);
+    border-radius: 50%;
+    background: rgba(13, 15, 16, 0.55);
+    color: #f2f1ec;
+    backdrop-filter: blur(4px);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .eva__toggle:hover {
+    background: rgba(13, 15, 16, 0.85);
+  }
+
+  .eva__toggle:focus-visible {
+    outline: 2px solid var(--c-fog);
+    outline-offset: 2px;
+  }
+
+  .eva__ico {
+    display: none;
+  }
+
+  .eva__toggle[data-state='playing'] .eva__ico--pause,
+  .eva__toggle[data-state='paused'] .eva__ico--play {
+    display: grid;
   }
 
   .eva__caption {
@@ -278,37 +302,6 @@ const at: Record<string, [number, number]> = {
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--ink-3);
-  }
-
-  /* Drawn in once as it arrives (solid lines draw; dashed ones and pins fade). */
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.js) .eva__plan:not(.is-in) .eva__l:not(.eva__l--dash) {
-      stroke-dasharray: 1 2;
-      stroke-dashoffset: 1;
-    }
-
-    :global(html.js) .eva__plan .eva__l:not(.eva__l--dash) {
-      transition: stroke-dashoffset 1.1s cubic-bezier(0.45, 0, 0.25, 1) 0.1s;
-    }
-
-    :global(html.js) .eva__plan:not(.is-in) :is(.eva__l--dash, .eva__fill-accent, .eva__fill-soft) {
-      opacity: 0;
-    }
-
-    :global(html.js) .eva__plan :is(.eva__l--dash, .eva__fill-accent, .eva__fill-soft) {
-      transition: opacity 0.6s ease 0.9s;
-    }
-
-    :global(html.js) .eva__plan:not(.is-in) .eva__pin {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.6);
-    }
-
-    :global(html.js) .eva__plan .eva__pin {
-      transition:
-        opacity 0.35s ease calc(1s + var(--i) * 0.08s),
-        transform 0.45s var(--ease-out) calc(1s + var(--i) * 0.08s);
-    }
   }
 
   /* ---- the kit: a coordinated package (authoring placeholders until approved) ----------
@@ -328,30 +321,15 @@ const at: Record<string, [number, number]> = {
     column-span: all;
   }
 
-  .eva__credits {
-    max-width: 52rem;
-  }
-
-  .eva__top {
-    display: grid;
-    gap: clamp(2.5rem, 5vw, 4rem);
-  }
-
   @media (min-width: 60rem) {
-    .eva__top {
+    .eva__head {
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       column-gap: clamp(2.5rem, 5vw, 6rem);
-      align-items: start;
-    }
-
-    .eva__plan {
-      position: sticky;
-      top: calc(var(--header-row) + 1.5rem);
+      align-items: end;
     }
 
     .eva__kit {
       columns: 3 15rem;
     }
-
   }
 </style>

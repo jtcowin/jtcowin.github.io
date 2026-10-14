@@ -1,14 +1,16 @@
 ---
 /**
- * 05 From setup to final output (Events, V1.0): the production room. Not the
+ * 05 From setup to final output (Events, V1.1): the production room. Not the
  * camera equipment as the accomplishment, but what a compact setup and an
  * editor's judgment made of it. One paragraph and four beats (prepare,
  * direct, select, brief), the last two set forward because they carry the
  * editorial work. Then one frame with two clear tabs: Setup, the
- * behind-the-scenes photograph with its kit numbered (the numbers are read
- * from the legend beneath), and Final, the finished explainer with sound.
- * Switching away from Final pauses it. A second finished explainer from the
- * same session follows, then the credits. Without JavaScript both views are
+ * behind-the-scenes photograph with one caption beneath it, and Final, the
+ * finished explainer with sound. Switching away from Final pauses it. V1.1
+ * took out the photograph's numbered marks, their leaders and legend, and the
+ * second explainer, and gave the frame more room. The section closes with the
+ * one consolidated credit block for the Sui Summit work at ETHDenver (the
+ * activation, the session and this room). Without JavaScript both views are
  * shown, one after the other.
  */
 import events from '@data/events.json';
@@ -18,7 +20,7 @@ import EvExtras from './EvExtras.astro';
 import EvPlayer from './EvPlayer.astro';
 import EvSlot from './EvSlot.astro';
 
-const { setup } = events;
+const { setup, credits } = events;
 ---
 
 <section class="evs" id="ev-setup" data-surface="light" aria-labelledby="ev-setup-title">
@@ -61,34 +63,10 @@ const { setup } = events;
 
       <div class="evs__panel" id="ev-panel-setup" role="tabpanel" aria-labelledby="ev-tab-setup" data-panel="setup">
         <p class="evs__panel-label">{setup.tabs.setup}</p>
-        <div class="evs__photo">
+        <figure class="evs__photo">
           <EvSlot id={setup.photo} sizes="(min-width: 75rem) 1200px, 100vw" />
-          {
-            setup.marks.map((m) => (
-              <span
-                class="evs__mark"
-                style={`left: ${m.x}%; top: ${m.y}%; --ox: ${m.ox}em; --oy: ${m.oy}em; --len: ${Math.hypot(m.ox, m.oy).toFixed(3)}em; --ang: ${((Math.atan2(m.oy, m.ox) * 180) / Math.PI).toFixed(2)}deg`}
-                aria-hidden="true"
-              >
-                <span class="evs__lead" />
-                <span class="evs__spot" />
-                <span class="evs__pin">{m.n}</span>
-              </span>
-            ))
-          }
-        </div>
-        <ol class="evs__legend">
-          {
-            setup.marks.map((m) => (
-              <li>
-                <span class="evs__legend-n" aria-hidden="true">
-                  {m.n}
-                </span>
-                {m.label}
-              </li>
-            ))
-          }
-        </ol>
+          <figcaption class="evs__caption">{setup.caption}</figcaption>
+        </figure>
       </div>
 
       <div class="evs__panel" id="ev-panel-final" role="tabpanel" aria-labelledby="ev-tab-final" data-panel="final">
@@ -97,15 +75,9 @@ const { setup } = events;
       </div>
     </div>
 
-    <div class="evs__more">
-      <div class="evs__more-text">
-        <p class="eyebrow evs__eyebrow">{setup.moreLabel}</p>
-        <EvCredits items={setup.credits} />
-      </div>
-      <EvPlayer id={setup.more} label="Bolt vs AMM" class="evs__more-player" />
-    </div>
-
     <EvExtras ids={setup.pending} class="evs__pending" />
+
+    <EvCredits items={credits.ethdenver.items} scope={credits.ethdenver.scope} class="evs__credits" />
   </div>
 </section>
 
@@ -153,7 +125,7 @@ const { setup } = events;
 
   .evs__inner {
     display: grid;
-    gap: clamp(2.5rem, 5vw, 4rem);
+    gap: clamp(3rem, 6vw, 5rem);
   }
 
   .evs__head {
@@ -322,104 +294,25 @@ const { setup } = events;
   }
 
   .evs__photo {
-    position: relative;
-  }
-
-  /* Each item: a small spot on it, a short leader, and its number beside it
-     (never covering what it marks). */
-  .evs__mark {
-    position: absolute;
-    width: 0;
-    height: 0;
-    font-size: clamp(0.75rem, 0.62rem + 0.35vw, 0.875rem);
-    font-weight: 700;
-    pointer-events: none;
-  }
-
-  .evs__spot {
-    position: absolute;
-    left: -5px;
-    top: -5px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--c-teal);
-    box-shadow: 0 0 0 2px rgba(243, 239, 232, 0.9);
-  }
-
-  .evs__lead {
-    position: absolute;
-    left: 0;
-    top: -0.5px;
-    width: var(--len);
-    height: 1px;
-    background: rgba(243, 239, 232, 0.95);
-    box-shadow: 0 0 0 0.5px rgba(31, 69, 70, 0.6);
-    transform-origin: 0 50%;
-    transform: rotate(var(--ang));
-  }
-
-  .evs__pin {
-    position: absolute;
-    left: 0;
-    top: 0;
     display: grid;
-    place-items: center;
-    width: 1.6em;
-    height: 1.6em;
-    border-radius: 50%;
-    transform: translate(calc(-50% + var(--ox)), calc(-50% + var(--oy)));
-    background: var(--c-teal);
-    color: var(--c-bone);
-    box-shadow:
-      0 0 0 2px rgba(243, 239, 232, 0.9),
-      0 4px 12px rgba(13, 15, 16, 0.25);
-  }
-
-  .evs__legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem 1.5rem;
+    gap: 0.9rem;
     margin: 0;
-    padding: 0;
-    list-style: none;
+  }
+
+  .evs__caption {
+    max-width: 44rem;
     font-size: var(--text-sm);
-    color: var(--ink-2);
-  }
-
-  .evs__legend li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .evs__legend-n {
-    display: grid;
-    place-items: center;
-    width: 1.35rem;
-    height: 1.35rem;
-    border-radius: 50%;
-    background: var(--c-teal);
-    color: var(--c-bone);
-    font-size: 0.6875rem;
-    font-weight: 700;
-  }
-
-  /* ---- another finished explainer -------------------------------------------------------- */
-  .evs__more {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .evs__more-text {
-    display: grid;
-    gap: 1.25rem;
-    align-content: start;
+    line-height: 1.5;
+    color: var(--ink-3);
   }
 
   .evs__pending {
     display: grid;
     grid-template-columns: minmax(0, 24rem);
+  }
+
+  .evs__credits {
+    max-width: 60rem;
   }
 
   @media (min-width: 60rem) {
@@ -429,10 +322,5 @@ const { setup } = events;
       align-items: end;
     }
 
-    .evs__more {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      column-gap: clamp(2.5rem, 5vw, 6rem);
-      align-items: center;
-    }
   }
 </style>

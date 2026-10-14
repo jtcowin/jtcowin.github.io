@@ -1,19 +1,22 @@
 ---
 /**
- * Contextual credits (Events, V1.0): under the work they describe, who did
- * what, so strategy, production direction, design, editing and on-camera
- * roles stay distinct. Never one large credits section.
+ * Contextual credits (Events, V1.1): one consolidated block per major chapter
+ * of the work (never one per media item, never one large credits section),
+ * who did what, so strategy, production direction, design, editing and
+ * on-camera roles stay distinct. `scope` names the chapter a block covers
+ * when it closes more than one section.
  */
 interface Props {
   items: Array<{ who: string; what: string }>;
+  scope?: string;
   class?: string;
 }
 
-const { items, class: className } = Astro.props;
+const { items, scope, class: className } = Astro.props;
 ---
 
 <div class:list={['ev-credits', className]}>
-  <p class="ev-credits__label">Credits</p>
+  <p class="ev-credits__label">Credits{scope && <span class="ev-credits__scope"> · {scope}</span>}</p>
   <dl class="ev-credits__list">
     {
       items.map((c) => (
@@ -42,6 +45,11 @@ const { items, class: className } = Astro.props;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ink-3);
+  }
+
+  .ev-credits__scope {
+    letter-spacing: 0.1em;
+    color: var(--accent-ink);
   }
 
   .ev-credits__list {

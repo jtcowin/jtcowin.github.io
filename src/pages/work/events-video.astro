@@ -1,18 +1,20 @@
 ---
 /**
- * Events and Multimedia Production, Version 1.0.
+ * Events and Multimedia Production, Version 1.1.
  *
  * The third and final selected-work case study, built around the five stages
- * of the work: 01 Hero (one program monitor, three sources), 02 Run of show
- * (Secure, Build, Capture, Cut, Amplify: the table of contents and thesis),
- * 03 Build the activation, 04 Command the room (the Sui Summit session),
- * 05 From setup to final output (the production room), 06 Sui Fest, 07 What
- * continued after, 08 the conclusion, then Contact and the footer. It keeps
- * the portfolio's type, palette, navigation, buttons and Contact, and adds a
- * restrained production layer: cue readings, timecodes, crop marks and
- * progress lines. The ground cuts between the dark of the screens and the
- * warm light of the planning, and at the end cuts to black and fades up into
- * the Contact green.
+ * of the work: 01 Hero (one program monitor, three reels: Q01 LIVE, Q02
+ * CONVERSATIONS, Q03 PRODUCED), 02 the transition (SECURE. BUILD. CAPTURE.
+ * CUT. AMPLIFY., revealed as the reader scrolls; V1.1 replaced the run of
+ * show), 03 Build the activation (an original 3D render whose screens play),
+ * 04 Command the room (the Sui Summit session), 05 From setup to final output
+ * (the production room, closing with the credits of the Sui Summit work at
+ * ETHDenver), 06 Sui Fest, 07 What continued after, 08 the conclusion, then
+ * Contact and the footer. It keeps the portfolio's type, palette, navigation,
+ * buttons and Contact, and adds a restrained production layer: cue readings,
+ * timecodes, crop marks and progress lines. The ground cuts between the dark
+ * of the screens and the warm light of the planning, and at the end cuts to
+ * black and fades up into the Contact green.
  *
  * Words and media configuration: src/data/events.json; media: assets.json
  * (a pending slot is a labeled placeholder in `npm run dev` only, and appears
@@ -28,7 +30,7 @@ import { getEntry } from 'astro:content';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import EvHero from '@components/events/EvHero.astro';
-import EvRun from '@components/events/EvRun.astro';
+import EvTransition from '@components/events/EvTransition.astro';
 import EvActivation from '@components/events/EvActivation.astro';
 import EvRoom from '@components/events/EvRoom.astro';
 import EvSetup from '@components/events/EvSetup.astro';
@@ -44,7 +46,7 @@ const d = entry.data;
 <BaseLayout title={d.title} description={d.description} path="/work/events-video/" ogAsset={d.ogAsset} ogType="article" footerSurface="brand">
   <article class="ev" aria-labelledby="ev-title">
     <EvHero />
-    <EvRun />
+    <EvTransition />
     <EvActivation />
     <EvRoom />
     <EvSetup />

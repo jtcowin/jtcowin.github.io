@@ -268,6 +268,8 @@ interface PartDef {
   glow?: Shape[];
   /** The canopy's etched rows, a layer of their own. */
   etch?: Shape[];
+  /** The canopy's glass, lit, for its slow breath at idle (a layer of its own). */
+  breath?: Shape[];
   /** A scale-from-the-ground assembly (the guides) instead of travel. */
   grow?: boolean;
   shapes: Shape[];
@@ -547,7 +549,7 @@ const GUIDES = {
 const CANOPY = { s: 3.2, u: 0.9, v: 1.1, gap: 0.78 };
 
 /** The glass canopy; its etched rows (the shared language) are a layer of their own, `etch`. */
-function canopy(): { shapes: Shape[]; etch: Shape[] } {
+function canopy(): { shapes: Shape[]; etch: Shape[]; breath: Shape[] } {
   const s = CANOPY.s;
   const c = slab(-s, -s, CANOPY_Z, s * 2, s * 2, 0.12, 0.38, MAT.glass, 'url(#iso-glass)');
   const shapes = [...c.shapes];
@@ -571,7 +573,11 @@ function canopy(): { shapes: Shape[]; etch: Shape[] } {
       u += len + 0.2;
     });
   });
-  return { shapes, etch };
+  // its glass, lit from within by the foundation's teal, for the
+  // structure's slow breath at idle (on the pale glass a lighter tint would
+  // not show; a soft teal does, faintly)
+  const breath: Shape[] = [{ pts: proj(f, rrect(s * 2, s * 2, 0.38)), fill: '#a9d8d0' }];
+  return { shapes, etch, breath };
 }
 
 // ---- the floor ------------------------------------------------------------------------------
@@ -696,9 +702,13 @@ const TL = {
 /**
  * The idle cycle: three hand-offs, one after another, each a single signal
  * from an input along its conduit into the foundation, a soft light passing
- * through three of its blocks, and a signal out to one expression.
+ * through three of its blocks, and a signal out to one expression. The Events
+ * V1.1 brief's companion pass made this a little more perceptible: a signal
+ * every four seconds (it was five) and the lights at the nodes held longer;
+ * the canopy breathes slowly (BREATH) and floats a touch more.
  */
-const IDLE = { cycle: 15, run: 1.3, glow: 1.0 };
+const IDLE = { cycle: 12, run: 1.3, glow: 1.3, node: 1.2 };
+const BREATH = 6.4;
 const HANDOFFS = [
   { from: 'interviews', to: 'website', blocks: ['0,1', '1,1', '1,0'] },
   { from: 'research', to: 'documentation', blocks: ['0,2', '1,1', '2,0'] },
@@ -766,6 +776,8 @@ export interface IsoPart {
   glow?: string;
   /** The canopy's etched rows, which give way to the words while engaged. */
   etch?: string;
+  /** The canopy's lit glass, for its slow breath at idle. */
+  breath?: string;
   /** Assembly: start and length (s) and travel (cqw, + from below); a guide grows from its foot instead. */
   delay: number;
   dur: number;
@@ -841,6 +853,7 @@ export interface IsoScene {
     idleCycle: number;
     hoverCycle: number;
     float: number;
+    breath: number;
   };
 }
 
@@ -899,7 +912,7 @@ function buildScene(): IsoScene {
   defs.push(...blocks.map((c) => c.def));
   defs.push(guideDef('front', 2));
   const can = canopy();
-  defs.push({ id: 'core-canopy', group: 'core', delay: TL.canopy.at, dur: TL.canopy.dur, from: TL.canopy.from, lift: 1.1, float: 0.07, phase: 0, shapes: can.shapes, etch: can.etch });
+  defs.push({ id: 'core-canopy', group: 'core', delay: TL.canopy.at, dur: TL.canopy.dur, from: TL.canopy.from, lift: 1.1, float: 0.09, phase: 0, shapes: can.shapes, etch: can.etch, breath: can.breath });
   // the expressions
   const outObj = [website, documentation, campaigns];
   OUT.forEach((q, k) => {
@@ -934,9 +947,9 @@ function buildScene(): IsoScene {
   const span = IDLE.cycle / HANDOFFS.length;
   HANDOFFS.forEach((hnd, k) => {
     const b0 = k * span;
-    light(`in-${hnd.from}-plinth`, b0, b0 + 0.9);
+    light(`in-${hnd.from}-plinth`, b0, b0 + IDLE.node);
     hnd.blocks.forEach((key, n) => light(`core-block-${key.replace(',', '')}`, b0 + IDLE.run - 0.1 + n * 0.3, b0 + IDLE.run - 0.1 + n * 0.3 + IDLE.glow));
-    light(`out-${hnd.to}-plinth`, b0 + IDLE.run + 0.7 + IDLE.run - 0.15, b0 + IDLE.run + 0.7 + IDLE.run + 0.9);
+    light(`out-${hnd.to}-plinth`, b0 + IDLE.run + 0.7 + IDLE.run - 0.15, b0 + IDLE.run + 0.7 + IDLE.run + IDLE.node);
   });
   const css: string[] = [];
 
@@ -963,6 +976,7 @@ function buildScene(): IsoScene {
       svg: svg(p.shapes, dx, dy),
       glow: p.glow ? svg(p.glow, dx, dy) : undefined,
       etch: p.etch ? svg(p.etch, dx, dy) : undefined,
+      breath: p.breath ? svg(p.breath, dx, dy) : undefined,
       delay: +p.delay.toFixed(3),
       dur: p.dur,
       from: cq(p.from),
@@ -1090,6 +1104,7 @@ function buildScene(): IsoScene {
       idleCycle: IDLE.cycle,
       hoverCycle: HOVER.cycle,
       float: FLOAT,
+      breath: BREATH,
     },
   };
 }

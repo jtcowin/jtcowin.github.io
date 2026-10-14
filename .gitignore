@@ -14,3 +14,7 @@ npm-debug.log*
 
 # verification artifacts (screenshots, reports) are local only
 .verify/
+
+# reference material kept with the project but never published or pushed (Events V1.1: the
+# activation render's spatial and lighting reference, a vendor's slide, and the wordmark's source SVG)
+reference/

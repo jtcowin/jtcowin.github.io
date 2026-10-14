@@ -1,22 +1,27 @@
 /**
- * Client-side media and motion for Events and Multimedia Production (V1.0).
+ * Client-side media and motion for Events and Multimedia Production (V1.1).
  *
- * The program (the hero's monitor): one video per source, only the active one
- * loaded and playing, muted. A source plays through once and the program cuts
- * to the next, like a live switcher, until the reader picks a source; from
- * then on that source loops and the program stays on it. The program pauses
- * whenever the monitor leaves the screen or the tab is hidden, never starts
- * for reduced motion or a data-saving preference (the posters stay, and its
- * control plays it on request), and its control pauses and plays it.
+ * The program (the hero's monitor): three reels, one video each, only the
+ * active one loaded and playing, muted. Q01 is on first; a reel plays through
+ * once and the program crossfades (350ms) to the next, round and round; a reel
+ * the reader picks starts from its beginning, plays through, and then the
+ * program carries on from it. Only the active reel plays: the one left behind
+ * pauses once it is covered. The program pauses whenever the monitor leaves
+ * the screen or the tab is hidden, never starts for reduced motion or a
+ * data-saving preference (the posters stay, and its control plays it on
+ * request), and its control pauses and plays it.
  *
  * Players (every video with sound): the poster and one "Play with sound"
  * button; nothing but the poster loads until the button is pressed (or the
  * frame comes near the screen, when only the file's index is read for its
  * length). Once started: pause or play, mute or unmute, a seek bar that works
  * with arrow keys, and the time. Only one player sounds at a time: starting
- * one pauses every other, and a player that leaves the screen pauses and
- * waits for the reader. The native controls in the markup serve readers
- * without JavaScript and are removed here.
+ * one with sound pauses every other, and a player that leaves the screen
+ * pauses and waits for the reader. An ambient player (V1.1, Sui Fest) is muted
+ * by default: it plays silently while well in view, with motion allowed, and
+ * offers "Sound on" and its own pause; turning the sound on hands it to the
+ * reader with the full controls. The native controls in the markup serve
+ * readers without JavaScript and are removed here.
  *
  * Silent loops (a media slot's video, such as the activation kit's screen
  * animation once it is approved): muted and looped only while well in view,
@@ -29,8 +34,9 @@
 const reduceMq = window.matchMedia('(prefers-reduced-motion: reduce)');
 const lessDataMq = window.matchMedia('(prefers-reduced-data: reduce)');
 type NetworkInformation = { saveData?: boolean };
-const saving = () => lessDataMq.matches || Boolean((navigator as Navigator & { connection?: NetworkInformation }).connection?.saveData);
+export const saving = () => lessDataMq.matches || Boolean((navigator as Navigator & { connection?: NetworkInformation }).connection?.saveData);
 export const reducedMotion = () => reduceMq.matches;
+export const onMotionChange = (fn: () => void) => reduceMq.addEventListener?.('change', fn);
 
 const pad = (n: number, w = 2) => String(Math.max(0, Math.floor(n))).padStart(w, '0');
 /** 83.4 -> "1:23" */
@@ -43,28 +49,40 @@ export const timecode = (s: number) => {
 
 // ---- one sound at a time -----------------------------------------------------------------
 const sounding = new Set<HTMLVideoElement>();
+const quietOthers = (video: HTMLVideoElement) => {
+  for (const other of sounding) if (other !== video && !other.paused && !other.muted) other.pause();
+};
 export function exclusive(video: HTMLVideoElement) {
   sounding.add(video);
+  // A video that starts with sound, or turns its sound on while playing, pauses every other one with sound.
   video.addEventListener('play', () => {
-    for (const other of sounding) if (other !== video && !other.paused) other.pause();
+    if (!video.muted) quietOthers(video);
+  });
+  video.addEventListener('volumechange', () => {
+    if (!video.muted && !video.paused) quietOthers(video);
   });
 }
 
 // ---- the program -------------------------------------------------------------------------
+const FADE = 350;
+
 export class Program {
   private root: HTMLElement;
   private sources = new Map<string, HTMLVideoElement>();
+  private layers = new Map<string, HTMLElement>();
   private buttons = new Map<string, HTMLButtonElement>();
   private order: string[] = [];
   private active: string;
-  private chosen = false; // the reader picked a source: it loops, no more cuts
   private held = false; // the reader paused the program
   private blocked = false; // the browser refused to start it
   private asked = false; // the reader pressed play: it plays even for reduced motion
   private inView = false;
   private raf = 0;
+  private fade = 0;
+  private leaving = '';
   private toggle: HTMLButtonElement | null;
-  private cueText: HTMLElement | null;
+  private cueQ: HTMLElement | null;
+  private cueLabel: HTMLElement | null;
   private tc: HTMLElement | null;
   private lastTc = '';
 
@@ -73,26 +91,28 @@ export class Program {
     for (const v of Array.from(root.querySelectorAll<HTMLVideoElement>('video[data-cue]'))) {
       const key = v.dataset.cue as string;
       this.sources.set(key, v);
+      const layer = v.closest<HTMLElement>('[data-cue-layer]');
+      if (layer) this.layers.set(key, layer);
       this.order.push(key);
       v.removeAttribute('controls');
       v.muted = true;
-      v.addEventListener('ended', () => this.next());
+      v.loop = false;
+      // At the end of a reel the program moves on, whether the reel was the program's or the reader's.
+      v.addEventListener('ended', () => {
+        if (key === this.active) this.next();
+      });
       v.addEventListener('playing', () => this.render());
       v.addEventListener('pause', () => this.render());
-      v.addEventListener('error', () => v.closest('[data-cue-layer]')?.setAttribute('data-failed', ''));
+      v.addEventListener('error', () => layer?.setAttribute('data-failed', ''));
     }
     for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('[data-cue-btn]'))) {
       const key = b.dataset.cueBtn as string;
       this.buttons.set(key, b);
-      b.addEventListener('click', () => {
-        this.chosen = true;
-        this.held = false;
-        this.blocked = false;
-        this.select(key);
-      });
+      b.addEventListener('click', () => this.pick(key));
     }
     this.toggle = root.querySelector('[data-program-toggle]');
-    this.cueText = root.querySelector('[data-program-cue]');
+    this.cueQ = root.querySelector('[data-program-q]');
+    this.cueLabel = root.querySelector('[data-program-label]');
     this.tc = root.querySelector('[data-program-tc]');
     this.toggle?.addEventListener('click', () => {
       const v = this.video();
@@ -110,7 +130,7 @@ export class Program {
       this.render();
     });
     this.active = root.dataset.default && this.sources.has(root.dataset.default) ? root.dataset.default : this.order[0];
-    this.select(this.active, true);
+    this.show(this.active, true);
 
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(
@@ -126,7 +146,7 @@ export class Program {
       this.inView = true;
     }
     document.addEventListener('visibilitychange', () => this.sync());
-    reduceMq.addEventListener?.('change', () => this.sync());
+    onMotionChange(() => this.sync());
   }
 
   private video() {
@@ -137,40 +157,41 @@ export class Program {
     return !reduceMq.matches && !saving() && !this.blocked;
   }
 
-  /** Cut to a source. */
-  select(key: string, first = false) {
+  /** The reader picks a reel: it starts from its beginning (the one on air simply plays on). */
+  pick(key: string) {
+    this.held = false;
+    this.blocked = false;
+    if (key === this.active) {
+      this.sync();
+      this.render();
+      return;
+    }
+    this.show(key);
+  }
+
+  /** Put a reel on air: the incoming reel crossfades in over the outgoing one. */
+  private show(key: string, first = false) {
     const prev = this.active;
     this.active = key;
-    const index = this.order.indexOf(key);
     this.root.dataset.active = key;
-    for (const [k, v] of this.sources) {
-      const layer = v.closest<HTMLElement>('[data-cue-layer]');
-      layer?.classList.toggle('is-on', k === key);
-      if (k === key) {
-        v.loop = this.chosen;
-        if (v.preload !== 'auto' && (this.autoplay() || this.asked)) v.preload = 'auto';
-      } else if (!v.paused) v.pause();
+    const into = this.layers.get(key);
+    // An earlier crossfade still running finishes at once.
+    window.clearTimeout(this.fade);
+    if (this.leaving && this.leaving !== key) this.retire(this.leaving);
+    this.leaving = '';
+    // The reel on air is on top (is-in); the one it replaces stays visible
+    // beneath it until the fade has covered it.
+    for (const [k, l] of this.layers) {
+      l.classList.toggle('is-in', k === key);
+      if (k !== key && k !== prev) l.classList.remove('is-on');
     }
-    for (const [k, b] of this.buttons) b.setAttribute('aria-pressed', String(k === key));
-    if (this.cueText) {
-      const b = this.buttons.get(key);
-      this.cueText.textContent = `Cue ${pad(index + 1)} · ${b?.dataset.label ?? key}`;
-    }
-    // The source left behind starts from its beginning next time.
+    into?.classList.add('is-on');
     if (!first && prev !== key) {
-      const old = this.sources.get(prev);
-      if (old) {
-        window.setTimeout(() => {
-          if (this.active !== prev) {
-            try {
-              old.currentTime = 0;
-            } catch {
-              /* not seekable yet */
-            }
-            this.progress(prev, 0);
-          }
-        }, 260);
-      }
+      this.leaving = prev;
+      this.fade = window.setTimeout(() => {
+        if (this.leaving === prev) this.retire(prev);
+        this.leaving = '';
+      }, FADE + 20);
     }
     const v = this.video();
     if (v && !first) {
@@ -180,20 +201,41 @@ export class Program {
         /* not seekable yet */
       }
     }
+    for (const [k, b] of this.buttons) b.setAttribute('aria-pressed', String(k === key));
+    const b = this.buttons.get(key);
+    if (this.cueQ) this.cueQ.textContent = b?.dataset.q ?? '';
+    if (this.cueLabel) this.cueLabel.textContent = b?.dataset.label ?? key;
+    this.progress(key, 0);
     this.sync();
     this.render();
   }
 
-  /** At the end of a source: the next one, unless the reader chose this one. */
+  /** The reel left behind: hidden beneath, paused, and back to its beginning for next time. */
+  private retire(key: string) {
+    if (key === this.active) return;
+    this.layers.get(key)?.classList.remove('is-on');
+    const old = this.sources.get(key);
+    if (old) {
+      if (!old.paused) old.pause();
+      try {
+        old.currentTime = 0;
+      } catch {
+        /* not seekable yet */
+      }
+    }
+    this.progress(key, 0);
+  }
+
+  /** At the end of a reel: the next one. */
   private next() {
-    if (this.chosen) return;
     const i = this.order.indexOf(this.active);
-    this.select(this.order[(i + 1) % this.order.length]);
+    this.show(this.order[(i + 1) % this.order.length]);
   }
 
   private play() {
     const v = this.video();
     if (!v) return;
+    if (v.preload !== 'auto') v.preload = 'auto';
     const p = v.play();
     if (p && typeof p.catch === 'function') {
       p.catch((error: unknown) => {
@@ -209,6 +251,12 @@ export class Program {
     const go = !document.hidden && this.inView && !this.held && (this.autoplay() || this.asked);
     if (go && v.paused) this.play();
     else if (!go && !v.paused) v.pause();
+    // Only the reel on air plays (the outgoing one only until it is covered).
+    for (const [k, other] of this.sources) if (k !== this.active && k !== this.leaving && !other.paused) other.pause();
+    if (!go && this.leaving) {
+      const left = this.sources.get(this.leaving);
+      if (left && !left.paused) left.pause();
+    }
     this.loop();
   }
 
@@ -218,7 +266,7 @@ export class Program {
     if (bar) bar.style.transform = `scaleX(${share.toFixed(4)})`;
   }
 
-  /** The active source's progress line and the timecode, while it plays. */
+  /** The active reel's progress line and the timecode, while it plays. */
   private loop() {
     const v = this.video();
     const playing = v && !v.paused;
@@ -230,8 +278,8 @@ export class Program {
         const d = cur.duration;
         if (d > 0) {
           this.progress(this.active, cur.currentTime / d);
-          // A few seconds before the cut, the next source starts to load.
-          if (!this.chosen && d - cur.currentTime < 3) {
+          // A few seconds before the end, the next reel starts to load.
+          if (d - cur.currentTime < 3) {
             const nextKey = this.order[(this.order.indexOf(this.active) + 1) % this.order.length];
             const nv = this.sources.get(nextKey);
             if (nv && nv.preload !== 'auto') nv.preload = 'auto';
@@ -253,7 +301,7 @@ export class Program {
     const playing = Boolean(v && !v.paused);
     this.root.classList.toggle('is-playing', playing);
     if (this.toggle) {
-      this.toggle.setAttribute('aria-label', playing ? this.toggle.dataset.pause ?? 'Pause' : this.toggle.dataset.play ?? 'Play');
+      this.toggle.setAttribute('aria-label', playing ? (this.toggle.dataset.pause ?? 'Pause') : (this.toggle.dataset.play ?? 'Play'));
       this.toggle.dataset.state = playing ? 'playing' : 'paused';
     }
     if (playing) this.loop();
@@ -270,8 +318,13 @@ export class Player {
   private mute: HTMLButtonElement | null;
   private seek: HTMLInputElement | null;
   private time: HTMLElement | null;
+  private sound: HTMLButtonElement | null;
+  private hold: HTMLButtonElement | null;
+  private ambient: boolean;
   private started = false;
   private seeking = false;
+  private heldAmbient = false; // the reader paused the silent play
+  private inView = false;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -283,6 +336,9 @@ export class Player {
     this.mute = q<HTMLButtonElement>('[data-evp-mute]');
     this.seek = q<HTMLInputElement>('[data-evp-seek]');
     this.time = q<HTMLElement>('[data-evp-time]');
+    this.sound = q<HTMLButtonElement>('[data-evp-sound]');
+    this.hold = q<HTMLButtonElement>('[data-evp-hold]');
+    this.ambient = root.hasAttribute('data-ambient');
     const { video } = this;
     if (!video) return;
     video.removeAttribute('controls');
@@ -292,14 +348,19 @@ export class Player {
     this.start?.addEventListener('click', () => this.begin());
     // The poster itself starts it too, for a pointer.
     q<HTMLElement>('[data-evp-surface]')?.addEventListener('click', () => {
-      if (!this.started) this.begin();
-      else this.flip();
+      if (this.started) this.flip();
+      else if (this.ambient && !video.paused) this.holdAmbient(true);
+      else if (this.ambient && this.heldAmbient) this.holdAmbient(false);
+      else this.begin();
     });
     this.toggle?.addEventListener('click', () => this.flip());
     this.mute?.addEventListener('click', () => {
       video.muted = !video.muted;
       this.render();
     });
+    // Sound on: the reader takes it over, from where it is, with sound.
+    this.sound?.addEventListener('click', () => this.begin());
+    this.hold?.addEventListener('click', () => this.holdAmbient(!video.paused));
     // The seek bar counts whole seconds: an arrow key moves one, Page Up and
     // Page Down a tenth of the film.
     this.seek?.addEventListener('input', () => {
@@ -318,6 +379,11 @@ export class Player {
       this.render();
     });
 
+    if (this.ambient) {
+      video.muted = true;
+      video.loop = true;
+    }
+
     if ('IntersectionObserver' in window) {
       // Read the file's index (for its length) once it is within a screen.
       const near = new IntersectionObserver(
@@ -329,27 +395,59 @@ export class Player {
         { rootMargin: '100% 0px' },
       );
       near.observe(root);
-      // Off screen, it pauses and waits for the reader.
+      // Off screen, it pauses and waits for the reader; an ambient player plays
+      // silently again once it is well in view.
       new IntersectionObserver(
         ([entry]) => {
-          if ((!entry.isIntersecting || entry.intersectionRatio < 0.2) && !video.paused) video.pause();
+          const r = entry.isIntersecting ? entry.intersectionRatio : 0;
+          if (r >= 0.5) this.inView = true;
+          else if (r < 0.2) this.inView = false;
+          if (r < 0.2 && !video.paused) video.pause();
+          this.ambientSync();
         },
-        { threshold: [0, 0.2] },
+        { threshold: [0, 0.2, 0.5] },
       ).observe(root);
     }
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && !video.paused) video.pause();
+      else this.ambientSync();
     });
+    onMotionChange(() => this.ambientSync());
     this.render();
   }
 
-  /** Start with sound (the reader's gesture allows it). */
+  /** An ambient player plays, muted, while well in view, until the reader takes it over or pauses it. */
+  private ambientSync() {
+    if (!this.ambient || this.started) return;
+    const { video } = this;
+    const go = this.inView && !document.hidden && !this.heldAmbient && !reduceMq.matches && !saving();
+    if (go && video.paused) {
+      video.muted = true;
+      if (video.preload !== 'auto') video.preload = 'auto';
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => this.render());
+    } else if (!go && !video.paused) video.pause();
+  }
+
+  private holdAmbient(hold: boolean) {
+    this.heldAmbient = hold;
+    if (hold) this.video.pause();
+    else {
+      this.inView = true;
+      const p = this.video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => this.render());
+    }
+    this.render();
+  }
+
+  /** Start with sound (the reader's gesture allows it), from where it is unless a moment is given. */
   begin(at?: number) {
     const { video } = this;
-    const focused = document.activeElement === this.start;
+    const focused = document.activeElement === this.start || document.activeElement === this.sound;
     this.started = true;
     this.root.classList.add('is-started');
     video.muted = false;
+    video.loop = false;
     video.preload = 'auto';
     if (at !== undefined) {
       const go = () => {
@@ -362,8 +460,10 @@ export class Player {
       if (video.readyState >= 1) go();
       else video.addEventListener('loadedmetadata', go, { once: true });
     }
-    const p = video.play();
-    if (p && typeof p.catch === 'function') p.catch(() => this.render());
+    if (video.paused) {
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => this.render());
+    }
     this.render();
     if (focused) this.toggle?.focus({ preventScroll: true });
   }
@@ -379,9 +479,17 @@ export class Player {
 
   private render() {
     const { video, root } = this;
-    const state = video.ended ? 'ended' : video.paused ? (this.started ? 'paused' : 'idle') : 'playing';
+    const quiet = this.ambient && !this.started;
+    const state = video.ended ? 'ended' : quiet ? (video.paused ? (this.heldAmbient ? 'held' : 'idle') : 'ambient') : video.paused ? (this.started ? 'paused' : 'idle') : 'playing';
     root.dataset.state = state;
-    if (this.start) this.start.hidden = this.started;
+    const silent = quiet && (state === 'ambient' || state === 'held');
+    if (this.start) this.start.hidden = this.started || silent;
+    if (this.sound) this.sound.hidden = !silent;
+    if (this.hold) {
+      this.hold.hidden = !silent;
+      this.hold.dataset.state = state === 'ambient' ? 'playing' : 'paused';
+      this.hold.setAttribute('aria-label', `${state === 'ambient' ? 'Pause' : 'Play'}: ${root.dataset.label ?? 'video'}`);
+    }
     if (this.bar) this.bar.hidden = !this.started;
     if (this.toggle) {
       const label = state === 'playing' ? 'Pause' : state === 'ended' ? 'Replay' : 'Play';
@@ -479,7 +587,7 @@ export function mountLoops(scope: ParentNode = document) {
       ).observe(root);
     }
     document.addEventListener('visibilitychange', sync);
-    reduceMq.addEventListener?.('change', sync);
+    onMotionChange(sync);
     render();
   }
 }
