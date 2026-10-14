@@ -1,15 +1,16 @@
 /**
- * Client-side media and motion for Events and Multimedia Production (V1.1).
+ * Client-side media and motion for Events and Multimedia Production (V1.2).
  *
- * The program (the hero's monitor): three reels, one video each, only the
- * active one loaded and playing, muted. Q01 is on first; a reel plays through
- * once and the program crossfades (350ms) to the next, round and round; a reel
- * the reader picks starts from its beginning, plays through, and then the
- * program carries on from it. Only the active reel plays: the one left behind
- * pauses once it is covered. The program pauses whenever the monitor leaves
- * the screen or the tab is hidden, never starts for reduced motion or a
- * data-saving preference (the posters stay, and its control plays it on
- * request), and its control pauses and plays it.
+ * The reel (the hero, V1.2): its chapters in order, one video each, only the
+ * one on air loaded and playing, muted. Each plays through once and the reel
+ * crossfades (350ms) into the next, round and round; the label reads the
+ * chapter's number and title, the timecode the reel's own clock, and a
+ * segmented rail fills a segment per chapter. Only the chapter on air plays:
+ * the one left behind pauses once it is covered. The reel pauses whenever its
+ * frame leaves the screen or the tab is hidden, never starts by itself for
+ * reduced motion or a data-saving preference (its poster stays, and its
+ * control, which then reads Play, plays it on request), and its one control
+ * pauses and plays it.
  *
  * Players (every video with sound): the poster and one "Play with sound"
  * button; nothing but the poster loads until the button is pressed (or the
@@ -63,57 +64,74 @@ export function exclusive(video: HTMLVideoElement) {
   });
 }
 
-// ---- the program -------------------------------------------------------------------------
+// ---- the reel ----------------------------------------------------------------------------
 const FADE = 350;
 
-export class Program {
+/**
+ * The hero's editorial reel (V1.2): its chapters in order, one video each, only
+ * the one on air loaded and playing, muted. A chapter plays through once and
+ * the reel crossfades (FADE) into the next, round and round; the label reads
+ * the chapter's number and title; the timecode runs on the reel's own clock
+ * (the chapters before the one on air, plus its time); the rail fills a
+ * segment per chapter. The reel pauses off screen or in a hidden tab, never
+ * starts by itself for reduced motion, a data-saving preference or a refused
+ * autoplay (then it waits on its poster and its control says Play), and its
+ * one control pauses and plays it.
+ */
+export class Reel {
   private root: HTMLElement;
   private sources = new Map<string, HTMLVideoElement>();
   private layers = new Map<string, HTMLElement>();
-  private buttons = new Map<string, HTMLButtonElement>();
+  private fills = new Map<string, HTMLElement>();
+  private lengths = new Map<string, number>();
   private order: string[] = [];
   private active: string;
-  private held = false; // the reader paused the program
+  private held = false; // the reader paused the reel
   private blocked = false; // the browser refused to start it
   private asked = false; // the reader pressed play: it plays even for reduced motion
+  private started = false;
   private inView = false;
   private raf = 0;
   private fade = 0;
   private leaving = '';
   private toggle: HTMLButtonElement | null;
-  private cueQ: HTMLElement | null;
-  private cueLabel: HTMLElement | null;
+  private label: HTMLElement | null;
   private tc: HTMLElement | null;
   private lastTc = '';
 
   constructor(root: HTMLElement) {
     this.root = root;
-    for (const v of Array.from(root.querySelectorAll<HTMLVideoElement>('video[data-cue]'))) {
-      const key = v.dataset.cue as string;
+    for (const v of Array.from(root.querySelectorAll<HTMLVideoElement>('video[data-chapter]'))) {
+      const key = v.dataset.chapter as string;
+      const layer = v.closest<HTMLElement>('[data-chapter-layer]');
       this.sources.set(key, v);
-      const layer = v.closest<HTMLElement>('[data-cue-layer]');
       if (layer) this.layers.set(key, layer);
       this.order.push(key);
+      this.lengths.set(key, Number(layer?.dataset.duration) || 0);
       v.removeAttribute('controls');
       v.muted = true;
       v.loop = false;
-      // At the end of a reel the program moves on, whether the reel was the program's or the reader's.
+      // At the end of a chapter the reel moves on; after the last, it begins again.
       v.addEventListener('ended', () => {
         if (key === this.active) this.next();
       });
-      v.addEventListener('playing', () => this.render());
+      v.addEventListener('loadedmetadata', () => {
+        if (v.duration > 0) this.lengths.set(key, v.duration);
+      });
+      v.addEventListener('playing', () => {
+        this.started = true;
+        this.render();
+      });
       v.addEventListener('pause', () => this.render());
       v.addEventListener('error', () => layer?.setAttribute('data-failed', ''));
     }
-    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('[data-cue-btn]'))) {
-      const key = b.dataset.cueBtn as string;
-      this.buttons.set(key, b);
-      b.addEventListener('click', () => this.pick(key));
+    for (const seg of Array.from(root.querySelectorAll<HTMLElement>('[data-reel-seg]'))) {
+      const fill = seg.querySelector<HTMLElement>('[data-reel-fill]');
+      if (fill) this.fills.set(seg.dataset.reelSeg as string, fill);
     }
-    this.toggle = root.querySelector('[data-program-toggle]');
-    this.cueQ = root.querySelector('[data-program-q]');
-    this.cueLabel = root.querySelector('[data-program-label]');
-    this.tc = root.querySelector('[data-program-tc]');
+    this.toggle = root.querySelector('[data-reel-toggle]');
+    this.label = root.querySelector('[data-reel-label]');
+    this.tc = root.querySelector('[data-reel-tc]');
     this.toggle?.addEventListener('click', () => {
       const v = this.video();
       if (!v) return;
@@ -129,7 +147,7 @@ export class Program {
       }
       this.render();
     });
-    this.active = root.dataset.default && this.sources.has(root.dataset.default) ? root.dataset.default : this.order[0];
+    this.active = this.order[0];
     this.show(this.active, true);
 
     if ('IntersectionObserver' in window) {
@@ -157,19 +175,7 @@ export class Program {
     return !reduceMq.matches && !saving() && !this.blocked;
   }
 
-  /** The reader picks a reel: it starts from its beginning (the one on air simply plays on). */
-  pick(key: string) {
-    this.held = false;
-    this.blocked = false;
-    if (key === this.active) {
-      this.sync();
-      this.render();
-      return;
-    }
-    this.show(key);
-  }
-
-  /** Put a reel on air: the incoming reel crossfades in over the outgoing one. */
+  /** Put a chapter on air: it crossfades in over the one before it. */
   private show(key: string, first = false) {
     const prev = this.active;
     this.active = key;
@@ -179,7 +185,7 @@ export class Program {
     window.clearTimeout(this.fade);
     if (this.leaving && this.leaving !== key) this.retire(this.leaving);
     this.leaving = '';
-    // The reel on air is on top (is-in); the one it replaces stays visible
+    // The chapter on air is on top (is-in); the one it replaces stays visible
     // beneath it until the fade has covered it.
     for (const [k, l] of this.layers) {
       l.classList.toggle('is-in', k === key);
@@ -201,16 +207,15 @@ export class Program {
         /* not seekable yet */
       }
     }
-    for (const [k, b] of this.buttons) b.setAttribute('aria-pressed', String(k === key));
-    const b = this.buttons.get(key);
-    if (this.cueQ) this.cueQ.textContent = b?.dataset.q ?? '';
-    if (this.cueLabel) this.cueLabel.textContent = b?.dataset.label ?? key;
-    this.progress(key, 0);
+    if (this.label && into) this.label.textContent = `${into.dataset.number} / ${into.dataset.title}`;
+    // The rail: the chapters before this one full, the rest empty.
+    const at = this.order.indexOf(key);
+    this.order.forEach((k, i) => this.progress(k, i < at ? 1 : 0));
     this.sync();
     this.render();
   }
 
-  /** The reel left behind: hidden beneath, paused, and back to its beginning for next time. */
+  /** The chapter left behind: hidden beneath, paused, and back to its beginning for next time. */
   private retire(key: string) {
     if (key === this.active) return;
     this.layers.get(key)?.classList.remove('is-on');
@@ -223,10 +228,9 @@ export class Program {
         /* not seekable yet */
       }
     }
-    this.progress(key, 0);
   }
 
-  /** At the end of a reel: the next one. */
+  /** At the end of a chapter: the next one, and after the last, the first. */
   private next() {
     const i = this.order.indexOf(this.active);
     this.show(this.order[(i + 1) % this.order.length]);
@@ -251,7 +255,7 @@ export class Program {
     const go = !document.hidden && this.inView && !this.held && (this.autoplay() || this.asked);
     if (go && v.paused) this.play();
     else if (!go && !v.paused) v.pause();
-    // Only the reel on air plays (the outgoing one only until it is covered).
+    // Only the chapter on air plays (the outgoing one only until it is covered).
     for (const [k, other] of this.sources) if (k !== this.active && k !== this.leaving && !other.paused) other.pause();
     if (!go && this.leaving) {
       const left = this.sources.get(this.leaving);
@@ -261,12 +265,21 @@ export class Program {
   }
 
   private progress(key: string, share: number) {
-    const b = this.buttons.get(key);
-    const bar = b?.querySelector<HTMLElement>('[data-cue-progress]');
-    if (bar) bar.style.transform = `scaleX(${share.toFixed(4)})`;
+    const fill = this.fills.get(key);
+    if (fill) fill.style.transform = `scaleX(${Math.min(1, Math.max(0, share)).toFixed(4)})`;
   }
 
-  /** The active reel's progress line and the timecode, while it plays. */
+  /** The reel's clock: the chapters before the one on air, plus its own time. */
+  private clockAt(time: number) {
+    let t = time;
+    for (const k of this.order) {
+      if (k === this.active) break;
+      t += this.lengths.get(k) ?? 0;
+    }
+    return t;
+  }
+
+  /** The chapter's segment and the timecode, while it plays. */
   private loop() {
     const v = this.video();
     const playing = v && !v.paused;
@@ -278,14 +291,14 @@ export class Program {
         const d = cur.duration;
         if (d > 0) {
           this.progress(this.active, cur.currentTime / d);
-          // A few seconds before the end, the next reel starts to load.
+          // A few seconds before the end, the next chapter starts to load.
           if (d - cur.currentTime < 3) {
             const nextKey = this.order[(this.order.indexOf(this.active) + 1) % this.order.length];
             const nv = this.sources.get(nextKey);
             if (nv && nv.preload !== 'auto') nv.preload = 'auto';
           }
         }
-        const t = timecode(cur.currentTime);
+        const t = timecode(this.clockAt(cur.currentTime));
         if (this.tc && t !== this.lastTc) {
           this.tc.textContent = t;
           this.lastTc = t;
@@ -300,6 +313,8 @@ export class Program {
     const v = this.video();
     const playing = Boolean(v && !v.paused);
     this.root.classList.toggle('is-playing', playing);
+    // Waiting on its poster (reduced motion, saving data, a refused autoplay): the control says Play.
+    this.root.classList.toggle('is-waiting', !playing && !this.started && !this.autoplay());
     if (this.toggle) {
       this.toggle.setAttribute('aria-label', playing ? (this.toggle.dataset.pause ?? 'Pause') : (this.toggle.dataset.play ?? 'Play'));
       this.toggle.dataset.state = playing ? 'playing' : 'paused';

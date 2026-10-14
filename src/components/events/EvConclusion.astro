@@ -1,21 +1,38 @@
 ---
 /**
- * 08 The conclusion (Events, V1.0): the end of the portfolio's work narrative.
- * No next case study: this is the third and last, and the page runs straight
- * into Contact. The five stages' cues return in one row, all lit, as the
- * program's last reading (V1.1 reads them from events.json `stages`); then the headline (the second sentence in the
- * accent) and one paragraph, with generous room around them. The ground
- * carries on from the dark the page has been playing on and turns, as it
- * goes, to exactly the Contact green (the same OKLab stops as the Technical
- * Product Marketing conclusion), and Contact's grid rises out of its lower
- * part (events-video.astro gives Contact its lead).
+ * 07 The conclusion (Events; V1.2 combined it with the former Amplify
+ * section, "Every event opens a longer conversation.", which made the same
+ * point): the end of the case study. The five stages' cues return in one row,
+ * static, all lit, as a quiet callback to the transition (never animated a
+ * second time; read from events.json `stages`); then the headline (the second
+ * sentence in the accent) and one paragraph, with generous room around them;
+ * then, set apart, the way on to the next case study in order (NextCase:
+ * Creator Campaigns, the collection wrapping around). No evidence rail,
+ * metrics, cards or line-and-node sequence. The ground carries on from the
+ * dark the page has been playing on and turns, as it goes, to exactly the
+ * Contact green (the same OKLab stops as the Technical Product Marketing
+ * conclusion), and Contact's grid rises out of its lower part
+ * (events-video.astro gives Contact its lead). The build stops if the next
+ * case study named in events.json is missing or out of order.
  */
+import { getCollection } from 'astro:content';
 import events from '@data/events.json';
 import { emphasize } from '@lib/tpm-copy';
+import { withBase } from '@lib/paths';
+import NextCase from '@components/NextCase.astro';
 
 const { conclusion: c, stages } = events;
 const sentences = c.headline.split(/(?<=[.!?])\s+/);
 const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'events conclusion headline') : [{ text: line, em: false }]));
+
+const all = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const idx = all.findIndex((e) => e.id === 'events-video');
+const following = idx >= 0 && all.length > 1 ? all[(idx + 1) % all.length] : null;
+const next = all.find((e) => e.id === c.next);
+if (!next) throw new Error(`[events] the conclusion's way on leads to "${c.next}", which is not a case study`);
+if (following && following.id !== next.id) {
+  throw new Error(`[events] the conclusion's way on leads to "${next.id}", but the next case study in order is "${following.id}"; update conclusion.next and conclusion.nextLine in events.json together`);
+}
 ---
 
 <section class="evc" data-surface="dark" aria-labelledby="ev-conclusion-title">
@@ -41,6 +58,9 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
       }
     </h2>
     <p class="evc__copy">{c.copy}</p>
+    <div class="evc__next">
+      <NextCase href={withBase(`/work/${next.id}/`)} line={c.nextLine} />
+    </div>
   </div>
 </section>
 
@@ -137,6 +157,13 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
     line-height: 1.45;
     color: var(--ink-2);
     text-wrap: pretty;
+  }
+
+  /* The way on: about as wide as the paragraph, with generous room above it. */
+  .evc__next {
+    width: 100%;
+    max-width: 46rem;
+    margin-top: clamp(1rem, 0.2rem + 2.4vw, 2.5rem);
   }
 
   @media (min-width: 60rem) {

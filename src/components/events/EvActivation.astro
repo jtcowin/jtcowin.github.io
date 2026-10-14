@@ -10,11 +10,14 @@
  * this page in Blender (scripts/render/), representative and never presented
  * as a photograph of the real activation, and carries no hotspots or labels.
  *
- * Its two screens play their loops while the frame is in view: the
- * television (the primary motion, bright and legible) and, softer, the
- * projection on the wall (its texture showing through, its edges soft, at
- * about a third of the television's intensity). Their light on the room rises
- * and falls with what they show. Both are muted and inline, load nothing
+ * Its two screens play their loops while the frame is in view. V1.2 calmed
+ * the television into the stable branded anchor: one short card (the wireless
+ * charger offer animating in, its steps appearing, a second's hold) on a loop
+ * of under six seconds; the projection on the wall carries more of the
+ * motion, softer (its texture showing through, its edges soft, a third less
+ * feathered than in V1.1) and lower in luminance than the television. Their
+ * light on the room rises and falls with what they show. V1.2 also removed the
+ * section's stage eyebrow (Secure, Build). Both are muted and inline, load nothing
  * until the frame comes near, pause out of view or in a hidden tab, and have
  * one pause control. Reduced motion, a data-saving preference, a small screen
  * or no JavaScript keep the static render, both screens on their poster
@@ -33,7 +36,6 @@ import stage from '@data/ev-activation.json';
 import { getAsset, isSlotReady, isVisible, resolveAssetFile, resolveImage, SHOW_PLACEHOLDERS } from '@lib/assets';
 import { withBase } from '@lib/paths';
 import Icon from '@components/Icon.astro';
-import EvCue from './EvCue.astro';
 import EvSlot from './EvSlot.astro';
 
 const { activation: a } = events;
@@ -70,7 +72,6 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
   <div class="container eva__inner">
     <div class="eva__head">
       <div class="eva__heading">
-        <EvCue keys={a.cues} />
         <h2 id="ev-activation-title" class="display eva__title" data-ev-reveal>
           <span class="ev-cut"><span>{a.headline}</span></span>
         </h2>

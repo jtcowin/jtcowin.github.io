@@ -5,13 +5,15 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Events and Multimedia Production Version 1.1 in review.** Version 2.0, Technical Product
-Marketing Version 1.6 and Events and Multimedia Production Version 1.0 are published. Events Version
-1.1 (the hero's three program reels, the transition in place of the run of show, an original 3D render
-of the activation whose screens play, the production room and Sui Fest pared back, one credit block per
-chapter) and its companion pass on Technical Product Marketing (a livelier idle signal flow, ANALYSIS
-for the third input, the scope line lower on large desktops, the Foundation's opening in two
-paragraphs) are committed locally and not pushed until they have been reviewed in the browser. Placeholders render only in `npm run dev`; production builds hide
+**Status: Events and Multimedia Production Version 1.2 in review.** Version 2.0, Technical Product
+Marketing Version 1.6 and Events and Multimedia Production Version 1.1 are published. Events Version
+1.2 (one editorial reel in the hero, in place of the three programs and their control, set beneath an
+editorial header as a trial; the activation's television calmed to one charger card and its projection's
+edge tightened; the Amplify section folded into the conclusion; and the way on to the next case study as
+one shared container on both case studies) is committed locally and not pushed until it has been
+reviewed in the browser. Three of its directions wait for John's confirmation and are not built: the
+signal icon after AMPLIFY., the Expanding Production Deck and the shortened copy inside its chapters.
+Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -41,15 +43,17 @@ browsing session, with a short sequence; since Version 1.2 it is three phrases, 
 handing over to the hero in about 3.8 seconds.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
-1.0, now at Version 1.1 (see [Events and Multimedia Production, Version
-1.1](#events-and-multimedia-production-version-11)): a hero with one program monitor and three reels,
-Q01 LIVE (the default), Q02 CONVERSATIONS and Q03 PRODUCED, crossfading from one to the next under one
-compact control; a transition, SECURE. BUILD. CAPTURE. CUT. AMPLIFY., revealed word by word as the
-reader scrolls; then the activation (an original 3D render of the booth whose television and projected
-wall play their loops), the Sui Summit session, the production room from setup to final output, Sui
-Fest, what continued after the event, and a conclusion that runs straight into Contact, with no next
-case study. One credit block closes each major chapter, and every media slot still waiting for its
-final asset is a placeholder at its final ratio in `npm run dev` only.
+1.0, now at Version 1.2 (see [Events and Multimedia Production, Version
+1.2](#events-and-multimedia-production-version-12)): a hero whose headline and paragraph share one
+header row above a full-width cinematic reel of four chapters (01 / LIVE PRESENTATION, 02 / CREATOR
+PODCAST, 03 / TECHNICAL EXPLAINER, 04 / EVENT FILM; the team interview joins as the third once its
+footage is approved), played through in order and crossfading from one to the next; a transition,
+SECURE. BUILD. CAPTURE. CUT. AMPLIFY., revealed word by word as the reader scrolls; then the activation
+(an original 3D render of the booth whose television and projected wall play their loops), the Sui
+Summit session, the production room from setup to final output, Sui Fest, and a conclusion that closes
+on the five stages and leads on to the next case study, Creator Campaigns, before Contact. One credit
+block closes each major chapter, and every media slot still waiting for its final asset is a
+placeholder at its final ratio in `npm run dev` only.
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -213,20 +217,26 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   must appear in its text exactly once, or the build stops (`src/lib/tpm-copy.ts`). The page's metadata and its Select Work
   card still come from the case study's frontmatter; its older MDX body is no longer rendered. The
   opening sequence's three phrases are in `src/components/Intro.astro`.
-- **Events and Multimedia Production** (Version 1.1): `src/data/events.json` holds every word on the
+- **Events and Multimedia Production** (Version 1.2): `src/data/events.json` holds every word on the
   page and its media configuration, section by section. `stages`: the five stages (Secure, Build,
   Capture, Cut, Amplify), read by the transition's phrase, the sections' tallies and the conclusion.
-  `hero`: the kicker, the headline and its `accent`, the paragraph, the `default` reel and the three
-  `programs` (each with its cue, `q`, its name, `label`, what it holds, `means`, read to assistive
-  technology and never shown, and its asset id). `transition`: where the phrase breaks on small
-  screens. Each section after that names the stages it covers (`cues`), its headline and copy, its
-  media (asset ids), its chapters, steps, caption, stills, outcome or trail, the slots still waiting
-  for final media (`pending`) and, where it closes a chapter, its `credits`; `credits.ethdenver` is the
-  one block for the Sui Summit work at ETHDenver, which closes the production room. `conclusion` holds
-  the headline, its accent and the paragraph; there is no next case study. The activation render's
-  geometry and its screens' brightness over time are in `src/data/ev-activation.json`, written by
-  `scripts/render/activation-composite.py`. The page's metadata and its Select Work card still come
-  from the case study's frontmatter; its older MDX body is no longer rendered.
+  `hero`: the kicker, the headline and its `accent`, the paragraph, the reel's `chapters` in their order
+  (each with its `key`, its `title`, shown in capitals after its number, its asset id, `pos`, the crop
+  of the wide frame as an object position, and `fitNarrow`, `contain` to show a video wider than 16:9
+  whole on narrow screens) and the pause control's words (`pause`, `play`, and `playShown`, the words on
+  the control while the reel waits on its poster). A chapter appears only when its asset is approved and
+  present, and the chapters are numbered among those, so a pending chapter (the team interview) leaves
+  no gap. `transition`: where the phrase breaks on small screens. Each section after that names the
+  stages it covers (`cues`), its headline and copy, its media (asset ids), its chapters, steps, caption,
+  stills or outcome, the slots still waiting for final media (`pending`) and, where it closes a chapter,
+  its `credits`; `credits.ethdenver` is the one block for the Sui Summit work at ETHDenver, which closes
+  the production room. `conclusion` holds the headline, its accent, the paragraph, the sentence that
+  leads on (`nextLine`) and the case study it leads to (`next`, which must be the next in the
+  collection's order, wrapping around to the first, or the build stops). The activation render's
+  geometry, its screens' brightness over time and their luminance in the still are in
+  `src/data/ev-activation.json`, written by `scripts/render/activation-composite.py`. The page's
+  metadata and its Select Work card still come from the case study's frontmatter; its older MDX body is
+  no longer rendered.
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -1124,7 +1134,10 @@ public-facing expression." Centered as before; the words are unchanged.
   same strategic foundation." Then (V1.4), in place of the "Next case study" label and title, one
   conversational sentence, the whole of it the link to the next case study, Events and Multimedia
   Production (`/work/events-video/`): "Next, see how I bring events and multimedia production from
-  concept through execution."
+  concept through execution." Since the Events V1.2 brief the sentence sits in the case studies' shared
+  way on (`NextCase.astro`): one bordered, gently rounded container about as wide as the paragraph,
+  the sentence at the left and the arrow in a small circle at the right (see [Events and Multimedia
+  Production, Version 1.2](#events-and-multimedia-production-version-12)).
 - **The closing ground** (V1.5): one continuous movement from the campaign into Contact, black, deep
   charcoal teal, the established Contact green. The campaign keeps its black; the conclusion begins on
   that same black (#0D0F10) and turns as it goes, through a deep charcoal teal (#141E1F at its middle),
@@ -1247,6 +1260,163 @@ public-facing expression." Centered as before; the words are unchanged.
   to 16px rise, 102% and softness, the name, navigation and information in that order, the still
   crossfade for reduced motion, the head decision's guards, the preloads matching the hero's pictures
   and the stylesheet's faces, the dismissal events and the homepage-only placement.
+
+### Events and Multimedia Production, Version 1.2
+
+John's Events and Multimedia Production V1.2 Draft Brief (October 14, 2026, on the live page after
+Version 1.1): again a delta, not a rebuild. It implements only the changes the brief locks, and
+everything else stays as Version 1.1 left it (the sections below describe the page as it was; where they
+differ, this section is the current one). Three directions the brief proposes wait for John's
+confirmation and are not built: the custom signal icon after AMPLIFY., the Expanding Production Deck
+(LIVE PRESENTATION, PRODUCTION ROOM, EVENT FILM) and the shortened copy inside its chapters; until then
+04, 05 and 06 stay as they were. The hero's new composition is built, as the brief asks, as a trial to
+be judged in the deployed preview. The page now runs: 01 Hero, 02 the transition, 03 Build the
+activation, 04 Command the room, 05 From setup to final output, 06 Sui Fest, 07 the conclusion (with
+the way on to the next case study), Contact.
+
+- **01 Hero: one editorial reel.** The kicker, the headline, the paragraph, the tally light and the
+  palette are as they were. V1.1's three programs and their control (Q01 LIVE, Q02 CONVERSATIONS, Q03
+  PRODUCED, with their buttons) are gone; in their place one reel plays its chapters in a fixed order,
+  each played through once and crossfaded (350ms) into the next, and after the last it begins again.
+  The label at the frame's top left reads the chapter's number and title in capitals, "01 / LIVE
+  PRESENTATION", and stays the same through every cut inside the chapter; nowhere in the hero is there
+  a file name, an event, a place, a date or a subline. The production accents stay: the corner
+  brackets outside the frame, the label, the running timecode at the top right (the reel's own clock,
+  carried through the chapters), a small pause control beside it (the reel's only control: no next,
+  previous or category buttons), and one small segmented progress rail along the frame's bottom edge,
+  a segment to a chapter, filling in the accent as its chapter plays, with no words beneath it (a faint
+  shade along that edge keeps it legible on any picture). Only the chapter on air plays, muted; the
+  next starts to load three seconds before the end. The reel pauses off screen and in a hidden tab;
+  with reduced motion, a data-saving preference or a refused autoplay it rests on the first chapter's
+  poster with an explicit "Play reel" control at the middle of the frame (played on request, it runs as
+  usual and the control becomes its pause); without JavaScript, the first chapter with its native
+  controls and none of the readings.
+- **The chapters**, in this order (`hero.chapters` in `events.json`; `public/media/`, cut from the
+  masters in the Portfolio folder, which stay outside the repository; 23.976 fps, H.264 High with its
+  index first, no audio). A chapter appears only once its video is approved and present, and the
+  chapters are numbered among those, so until the team interview arrives the reel runs four chapters and
+  the explainer and the event film carry 03 and 04, with no gap, placeholder or "coming soon":
+
+  | Label | File | Cut from | Length | Size |
+  | --- | --- | --- | --- | --- |
+  | 01 / LIVE PRESENTATION | `ev-hero-presentation.mp4`, 1600x742 (the recording's own 2.157:1) | Max Presentation, three passages joined by two restrained dissolves of 0.334 s (8 frames), with no title card or black: A, 0:00 to 0:04.2 (the opening, "I'm Max, I am one of the core contributors to Bolt"); B, 6:03.154 to 6:05.78 ("which are the pools that are actually sitting on chain."); C, 20:16 to 20:20 ("It's a fairly simple integration. Primarily we've seen people") | 10.2 s | 1.1 MB |
+  | 02 / CREATOR PODCAST | `ev-hero-podcast.mp4`, 1600x900 | Jungle Talk 0:00 to 0:04 only, a light denoise | 4.0 s | 2.0 MB |
+  | 03 / TEAM INTERVIEW (pending) | `ev-hero-team-interview.mp4` | the Singapore team interview; its file and usable range come from John, never selected here from the full recording | | |
+  | 03 / TECHNICAL EXPLAINER (04 once the interview is in) | `ev-hero-explainer.mp4`, 1600x900 | Bolt Explainers, Slippage 0:15.18 to 0:24 | 8.8 s | 1.2 MB |
+  | 04 / EVENT FILM (05 once the interview is in) | `ev-hero-event-film.mp4`, 1600x900 | Sui Fest, back to back with clean cuts: the opening 0:03 to 0:06; the B-roll 0:07.007 to 0:10.877 (on the montage's own cuts inside 0:07 to 0:11); the interview 2:36.32 to 2:40 (in on the cut that opens it) | 10.6 s | 3.4 MB |
+
+  The cue points were found in the source audio (word timings from a speech-recognition pass and the
+  audio's own onsets) and checked against the burned-in captions. Passage B ends before its caption
+  clears. Passage C keeps to its range, which ends on "Primarily we've seen people": the sentence's last
+  words, "use our TypeScript SDK.", run from 20:20.05 to about 20:21.0, just past it. The explainer
+  begins on the first frame of the spoken "One is related to just" (the voice begins at 0:15.20; the
+  caption and the wide shot arrive earlier, at 0:15.06), frame 364 at 0:15.182, so the phrase before it,
+  "There's a few different components that can cause slippage", is left out; it ends on the approved
+  0:24. Food Talk is not used anywhere: the range once logged as Jungle Talk 12:48 to 12:52 belonged to
+  it, and it left with V1.1's Q02. Posters are each chapter's first frame (the presentation's at
+  0:00.2, its title slide). To add the team interview, cut its approved range to
+  `public/media/ev-hero-team-interview.mp4` with a poster, and approve its entry in `assets.json`
+  (with its duration, poster and source): the reel places it third and renumbers to five chapters with no
+  other change. V1.1's reels (`ev-hero-live.mp4`, `ev-hero-conversations.mp4`, `ev-hero-produced.mp4`)
+  and their posters are gone.
+- **The hero's composition, an implementation trial.** The kicker above; one header row with the
+  headline at the left (63 parts of the width) and the paragraph at the right (33 parts, 4% apart), set
+  against the headline's lower lines (its last line on the headline's last line, never taller than the
+  headline); then the reel beneath, the content's full width, in a wide cinematic frame of 2.2:1. On
+  shorter wide screens, which is most laptops (960px tall or less and wider than 3:2), the frame widens
+  a little, to 2.4:1, still full width, and the header tightens (less room above the kicker and between
+  the rows, the headline at 7.6% of the screen's height and never under 3.75rem), so the whole reel, its
+  rail included, stays within the first screen. Each chapter sets its own crop of the frame (`pos`),
+  chosen so the burned-in captions stay whole and clear of the rail and heads stay in at both
+  proportions (the presentation 50% 92%, the podcast 50% 75%, the explainer 50% 62%, the event film 50%
+  83%). Under 60rem the kicker, the headline, the paragraph and the reel simply stack; under 40rem the
+  frame is 16:9, and the presentation, whose own frame is wider, shows whole, letterboxed and set a
+  little low, so the label rides on the band above the picture and the rail on the band beneath its
+  captions; under 24rem the timecode steps aside (the label and the control stay).
+- **03 The activation.** The section's eyebrow (the stages Secure and Build) is gone; the other sections
+  keep their tallies. The paragraph's first sentence now reads "Bolt Liquidity sponsored the Sui Summit
+  side event at ETHDenver in 2025 and 2026."; the rest is as it was. The television now plays only the
+  charger card: `TV Loop.mp4` 0:29.20 to 0:34.90 (`ev-activation-tv.mp4`, 960x540, 5.8 s, 0.27 MB),
+  from the first frame of the yellow ground as "Want a wireless Bolt charger?" animates into view,
+  through the three steps appearing (complete at 0:33.9), to about a second's hold on the completed card,
+  muted, with nothing added. It restarts with a plain cut: the card's last frame and the loop's first are
+  the same yellow, so the restrained fade the brief allows was not needed. The brief's 0:30 to 0:36 moved
+  0.8 s earlier, because at 0:30 the headline has already finished arriving and 0:36 would hold the card
+  for two seconds. Its poster is 0:34.5, the completed card; the render's still and the light it throws
+  on the room were remade from the new loop. The projection keeps `Big Screen Loop.mp4` 0:07 to 0:15; its
+  soft edge is a third narrower (the mask's feather 0.093 of the frame, from V1.1's 0.14), keeping its
+  softness, its light on the room and the wall's texture, never hard-edged, and it stays lower in
+  luminance than the television (in the still the wall's surface averages 0.20 and the television's
+  0.75, written to `ev-activation.json` as `surface`; the projection's strength is still 0.34).
+- **07 The conclusion, with Amplify folded in.** The standalone Amplify section ("Every event opens a
+  longer conversation.", its paragraph, its five-step trail, its outcome line, its pending slots and its
+  credit block) is gone, with `EvAfter.astro` and its two pending manifest entries (a named integration
+  and partner logos, never published). The conclusion keeps its centered composition, its generous
+  negative space and its ground, black turning to exactly the Contact green: the static row of square
+  markers, SECURE · BUILD · CAPTURE · CUT · AMPLIFY, all lit, a quiet callback never animated a second
+  time; "The room clears. The work keeps moving." (the second sentence in the accent); then "An event is
+  only the starting point. I turn live moments into content, extend their reach through partner and
+  ecosystem distribution, and carry that momentum into strategic relationships and new opportunities."
+  No evidence rail, metrics, cards or line-and-node sequence, and no partner or integration named. Then
+  the way on to the next case study, and Contact rises out of its lower part as before. The page now has
+  two credit blocks: the Sui Summit work at ETHDenver, closing the production room, and Sui Fest.
+- **The way on to the next case study, on both case studies** (`src/components/NextCase.astro`): one
+  wide container, about as wide as the conclusion's paragraph (46rem here, 53rem on Technical Product
+  Marketing), bordered and gently rounded (14px, not a pill), the whole of it the link, with generous
+  room above it; the sentence at the left and the arrow in a small circle (2.5rem) at the right. On hover
+  or keyboard focus a light accent wash comes in and the arrow moves 4px to the right; keyboard focus
+  adds a strong 2px ring; with reduced motion the arrow stays put. It is a navigation landmark named
+  "Next case study"; the sentence names where it leads, and the arrow is hidden from assistive
+  technology. Here: "Next, see how I build creator partnerships into campaigns designed to travel."
+  (Creator Campaigns: the collection wraps around, and the build stops if `conclusion.next` is missing
+  or out of order). On Technical Product Marketing the sentence it already had, "Next, see how I bring
+  events and multimedia production from concept through execution.", moved from a linked line of text
+  into the same container; nothing else on that page changed.
+- **Kept as they were**: the transition (the phrase itself is locked; the proposed icon after AMPLIFY. is
+  not built), the Sui Summit session, the production room, Sui Fest and Contact. The brief's treatment
+  reference for the icon is kept with the project, outside Git, as
+  `reference/events-video/amplify-icon-treatment.png`; nothing on the site points at a desktop file.
+- **Checks** (`verify.mjs`, the Events block updated for V1.2): the page's order with the conclusion
+  last before Contact; the hero's words; no LIVE, CONVERSATIONS or PRODUCED control and no Q cues; one
+  button in the hero, the labeled pause control; `events.json` ordering the five chapters; the chapters
+  shown being exactly the approved and present ones, numbered in order (four, with these labels, while
+  the interview is pending; five, the interview third, once it is in), and no placeholder, "TBD" or
+  "coming soon"; the label reading the first chapter in capitals; no file, event, place or date name in
+  the hero's readings, chapter titles or descriptions; one muted, inline, unlooped video per chapter
+  with a poster that loads nothing early, each an approved chapter of 3 to 15 seconds; Food Talk
+  nowhere; the presentation's three passages and their 0.334 s dissolves; the explainer's first frame on
+  "One is related to just", found in the source audio, and its approved end; the 2.2:1 frame (16:9 on
+  narrow screens, and only a little wider, 2.3 to 2.45:1, on shorter wide screens), the presentation
+  whole on narrow screens, each chapter's own crop, a 300 to 400ms crossfade and one chapter on at a
+  time; the brackets, the label and the timecode; one segmented rail, a segment to a chapter, with no
+  words, and no text beneath the reel; the explicit Play control while the reel waits; the trial's
+  order and proportions (the headline 60 to 65%, the paragraph 30 to 35%, set to the headline's lower
+  lines, a simple stack on narrow screens); the activation without its eyebrow, the sponsorship
+  attributed to Bolt Liquidity, the television on the charger card (5 to 7 seconds), the projection
+  below the television's luminance and its feather a third narrower; the Amplify section and its
+  component gone; the conclusion's copy, its static row of the five stages (hidden from assistive
+  technology, never animated or revealed) and nothing else in it; on both case studies the one way on,
+  to the next case study in order, its sentence word for word, its shape (bordered, gently rounded,
+  the sentence left, the arrow in a circle), its hover and focus (a light wash, a small arrow movement,
+  a strong ring, the arrow still with reduced motion), its landmark and its width about the paragraph's;
+  two credit blocks; and V1.1's reels gone. Each of these was shown to catch what it guards: on a
+  scratch copy of the repository, 70 deliberate breaks (a category control back, a chapter out of order,
+  a pending chapter counted, a file name in the label, the explainer starting early, a pill or an
+  unfocusable way on, the Amplify section or a V1.1 reel left behind, and so on), one at a time, each
+  failed the check meant for it or stopped the build.
+- **Verified** in the browser: the whole reel within the first screen at 2560x1440, 2560x1310,
+  1920x1080, 1920x950, 1728x990, 1680x1050, 1600x900, 1536x864, 1512x857, 1470x830, 1440x900,
+  1366x768, 1280x800, 1180x820, 1024x768, 768x1024, 390x844 and 320x640 (at 1440x790 only the lower crop
+  marks fall just below it; in the shortest laptop windows, 1536x730 and 1366x657, the reel's lower edge
+  runs below the first screen), with no horizontal overflow at any of them; every chapter's captions
+  whole and clear of the rail at 2.2:1, 2.4:1 and on a phone; with reduced motion and without
+  JavaScript; in a behavior run of 29 checks (the four chapters in order, each crossfading into the next
+  with its label, the rail filling and the earlier segments full, the timecode carrying on, the reel
+  beginning again after the last, the pause control, pausing off screen and resuming, the activation's
+  screens playing in view, the television's loop under six seconds and looping, Sui Fest's silent play,
+  the way on's target, width and focus ring, no page errors, the waiting state and play on request with
+  reduced motion, the phone's 16:9 frame with the presentation whole, and the desktop's proportions);
+  and with the full check and the accessibility scan.
 
 ### Events and Multimedia Production, Version 1.1
 
@@ -1625,18 +1795,18 @@ src/
                         tpm-motion.ts (the Technical Product Marketing page's stages,
                         walkthroughs and film), tpm-copy.ts (its emphasis), tpm-iso.ts (the
                         hero's isometric system: its drawing engine, scene and timeline),
-                        ev-media.ts (the Events page's program, players, loops and
+                        ev-media.ts (the Events page's reel, players, loops and
                         reveals), ev-stage.ts (its activation render's playing screens),
                         ev-copy.ts (its time labels)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
   components/           Intro (the homepage opening sequence), Hero, About, LogoBar, WorkPanels
                         (Select Work), WorkReel, Capabilities (From positioning to production),
-                        Contact, Media, …
+                        Contact, NextCase (the case studies' way on to the next), Media, …
   components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 the statement), TpmWebsite, TpmDocs,
                         TpmCampaign (06), TpmConclusion (07), TpmCase (a chapter's opening),
                         TpmWalkthrough (the walkthroughs' player), DocIcon
-  components/events/    EvHero, EvTransition, EvActivation, EvRoom, EvSetup, EvSuiFest, EvAfter,
+  components/events/    EvHero, EvTransition, EvActivation, EvRoom, EvSetup, EvSuiFest,
                         EvConclusion, EvCue (a section's tally), EvCredits, EvPlayer (a video
                         with sound), EvSlot (a media slot), EvExtras (a section's slots to come)
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …

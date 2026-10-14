@@ -6,10 +6,12 @@
  * into Contact. A synthesis, not a summary: the headline (each sentence on its
  * own line where there is room, one phrase in the accent), one paragraph as
  * wide as the page's other primary paragraphs, and then one conversational
- * sentence that closes this story and opens the next. The whole sentence is
- * the link to the next case study, with a small arrow at its end that moves a
- * little on hover; no label, no card, no rule. No metrics, services, credits
- * or roles are repeated here.
+ * sentence that closes this story and opens the next. Since the Events V1.2
+ * brief the sentence sits in the case studies' shared way on (NextCase): one
+ * understated bordered container about as wide as the paragraph, the whole of
+ * it the link, the sentence to the left and a small circled arrow at the
+ * right, a light accent wash and a small arrow movement on hover or focus.
+ * No metrics, services, credits or roles are repeated here.
  *
  * V1.5: one continuous closing ground. The flagship campaign's black carries
  * on into the conclusion, which begins nearly black and turns, as it goes, to
@@ -32,7 +34,7 @@ import { getCollection } from 'astro:content';
 import tpm from '@data/tpm.json';
 import { emphasize } from '@lib/tpm-copy';
 import { withBase } from '@lib/paths';
-import Icon from '@components/Icon.astro';
+import NextCase from '@components/NextCase.astro';
 
 const { conclusion } = tpm;
 // One line per sentence, the accent within whichever sentence carries it.
@@ -49,9 +51,6 @@ if (!next) throw new Error(`[tpm] the conclusion's onward sentence leads to "${c
 if (following && following.id !== next.id) {
   throw new Error(`[tpm] the conclusion's onward sentence leads to "${next.id}", but the next case study in order is "${following.id}"; update conclusion.next and conclusion.nextLine in tpm.json together`);
 }
-// The arrow never wraps onto a line of its own: it travels with the last word.
-const words = conclusion.nextLine.trim().split(/\s+/);
-const last = words.pop() ?? '';
 ---
 
 <section class="tpm-conclusion" data-surface="dark" aria-labelledby="tpm-conclusion-title" data-tpm-conclusion>
@@ -62,13 +61,9 @@ const last = words.pop() ?? '';
       </h2>
       <p class="tpm-conclusion__copy">{conclusion.copy}</p>
     </div>
-    <nav class="tpm-onward" aria-label="Next case study">
-      <p class="tpm-onward__line">
-        <a class="tpm-onward__link" href={withBase(`/work/${next.id}/`)}>
-          {words.join(' ')}{words.length ? ' ' : ''}<span class="tpm-onward__end">{last}<Icon name="arrow-right" size="0.8em" class="tpm-onward__arrow" /></span>
-        </a>
-      </p>
-    </nav>
+    <div class="tpm-onward">
+      <NextCase href={withBase(`/work/${next.id}/`)} line={conclusion.nextLine} />
+    </div>
   </div>
 </section>
 
@@ -153,10 +148,10 @@ const last = words.pop() ?? '';
     text-wrap: pretty;
   }
 
-  /* ---- the way on: one sentence, the whole of it the link -------------------------- */
-  /* The paragraph's size, a step brighter and a little heavier, set apart by
-     space alone and lower in the frame: the page's last forward movement. */
+  /* ---- the way on: the shared container (NextCase), about as wide as the paragraph,
+     set apart by space and lower in the frame ------------------------------------------- */
   .tpm-onward {
+    width: 100%;
     max-width: 53rem;
     margin-top: 4rem;
   }
@@ -170,47 +165,6 @@ const last = words.pop() ?? '';
     .tpm-onward {
       margin-top: clamp(5rem, 3.6rem + 2.6vw, 6.25rem);
     }
-  }
-
-  .tpm-onward__line {
-    margin: 0;
-    font-size: var(--text-lg);
-    font-weight: 600;
-    line-height: 1.45;
-    text-wrap: balance;
-  }
-
-  .tpm-onward__link {
-    color: var(--heading);
-    text-decoration-line: underline;
-    text-decoration-color: var(--accent-line);
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.3em;
-    transition:
-      color var(--dur-fast) var(--ease-out),
-      text-decoration-color var(--dur-fast) var(--ease-out);
-  }
-
-  .tpm-onward__end {
-    white-space: nowrap;
-  }
-
-  .tpm-onward__link :global(.tpm-onward__arrow) {
-    display: inline-block;
-    margin-left: 0.35em;
-    vertical-align: -0.06em;
-    transition: transform var(--dur-fast) var(--ease-out);
-  }
-
-  .tpm-onward__link:hover,
-  .tpm-onward__link:focus-visible {
-    color: var(--accent-ink);
-    text-decoration-color: var(--accent);
-  }
-
-  .tpm-onward__link:hover :global(.tpm-onward__arrow),
-  .tpm-onward__link:focus-visible :global(.tpm-onward__arrow) {
-    transform: translateX(0.25em);
   }
 
   /* ---- wide screens: a full screen, the beats centered a little above the

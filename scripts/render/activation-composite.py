@@ -43,8 +43,8 @@ SPILL_TV = 0.85  # the television's light on the room, at full brightness
 SPILL_WALL = 0.42  # the projection's light on the room, at full brightness
 FLOOR = 0.25  # the spill never quite goes out: share of its strength at black
 GAIN = 1.6  # the spill passes are brightened by this much as they are written (a gentle glow at full strength)
-FEATHER = 0.14  # the projection's soft edge, as a share of its width (the same width of edge on its height)
-TV_LOOP = dict(source_in=6.5, poster=7.4)  # the loop file starts at the source's 6.5 s (its crossfaded head covers 6.0 to 6.5)
+FEATHER = 0.093  # the projection's soft edge, as a share of its width (the same width of edge on its height); V1.2 took a third off V1.1's 0.14
+TV_LOOP = dict(source_in=29.2, poster=34.5)  # V1.2: the loop file is the source's 29.2 to 34.9 s (the charger card); its poster, the completed card
 WALL_LOOP = dict(source_in=7.5, poster=14.2)
 RATE = 12  # brightness samples a second
 
@@ -177,6 +177,17 @@ out = screen(out, resize(tv, W, H), np.full((H, W), spill(SPILL_TV, tv_poster_lu
 tvv, tvcov = warp(tv_poster, geom['tv'], W, H)
 out = out * (1 - tvcov[..., None]) + tvv * tvcov[..., None]
 
+# ---- the two surfaces' luminance in the still (Rec. 709 weights on the display
+# values), so a check can hold the projection below the television (V1.2)
+def surface(q):
+    m = np.zeros((H, W), np.uint8)
+    cv2.fillPoly(m, [np.int32([[x * W, y * H] for x, y in q])], 1)
+    y = out[..., 0] * 0.2126 + out[..., 1] * 0.7152 + out[..., 2] * 0.0722
+    return float(y[m > 0].mean())
+
+
+surf = {'tv': round(surface(geom['tv']), 3), 'wall': round(surface(geom['wall']), 3)}
+
 # ---- write
 write(f'{A.out}/activation-plate.jpg', plate, 93)
 write(f'{A.out}/activation-render.jpg', out, 93)
@@ -186,15 +197,16 @@ m8 = np.clip(mask * 255 + 0.5, 0, 255).astype(np.uint8)
 cv2.imwrite(f'{A.out}/activation-wall-mask.png', np.dstack([np.full_like(m8, 255)] * 3 + [m8]), [cv2.IMWRITE_PNG_COMPRESSION, 9])
 
 data = {
-    '_readme': 'Written by scripts/render/activation-composite.py from the render passes (scripts/render/activation-booth.py): the screens\' corners (shares of the frame: top-left, top-right, bottom-right, bottom-left), the loops\' brightness over time (RATE samples a second, 0 to 1), and the layer strengths the page composes with, the same the static composite used.',
+    '_readme': 'Written by scripts/render/activation-composite.py from the render passes (scripts/render/activation-booth.py): the screens\' corners (shares of the frame: top-left, top-right, bottom-right, bottom-left), the loops\' brightness over time (RATE samples a second, 0 to 1), the layer strengths the page composes with (the same the static composite used), and each surface\'s mean luminance in the still (the projection held below the television).',
     'aspect': [W, H],
     'tv': geom['tv'],
     'wall': geom['wall'],
     'wallOpacity': WALL_OPACITY,
     'spill': {'tv': SPILL_TV, 'wall': SPILL_WALL, 'floor': FLOOR},
+    'surface': surf,
     'rate': RATE,
     'lum': {'tv': [round(x, 2) for x in tv_lum.tolist()], 'wall': [round(x, 2) for x in wall_lum.tolist()]},
 }
 with open(A.data, 'w') as fh:
     fh.write(json.dumps(data, separators=(',', ':')) + '\n')
-print('ok', W, H, 'tv lum at poster', round(tv_poster_lum, 2), 'wall', round(wall_poster_lum, 2), 'mask max', round(float(mask.max()), 3))
+print('ok', W, H, 'tv lum at poster', round(tv_poster_lum, 2), 'wall', round(wall_poster_lum, 2), 'mask max', round(float(mask.max()), 3), 'surfaces', surf)

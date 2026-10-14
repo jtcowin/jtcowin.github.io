@@ -1,0 +1,98 @@
+---
+/**
+ * The way on to the next case study (V1.2 of Events and Multimedia
+ * Production, for both completed case studies): one understated container,
+ * about as wide as the conclusion's paragraph and the whole of it the link,
+ * with the conversational sentence set to the left and the arrow in a small
+ * circle at the right. Not a pill and not a button: a quiet bordered panel,
+ * gently rounded. On hover or keyboard focus the accent washes in lightly and
+ * the arrow moves a little; keyboard focus adds a strong ring. With reduced
+ * motion the arrow stays put. The sentence names where it leads, so the link
+ * needs no other label; the navigation landmark is named for assistive
+ * technology.
+ */
+import Icon from '@components/Icon.astro';
+
+interface Props {
+  href: string;
+  line: string;
+}
+
+const { href, line } = Astro.props;
+---
+
+<nav class="next-case" aria-label="Next case study">
+  <a class="next-case__link" href={href}>
+    <span class="next-case__line">{line}</span>
+    <span class="next-case__go" aria-hidden="true"><Icon name="arrow-right" size={18} /></span>
+  </a>
+</nav>
+
+<style>
+  .next-case {
+    width: 100%;
+  }
+
+  .next-case__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1rem, 2.5vw, 2rem);
+    padding: clamp(1rem, 0.8rem + 0.6vw, 1.35rem) clamp(1rem, 0.8rem + 0.6vw, 1.35rem) clamp(1rem, 0.8rem + 0.6vw, 1.35rem) clamp(1.15rem, 0.9rem + 1vw, 1.75rem);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    color: var(--heading);
+    text-align: left;
+    text-decoration: none;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .next-case__line {
+    min-width: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-wrap: pretty;
+  }
+
+  .next-case__go {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    color: var(--accent-ink);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .next-case__link:hover,
+  .next-case__link:focus-visible {
+    border-color: var(--accent);
+    background-color: rgba(170, 213, 207, 0.08);
+  }
+
+  .next-case__link:hover .next-case__go,
+  .next-case__link:focus-visible .next-case__go {
+    transform: translateX(4px);
+  }
+
+  .next-case__link:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .next-case__go {
+      transition: none;
+    }
+
+    .next-case__link:hover .next-case__go,
+    .next-case__link:focus-visible .next-case__go {
+      transform: none;
+    }
+  }
+</style>

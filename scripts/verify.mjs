@@ -1410,9 +1410,30 @@ if (campEnd < 0 || conclusionAt < campEnd || tpmPage.slice(campEnd, conclusionAt
 // ---- 07 the conclusion (V1.3; renumbered and its way on rewritten in V1.4):
 // straight after the campaign and before Contact; the approved headline (its
 // second sentence in the accent) and paragraph, then one conversational
-// sentence, the whole of it the link to the next case study in the
-// collection's order, a small arrow at its end that moves a little on hover;
-// no label, card or rule. No metrics, services, credits or roles.
+// sentence leading to the next case study in the collection's order, since
+// the Events V1.2 brief inside the case studies' shared way on (below). No
+// metrics, services, credits or roles.
+// The case studies' shared way on (NextCase, Events V1.2): one understated
+// container about as wide as the conclusion's paragraph, the whole of it the
+// link: bordered and gently rounded (not a pill), the sentence set left and
+// the arrow in a small circle at the right; on hover and keyboard focus only a
+// light accent wash and a small arrow movement; a strong focus ring; the
+// arrow still with reduced motion.
+const nextCaseFailures = (tag) => {
+  const out = [];
+  const link = tpmRules(/^\.next-case__link$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const radius = Number((link.match(/border-radius:\s*([\d.]+)px/) || [])[1]);
+  if (!/border:\s*1px solid/.test(link) || !(radius >= 8 && radius <= 20) || !/display:\s*flex/.test(link) || !/justify-content:\s*space-between/.test(link) || !/text-align:\s*left/.test(link)) out.push(`${tag} the way on is one bordered, gently rounded container (not a pill), the sentence set left and the arrow at the right`);
+  const go = tpmRules(/^\.next-case__go$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  if (!/border-radius:\s*50%/.test(go) || !/border:\s*1px solid/.test(go)) out.push(`${tag} the arrow sits in a small circle`);
+  const hover = tpmRules(/^\.next-case__link:hover,\s*\.next-case__link:focus-visible$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const move = tpmRules(/^\.next-case__link:hover \.next-case__go,\s*\.next-case__link:focus-visible \.next-case__go$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const by = Number((move.match(/translate(?:X)?\(\s*([\d.]+)px/) || [])[1]);
+  if (!/background-color:\s*(?:rgba\(|#[0-9a-f]{8}\b)/i.test(hover) || !(by > 0 && by <= 6)) out.push(`${tag} on hover and keyboard focus only a light accent wash and a small arrow movement`);
+  if (!tpmRules(/^\.next-case__link:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body)) || tpmRules(/\.next-case/).some((r) => /outline:\s*(?:none|0)\b/.test(r.body))) out.push(`${tag} the way on has a strong keyboard focus ring`);
+  if (!tpmRules(/\.next-case__link:hover \.next-case__go/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transform:\s*none/.test(r.body))) out.push(`${tag} with reduced motion the arrow stays put`);
+  return out;
+};
 const NEXT_LINE = 'Next, see how I bring events and multimedia production from concept through execution.';
 const conclusionHtml = (tpmPage.match(/<section class="tpm-conclusion"[\s\S]*?<\/section>/) || [''])[0];
 if (!conclusionHtml) failures.push('[tpm] 07 the conclusion closes the case study');
@@ -1432,21 +1453,13 @@ else {
   if (links.length !== 1 || href !== `${BASE}/work/${nextCase.id}/` || tpmData.conclusion?.next !== nextCase.id) failures.push(`[tpm] the conclusion's one link leads to the next case study in order, ${nextCase.card} (found ${href})`);
   if (textOf(inner) !== NEXT_LINE || tpmData.conclusion?.nextLine !== NEXT_LINE) failures.push(`[tpm] the whole sentence is the link: "${NEXT_LINE}" (found "${textOf(inner)}")`);
   if (!NEXT_LINE.toLowerCase().includes(nextCase.card.toLowerCase())) failures.push(`[tpm] the sentence names the case study it leads to (${nextCase.card})`);
-  if (!/<span class="tpm-onward__end[^"]*"[^>]*>[^<\s]+<svg\b[^>]*class="tpm-onward__arrow"[^>]*aria-hidden="true"[\s\S]*?<\/svg>\s*<\/span>\s*$/.test(inner) || !tpmRules(/^\.tpm-onward__end$/).some((r) => /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] a small decorative arrow ends the sentence, traveling with its last word');
-  if (!/<nav class="tpm-onward"[^>]*aria-label="Next case study"/.test(conclusionHtml)) failures.push('[tpm] the way on is a navigation landmark, named for assistive technology');
-  const rest = spaced(conclusionHtml.replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<p class="tpm-conclusion__copy[\s\S]*?<\/p>/, '').replace(/<a\b[\s\S]*?<\/a>/, ''));
-  if (rest) failures.push(`[tpm] the conclusion carries nothing but its headline, its paragraph and the sentence that leads on, no "Next case study" label or title block (found "${rest}")`);
-  if (/\d\s*%|\bGoal\b|\bServices\b|\bCredits\b|\bBob\b|My role/.test(spaced(conclusionHtml))) failures.push('[tpm] the conclusion repeats no metrics, services, credits or roles');
-  // Not a card or boxed module; clickable at a glance, more so on hover and focus.
-  if (tpmRules(/\.tpm-onward/).some((r) => /(?:^|;)\s*(?:border(?:-[a-z]+)?|background(?:-color)?|box-shadow|outline)\s*:/.test(r.body))) failures.push('[tpm] the sentence is not a card or boxed module: no border, fill, shadow or outline of its own');
-  const linkRest = tpmRules(/^\.tpm-onward__link$/).map((r) => r.body).join(';');
-  if (!/text-decoration-line:\s*underline|text-decoration:\s*underline/.test(linkRest) || !/transition:[^;]*color/.test(linkRest)) failures.push('[tpm] the sentence reads as a link: a quiet underline, with a color transition');
-  const linkHover = tpmRules(/\.tpm-onward__link:hover(?:,|$)/).filter((r) => /\.tpm-onward__link:focus-visible(?:,|$)/.test(bare(r.sel))).map((r) => r.body).join(';');
-  if (!/color:/.test(linkHover) || !/text-decoration-color:/.test(linkHover)) failures.push('[tpm] on hover and keyboard focus the sentence and its underline take the accent');
-  const arrowMove = tpmRules(/\.tpm-onward__link:hover \.tpm-onward__arrow/).filter((r) => /:focus-visible \.tpm-onward__arrow/.test(bare(r.sel))).map((r) => r.body).join(';');
-  const arrowBy = arrowMove.match(/transform:\s*translate(?:X)?\(\s*([\d.]+)(px|em)/);
-  if (!arrowBy || (arrowBy[2] === 'em' ? Number(arrowBy[1]) > 0.4 : Number(arrowBy[1]) > 8)) failures.push('[tpm] the arrow moves only slightly on hover and focus');
-  if (tpmRules(/\.tpm-onward/).some((r) => /outline:\s*(?:none|0)\b/.test(r.body))) failures.push('[tpm] the sentence keeps the site\'s visible keyboard focus');
+  // Since the Events V1.2 brief: the case studies' shared way on (NextCase).
+  if (!/<nav class="next-case"[^>]*aria-label="Next case study"/.test(conclusionHtml)) failures.push('[tpm] the way on is a navigation landmark, named for assistive technology');
+  if (!/^\s*<span class="next-case__line[^"]*"[^>]*>[^<]+<\/span>\s*<span class="next-case__go[^"]*"[^>]*aria-hidden="true"[^>]*>\s*<svg\b/.test(inner)) failures.push('[tpm] the way on: the sentence first, then the arrow in its small circle, hidden from assistive technology');
+  failures.push(...nextCaseFailures('[tpm]'));
+  const onwardW = tpmRules(/^\.tpm-onward$/).filter((r) => !r.at).map((r) => remOf(r.body)).find((v) => v > 0);
+  const paraW = tpmRules(/^\.tpm-conclusion__copy$/).map((r) => remOf(r.body)).find((v) => v > 0);
+  if (!(onwardW > 0 && paraW > 0 && Math.abs(onwardW - paraW) <= 3)) failures.push(`[tpm] the way on is about as wide as the conclusion's paragraph (found ${onwardW}rem and ${paraW}rem)`);
 }
 
 // V1.5: the closing movement. The conclusion is a dark ground that begins on
@@ -1573,14 +1586,15 @@ if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" cl
 if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) failures.push('[tpm] the footer continues the brand surface');
 
 // ------------------------------------------ Events and Multimedia Production
-// Version 1.1 (the delta brief of October 14, 2026, on John's Combined Build
-// Brief): the third and final case study, on its own page. 01 Hero (one
-// program monitor, three reels: Q01 LIVE, Q02 CONVERSATIONS, Q03 PRODUCED,
-// under one compact control), 02 the transition (SECURE. BUILD. CAPTURE. CUT.
-// AMPLIFY., replacing the run of show), 03 Build the activation (an original
-// 3D render whose two screens play), 04 Command the room, 05 From setup to
-// final output, 06 Sui Fest, 07 What continued after, 08 the conclusion, then
-// Contact (no next case study). Copy is checked against the briefs; only
+// Version 1.2 (the V1.2 delta brief of October 14, 2026, on the V1.1 build and
+// John's Combined Build Brief): the third case study, on its own page. 01 Hero
+// (one editorial reel in a wide cinematic frame beneath the headline and its
+// paragraph; V1.1's three programs and their control are gone), 02 the
+// transition (SECURE. BUILD. CAPTURE. CUT. AMPLIFY.), 03 Build the activation
+// (an original 3D render whose two screens play), 04 Command the room, 05 From
+// setup to final output, 06 Sui Fest, 07 the conclusion (V1.2 folded the
+// standalone section on what continued after into it), with the way on to the
+// next case study, then Contact. Copy is checked against the briefs; only
 // public-safe outcomes, no unverified metrics.
 {
   const evPage = fs.readFileSync(path.join(dist, 'work/events-video/index.html'), 'utf8');
@@ -1608,10 +1622,10 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   };
   if (/class="cs-hero[\s"_]/.test(evPage) || /My role/.test(evText)) failures.push('[events] the page has its own hero and no "My role" line: credits sit with the work they describe');
   if (/class="tpm-/.test(evNoCode)) failures.push('[events] the page shares no Technical Product Marketing component: its own structure and motion');
-  const order = [['hero', '<section class="evh"'], ['transition', '<div class="evx"'], ['activation', '<section class="eva"'], ['room', '<section class="evm"'], ['setup', '<section class="evs"'], ['suifest', '<section class="evf"'], ['after', '<section class="evt"'], ['conclusion', '<section class="evc"'], ['contact', 'id="contact"']].map(([n, s]) => [n, evPage.indexOf(s)]);
-  if (order.some(([, i]) => i < 0) || order.some(([, i], k) => k && i < order[k - 1][1])) failures.push(`[events] the page runs hero, transition, activation, room, setup to final, Sui Fest, after, conclusion, Contact (${order.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
+  const order = [['hero', '<section class="evh"'], ['transition', '<div class="evx"'], ['activation', '<section class="eva"'], ['room', '<section class="evm"'], ['setup', '<section class="evs"'], ['suifest', '<section class="evf"'], ['conclusion', '<section class="evc"'], ['contact', 'id="contact"']].map(([n, s]) => [n, evPage.indexOf(s)]);
+  if (order.some(([, i]) => i < 0) || order.some(([, i], k) => k && i < order[k - 1][1])) failures.push(`[events] the page runs hero, transition, activation, room, setup to final, Sui Fest, conclusion, Contact (${order.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
 
-  // ---- 01 Hero: the approved words; one monitor, three reels, one compact control
+  // ---- 01 Hero (V1.2): the approved words; one editorial reel, no category control
   const EV = {
     kicker: '03 / Events and Multimedia Production',
     headline: 'From live experience to lasting momentum.',
@@ -1622,43 +1636,68 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (one(hero, /<p class="evh__kicker[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== EV.kicker) failures.push(`[events] the kicker reads "${EV.kicker}"`);
   if (one(hero, /<h1 id="ev-title"[^>]*>([\s\S]*?)<\/h1>/) !== EV.headline) failures.push(`[events] the headline reads "${EV.headline}"`);
   if (one(hero, /<p class="lede evh__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== EV.copy) failures.push('[events] the hero carries the approved supporting copy');
-  const control = block(hero, '<div class="evh__cues"');
-  const cues = [...control.matchAll(/<button\b[^>]*class="evh__cue"[^>]*>[\s\S]*?<\/button>/g)].map((m) => ({
-    key: (m[0].match(/data-cue-btn="(\w+)"/) || [])[1],
-    pressed: (m[0].match(/aria-pressed="(\w+)"/) || [])[1],
-    shown: textOf(norm(m[0].replace(/<span class="sr-only"[\s\S]*?<\/span>/g, ''))).toUpperCase(),
-    name: decode((m[0].match(/aria-label="([^"]*)"/) || [, ''])[1]),
-  }));
-  if (cues.map((c) => c.shown).join(' / ') !== 'Q01 LIVE / Q02 CONVERSATIONS / Q03 PRODUCED') failures.push(`[events] the control shows only Q01 LIVE, Q02 CONVERSATIONS, Q03 PRODUCED (found ${cues.map((c) => c.shown).join(' / ')})`);
-  const MEANS = ['Presentations and event environments', 'Interviews, podcasts, and exchanges', 'Polished explainers and finished multimedia'];
-  if (cues.some((c, i) => !c.name.startsWith(`${['Q01 Live', 'Q02 Conversations', 'Q03 Produced'][i]}: `) || !c.name.endsWith(MEANS[i]))) failures.push('[events] each cue\'s name carries its cue and title and, for assistive technology only, what the reel holds');
-  if (/evh__cue-source|evh__cue-line|<small\b/.test(control) || cues.some((c) => /[a-z]{4,}/.test(c.shown.replace(/^Q0\d\s+\w+$/, '')))) failures.push('[events] no descriptive sublines beneath the controls');
+  // The category system is gone: no LIVE, CONVERSATIONS or PRODUCED control, no chapter buttons, one control (pause and play).
+  if (/class="evh__cues|data-cue-btn|data-ev-program|aria-label="Program"/.test(hero) || /\b(?:Q0\d|CONVERSATIONS|PRODUCED)\b/i.test(textOf(hero))) failures.push('[events] the LIVE, CONVERSATIONS and PRODUCED controls are gone from beneath the hero');
+  const heroButtons = [...hero.matchAll(/<button\b[^>]*>/g)].map((m) => m[0]);
+  if (heroButtons.length !== 1 || !/data-reel-toggle/.test(heroButtons[0] || '') || !/aria-label="[^"]+"/.test(heroButtons[0] || '')) failures.push(`[events] the reel has only its pause control: no next, previous or category buttons (found ${heroButtons.length} buttons)`);
+  // The chapters: in events.json's order, those whose video is approved and present, numbered in order; a pending one is absent.
+  const CHAPTERS = [['presentation', 'Live presentation'], ['podcast', 'Creator podcast'], ['team-interview', 'Team interview'], ['explainer', 'Technical explainer'], ['event-film', 'Event film']];
+  if (JSON.stringify((evData.hero?.chapters || []).map((c) => [c.key, c.title])) !== JSON.stringify(CHAPTERS)) failures.push('[events] events.json orders the reel: live presentation, creator podcast, team interview, technical explainer, event film');
+  const chapterReady = (c) => {
+    const a = evAsset(c.asset);
+    return a.permission === 'approved' && a.type === 'video' && Boolean(a.file) && fs.existsSync(path.join(root, 'public/media', a.file));
+  };
+  const expected = (evData.hero?.chapters || []).filter(chapterReady).map((c, i) => [c.key, String(i + 1).padStart(2, '0'), c.title]);
+  const shown = [...hero.matchAll(/<div\b[^>]*data-chapter-layer="([\w-]+)"[^>]*data-number="(\d+)"[^>]*data-title="([^"]+)"/g)].map((m) => [m[1], m[2], decode(m[3])]);
+  if (JSON.stringify(shown) !== JSON.stringify(expected)) failures.push(`[events] the reel shows its ready chapters in order, numbered in order (found ${shown.map((x) => x.join(' ')).join(', ')})`);
+  const interview = evAsset('ev-hero-team-interview');
+  if (interview.permission !== 'approved') {
+    if (JSON.stringify(shown.map(([, n, t]) => `${n} / ${t}`)) !== JSON.stringify(['01 / Live presentation', '02 / Creator podcast', '03 / Technical explainer', '04 / Event film'])) failures.push('[events] until the team interview arrives the reel runs four chapters: 01 / LIVE PRESENTATION, 02 / CREATOR PODCAST, 03 / TECHNICAL EXPLAINER, 04 / EVENT FILM');
+    if (/Team interview|team-interview/i.test(hero) || /Singapore Team|\bTBD\b|coming soon/i.test(evText)) failures.push('[events] no placeholder, disabled chapter or "coming soon" while the team interview is pending');
+  } else if (JSON.stringify(shown.map(([, n, t]) => `${n} / ${t}`)) !== JSON.stringify(['01 / Live presentation', '02 / Creator podcast', '03 / Team interview', '04 / Technical explainer', '05 / Event film'])) failures.push('[events] with the team interview in, the reel runs five chapters, the interview third');
+  if (textOf(block(hero, '<span data-reel-label')) !== `${expected[0]?.[1]} / ${expected[0]?.[2]}` || !evRules(/^\.evh__reading,\s*\.evh__tc$/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[events] the label at the top left reads the chapter\'s number and title, in capitals (01 / LIVE PRESENTATION)');
   const NAMES = /Sui Summit|ETHDenver|TOKEN2049|Singapore|Sui Fest|SuiFest|Jungle|Food Talk|Slippage|Max Presentation|McKendry|Bolt|20(?:25|26)|\.mp4|Denver/i;
-  if (NAMES.test(textOf(control)) || NAMES.test(decode(control.replace(/<[^>]+>/g, (t) => (t.match(/aria-label="([^"]*)"/) || [, ' '])[1])))) failures.push('[events] the control names no event, project, date, place, file or source');
-  const reading = block(hero, '<span data-program-cue');
-  if (textOf(reading).toUpperCase() !== 'Q01 LIVE') failures.push(`[events] the monitor's cue reading starts on Q01 LIVE (found ${textOf(reading)})`);
-  if (cues.filter((c) => c.pressed === 'true').map((c) => c.key).join() !== 'live' || !/data-ev-program[^>]*data-default="live"/.test(hero) || evData.hero?.default !== 'live') failures.push('[events] the program starts on Q01 LIVE');
-  if (!/<div class="evh__cues"[^>]*role="group" aria-label="Program"/.test(hero)) failures.push('[events] the reels are one named group of buttons');
-  const programAt = hero.indexOf('<div class="evh__program');
-  if (programAt < 0 || hero.indexOf('<div class="evh__monitor', programAt) < 0 || hero.indexOf('<div class="evh__cues', programAt) < hero.indexOf('<div class="evh__monitor', programAt) || hero.indexOf('<div class="evh__cues') > hero.indexOf('<div class="evh__side')) failures.push('[events] the control sits beneath the monitor, in the program\'s column');
-  if (!evRules(/^\.evh__cues$/).some((r) => /min-width:\s*40rem|width\s*>=\s*40rem/.test(r.at) && /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(r.body)) || !evRules(/^\.evh__cues$/).some((r) => !r.at && /grid-template-columns:\s*minmax\(0,\s*1fr\)/.test(r.body))) failures.push('[events] one row of three equal cells beneath the monitor; three compact rows on a narrow screen');
-  if (!evRules(/^\.evh__cue-fill$/).some((r) => /background:\s*var\(--accent-ink\)/.test(r.body)) || !evRules(/^\.evh__cue\[aria-pressed='?false'?\] \.evh__cue-fill$/).some((r) => /visibility:\s*hidden/.test(r.body)) || !evRules(/^\.evh__cue$/).some((r) => /color:\s*var\(--ink-3\)/.test(r.body))) failures.push('[events] the active reel has the thin teal progress line; the others stay muted gray');
+  const heroWords = textOf(hero.replace(/<p class="lede evh__lede[\s\S]*?<\/p>/, '').replace(/<h1\b[\s\S]*?<\/h1>/, '').replace(/<p class="evh__kicker[\s\S]*?<\/p>/, ''));
+  if (NAMES.test(heroWords) || shown.some(([, , t]) => NAMES.test(t))) failures.push(`[events] the hero shows no file name, event, place or date (found "${heroWords}")`);
+  const heroVideos = [...hero.matchAll(/<video\b[^>]*>[\s\S]*?<\/video>/g)].map((m) => m[0]);
+  if (heroVideos.length !== expected.length || heroVideos.some((v) => !/\bmuted\b/.test(v) || !/\bplaysinline\b/.test(v) || !/preload="none"/.test(v) || !/\bposter="/.test(v) || /\bautoplay\b/.test(v) || /<video\b[^>]*\bloop\b/.test(v))) failures.push('[events] one video per chapter, each muted, inline, unlooped, with a poster, and nothing loaded or autoplayed by the markup (the script plays the chapter on air)');
+  for (const c of (evData.hero?.chapters || []).filter(chapterReady)) {
+    const a = evAsset(c.asset);
+    if (!heroVideos.some((v) => v.includes(`/media/${a.file}`))) failures.push(`[events] the reel plays ${a.file}`);
+    if (!(a.duration >= 3 && a.duration <= 15) || !a.poster || !/^(?:16:9|2\.157:1)$/.test(a.aspect)) failures.push(`[events] ${c.asset} is an approved chapter of 3 to 15 seconds with its poster`);
+    if (NAMES.test(a.alt || '')) failures.push(`[events] ${c.asset}'s description names no event (it describes what is on screen)`);
+    if (/Food Talk\.mp4/.test(a.source || '')) failures.push(`[events] ${c.asset}: Food Talk is not used`);
+  }
+  if (/Food Talk/i.test(evText)) failures.push('[events] Food Talk appears nowhere on the page');
+  const pres = evAsset('ev-hero-presentation');
+  if (!/0:00 to 0:04\.2/.test(pres.source || '') || !/6:03\.154 to 6:05\.78/.test(pres.source || '') || !/20:16 to 20:20/.test(pres.source || '') || !/dissolves? of 0\.334 s/.test(pres.source || '')) failures.push('[events] the presentation chapter: the opening, the on-chain pools passage and 20:16 to 20:20, joined by 250 to 400ms dissolves');
+  const expl = evAsset('ev-hero-explainer');
+  if (!/0:15\.18 to 0:24/.test(expl.source || '') || !/One is related to just/.test(expl.source || '') || !/source audio/.test(expl.source || '')) failures.push('[events] the explainer begins on the first frame of "One is related to just", found in the source audio, and keeps its approved end');
+  // The cinematic frame (the composition is an implementation trial), its crop per chapter, its crossfade.
+  if (!evRules(/^\.evh__frame$/).some((r) => /min-width:\s*40rem|width\s*>=\s*40rem/.test(r.at) && /aspect-ratio:\s*2\.2(?:\s*\/\s*1)?\s*(?:;|$)/.test(r.body)) || !evRules(/^\.evh__frame$/).some((r) => !r.at && /aspect-ratio:\s*16\s*\/\s*9/.test(r.body))) failures.push('[events] the reel plays in a wide cinematic frame (2.2:1; 16:9 on narrow screens)');
+  // On shorter wide screens the frame may widen a little (2.3 to 2.45:1, still the content's full width), so the whole reel stays in the first screen.
+  const shortFrames = evRules(/^\.evh__frame$/).filter((r) => r.at && !/min-width:\s*40rem\)?\s*$|width\s*>=\s*40rem\)?\s*$/.test(r.at.trim()) && /aspect-ratio:/.test(r.body));
+  if (shortFrames.some((r) => !/max-height|height\s*<=/.test(r.at) || !(Number((r.body.match(/aspect-ratio:\s*([\d.]+)/) || [])[1]) >= 2.3 && Number((r.body.match(/aspect-ratio:\s*([\d.]+)/) || [])[1]) <= 2.45))) failures.push('[events] only shorter wide screens widen the frame, and only a little (2.3 to 2.45:1)');
+  if (!evRules(/^\.evh__layer--contain \.evh__video$/).some((r) => /max-width:\s*39\.99rem|width\s*<=?\s*39\.99rem|width\s*<\s*40rem/.test(r.at) && /object-fit:\s*contain/.test(r.body))) failures.push('[events] on narrow screens the presentation, wider than 16:9, shows whole');
+  if (!evRules(/^\.evh__video$/).some((r) => /object-fit:\s*cover/.test(r.body) && /object-position:\s*var\(--pos/.test(r.body)) || shown.length !== [...hero.matchAll(/data-chapter-layer="[\w-]+"[^>]*style="--pos:\s*\d+% \d+%"/g)].length) failures.push('[events] each chapter sets its own crop of the wide frame');
   const fade = evRules(/^\.evh__layer$/).map((r) => r.body).join(';');
   const fadeMs = Number((fade.match(/opacity\s+([\d.]+)s/) || [])[1]) * 1000;
-  if (!(fadeMs >= 300 && fadeMs <= 400)) failures.push(`[events] the reels crossfade in 300 to 400ms (found ${fadeMs || 'none'})`);
-  const REELS = [['live', 'ev-hero-live', 'ev-hero-live.mp4'], ['conversations', 'ev-hero-conversations', 'ev-hero-conversations.mp4'], ['produced', 'ev-hero-produced', 'ev-hero-produced.mp4']];
-  if (JSON.stringify((evData.hero?.programs || []).map((p) => [p.key, p.asset])) !== JSON.stringify(REELS.map(([k, id]) => [k, id]))) failures.push('[events] events.json lists the three reels in order');
-  const heroVideos = [...hero.matchAll(/<video\b[^>]*>[\s\S]*?<\/video>/g)].map((m) => m[0]);
-  if (heroVideos.length !== 3 || heroVideos.some((v, i) => !/\bmuted\b/.test(v) || !/\bplaysinline\b/.test(v) || !/preload="none"/.test(v) || !/\bposter="/.test(v) || /\bautoplay\b/.test(v) || /<video\b[^>]*\bloop\b/.test(v) || !v.includes(`/media/${REELS[i][2]}`))) failures.push('[events] one video per reel, each muted, inline, unlooped, with a poster, and nothing loaded or autoplayed by the markup (the script plays only the active one)');
-  for (const [, id] of REELS) {
-    const a = evAsset(id);
-    if (a.permission !== 'approved' || a.type !== 'video' || a.aspect !== '16:9' || !(a.duration >= 10 && a.duration <= 15) || !a.poster) failures.push(`[events] ${id} is an approved 16:9 reel of 10 to 15 seconds with its poster`);
-    if (NAMES.test(a.alt || '')) failures.push(`[events] ${id}'s description names no event (it describes what is on screen)`);
-  }
-  if (/Singapore Team|\bTBD\b/i.test(evText) || (hero.match(/<button\b[^>]*class="evh__cue"/g) || []).length !== 3) failures.push('[events] no placeholder for the Singapore team interview, and only the three reels');
-  if ((hero.match(/class="evh__layer[^"]*\bis-on\b/g) || []).length !== 1) failures.push('[events] only one reel is on the monitor');
-  if (!evRules(/^\.evh__monitor$/).some((r) => /aspect-ratio:\s*16\s*\/\s*9/.test(r.body))) failures.push('[events] the program monitor keeps one 16:9 frame for every reel');
-  if (!/data-program-tc/.test(hero) || !/data-program-cue/.test(hero) || !/data-program-toggle/.test(hero) || (hero.match(/class="evh__crop /g) || []).length !== 4) failures.push('[events] the monitor keeps its corner framing, its cue reading, its timecode at the upper right and its pause control');
+  if (!(fadeMs >= 300 && fadeMs <= 400)) failures.push(`[events] between chapters a restrained dissolve of 300 to 400ms (found ${fadeMs || 'none'})`);
+  if ((hero.match(/class="evh__layer[^"]*\bis-on\b/g) || []).length !== 1) failures.push('[events] only one chapter is on the frame');
+  // The production accents: the corner brackets, the label, the timecode, the pause control, one segmented rail and no words beneath it.
+  if (!/data-reel-tc/.test(hero) || !/data-reel-label/.test(hero) || (hero.match(/class="evh__crop /g) || []).length !== 4) failures.push('[events] the reel keeps its corner brackets, its label at the top left and its timecode at the top right');
+  const rail = block(hero, '<span class="evh__rail"');
+  if (!/aria-hidden="true"/.test(rail.match(/<span class="evh__rail"[^>]*>/)?.[0] || '') || (rail.match(/data-reel-seg=/g) || []).length !== expected.length || textOf(rail)) failures.push('[events] one segmented progress rail, a segment to a chapter, with no words');
+  const reelWords = textOf(block(hero, '<div class="evh__reel').replace(/<div class="evh__hud[\s\S]*?<\/div>/, '').replace(/<button\b[\s\S]*?<\/button>/, ''));
+  if (reelWords) failures.push(`[events] no text labels beneath the reel or along its rail (found "${reelWords}")`);
+  if (!evRules(/^\.evh__toggle-text$/).some((r) => /display:\s*none/.test(r.body)) || !evRules(/^\.evh__reel\.is-waiting \.evh__toggle-text$/).some((r) => /display:\s*inline/.test(r.body)) || !/class="evh__toggle-text[^"]*"[^>]*>Play reel</.test(hero)) failures.push('[events] with reduced motion the reel waits on its poster with an explicit Play control');
+  // The trial composition: the kicker, a header row (headline about 60 to 65%, paragraph about 30 to 35%, set to its lower lines), the reel beneath across the content.
+  const headAt = hero.indexOf('<header class="evh__head'), reelAt = hero.indexOf('<div class="evh__reel');
+  if (hero.indexOf('<p class="evh__kicker') > headAt || headAt < 0 || reelAt < headAt || block(hero, '<header class="evh__head').includes('evh__reel')) failures.push('[events] the kicker, then the header row, then the reel beneath it');
+  const headRule = evRules(/^\.evh__head$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+  const cols = (headRule.match(/grid-template-columns:\s*minmax\(0,\s*(\d+)fr\)\s*minmax\(0,\s*(\d+)fr\)/) || []).slice(1).map(Number);
+  if (!(cols[0] >= 60 && cols[0] <= 65 && cols[1] >= 30 && cols[1] <= 35) || !/align-items:\s*end/.test(headRule)) failures.push(`[events] on wide screens the headline takes about 60 to 65% and the paragraph about 30 to 35%, set against the headline's lower lines (found ${cols.join('/')})`);
+  if (evRules(/^\.evh__head$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push('[events] on narrow screens the headline, the paragraph and the reel simply stack');
   if (/<(?:video|audio)\b[^>]*\bautoplay\b/.test(evPage)) failures.push('[events] no video on the page autoplays from the markup');
 
   // ---- 02 The transition (V1.1): the run of show is gone
@@ -1698,21 +1737,36 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
     const got = one(evSection(cls), new RegExp(`<h2 id="${id}"[^>]*>([\\s\\S]*?)<\\/h2>`));
     if (got !== text) failures.push(`[events] headline: "${text}" (found "${got}")`);
   }
-  const after = evSection('evt');
-  if (!one(after, /<h2 id="ev-after-title"[^>]*>([\s\S]*?)<\/h2>/)) failures.push('[events] the section after the event has its headline');
-  if (/The room clears/.test(one(after, /<h2 id="ev-after-title"[^>]*>([\s\S]*?)<\/h2>/))) failures.push('[events] only the conclusion says "The room clears"');
-  const conclCopy = 'The strongest events do more than fill a room. They create content, relationships, conversations, and opportunities that continue long after the final session ends.';
+  // V1.2: the standalone Amplify section (what continued after) is folded into the conclusion.
+  if (/class="evt\b|id="ev-after|Every event opens a longer conversation/.test(evPage) || fs.existsSync(path.join(root, 'src/components/events/EvAfter.astro'))) failures.push('[events] the standalone Amplify section, its step list and its credits are gone (the conclusion carries its point)');
+  const conclCopy = 'An event is only the starting point. I turn live moments into content, extend their reach through partner and ecosystem distribution, and carry that momentum into strategic relationships and new opportunities.';
   const concl = evSection('evc');
-  if (one(concl, /<p class="evc__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== conclCopy) failures.push('[events] the conclusion carries the approved copy');
-  if (/<a\b/.test(concl) || /\bNext\b/.test(textOf(concl))) failures.push('[events] the last case study ends without a next case study');
+  if (one(concl, /<p class="evc__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== conclCopy || evData.conclusion?.copy !== conclCopy) failures.push('[events] the conclusion carries the approved copy');
+  // The static row of the five stages: a quiet callback, never animated a second time.
+  const conclCues = [...block(concl, '<p class="evc__cues"').matchAll(/<span class="evc__cue[^"]*"[^>]*>\s*<span class="evc__sq[^"]*"[^>]*><\/span>\s*([^<]+)<\/span>/g)].map((m) => textOf(m[1]));
+  if (conclCues.join(' ') !== 'Secure Build Capture Cut Amplify' || !/<p class="evc__cues"[^>]*aria-hidden="true"/.test(concl) || evRules(/^\.evc__(?:cues|cue|sq)$/).some((r) => /(?:^|;)\s*(?:animation|transition):/.test(r.body)) || /data-ev-reveal/.test(concl.match(/<p class="evc__cues"[^>]*>/)?.[0] || '')) failures.push(`[events] the conclusion keeps the static square markers and the five words, not animated again (found ${conclCues.join(', ')})`);
+  if (/<ul\b|<ol\b|<figure\b|<img\b|<video\b|evt__|evidence|\d+\s*%/.test(concl)) failures.push('[events] no evidence rail, metrics strip, card grid or line-and-node sequence in the conclusion');
+  // The way on to the next case study in the collection's order (it wraps around to the first).
+  const evCases = fs.readdirSync(path.join(root, 'src/content/work')).filter((f) => f.endsWith('.mdx')).map((f) => ({ id: f.replace(/\.mdx$/, ''), order: Number((fs.readFileSync(path.join(root, 'src/content/work', f), 'utf8').match(/^order:\s*(\d+)/m) || [])[1]) })).sort((a, b) => a.order - b.order);
+  const evNext = evCases[(evCases.findIndex((c) => c.id === 'events-video') + 1) % evCases.length];
+  const EV_NEXT = 'Next, see how I build creator partnerships into campaigns designed to travel.';
+  const conclLinks = [...concl.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+  if (conclLinks.length !== 1 || ((conclLinks[0][1].match(/href="([^"]+)"/) || [])[1]) !== `${BASE}/work/${evNext.id}/` || evData.conclusion?.next !== evNext.id || evNext.id !== 'creator-campaigns') failures.push(`[events] the conclusion's one link leads to the next case study in order, Creator Campaigns (found ${conclLinks.length} links)`);
+  if (textOf(conclLinks[0]?.[2] || '') !== EV_NEXT || evData.conclusion?.nextLine !== EV_NEXT || !/<nav class="next-case"[^>]*aria-label="Next case study"/.test(concl) || !/<span class="next-case__go[^"]*"[^>]*aria-hidden="true"/.test(concl)) failures.push(`[events] the way on reads "${EV_NEXT}", its arrow in a small circle, a named navigation landmark`);
+  failures.push(...nextCaseFailures('[events]'));
+  const evNextW = evRules(/^\.evc__next$/).map((r) => remOf(r.body)).find((v) => v > 0);
+  const evParaW = evRules(/^\.evc__copy$/).map((r) => remOf(r.body)).find((v) => v > 0);
+  if (!(evNextW > 0 && evParaW > 0 && Math.abs(evNextW - evParaW) <= 3)) failures.push(`[events] the way on is about as wide as the conclusion's paragraph (found ${evNextW}rem and ${evParaW}rem)`);
   if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" class="[^"]*\bcontact--frame\b[^"]*\bcontact--lead\b/.test(evPage) || !/<footer class="site-footer" data-surface="brand"[\s>]/.test(evPage)) failures.push('[events] the conclusion runs straight into the full Contact frame and the brand footer');
   const evcBase = evRules(/^\.evc$/).filter((r) => !r.at).map((r) => r.body).join(';');
   if (!/#0d0f10 0%/.test(evcBase) || !/#1f4546 100%/.test(evcBase)) failures.push('[events] the conclusion turns from black to exactly the Contact green');
 
   // ---- 03 The activation: its words, and the 3D render in place of the schematic
   const act = evSection('eva');
-  const ACT_COPY = 'Phi Labs sponsored the Sui Summit side event at ETHDenver in 2025 and 2026. Before the doors opened, I negotiated the sponsorship and its pricing, coordinated with the event host, sourced and priced the merchandise, worked with design on the screen animations and table assets, and planned how all of it would reach the people in the room.';
-  if (one(act, /<p class="eva__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== ACT_COPY) failures.push('[events] the activation keeps its paragraph');
+  const ACT_COPY = 'Bolt Liquidity sponsored the Sui Summit side event at ETHDenver in 2025 and 2026. Before the doors opened, I negotiated the sponsorship and its pricing, coordinated with the event host, sourced and priced the merchandise, worked with design on the screen animations and table assets, and planned how all of it would reach the people in the room.';
+  if (one(act, /<p class="eva__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== ACT_COPY) failures.push('[events] the activation keeps its paragraph, the sponsorship attributed to Bolt Liquidity');
+  if (/class="ev-cue\b|Stages?:/.test(act) || evData.activation?.cues) failures.push('[events] the activation has no eyebrow (V1.2 removed its stages, Secure and Build)');
+  if (/Phi Labs sponsored/.test(evPage)) failures.push('[events] the sponsorship is attributed to Bolt Liquidity');
   if (/eva__svg|eva__pin|eva__notes|eva__plan|Schematic/i.test(act)) failures.push('[events] the flat booth schematic, its numbered pins and legend are gone');
   const viz = block(act, '<figure class="eva__viz"');
   const vizImg = (viz.match(/<img\b[^>]*class="eva__still[^"]*"[^>]*>/) || viz.match(/<img\b[^>]*>/) || [''])[0];
@@ -1731,8 +1785,14 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const qArea = (q) => Math.abs(q.reduce((s, [x, y], i) => s + x * q[(i + 1) % 4][1] - q[(i + 1) % 4][0] * y, 0) / 2);
   if (quadOk(stageJson.tv) && quadOk(stageJson.wall) && !(qArea(stageJson.wall) > qArea(stageJson.tv) * 2.5)) failures.push('[events] the projected wall is the large surface, the television the bright one');
   if (!(stageJson.wallOpacity >= 0.25 && stageJson.wallOpacity <= 0.45)) failures.push(`[events] the wall plays at about a quarter to two fifths of the television's intensity (found ${stageJson.wallOpacity})`);
-  if (!(stageJson.lum?.tv?.length > 100) || !(stageJson.lum?.wall?.length > 20)) failures.push('[events] the screens\' light on the room follows what they show (their brightness over time)');
-  for (const [id, aspect, min, max] of [['ev-activation-tv', '16:9', 30, 36], ['ev-activation-wall', '3:2', 7, 9]]) {
+  const tvLoop = evAsset('ev-activation-tv');
+  if (!(stageJson.lum?.tv?.length >= Math.floor(tvLoop.duration * stageJson.rate) - 1) || !(stageJson.lum?.wall?.length > 20)) failures.push('[events] the screens\' light on the room follows what they show (their brightness over time)');
+  // V1.2: the television calmed into the stable anchor (the charger card, about six seconds with a second's hold); the wall carries more of the motion, softer and lower in luminance.
+  if (!/0:29\.20 to 0:34\.90/.test(tvLoop.source || '') || !/Want a wireless Bolt charger\?/.test(tvLoop.source || '')) failures.push('[events] the television plays the charger card: from its headline animating in, through the steps, to a second\'s hold');
+  if (!(stageJson.surface?.wall < stageJson.surface?.tv)) failures.push(`[events] the projection stays lower in luminance than the television (found ${JSON.stringify(stageJson.surface)})`);
+  const feather = Number((fs.readFileSync(path.join(root, 'scripts/render/activation-composite.py'), 'utf8').match(/^FEATHER = ([\d.]+)/m) || [])[1]);
+  if (!(feather >= 0.085 && feather <= 0.1)) failures.push(`[events] the projection's edge feathering is about a third less than V1.1's 0.14 (found ${feather})`);
+  for (const [id, aspect, min, max] of [['ev-activation-tv', '16:9', 5, 7], ['ev-activation-wall', '3:2', 7, 9]]) {
     const a = evAsset(id);
     if (a.permission !== 'approved' || a.type !== 'video' || a.aspect !== aspect || !(a.duration >= min && a.duration <= max) || !a.poster) failures.push(`[events] ${id} is an approved ${aspect} loop with its poster`);
   }
@@ -1754,7 +1814,6 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const chapters = [...room.matchAll(/<li class="evm__chapter"[\s\S]*?<\/ul>\s*<\/li>/g)].map((m) => [one(m[0], /<span class="evm__chapter-label[^"]*"[^>]*>([\s\S]*?)<\/span>/), [...m[0].matchAll(/<li\b[^>]*>([^<]*)<\/li>/g)].map((x) => textOf(x[1]))]);
   if (JSON.stringify(chapters) !== JSON.stringify(CH)) failures.push('[events] the room\'s three chapters, Fill, Run and Extend, as the brief lists them');
   if (one(room, /<p class="evm__outcome[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== 'The presentation attracted ecosystem attention and opened conversations that continued beyond the event.') failures.push('[events] the presentation\'s outcome uses the public-safe wording');
-  if (one(after, /<p class="evt__outcome[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== 'Event-led relationship development contributed to subsequent conversations and integrations with ecosystem partners.') failures.push('[events] the outcome after the event uses the public-safe wording');
   if (!/<div class="evp\b|<figure class="evp\b/.test(room)) failures.push('[events] the presentation footage is the room\'s dominant visual');
 
   // ---- 05 The production room: setup and final, one caption, one explainer
@@ -1798,7 +1857,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // ---- credits: one consolidated block per major chapter, never one per media item
   const credits = [...evPage.matchAll(/<div class="ev-credits[^"]*"[\s\S]*?<\/dl>/g)].map((m) => ({ label: one(m[0], /<p class="ev-credits__label[^"]*"[^>]*>([\s\S]*?)<\/p>/), rows: [...m[0].matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((x) => [textOf(x[1]), textOf(x[2])]) }));
   const flat = credits.flatMap((c) => c.rows);
-  if (credits.length !== 3 || credits[0].label !== 'Credits · Sui Summit at ETHDenver' || JSON.stringify(credits[0].rows.map(([w]) => w)) !== JSON.stringify(['John Cowin', 'Phi Labs design', 'Bob van der Meer', 'Max McKendry'])) failures.push(`[events] three credit blocks: one for the Sui Summit work at ETHDenver (the activation, the session, the production room), one for Sui Fest, one for what continued after (found ${credits.map((c) => c.label).join(', ')})`);
+  if (credits.length !== 2 || credits[0].label !== 'Credits · Sui Summit at ETHDenver' || JSON.stringify(credits[0].rows.map(([w]) => w)) !== JSON.stringify(['John Cowin', 'Phi Labs design', 'Bob van der Meer', 'Max McKendry'])) failures.push(`[events] two credit blocks: one for the Sui Summit work at ETHDenver (the activation, the session, the production room) and one for Sui Fest (found ${credits.map((c) => c.label).join(', ')})`);
   if (!/<section class="evs"[\s\S]*?<div class="ev-credits/.test(evPage.slice(evPage.indexOf('<section class="evs"'), evPage.indexOf('<section class="evf"'))) || /ev-credits/.test(act) || /ev-credits/.test(room)) failures.push('[events] the Sui Summit credits close the production room, after the activation and the session');
   if (/Collaboration Credit/i.test(evText)) failures.push('[events] no single defensive collaboration-credit section');
   if (!flat.some(([w, d]) => w === 'Bob van der Meer' && /Deck design/.test(d) && /final video editing/i.test(d))) failures.push('[events] Bob van der Meer is credited with the deck design and the final video editing');
@@ -1821,7 +1880,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
     if (!fs.existsSync(f)) failures.push(`[events] public/media/${src} is missing`);
     else if (fs.statSync(f).size > 25 * 1024 * 1024) failures.push(`[events] public/media/${src} is over 25 MB`);
   }
-  for (const gone of ['ev-hero-present.mp4', 'ev-hero-engage.mp4', 'bolt-vs-amm-explainer.mp4']) if (fs.existsSync(path.join(root, 'public/media', gone))) failures.push(`[events] public/media/${gone} is no longer used and is removed`);
+  for (const gone of ['ev-hero-present.mp4', 'ev-hero-engage.mp4', 'bolt-vs-amm-explainer.mp4', 'ev-hero-live.mp4', 'ev-hero-conversations.mp4', 'ev-hero-produced.mp4']) if (fs.existsSync(path.join(root, 'public/media', gone))) failures.push(`[events] public/media/${gone} is no longer used and is removed`);
   // Placeholders exist only while authoring.
   if (/data-pending|ev-slot--pending|Placeholder ·/.test(evPage)) failures.push('[events] no placeholder reaches the production build');
   // A silent loop (an approved screen animation) sits on its poster, muted,
@@ -1833,7 +1892,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   }
   // The production layer stays restrained: cue tallies, crop marks, timecodes
   // and progress lines; V1.1 adds no decorative lines in place of what it took out.
-  if ((evPage.match(/class="ev-cue\b/g) || []).length < 5 || !/evp__crop|evh__crop/.test(evPage)) failures.push('[events] the sections carry their cue tallies and the frames their crop marks');
+  if (['evm', 'evs', 'evf'].some((cls) => !/class="ev-cue\b/.test(evSection(cls))) || !/evp__crop|evh__crop/.test(evPage)) failures.push('[events] the room, the production room and Sui Fest carry their cue tallies, and the frames their crop marks');
   if (/class="ev-cue\b[\s\S]{0,400}?Run of show/.test(evPage)) failures.push('[events] the cue tallies no longer point at a run of show');
   if (evRules(/^\.(?:evh|evx|eva|evm|evs|evf|evt|evc|ev-cue|evp)/).some((r) => /(?:^|;)\s*animation:[^;]*(?:glitch|flicker|shake)/.test(r.body))) failures.push('[events] no glitching or flicker');
   if (evRules(/^\.(?:evh|evx|eva|evm|evs|evf|evt|evc|evp)/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body) && !MOTION_OK.test(r.at) && !/\.ev-in$/.test(bare(r.sel)))) failures.push('[events] looping motion only with motion allowed');
@@ -1841,11 +1900,11 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // reduced motion or saving data; the screens mapped onto the render; one
   // sound at a time.
   const evScripts = evScriptsAll;
-  for (const token of ['[data-ev-program]', '[data-cue-btn]', 'aria-pressed', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-tabs]', 'aria-selected', 'ArrowRight', 'ArrowLeft', '[data-ev-transition]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]', '[data-ev-stage]', 'matrix3d', '(min-width: 48rem)', '[data-evp-sound]', 'ResizeObserver']) {
+  for (const token of ['[data-ev-reel]', '[data-reel-toggle]', 'is-waiting', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-tabs]', 'aria-selected', 'ArrowRight', 'ArrowLeft', '[data-ev-transition]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]', '[data-ev-stage]', 'matrix3d', '(min-width: 48rem)', '[data-evp-sound]', 'ResizeObserver']) {
     if (!evScripts.includes(token)) failures.push(`[events] the page's script is missing ${token}`);
   }
   if (!/\.pause\(\)/.test(evScripts) || !/addEventListener\(\s*[`"']play[`"']/.test(evScripts) || !/addEventListener\(\s*[`"']volumechange[`"']/.test(evScripts)) failures.push('[events] starting one video with sound, or turning its sound on, pauses every other');
-  if (!/addEventListener\(\s*[`"']ended[`"']/.test(evScripts)) failures.push('[events] at the end of a reel the program moves on to the next');
+  if (!/addEventListener\(\s*[`"']ended[`"']/.test(evScripts)) failures.push('[events] at the end of a chapter the reel moves on to the next');
 }
 
 // HOME (TPM V1, global): every page but the homepage leads its header with a
