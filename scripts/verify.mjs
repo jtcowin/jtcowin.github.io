@@ -882,17 +882,21 @@ const TPM = {
 };
 if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not use the shared case-study hero (cs-hero)');
 
-// ---- 01 Hero (V1.5): an asymmetrical split. The headline and the paragraph
-// on the left, vertically centered in the first screen; on the right, in open
-// space, the Narrative Engine; the seven scope terms in one centered line at
-// the foot of the hero (wrapping, still centered, only on narrow screens);
-// behind it all a faint signal field. No kicker and no media; the headline
-// never changes. Leaving the hero (the live choreography only), the
-// Foundation's full-width surface rises over it, its leading edge slightly
-// rounded, as the hero's content fades and softens a little and the
-// Foundation headline fades up 24 to 40px: a layered reveal within about 0.8
-// to 1.2 viewports, nothing passing from one section to the other (V1.3).
-if (/tpm-hero__kicker/.test(tpmPage)) failures.push('[tpm] the hero carries no kicker');
+// ---- 01 Hero (V1.6): an asymmetrical split. The section label, then the
+// headline (always two lines, sized to its column) and the paragraph on the
+// left; on the right, in open space, the isometric system; the seven scope
+// terms in one centered line beneath the split, on a fine rule (wrapping,
+// still centered, only on narrow screens), the three composed as one group
+// in the first screen. No media; the headline never changes. Leaving the hero
+// (the live choreography only), the Foundation's full-width surface rises
+// over it, its leading edge slightly rounded, as the hero's content fades and
+// softens a little and the Foundation headline fades up 24 to 40px: a layered
+// reveal within about 0.8 to 1.2 viewports, nothing passing from one section
+// to the other (V1.3, unchanged).
+const HERO_LABEL = '02 / Technical Product Marketing';
+if (tpmText(/<p class="tpm-hero__label[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== HERO_LABEL || tpmData.hero?.label !== HERO_LABEL) failures.push(`[tpm] the hero opens with its section label, ${HERO_LABEL}`);
+if (!tpmRules(/^\.tpm-hero__label$/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[tpm] the section label is set in capitals, as the brief writes it');
+if (/tpm-hero__kicker/.test(tpmPage)) failures.push('[tpm] the label is the section label, not a kicker');
 if (tpmText(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) !== TPM.headline) failures.push(`[tpm] the headline must read "${TPM.headline}"`);
 if (tpmText(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== TPM.copy) failures.push('[tpm] the hero must carry the approved supporting sentence');
 const scopeItems = [...((tpmPage.match(/<ul class="tpm-hero__scope[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
@@ -900,122 +904,128 @@ if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the
 if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned page carries no "My role" line');
 const tpmHeroHtml = (tpmPage.match(/<section class="tpm-hero"[\s\S]*?<\/section>/) || [''])[0];
 if (!tpmHeroHtml) failures.push('[tpm] the page opens with its own hero');
-if (/<(?:video|img|picture|iframe)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media (the animation plays in full in 06)');
+if (/<(?:video|img|picture|iframe|canvas)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media and no canvas (the animation plays in full in 06)');
 const assetIds = (JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || []).map((a) => a.id);
 if (/bolt-in-60-seconds-hero/.test(tpmPage) || assetIds.includes('tm-bolt-60-loop')) failures.push('[tpm] the short hero loop and its poster are gone from the page and the manifest');
 for (const gone of ['public/media/bolt-in-60-seconds-hero-loop.mp4', 'public/media/bolt-in-60-seconds-hero-loop-720.mp4', 'src/assets/technical-marketing/bolt-in-60-seconds-hero-poster.jpg']) {
   if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
 }
-// V1.4: the headline and the paragraph together in the copy column, before
-// the visual; the scope line after the split, the foot row of the stage (not
-// in the copy column), centered, one line on wide screens.
+// The label, the headline and the paragraph together in the copy column,
+// before the visual; the scope line after the split, its own row of the
+// stage (not in the copy column), centered, one line on wide screens.
 const heroCopyAt = tpmHeroHtml.indexOf('class="tpm-hero__copy');
 const heroVisualAt = tpmHeroHtml.indexOf('class="tpm-hero__visual');
 const heroCopyHtml = heroCopyAt < 0 || heroVisualAt < 0 ? '' : tpmHeroHtml.slice(heroCopyAt, heroVisualAt);
-if (!heroCopyHtml || !/<h1 id="tpm-title"/.test(heroCopyHtml) || !/tpm-hero__lede/.test(heroCopyHtml) || /tpm-hero__scope/.test(heroCopyHtml)) failures.push('[tpm] the headline and the paragraph sit together in the copy column, before the visual; the scope is not in it');
+if (!heroCopyHtml || !/class="tpm-hero__label/.test(heroCopyHtml) || !/<h1 id="tpm-title"/.test(heroCopyHtml) || !/tpm-hero__lede/.test(heroCopyHtml) || /tpm-hero__scope/.test(heroCopyHtml) || heroCopyHtml.indexOf('tpm-hero__label') > heroCopyHtml.indexOf('<h1')) failures.push('[tpm] the label, the headline and the paragraph sit together in the copy column, in that order, before the visual; the scope is not in it');
+// Two lines, always: broken after "the system", each line unbroken, the size
+// V1.5's or less where the column is too narrow for the first line.
+const heroLines = (((tpmPage.match(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) || [, ''])[1]).split(/<span class="tpm-hero__line"[^>]*>/).slice(1)).map((chunk) => textOf(norm(chunk)));
+if (JSON.stringify(heroLines) !== JSON.stringify(['Building the system', 'behind the message.']) || tpmData.hero?.break !== 'the system') failures.push(`[tpm] the headline sets in two lines, Building the system / behind the message. (found ${heroLines.join(' / ')})`);
+if (!tpmRules(/^\.tpm-hero__line$/).some((r) => /display:\s*block/.test(r.body) && /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] each line of the headline is its own unbroken line');
+if (!tpmRules(/^\.tpm-hero__title$/).some((r) => /font-size:\s*min\(clamp\(2\.5rem,\s*1rem \+ 3\.6vw,\s*5rem\),\s*[\d.]+cqi\)/.test(r.body)) || !tpmRules(/^\.tpm-hero__copy$/).some((r) => /container-type:\s*inline-size/.test(r.body))) failures.push('[tpm] the headline is V1.5\'s size, or smaller where its column is too narrow for the first line');
 const heroStageAt = tpmHeroHtml.indexOf('<div class="tpm-hero__stage');
+const heroRailAt = tpmHeroHtml.indexOf('<div class="container tpm-hero__rail');
 const heroScopeAt = tpmHeroHtml.indexOf('<ul class="tpm-hero__scope');
 const divDepth = (html) => (html.match(/<div\b/g) || []).length - (html.match(/<\/div>/g) || []).length;
-if (heroStageAt < 0 || heroScopeAt < heroVisualAt || divDepth(tpmHeroHtml.slice(heroStageAt, heroScopeAt)) !== 1) failures.push('[tpm] the scope line sits at the foot of the hero, after the split, in the stage itself');
-if (!tpmRules(/^\.tpm-hero__stage$/).some((r) => !r.at && /grid-template-rows:\s*1fr\s+auto/.test(r.body))) failures.push('[tpm] the hero stage keeps a foot row for the scope line');
+if (heroStageAt < 0 || heroRailAt < heroVisualAt || heroScopeAt < heroRailAt || divDepth(tpmHeroHtml.slice(heroStageAt, heroRailAt)) !== 1 || divDepth(tpmHeroHtml.slice(heroRailAt, heroScopeAt)) !== 1) failures.push('[tpm] the scope line sits beneath the split, in its own row of the stage');
+const stageRest = tpmRules(/^\.tpm-hero__stage$/).filter((r) => !r.at).map((r) => r.body).join(';');
+if (!/align-content:\s*center/.test(stageRest) || !/row-gap:\s*clamp\(/.test(stageRest) || /grid-template-rows:\s*1fr\s+auto/.test(stageRest)) failures.push('[tpm] the split and the scope line are composed as one group, centered in the first screen (V1.6: the line no longer stranded at the foot)');
+const railRule = tpmRules(/^\.tpm-hero__rail$/).filter((r) => !r.at).map((r) => r.body).join(';');
 const scopeRule = tpmRules(/^\.tpm-hero__scope$/).filter((r) => !r.at).map((r) => r.body).join(';');
-if (!/text-align:\s*center/.test(scopeRule) || !/justify-self:\s*center/.test(scopeRule)) failures.push('[tpm] the scope line is centered, wrapped or not');
+if (!/text-align:\s*center/.test(scopeRule) || !/justify-items:\s*center/.test(railRule)) failures.push('[tpm] the scope line is centered, wrapped or not');
 if (!tpmRules(/^\.tpm-hero__scope$/).some((r) => DESKTOP.test(r.at) && /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] on wide screens the scope is one line');
 if (!tpmRules(/^\.tpm-hero__scope li$/).some((r) => /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] a scope term never breaks inside itself when the line wraps');
+if (!tpmRules(/^\.tpm-hero__rail::?before,\s*\.tpm-hero__rail::?after$/).some((r) => /min-width:\s*88rem|width\s*>=\s*88rem/.test(r.at) && /height:\s*1px/.test(r.body))) failures.push('[tpm] where there is room, a fine rule runs out from either end of the scope line');
 const heroGrid = tpmRules(/^\.tpm-hero__grid$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
-if (!/grid-template-columns:\s*minmax\(0,\s*7fr\)\s*minmax\(0,\s*5fr\)/.test(heroGrid) || !/align-items:\s*center/.test(heroGrid)) failures.push('[tpm] wide screens split the hero asymmetrically, copy and engine centered on each other');
-if (!tpmRules(/^\.tpm-hero__stage$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*var\(--view-h\)/.test(r.body)) || !tpmRules(/^\.tpm-hero__grid$/).some((r) => !r.at && /align-self:\s*center/.test(r.body))) failures.push('[tpm] the split is vertically centered in the first screen');
+if (!/grid-template-columns:\s*minmax\(0,\s*5fr\)\s*minmax\(0,\s*7fr\)/.test(heroGrid) || !/align-items:\s*center/.test(heroGrid)) failures.push('[tpm] wide screens split the hero asymmetrically, the copy narrower than the system, the two centered on each other');
+if (!tpmRules(/^\.tpm-hero__stage$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*var\(--view-h\)/.test(r.body)) || !tpmRules(/^\.tpm-hero__grid$/).some((r) => !r.at && /align-self:\s*center/.test(r.body))) failures.push('[tpm] the hero is the first screen, its split vertically centered in it');
 if (/tpm-hero__band|tpm-hero__dusk|\bdata-band\b|tpm-hero__foot/.test(tpmPage)) failures.push('[tpm] the V1.2 bands, rising ground and centered foot are gone: no fragments, strips or morphing between the sections');
 
-// The Narrative Engine (V1.5) replaces the V1.4 stacked object, which is gone
-// with its drawing module, and with it the topographic field. One central
-// core (a nucleus in a ring of short marks) with a sparse, faint system of
-// nodes and connections around it; engaged, it expands, the connections
-// light in sequence from the two inputs into the core and from the core to
-// the three outputs, and short labels arrive as the light reaches them. A
-// radial, curved drawing read left to right, never the boxes and right-angled
-// connectors of the product architecture diagram in 05.
-if (/class="[^"]*\btpm-(?:system|object|layer|field)\b|data-system-|data-field-(?:drift|light|lit)/.test(tpmPage)) failures.push('[tpm] the V1.4 stacked object and topographic field are gone from the page');
-for (const gone of ['src/lib/tpm-system.ts', 'src/lib/tpm-field.ts']) if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
-const ENGINE = {
-  inputs: ['Stakeholder interviews', 'Product research'],
-  core: 'Shared product language',
-  outputs: ['Website', 'Technical documentation', 'Campaigns and content'],
-  captions: ['Inputs', 'Core', 'Outputs'],
-  toggle: ['Show the system', 'Hide the system'],
-};
-const engineHtml = (tpmHeroHtml.match(/<div class="nx"[\s\S]*?<\/button>/) || [''])[0];
-const engineArt = (engineHtml.match(/<svg\b[^>]*class="nx__art"[\s\S]*?<\/svg>/) || [''])[0];
-const engineBody = (engineHtml.match(/<div class="nx__body"[^>]*>/) || [''])[0];
-if (!engineArt || !/aria-hidden="true"/.test(engineBody)) failures.push('[tpm] the engine is one decorative drawing, hidden from assistive technology (its words are in the legend)');
-if (/<text\b|<foreignObject\b|<image\b|<rect\b|<polygon\b/.test(engineArt)) failures.push('[tpm] the engine draws no words, boxes or polygons: circles, marks and curves only');
-const engineMarks = ((engineArt.match(/<g class="nx__marks"[\s\S]*?<\/g>/) || [''])[0].match(/<path\b/g) || []).length;
-if (engineMarks < 36 || !/class="nx__nucleus"/.test(engineArt) || !/class="nx__ring"/.test(engineArt) || !/class="nx__ring-open"/.test(engineArt)) failures.push(`[tpm] one central core: a nucleus inside a ring of short marks and its rings (found ${engineMarks} marks)`);
-const engineNodes = [...engineArt.matchAll(/<g class="nx__node nx__node--(in|out)"[^>]*style="--dx: (-?[\d.]+); --dy: (-?[\d.]+); --o: (\d)"/g)].map((m) => ({ side: m[1], dx: Number(m[2]), dy: Number(m[3]), o: Number(m[4]) }));
-if (engineNodes.length !== 5 || engineNodes.filter((n) => n.side === 'in').length !== 2) failures.push(`[tpm] five named nodes, two inputs and three outputs (found ${engineNodes.length})`);
-else if (engineNodes.some((n) => (n.side === 'in' ? n.dx >= 0 : n.dx <= 0))) failures.push('[tpm] engaged, the system expands: the inputs move out to the left, the outputs to the right');
-const litWires = [...engineArt.matchAll(/<path class="nx__lit nx__lit--(in|out)"[^>]*>/g)].map((m) => m[0]);
-if (litWires.length !== 5 || litWires.some((w) => !/pathLength="1"/.test(w)) || (engineArt.match(/<path class="nx__wire"/g) || []).length !== 5) failures.push('[tpm] each node has its connection and a line of light along it (five of each)');
-if (/\bL\s*-?[\d.]+\s+-?[\d.]+\s*L/.test(litWires.join(''))) failures.push('[tpm] no right-angled connectors: the connections are curves (or one straight run)');
-if (engineArt.match(/<g class="nx__sats"[\s\S]*?<\/g>/)?.[0].match(/<circle\b/g)?.length < 5) failures.push('[tpm] the core sits in a sparse system of faint unnamed nodes');
-const engineLegend = (engineHtml.match(/<div class="nx__legend"[\s\S]*?(?=<div class="nx__hit)/) || [''])[0];
-const engineCaptions = [...engineLegend.matchAll(/<p class="nx__caption[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
-const engineLabels = [...engineLegend.matchAll(/<(?:li|p) class="nx__label[^"]*"[^>]*>([\s\S]*?)<\/(?:li|p)>/g)].map((m) => textOf(m[1]));
-if (JSON.stringify(engineCaptions) !== JSON.stringify(ENGINE.captions)) failures.push(`[tpm] the labels fall in three groups, Inputs, Core and Outputs (found ${engineCaptions.join(', ')})`);
-if (JSON.stringify(engineLabels) !== JSON.stringify([...ENGINE.inputs, ENGINE.core, ...ENGINE.outputs])) failures.push(`[tpm] the engine names its inputs, its core and its outputs, in order (found ${engineLabels.join(', ')})`);
-const eData = tpmData.hero?.engine || {};
-if (JSON.stringify((eData.inputs || []).map((x) => x.label)) !== JSON.stringify(ENGINE.inputs) || eData.core !== ENGINE.core || JSON.stringify((eData.outputs || []).map((x) => x.label)) !== JSON.stringify(ENGINE.outputs) || tpmData.hero?.system) failures.push('[tpm] tpm.json carries the engine words (and no V1.4 system block)');
-const legendRest = tpmRules(/^\.nx__legend$/).filter((r) => !r.at).map((r) => r.body).join(';');
-if (!/visibility:\s*hidden/.test(legendRest) || !/pointer-events:\s*none/.test(legendRest) || !tpmRules(/^\.nx\.is-open \.nx__legend$/).some((r) => /visibility:\s*visible/.test(r.body)) || !tpmRules(/^\.nx__label,\s*\.nx__caption$/).some((r) => /opacity:\s*0\b/.test(r.body))) failures.push('[tpm] at rest the labels are hidden; engaged, they show');
-// The light's schedule: inputs, then the core, then outputs; each label after its light.
-const nxRoot = tpmRules(/^\.nx$/).filter((r) => !r.at).map((r) => r.body).join(';');
-const tNum = (name) => Number((nxRoot.match(new RegExp(`--${name}:\\s*([\\d.]+)`)) || [])[1]);
-if (!(tNum('t-in') < tNum('t-core') && tNum('t-core') < tNum('t-out') && tNum('run') >= 0.3)) failures.push(`[tpm] the connections light in sequence, inputs, core, outputs (found ${tNum('t-in')}, ${tNum('t-core')}, ${tNum('t-out')})`);
-const litIn = tpmRules(/^\.nx\.is-open \.nx__lit--in$/).map((r) => r.body).join(';');
-const litOut = tpmRules(/^\.nx\.is-open \.nx__lit--out$/).map((r) => r.body).join(';');
-if (!/--t-in/.test(litIn) || !/--t-out/.test(litOut) || !/stroke-dashoffset/.test(litIn + litOut)) failures.push('[tpm] each line of light is drawn along its connection on that schedule');
-if (!tpmRules(/\.nx\.is-open :is\(\.nx__label--out,\s*\.nx__caption--out\)/).some((r) => /--t-out/.test(r.body) && /--run/.test(r.body)) || !tpmRules(/\.nx\.is-open :is\(\.nx__label--in,\s*\.nx__caption--in\)/).some((r) => /--t-in/.test(r.body))) failures.push('[tpm] each label arrives as the light reaches its node');
-if (!tpmRules(/^\.nx\.is-open \.nx__node$/).some((r) => /transform:\s*translate\(calc\(var\(--dx\)/.test(r.body)) || !tpmRules(/^\.nx__node$/).some((r) => !r.at && /transition:\s*transform\s+\.?[\d.]+s/.test(r.body))) failures.push('[tpm] the nodes move out and back by transforms, controlled, never snapping');
-// Controlled motion: no spinning, no particles, no parallax; the return is calm.
-const nxKeyframes = ['nx-drift', 'nx-breathe', 'nx-signal', 'nx-signal-core', 'nx-signal-out'].map(keyframesOf);
-if (nxKeyframes.some((k) => !k) || nxKeyframes.some((k) => /rotate|scale\(/.test(k))) failures.push('[tpm] the ambient life is a breath, a passing signal and a drift: nothing spins or swells');
-const nxDrift = Math.max(0, ...[...(keyframesOf('nx-drift') || '').matchAll(/translate(?:Y|3d)?\(\s*(?:0(?:px)?\s*,\s*)?(-?[\d.]+)px/g)].map((m) => Math.abs(Number(m[1]))));
-if (!(nxDrift >= 1 && nxDrift <= 2)) failures.push(`[tpm] at rest the drawing drifts only 1 to 2px (found ${nxDrift}px)`);
-// The ambient life runs on HTML boxes (the compositor runs it alone), never on
-// anything inside the SVG; it pauses open or off screen and is gone while the
-// Foundation rises over the hero.
-const nxAnimated = tpmRules(/\.nx/).filter((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body));
-if (!nxAnimated.length || nxAnimated.some((r) => /nx__(?:art|marks|node|lit|wire|core|nucleus|ring|orbit|sat)\b/.test(bare(r.sel)) || !MOTION_OK.test(r.at))) failures.push('[tpm] the ambient life moves HTML boxes only, and only with motion allowed');
-if (!tpmRules(/\.nx\.is-open :is\(\.nx__body,\s*\.nx__glow,\s*\.nx__signal\)/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/\.nx\.is-asleep :is\(/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/\.nx\.is-held :is\(/).some((r) => /animation:\s*none/.test(r.body))) failures.push('[tpm] the ambient life pauses while engaged or off screen and is gone during the rise');
-// Only direct engagement: the pointer's area is a circle round the resting
-// system (the whole box once open); a tap or the control otherwise.
-const hitRest = tpmRules(/^\.nx__hit$/).filter((r) => !r.at).map((r) => r.body).join(';');
-if (!/clip-path:\s*circle\(/.test(hitRest) || !tpmRules(/^\.nx\.is-open \.nx__hit$/).some((r) => /clip-path:\s*inset\(0\)/.test(r.body)) || !/class="nx__hit"[^>]*aria-hidden="true"/.test(engineHtml)) failures.push('[tpm] the engine answers only to a pointer over its own area');
-const engineButtons = [...tpmHeroHtml.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
-const toggleTag = (engineButtons[0] || '').match(/<button\b[^>]*>/)?.[0] || '';
-if (engineButtons.length !== 1 || !/\bdata-engine-toggle\b/.test(toggleTag) || !/type="button"/.test(toggleTag) || !/aria-expanded="false"/.test(toggleTag) || !/aria-controls="tpm-engine-legend"/.test(toggleTag) || !/<div class="nx__legend"[^>]*id="tpm-engine-legend"/.test(engineLegend)) failures.push('[tpm] the hero has one control, the engine\'s own: a button that says whether the system is shown and names what it shows');
-const toggleWords = [...(engineButtons[0] || '').matchAll(/<span data-engine-(?:show|hide)[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
-if (JSON.stringify(toggleWords) !== JSON.stringify(ENGINE.toggle)) failures.push(`[tpm] the control reads "${ENGINE.toggle[0]}" and, open, "${ENGINE.toggle[1]}"`);
-if (!tpmRules(/^\.nx__toggle:not\(:focus-visible\)$/).some((r) => /hover:\s*hover/.test(r.at) && /clip-path:\s*inset\(50%\)/.test(r.body))) failures.push('[tpm] with a mouse the control is out of sight until keyboard focus reaches it; on touch screens it stays in view');
-// Reduced motion: the system composed, complete and still. Without JavaScript, hover or focus opens it.
-const rmEngine = tpmRules(/^\.nx /).filter((r) => /prefers-reduced-motion:\s*reduce/.test(r.at));
-if (!rmEngine.some((r) => /\.nx__legend/.test(r.sel) && /visibility:\s*visible/.test(r.body)) || !rmEngine.some((r) => /\.nx__node$/.test(bare(r.sel)) && /translate\(calc\(var\(--dx\)/.test(r.body)) || !rmEngine.some((r) => /\.nx__lit/.test(r.sel) && /stroke-dashoffset:\s*0/.test(r.body))) failures.push('[tpm] reduced motion: the engine is shown composed and complete');
-if (!tpmRules(/^html:not\(\.js\) \.nx:is\(:hover,\s*:focus-within\) \.nx__node$/).some((r) => /translate\(calc\(var\(--dx\)/.test(r.body)) || !tpmRules(/^html:not\(\.js\) \.nx:is\(:hover,\s*:focus-within\) \.nx__legend$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] without JavaScript the engine opens on hover or focus');
-
-// The signal field (V1.5): one canvas behind the stage, short marks on a
-// staggered lattice, barely visible, quieter behind the copy; a fine pointer
-// turns the marks near it and lights them in soft rings. No CSS mask, no
-// pointer of its own, nothing in front of the copy.
-const fieldHtml = (tpmHeroHtml.match(/<div class="tpm-signal"[\s\S]*?<\/div>/) || [''])[0];
-if (!fieldHtml || !/aria-hidden="true"/.test((fieldHtml.match(/<div\b[^>]*>/) || [''])[0]) || (fieldHtml.match(/<canvas\b/g) || []).length !== 1 || (tpmHeroHtml.match(/<canvas\b/g) || []).length !== 1) failures.push('[tpm] the hero carries one signal field, a canvas hidden from assistive technology');
-const fieldBase = tpmRules(/^\.tpm-signal$/).map((r) => r.body).join(';');
-if (!/pointer-events:\s*none/.test(fieldBase) || !/z-index:\s*-1/.test(fieldBase)) failures.push('[tpm] the field sits behind everything and takes no pointer');
-if (tpmRules(/tpm-signal/).some((r) => /mask-image:|filter:/.test(r.body))) failures.push('[tpm] no CSS mask or filter over the field: its fades are drawn into the marks');
+// The isometric system (V1.6) replaces the V1.5 Narrative Engine and its
+// signal field, which are gone with their modules (as the V1.4 stacked object
+// and topographic field before them): a small designed environment on a faint
+// grid of its own, research and inputs on the left, the shared product
+// language at the center as an architectural foundation (a base and deck,
+// blocks, guides and a glass canopy, never an eye, target, circular core,
+// brain, orb or hub), the public-facing expressions on the right, joined by
+// conduits in the floor.
+if (/class="[^"]*\btpm-(?:system|object|layer|field|signal)\b|data-system-|data-field-(?:drift|light|lit)|data-tpm-field|data-engine\b|class="nx\b|class="nx__/.test(tpmPage)) failures.push('[tpm] the V1.4 object and field and the V1.5 engine and signal field are gone from the page');
+for (const gone of ['src/lib/tpm-system.ts', 'src/lib/tpm-field.ts', 'src/lib/tpm-engine.ts', 'src/lib/tpm-signal.ts']) if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
+if (!fs.existsSync(path.join(root, 'src/lib/tpm-iso.ts'))) failures.push('[tpm] the system is drawn by src/lib/tpm-iso.ts');
+const SYSTEM = tpmData.hero?.system || {};
+const SYS_KEYS = ['interviews', 'research', 'documents', 'core', 'website', 'documentation', 'campaigns'];
+const SYS_WORDS = SYS_KEYS.map((k) => (SYSTEM.labels || {})[k]);
+if (JSON.stringify(SYS_WORDS) !== JSON.stringify(['Interviews', 'Research', 'Documents', 'Shared product language', 'Website', 'Documentation', 'Campaigns']) || tpmData.hero?.engine) failures.push('[tpm] tpm.json carries the system\'s seven words (and no V1.5 engine block)');
+const isoAt = tpmHeroHtml.indexOf('<div class="iso"');
+const isoHtml = isoAt < 0 ? '' : tpmHeroHtml.slice(isoAt, tpmHeroHtml.indexOf('<button', isoAt));
+const isoScene = (isoHtml.match(/<div class="iso__scene"[^>]*>/) || [''])[0];
+if (!isoScene || !/role="img"/.test(isoScene) || decode((isoScene.match(/aria-label="([^"]*)"/) || [, ''])[1]) !== SYSTEM.description) failures.push('[tpm] the drawing is one image to assistive technology, described in tpm.json\'s words');
+const isoParts = [...isoHtml.matchAll(/<div class="iso__part iso__part--(in|core|out)[^"]*"[^>]*data-part="([\w-]+)"[^>]*style="([^"]*)"/g)].map((m) => ({ group: m[1], id: m[2], style: m[3] }));
+const partIds = isoParts.map((p) => p.id);
+const needParts = ['in-interviews', 'in-research', 'in-documents', 'core-base', 'core-canopy', 'core-guide-back', 'core-guide-left', 'core-guide-right', 'core-guide-front', 'out-website', 'out-documentation', 'out-campaigns', ...[0, 1, 2].flatMap((i) => [0, 1, 2].map((j) => `core-block-${i}${j}`))];
+if (needParts.some((id) => !partIds.includes(id))) failures.push(`[tpm] the system has its three inputs, its foundation (base, nine blocks, four guides, the canopy) and its three expressions (missing ${needParts.filter((id) => !partIds.includes(id)).join(', ')})`);
+if (partIds.indexOf('core-guide-front') < Math.max(...partIds.filter((id) => id.startsWith('core-block-')).map((id) => partIds.indexOf(id))) || partIds.indexOf('core-canopy') < partIds.indexOf('core-guide-front') || partIds.findIndex((id) => id.startsWith('out-') && !id.endsWith('-shadow')) < partIds.indexOf('core-canopy') || partIds.findIndex((id) => id.endsWith('-shadow')) !== 0) failures.push('[tpm] the parts are drawn back to front: shadows, inputs, the foundation (its front guide over the blocks, then the canopy), the expressions');
+const corePartsHtml = [...isoHtml.matchAll(/<div class="iso__part iso__part--core[\s\S]*?(?=<div class="iso__part |<\/div>\s*<ul class="iso__labels)/g)].map((m) => m[0]).join('');
+if (!corePartsHtml || /<circle\b|<ellipse\b|radialGradient|<text\b|<image\b|<foreignObject\b/.test(corePartsHtml)) failures.push('[tpm] the foundation is an architecture of planes and blocks: no circles, orbs, glows or words drawn into it');
+if (/<text\b|<foreignObject\b|<image\b/.test(isoHtml)) failures.push('[tpm] the system draws no words: its labels are page text');
+// The assembly: once, from the first paint, in about 2.5 to 4 seconds; the
+// idle cycle starts after it; every movement is a transform or opacity of an
+// HTML box, with motion allowed only.
+const sNum = (style, name) => Number((style.match(new RegExp(`--${name}:\\s*(-?[\\d.]+)`)) || [])[1]);
+const assemblyEnd = Math.max(...isoParts.map((p) => sNum(p.style, 'd') + sNum(p.style, 'dur')));
+const isoVars = (isoHtml.match(/<div class="iso"[^>]*style="([^"]*)"/) || [, ''])[1];
+const litEnd = sNum(isoVars, 'lit-at') + sNum(isoVars, 'lit-dur');
+if (!(assemblyEnd >= 2.5 && assemblyEnd <= 4) || !(litEnd <= 4.6) || !(sNum(isoVars, 'idle') >= assemblyEnd)) failures.push(`[tpm] the system assembles once in about 2.5 to 4 seconds and settles before its idle life begins (parts by ${assemblyEnd}s, the light by ${litEnd}s, idle at ${sNum(isoVars, 'idle')}s)`);
+if (!(sNum(isoVars, 'cycle') >= 12) || !(sNum(isoVars, 'hcycle') >= 2.5)) failures.push('[tpm] the idle cycle is slow (12 seconds or more), the engaged one controlled');
+const floats = isoParts.map((p) => sNum(p.style, 'fl')).filter((v) => v > 0);
+if (!floats.length || floats.some((v) => v > 0.4)) failures.push(`[tpm] at rest only a few parts drift, and only a pixel or two (found ${floats.join(', ')} cqw)`);
+for (const k of ['iso-in', 'iso-grow', 'iso-fade', 'iso-float', 'iso-flash', 'iso-draw']) if (!keyframesOf(k)) failures.push(`[tpm] the system's ${k} keyframes are missing`);
+if (/rotate|scale\(/.test(keyframesOf('iso-in') + keyframesOf('iso-float'))) failures.push('[tpm] nothing in the system spins or swells: parts rise, settle and drift');
+const tpmHead = (tpmPage.match(/<head>[\s\S]*?<\/head>/) || [''])[0];
+const isoSparks = [...tpmHead.matchAll(/@keyframes (iso-s-[\w-]+)/g)].length;
+const isoHoverSparks = [...tpmHead.matchAll(/@keyframes (iso-h-[\w-]+)/g)].length;
+const isoGlows = [...tpmHead.matchAll(/@keyframes (iso-g-[\w-]+)/g)].length;
+if (isoSparks !== 9 || isoHoverSparks !== 9 || isoGlows < 6 || !/@keyframes iso-lit-run/.test(tpmHead)) failures.push(`[tpm] the signals' and lights' keyframes (made with the geometry) are in the head: nine stretches of conduit each way, the lit blocks and plinths (found ${isoSparks}, ${isoHoverSparks}, ${isoGlows})`);
+const isoAnimated = tpmRules(/\.iso/).filter((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body));
+if (!isoAnimated.length || isoAnimated.some((r) => !MOTION_OK.test(r.at))) failures.push('[tpm] the system moves only with motion allowed');
+if (isoAnimated.some((r) => /\b(?:svg|path|g|rect|circle)\b/.test(bare(r.sel).replace(/\.iso__lit path$/, '')))) failures.push('[tpm] the system\'s movements are on HTML boxes (the compositor runs them alone), never inside its drawings, save the light\'s one run along the conduits');
+if (isoAnimated.some((r) => (r.body.match(/(?:^|;)\s*animation:[^;]*/) || [''])[0].replace(/\([^()]*\)/g, '').split(',').length > 1)) failures.push('[tpm] one movement to an element, so every one of them stays on the compositor');
+if (!tpmRules(/\.iso:is\(\.is-asleep,\s*\.is-held\)/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/^\.iso\.is-held :is\(/).some((r) => /animation:\s*none/.test(r.body))) failures.push('[tpm] off screen the system holds still; under the rising Foundation its idle life stops');
+// Engaged (the pointer over the system itself, a tap, or the control): the
+// layers separate, the conduits light, the signals run faster, seven short
+// labels arrive; leaving, it settles calmly. On a phone the labels give way
+// to a small legend beneath it.
+if (!tpmRules(/^\.iso\.is-open \.iso__part,\s*\.iso\.is-open \.iso__label--core$/).some((r) => MOTION_OK.test(r.at) && /translate:\s*0 calc\(var\(--lift\)\s*\*\s*-1cqw\)/.test(r.body) && /transition:\s*translate/.test(r.body)) || !tpmRules(/^\.iso__part$/).some((r) => !r.at && /transition:\s*translate/.test(r.body))) failures.push('[tpm] engaged, the layers separate and settle back by transitions, controlled, never snapping');
+if (!tpmRules(/^\.iso\.is-open \.iso__part--guide$/).some((r) => /scale:\s*1 var\(--st\)/.test(r.body))) failures.push('[tpm] the guides stretch with the rising canopy');
+if (!tpmRules(/^\.iso\.is-open \.iso__lit$/).some((r) => /opacity:\s*0?\.[5-9]/.test(r.body)) || !tpmRules(/^\.iso\.is-flow \.iso__pulses--hover \.iso__spark$/).some((r) => /var\(--hcycle\)/.test(r.body))) failures.push('[tpm] engaged, the conduits light and the signals run faster');
+const isoLabels = [...((isoHtml.match(/<ul class="iso__labels"[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li\b[\s\S]*?<\/li>/g)].map((m) => textOf(m[0]));
+const isoLegend = [...((tpmHeroHtml.match(/<ul class="iso-legend"[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li\b[\s\S]*?<\/li>/g)].map((m) => textOf(m[0]));
+if (JSON.stringify(isoLabels) !== JSON.stringify(SYS_WORDS) || JSON.stringify(isoLegend) !== JSON.stringify(SYS_WORDS)) failures.push(`[tpm] seven concise labels, inputs, the foundation and the expressions in order, in the drawing and in the phone's legend (found ${isoLabels.join(', ')})`);
+const labelsRest = tpmRules(/^\.iso__labels$/).filter((r) => !r.at).map((r) => r.body).join(';');
+if (!/visibility:\s*hidden/.test(labelsRest) || !/pointer-events:\s*none/.test(labelsRest) || !tpmRules(/^\.iso\.is-open \.iso__labels$/).some((r) => /visibility:\s*visible/.test(r.body)) || !tpmRules(/^\.iso__word$/).some((r) => /opacity:\s*0\b/.test(r.body))) failures.push('[tpm] at rest no labels surround the system; engaged, they arrive');
+if (!tpmRules(/^\.iso-legend$/).some((r) => !r.at && /display:\s*none/.test(r.body)) || !tpmRules(/^\.iso-legend$/).some((r) => /max-width:\s*37\.49rem|width\s*<=\s*37\.49rem/.test(r.at) && /display:\s*grid/.test(r.body) && /visibility:\s*hidden/.test(r.body)) || !tpmRules(/^\.iso\.is-open\s*~\s*\.iso-legend$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] on a phone the labels give way to a legend beneath the system, its room kept, shown while engaged');
+// Only direct engagement: the pointer's area is the outline of the system at
+// rest (its whole box once open); never the rest of the hero or the page.
+const isoHit = (isoHtml.match(/<div class="iso__hit"[^>]*>/) || [''])[0];
+if (!/aria-hidden="true"/.test(isoHit) || !/clip-path:\s*polygon\(/.test(isoHit) || !tpmRules(/^\.iso\.is-open \.iso__hit$/).some((r) => /clip-path:\s*inset\(0\)/.test(r.body))) failures.push('[tpm] the system answers only to a pointer over its own outline');
+const heroButtons = [...tpmHeroHtml.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
+const toggleTag = (heroButtons[0] || '').match(/<button\b[^>]*>/)?.[0] || '';
+if (heroButtons.length !== 1 || !/\bdata-iso-toggle\b/.test(toggleTag) || !/type="button"/.test(toggleTag) || !/aria-expanded="false"/.test(toggleTag) || !/aria-controls="tpm-iso-labels tpm-iso-legend"/.test(toggleTag) || !/<ul class="iso__labels"[^>]*id="tpm-iso-labels"/.test(isoHtml) || !/<ul class="iso-legend"[^>]*id="tpm-iso-legend"/.test(tpmHeroHtml)) failures.push('[tpm] the hero has one control, the system\'s own: a button that says whether its parts are shown and names what it shows');
+const toggleWords = [...(heroButtons[0] || '').matchAll(/<span data-iso-(?:show|hide)[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(norm(m[1])));
+if (JSON.stringify(toggleWords) !== JSON.stringify([norm(SYSTEM.toggle?.show), norm(SYSTEM.toggle?.hide)]) || !toggleWords[0]) failures.push(`[tpm] the control reads "${SYSTEM.toggle?.show}" and, open, "${SYSTEM.toggle?.hide}"`);
+if (!tpmRules(/^\.iso__toggle:not\(:focus-visible\)$/).some((r) => /hover:\s*hover/.test(r.at) && /clip-path:\s*inset\(50%\)/.test(r.body)) || !tpmRules(/^\.iso__toggle$/).some((r) => /hover:\s*none/.test(r.at) && /position:\s*static/.test(r.body))) failures.push('[tpm] with a mouse the control is out of sight until keyboard focus reaches it; on touch screens it stays in view');
+// Without JavaScript, hover or focus opens it; reduced motion keeps every
+// movement out (the media query above) and shows it complete.
+if (!tpmRules(/^html:not\(\.js\) \.iso:is\(:hover,\s*:focus-within\) \.iso__labels$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] without JavaScript the system opens on hover or focus');
+// A grid of its own, local to the drawing and faded at its edges; no
+// topographic background and nothing that follows the pointer across the page.
+const isoFloor = (isoHtml.match(/<div class="iso__layer iso__floor"[\s\S]*?<\/svg>/) || [''])[0];
+if (!/<radialGradient id="iso-grid-fade"/.test(isoFloor) || !/stroke="url\(#iso-grid-fade\)"/.test(isoFloor) || !tpmRules(/^\.iso__floor \.iso__art$/).some((r) => /overflow:\s*hidden/.test(r.body))) failures.push('[tpm] the grid beneath the system is faint, local to it and fading at its edges');
 // One accent in the headline, one emphasis in the paragraph (V1.3).
 const accentsIn = (html) => [...html.matchAll(/<span class="tpm-accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(norm(m[1])));
 const emsIn = (html) => [...html.matchAll(/<strong class="tpm-em"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(norm(m[1])));
 const heroH1 = (tpmPage.match(/<h1 id="tpm-title"[^>]*>([\s\S]*?)<\/h1>/) || [, ''])[1];
-if (JSON.stringify(accentsIn(heroH1)) !== JSON.stringify(['the system']) || /</.test(heroH1.replace(/<span class="tpm-accent"[^>]*>|<\/span>/g, ''))) failures.push('[tpm] the hero headline sets "the system" in the accent, and nothing else in it moves or changes');
+if (JSON.stringify(accentsIn(heroH1)) !== JSON.stringify(['the system']) || /</.test(heroH1.replace(/<span class="(?:tpm-accent|tpm-hero__line)"[^>]*>|<\/span>/g, ''))) failures.push('[tpm] the hero headline sets "the system" in the accent, and nothing else in it moves or changes');
 const heroLede = (tpmPage.match(/<p class="lede tpm-hero__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
 if (JSON.stringify(emsIn(heroLede)) !== JSON.stringify(['a clear market narrative'])) failures.push('[tpm] the hero paragraph emphasizes one phrase: a clear market narrative');
 if (tpmRules(/^\.tpm-hero__scope/).some((r) => /font-size:\s*(?:clamp|calc|[\d.]+vw)/.test(r.body))) failures.push('[tpm] the scope line never shrinks its type to fit');
@@ -1072,8 +1082,9 @@ const docRows = docItems.map((li) => [
 ]);
 if (JSON.stringify(docRows) !== JSON.stringify(FOUNDATION)) failures.push(`[tpm] the library lists the twelve named documents in the brief's order, numbered 00 to 11, with their sublines (found ${docRows.map((r) => r.join(' ')).join(', ')})`);
 const pageText = textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, ''));
-// (The retired library documents; since V1.5 the hero's Narrative Engine
-// names its core "Shared product language", so that one is checked outside it.)
+// (The retired library documents; since V1.5 the hero names its core
+// "Shared product language" (V1.6: the system's label for its foundation), so
+// that one is checked outside it.)
 const pageTextOutsideHero = textOf(tpmPage.replace(/<section class="tpm-hero"[\s\S]*?<\/section>/, '').replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, ''));
 for (const gone of ['Invariants', 'Mission Statement', 'Category North Star', 'Brand Manifesto', 'Copy Bank', 'Shared product language']) {
   if (pageTextOutsideHero.includes(gone)) failures.push(`[tpm] "${gone}" is no longer in the library or anywhere outside the hero`);
@@ -1521,20 +1532,17 @@ if (!/addEventListener\(\s*[`"']ended[`"']/.test(tpmScripts)) failures.push('[tp
 // cut; out of view they pause, and nothing in the loop touches the mute state.
 if (!/cycle:\{hold:(?:1e3|1000),fade:(?:[5-9]\d\d)\}/.test(tpmScripts)) failures.push('[tpm] the website walkthrough holds its form for about a second, then fades back to the hero before it replays');
 if (!/\{threshold:\.55,cycle:\{hold:(?:1e3|1000|1[0-5]\d\d),fade:(?:[5-9]\d\d)\}\}/.test(tpmScripts)) failures.push('[tpm] the documentation walkthrough runs continuously: a moment on its final page, a fade back to the start, and again (V1.3)');
-// The hero (V1.5): no WebGL. The engine opens only for a pointer over its own
-// area (a clip-path circle, the whole box once open), for a tap (touch, a
-// quicker version) or for its control (keyboard), and closes on leaving, a
-// second tap, a tap elsewhere or Escape; off screen or under the rising
-// Foundation it rests closed and still. The field is one 2D canvas, drawn in
-// full on resize and then only where a fine pointer acts, frame by frame
-// while it acts, never off screen, and its marks stand on a staggered
-// (triangular) lattice.
-if (/webgl/i.test(tpmScripts)) failures.push('[tpm] no WebGL: the engine is SVG and CSS, the field one 2D canvas');
-for (const token of ['[data-engine]', '[data-engine-hit]', '[data-engine-toggle]', 'aria-expanded', 'Escape', 'pointerleave', 'pointerup', 'pointerdown', 'is-quick', 'is-asleep']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the engine's script is missing ${token}`);
-for (const token of ['[data-tpm-field]', 'getContext', 'devicePixelRatio', 'pointermove', 'requestAnimationFrame', 'cancelAnimationFrame', 'clearRect', 'clip()', 'IntersectionObserver', 'ResizeObserver', '(hover: hover) and (pointer: fine)', '(prefers-reduced-motion: reduce)']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the signal field's script is missing ${token}`);
-if (!/pointerType===?[`"']touch[`"']/.test(tpmScripts)) failures.push('[tpm] neither the engine nor the field follows a touch pointer');
-if (!/\.866\b/.test(tpmScripts)) failures.push('[tpm] the field\'s marks stand on a staggered (triangular) lattice, never a square grid');
-if (!tpmScripts.includes('is-held')) failures.push('[tpm] the hero script stills the engine while the Foundation rises over it');
+// The hero (V1.6): no WebGL and no canvas. The system opens only for a
+// pointer over its own outline (a clip-path polygon, the whole box once open),
+// for a tap (touch, a quicker version) or for its control (keyboard), and
+// closes on leaving, a second tap, a tap elsewhere or Escape; the pointer
+// engages it once the foundation stands. Off screen it rests closed and still;
+// under the rising Foundation, closed and without its idle life.
+if (/webgl|getContext\(/i.test(tpmScripts)) failures.push('[tpm] no WebGL and no canvas: the system is SVG and CSS');
+for (const token of ['[data-iso]', '[data-iso-hit]', '[data-iso-toggle]', 'aria-expanded', 'Escape', 'pointerleave', 'pointerup', 'pointerdown', 'animationend', 'is-quick', 'is-asleep', 'is-flow', 'IntersectionObserver', '(hover: hover) and (pointer: fine)']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the system's script is missing ${token}`);
+if (!/pointerType===?[`"']touch[`"']/.test(tpmScripts)) failures.push('[tpm] the system never follows a touch pointer: a tap toggles it');
+if (/data-tpm-field|tpm-signal|SignalField/.test(tpmScripts)) failures.push('[tpm] nothing is left of the signal field\'s script');
+if (!tpmScripts.includes('is-held')) failures.push('[tpm] the hero script stills the system while the Foundation rises over it');
 // The layered reveal hands the Foundation its edge, its shadow and its rise.
 for (const token of ['--lead-r', '--lead-shadow', '--rise']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the layered reveal's script is missing ${token}`);
 // Nothing is left of Selected Writing's entrance.

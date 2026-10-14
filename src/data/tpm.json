@@ -1,19 +1,19 @@
 {
-  "_readme": "Technical Product Marketing, Version 1.5: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4; V1.5 gave the hero the Narrative Engine and the signal field and made the conclusion the dark closing movement into Contact). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3, V1.4 and V1.5 briefs and the V1.2 delta brief (October 12 to 14, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
+  "_readme": "Technical Product Marketing, Version 1.6: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4; V1.5 gave the hero the Narrative Engine and the signal field and made the conclusion the dark closing movement into Contact; V1.6 replaced the engine and the field with the isometric system and gave the hero its section label). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3, V1.4, V1.5 and V1.6 briefs and the V1.2 delta brief (October 12 to 14, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
   "hero": {
-    "_hero": "Headline and paragraph on the left, the Narrative Engine on the right (V1.5, replacing the V1.4 stacked object), the seven scope terms in one centered line at the foot of the hero (V1.4), and a faint signal field behind it all; no kicker and no media. The headline never changes.",
+    "_hero": "The section label, then the headline and paragraph on the left, the isometric system on the right (V1.6, replacing the V1.5 Narrative Engine and its signal field), the seven scope terms in one centered line beneath them (V1.4); no media. The headline never changes; `break` is the phrase its first line ends with, so it always sets in two lines, sized to its column.",
+    "label": "02 / Technical Product Marketing",
     "headline": "Building the system behind the message.",
+    "break": "the system",
     "accent": "the system",
     "copy": "I built the strategic foundation that turned Bolt Liquidity’s technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
     "em": "a clear market narrative",
     "scope": ["Research", "Positioning", "Messaging", "Claims Governance", "Technical Documentation", "Web Content", "Campaign Direction"],
-    "_engine": "The Narrative Engine (V1.5), the hero's system visual: research and interviews feed a shared product language, which directs every market-facing expression. Two inputs, one core and three outputs, in the order they are drawn and lit; the labels appear only once the engine is engaged. `captions` name the three groups; `toggle` is the control that opens and closes it for keyboards, screen readers and touch screens.",
-    "engine": {
-      "inputs": [{ "label": "Stakeholder interviews" }, { "label": "Product research" }],
-      "core": "Shared product language",
-      "outputs": [{ "label": "Website" }, { "label": "Technical documentation" }, { "label": "Campaigns and content" }],
-      "captions": { "inputs": "Inputs", "core": "Core", "outputs": "Outputs" },
-      "toggle": { "show": "Show the system", "hide": "Hide the system" }
+    "_system": "The hero's isometric system (V1.6, replacing the V1.5 Narrative Engine and its signal field): research and inputs on the left, the shared product language at the center as an architectural foundation, the public-facing expressions on the right. Its geometry is src/lib/tpm-iso.ts. `labels` are the few words shown only while the system is engaged (pointer over it, a tap, or its control), keyed by component; `description` is what assistive technology reads for the drawing; `toggle` is the control that shows and hides the labels for keyboards and screen readers.",
+    "system": {
+      "description": "Stakeholder interviews, product research and foundational marketing documents feed a shared product language, built at the center as an architectural foundation, which carries through to the website, the technical documentation, and campaigns and content.",
+      "labels": { "interviews": "Interviews", "research": "Research", "documents": "Documents", "core": "Shared product language", "website": "Website", "documentation": "Documentation", "campaigns": "Campaigns" },
+      "toggle": { "show": "Show the system’s parts", "hide": "Hide the system’s parts" }
     }
   },
   "foundation": {

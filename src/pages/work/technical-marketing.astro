@@ -1,12 +1,12 @@
 ---
 /**
- * Technical Product Marketing, Version 1.5.
+ * Technical Product Marketing, Version 1.6.
  *
- * The rebuilt case study: 01 Hero (the split hero, the Narrative Engine and
- * the signal field behind it, V1.5), 02 Foundation (the document library,
- * rising over the hero), 03 the transitional statement, 04 Website,
- * 05 Technical documentation, 06 the flagship animation campaign and 07 the
- * conclusion, then Contact and the footer, as the homepage closes. From the
+ * The rebuilt case study: 01 Hero (the split hero and its isometric system,
+ * V1.6), 02 Foundation (the document library, rising over the hero), 03 the
+ * transitional statement, 04 Website, 05 Technical documentation, 06 the
+ * flagship animation campaign and 07 the conclusion, then Contact and the
+ * footer, as the homepage closes. From the
  * campaign on, one continuous closing ground: the campaign's black, the
  * conclusion turning to a deep charcoal teal, and Contact's green, its grid
  * rising out of the conclusion (V1.5). (Selected Writing, added in V1.3, was
@@ -27,13 +27,18 @@ import TpmWebsite from '@components/tpm/TpmWebsite.astro';
 import TpmDocs from '@components/tpm/TpmDocs.astro';
 import TpmCampaign from '@components/tpm/TpmCampaign.astro';
 import TpmConclusion from '@components/tpm/TpmConclusion.astro';
+import { isoScene } from '@lib/tpm-iso';
 
 const entry = await getEntry('work', 'technical-marketing');
 if (!entry) throw new Error('[technical-marketing] the case study entry is missing');
 const d = entry.data;
+// The hero system's keyframes (its signals and lights), made with its
+// geometry, belong in the head.
+const isoKeyframes = isoScene().keyframes;
 ---
 
 <BaseLayout title={d.title} description={d.description} path="/work/technical-marketing/" ogAsset={d.ogAsset} ogType="article" footerSurface="brand">
+  <style slot="head" is:inline set:html={isoKeyframes}></style>
   <article class="tpm" aria-labelledby="tpm-title">
     <TpmHero />
     <TpmFlow />
