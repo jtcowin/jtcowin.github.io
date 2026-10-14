@@ -5,33 +5,48 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Technical Product Marketing Version 1.4 in review.** Version 2.0 and Technical Product
-Marketing Version 1.3 are published. Version 1.4 (the hero's two-state system and the field behind
-it, the scope line at the foot of the hero, wider paragraphs, Selected Writing taken out, and the
-conclusion's one-sentence way on) is committed locally and not pushed until it has been reviewed in
-the browser. Placeholders render only in `npm run dev`; production builds hide
+**Status: Technical Product Marketing Version 1.5 and Events and Multimedia Production Version 1.0 in
+review.** Version 2.0 and Technical Product Marketing Version 1.4 are published. Technical Product
+Marketing Version 1.5 (the Narrative Engine and the signal field in the hero, and the conclusion as a
+full-screen dark closing movement into Contact) and the first full build of Events and Multimedia
+Production (Version 1.0, on its own page) are committed locally and not pushed until they have been
+reviewed in the browser. Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
 
-Technical Product Marketing replaces the case study's page with its own, now at Version 1.4, built
+Technical Product Marketing replaces the case study's page with its own, now at Version 1.5, built
 through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation,
 06 the flagship animation campaign and 07 the conclusion (see [Technical Product Marketing, Version
-1.4](#technical-product-marketing-version-14)). The hero is a split: the copy on the left and, on the
-right, a compact stack of six layers that opens, when the reader points at it, taps it or presses its
-control, into a labeled view of the system behind the message (the foundation and the market
-expressions it carries), with quiet contour lines behind it and the seven areas of scope in one line
-at its foot; the Foundation's dark surface then rises over it. The foundation opens
+1.5](#technical-product-marketing-version-15)). The hero is a split: the copy on the left and, on the
+right, the Narrative Engine, one central core in a sparse system of faint nodes that expands, when the
+reader points at it, taps it or presses its control, and lights from its two inputs through the core
+to its three outputs as their names arrive (research and interviews feeding a shared product language
+that directs every market-facing expression), over a faint field of short marks that turn and
+brighten around a moving pointer, with the seven areas of scope in one line at its foot; the
+Foundation's dark surface then rises over it. The foundation opens
 centered, then from a compact stack into a library of twelve named documents, each with its own accent
 and icon, moving right to left; one statement follows, revealed word by word, its key clause then
 highlighted; then the website plays in an oversized desktop display and the documentation in a large
 browser frame, both continuously, from their posters; then the complete one-minute film plays in a
 nearly full-width frame on the dark ground, silently until the reader asks for sound, above its launch
-results; then a short conclusion, whose last sentence leads on to the next case study. Contact and the
-footer close the page. Two site-wide changes came with Version 1: inner pages
+results; then the conclusion, a full screen on a ground that carries the campaign's black on through a
+deep charcoal teal into the Contact green, whose last sentence leads on to the next case study, with
+Contact's grid rising out of its lower part. Contact and the footer close the page. Two site-wide
+changes came with Version 1: inner pages
 lead their header with a restrained HOME link in place of the name, and the homepage opens, once per
 browsing session, with a short sequence; since Version 1.2 it is three phrases, "Product complexity.",
 "Market clarity." and "Strategy into execution.", turning as the faces of one restrained cylinder and
 handing over to the hero in about 3.8 seconds.
+
+Events and Multimedia Production, the third and final case study, has its own page since its Version
+1.0 (see [Events and Multimedia Production, Version 1.0](#events-and-multimedia-production-version-10)):
+a hero with one program monitor that cuts, like a live switcher, between three sources (PRESENT,
+PRODUCE, the default, and ENGAGE); a run of show (Secure, Build, Capture, Cut, Amplify) that is the
+page's table of contents and thesis; then the activation, the Sui Summit session, the production room
+from setup to final output, Sui Fest, what continued after the event, and a conclusion that runs
+straight into Contact, with no next case study. Credits sit beneath each piece of work, and every
+media slot still waiting for its final asset is a placeholder at its final ratio in `npm run dev`
+only.
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -103,7 +118,7 @@ introduced the full-viewport photograph and the photographic favicon.
 | `/` | `src/pages/index.astro` + `src/data/home.json` |
 | `/work/creator-campaigns/` | `src/content/work/creator-campaigns.mdx` |
 | `/work/technical-marketing/` | `src/pages/work/technical-marketing.astro` + `src/data/tpm.json` (metadata and the Select Work card from `src/content/work/technical-marketing.mdx`) |
-| `/work/events-video/` | `src/content/work/events-video.mdx` |
+| `/work/events-video/` | `src/pages/work/events-video.astro` + `src/data/events.json` (metadata and the Select Work card from `src/content/work/events-video.mdx`) |
 | `/resume/John-Cowin-Resume.pdf` | `public/resume/John-Cowin-Resume.pdf` |
 | `/404.html` | `src/pages/404.astro` |
 | `/robots.txt`, `/sitemap-index.xml`, `/site.webmanifest` | generated at build time |
@@ -177,10 +192,11 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
   `fallback` stand-ins, and optional `focus`). `role` (optional) is the one-line "My role:" summary
   under the intro (see Case-study roles below).
-- **Technical Product Marketing** (Version 1.4): `src/data/tpm.json` holds the hero copy and scope
-  line, the hero system (`hero.system`: its control's name, and its two groups, Foundation and Market
-  expressions, each layer with its short `label` and its full `name` for screen readers, bottom layer
-  first), the foundation's two headline lines and paragraph, the twelve documents in order (display
+- **Technical Product Marketing** (Version 1.5): `src/data/tpm.json` holds the hero copy and scope
+  line, the Narrative Engine's words (`hero.engine`: its two inputs, its core and its three outputs,
+  in the order they light, the three group captions, Inputs, Core and Outputs, and its control's two
+  states, `toggle.show` and `toggle.hide`; its geometry is `src/lib/tpm-engine.ts`, which builds for
+  exactly two inputs and three outputs or stops the build), the foundation's two headline lines and paragraph, the twelve documents in order (display
   number, title, subline, icon, accent name and color) and the number of blank covers, the statement
   and its highlighted clause (`highlight`), and for Website and Technical documentation their name,
   metadata (label and paragraphs; `**name**` sets a name in bold), contribution statement and
@@ -194,6 +210,18 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   must appear in its text exactly once, or the build stops (`src/lib/tpm-copy.ts`). The page's metadata and its Select Work
   card still come from the case study's frontmatter; its older MDX body is no longer rendered. The
   opening sequence's three phrases are in `src/components/Intro.astro`.
+- **Events and Multimedia Production** (Version 1.0): `src/data/events.json` holds every word on the
+  page and its media configuration, section by section. `hero`: the kicker, the headline and its
+  `accent`, the paragraph, the `default` source and the three `cues` (each with its label, the line
+  that names where it was shot, its asset id and, for a frame wider than 16:9, `fit: contain`). `run`:
+  the eyebrow and title, the three `phases` over the stages they span (by index), and the five
+  `stages`, each with its line and the section it links to. Each section after that names the stages
+  it covers (`cues`, the small tally above its headline), its headline and copy, its media (asset
+  ids), its notes, chapters, steps, teams (with the second at which each interview starts), stills,
+  path, results or trail, its public-safe `outcome`, the slots still waiting for final media
+  (`pending`) and its `credits` (who and what, in order). `conclusion` holds the headline, its accent
+  and the paragraph; there is no next case study. The page's metadata and its Select Work card still
+  come from the case study's frontmatter; its older MDX body is no longer rendered.
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -239,6 +267,21 @@ To replace a placeholder with a real asset:
    `"decorative": true` and `"permission": "approved"`, and swap its id into the pool. Keep the pool at
    three times `perRow`. Stills only (no video), and the originals stay outside the repository.
    `verify.mjs` holds the approved list, so update `REEL_POOL` there when the approved set changes.
+10. **Events slots**: every slot on the Events page names an `ev-` entry that already holds its final
+    aspect ratio, so a placeholder and the asset that replaces it take the same room. A `pending`
+    entry is a labeled placeholder in `npm run dev` and renders nothing in a production build; to fill
+    it, add the file and set the entry's `file` (a video also takes its `poster` and its `duration` in
+    seconds) and `permission: approved`, and it appears in its place with nothing else to change. A
+    still, artifact or slide is served as a responsive picture; a video with sound gets the page's
+    player ("Play with sound", pause, seek, mute); the activation kit's screen animation, a silent
+    video, plays muted and looped while it is well in view, with its own pause control; and the kit
+    appears as one package as soon as any of its pieces is approved. The two metric entries are
+    reminders that become text: approving `ev-suifest-metrics` with a verified `value` and
+    `metricLabel` sets the figure beneath the Sui Fest results, and approving `ev-after-integration`
+    with the verified name and wording sets it beneath the outcome after the event; `verify.mjs` allows
+    an exact figure or a named integration on the page only from such an approved entry. What is still
+    pending is listed in [Events and Multimedia Production, Version
+    1.0](#events-and-multimedia-production-version-10).
 
 Set `permission` to `private-only` on anything that must never render even if a file is present.
 The build will crop real media to the entry's aspect ratio with `object-fit: cover`.
@@ -254,7 +297,10 @@ there. To replace it, overwrite that file; to rename it, change `resumePath` in 
 
 `public/og/*.png` are typographic cards generated from the site's own fonts and tokens by
 `npm run og`. Replace them with custom artwork at 1200×630 if preferred; the manifest entries
-(`og-home`, `og-creator-campaigns`, …) point at them.
+(`og-home`, `og-creator-campaigns`, …) point at them. The events card was regenerated with the case
+study's new title, Events and Multimedia Production, in Events Version 1.0 (only that card: the
+renderer's output is not byte-for-byte stable across machines, so the other three were left as they
+were).
 
 ### Browser icons
 
@@ -415,7 +461,12 @@ included) is tracked or shipped; and the trust bar shows seven logo files, Ambur
 supplied SVG byte for byte, carrying its optical sizing.
 
 The Technical Product Marketing checks are listed with the page (see [Technical Product Marketing,
-Version 1.4](#technical-product-marketing-version-14)).
+Version 1.5](#technical-product-marketing-version-15)), and so are the Events checks (see [Events and
+Multimedia Production, Version 1.0](#events-and-multimedia-production-version-10)). The Events page
+also has guardrails of its own: it never mentions an unannounced pilot, contract discussions,
+confidential Foundation discussions, investor diligence, data rooms or fundraising; it gives no exact
+engagement figure and names no integration except from an approved, verified metric entry; and its
+outcomes keep the brief's public-safe wording word for word.
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -634,9 +685,18 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   the right, with the spare height shared out above and below (1 to 1.25), and the footer rests at the
   bottom as a quiet anchor. The top padding reserves the header's height, so the navigation never meets
   the headline. Phones and short windows let the frame grow past one screen rather than compressing
-  it, and there is no scroll snapping. The creator and events case studies keep the compact Contact,
-  without the grid; since its Version 1 redesign the Technical Product Marketing page closes with the
-  full frame and its grid, as the homepage does.
+  it, and there is no scroll snapping. The creator case study keeps the compact Contact, without the
+  grid; the Technical Product Marketing page (since its Version 1 redesign) and the Events page (since
+  its Version 1.0) close with the full frame and its grid, as the homepage does.
+- The grid's lead (Technical Product Marketing V1.5, Events V1.0): on those two pages the conclusion
+  before Contact is a dark ground that turns, step by step, into exactly the Contact green, so there
+  is no seam between them, and Contact's grid rises out of the conclusion instead of starting at
+  Contact's edge. `<Contact lead="clamp(10rem, 40svh, 26rem)" />` starts the grid that far above
+  Contact, invisible there, about 5% of its strength at four tenths of the way down, 22% at seven
+  tenths and 60% at nine tenths, and at full strength exactly where Contact begins (`--grid-fade`);
+  the rows are still counted up from the footer's rule, so they line up as on the homepage, and the
+  conclusion's words sit above the lines. The pointer response is unchanged and nothing animates the
+  gradient. The homepage passes no lead and keeps its own start.
 - The grid: one-pixel lines in the surface color mixed with 8% of its light aqua, in square cells about
   110 to 140px across at common screen sizes (3, 6, 8 and 10 columns of the content width from phones
   up), aligned with the page's gutters and snapped to whole pixels. Since the Version 1.9 update it is
@@ -665,35 +725,42 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
 
-### Technical Product Marketing, Version 1.4
+### Technical Product Marketing, Version 1.5
 
 John's TPM briefs, Version 1.1 (October 12, 2026), Version 1.2 and its delta (October 13: the HOME
 house, the hero without media, the Foundation's copy and icons, the statement, and the Website and
 Technical documentation metadata, contributions and playback), Version 1.3, an incremental update
 of the same page (the split hero and its object, the layered reveal into the Foundation, paragraph
 widths, equal metadata columns, the live-site button, the documentation's loop, the emphasis system,
-the campaign's amplification line, Selected Writing and the conclusion), and Version 1.4, another
+the campaign's amplification line, Selected Writing and the conclusion), Version 1.4, another
 (the hero object as a two-state system, the field behind it, the scope line at the foot of the hero,
-wider paragraphs, Selected Writing taken out, and the conclusion's way on as one sentence; everything
-else as it was), built through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05
-Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact and
-the footer; 00, the homepage opening sequence, is site-wide. The page is
+wider paragraphs, Selected Writing taken out, and the conclusion's way on as one sentence), and
+Version 1.5, the first part of the Combined Build Brief (October 14: the Narrative Engine in place of
+the stacked object, a signal field in place of the contour lines, and the conclusion's spacing, type
+and one continuous closing ground into Contact; everything else as it was), built through 01 Hero, 02
+Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship
+animation campaign and 07 the conclusion, then Contact and the footer; 00, the homepage opening
+sequence, is site-wide. The page is
 `src/pages/work/technical-marketing.astro` with `src/components/tpm/` (TpmHero; TpmFlow for 02 and 03;
 TpmWebsite, TpmDocs and TpmCampaign, which share TpmCase for their opening; TpmWalkthrough, the
 walkthroughs' player; DocIcon; TpmConclusion), its copy and library in `src/data/tpm.json`, its
-emphasis helper in `src/lib/tpm-copy.ts`, the hero system's drawing in `src/lib/tpm-system.ts`, the
-hero field's contours in `src/lib/tpm-field.ts` and its motion in `src/lib/tpm-motion.ts`;
-`src/pages/work/[slug].astro` no longer builds this case study. The page runs up under the header row
+emphasis helper in `src/lib/tpm-copy.ts`, the Narrative Engine's geometry in `src/lib/tpm-engine.ts`,
+the signal field in `src/lib/tpm-signal.ts` and the page's motion in `src/lib/tpm-motion.ts` (the
+V1.4 `tpm-system.ts` and `tpm-field.ts` are gone); `src/pages/work/[slug].astro` no longer builds
+this case study. The page runs up under the header row
 (`--header-row`), so its opening screen is the whole viewport. The brief itself is kept and revised in
 place outside the repository; this section follows it, revised in place with it.
 
-- **01 Hero** (light surface; V1.3, V1.4): an asymmetrical split. The headline "Building the system
+- **01 Hero** (light surface; V1.3 to V1.5): an asymmetrical split. The headline "Building the system
   behind the message." and the supporting paragraph sit together on the left (7fr of the width),
-  vertically centered in the first screen; on the right (5fr), in open space, the narrative system,
-  with the field behind it. The headline never changes (no rotating or replaced words); "the system" is
-  in the accent and "a clear market narrative" carries the paragraph's emphasis. No kicker and no
-  media: the Bolt animation plays in full in 06. Phones and tablets stack the copy above the system.
-  The copy, the system and the scope line rise in.
+  vertically centered in the first screen; on the right (5fr), in open space, the Narrative Engine
+  (V1.5), with the signal field behind the whole hero. The headline never changes (no rotating or
+  replaced words); "the system" is in the accent and "a clear market narrative" carries the
+  paragraph's emphasis. No kicker and no media: the Bolt animation plays in full in 06. The engine is
+  at most 38rem wide and takes the width of its column, so narrower desktops scale the engine before
+  they take any room from the copy. Phones and tablets stack the copy above the engine, which leaves
+  room beside it for its labels on a phone and keeps its control in view beneath it on touch screens.
+  The copy, the engine and the scope line rise in.
 - **The scope line** (V1.4): the seven areas (Research, Positioning, Messaging, Claims Governance,
   Technical Documentation, Web Content, Campaign Direction) back at the foot of the hero, in one
   centered line clear of the paragraph and the system: small tracked capitals, 11px with 0.1em
@@ -703,56 +770,73 @@ place outside the repository; this section follows it, revised in place with it.
   off center by a trailing gap), a term never breaking inside itself: two lines at 768px, four at 390
   and 320. Every term but the first has a middle dot, skipped by screen readers, which the script hides
   where a term opens a line.
-- **The narrative system** (`TpmHero.astro`, drawn by `src/lib/tpm-system.ts`; V1.4): a deliberate
-  two-state object in place of the V1.3 planes that followed the pointer. At rest it is a compact,
-  stable stack of six isometric layers, bottom to top the foundation (Research and interviews, deep
-  teal with a scatter of points; Shared internal language, the one aqua layer, with lines; Positioning
-  and claims, teal with a ring) and the market expressions it carries (Website, a bone page with a
-  block and lines; Technical documentation, fog with lines; Campaigns and content, bone with a ring and
-  a point). Its only life at rest: a faint light that passes up through the layers every nine seconds
-  (each layer's faces brighten briefly, a quarter second after the one below) and a 1.5px drift over
-  eight seconds; no tilting, wobbling or following. Pointing at the stack itself (its own silhouette,
-  not the box around it and not the hero), tapping it, or pressing its control opens it into an
-  exploded view that settles and stays settled: the foundation's three layers separate vertically, the
-  market expressions rise above them and fan out slightly (16px to either side), each joined to the
-  layer below by dashed posts, those between the foundation and its expressions in the accent. Once the
-  layers have arrived (0.62 seconds), short labels appear to the left of the stack, each a one- or
-  two-word callout on a hairline leader to its layer's corner (Research, Shared language, Positioning;
-  Website, Documentation, Campaigns), under two small headings, FOUNDATION and MARKET EXPRESSIONS;
-  nothing is written on the layers. To give the labels room the stack slides right as it opens, by
-  only as much as the column needs. Leaving, the labels fade first (0.16 seconds), then the layers
-  return, top first, over 0.75 seconds, and the stack slides back: nothing snaps. Opening takes 0.85
-  seconds on an ease-out curve, the layers 45ms apart.
-- **Its control** (V1.4): a mouse or pen opens it by moving over the stack and closes it by leaving (a
-  layout change under a still pointer never opens it); a touch toggles it, and a touch anywhere else
-  closes it; a keyboard reaches a real button, "Show the system behind the message" (hidden from sight,
-  `aria-expanded`, controlling the labels), whose focus shows as a ring around the stack; Enter or
-  Space toggles it, Escape closes it and so does moving focus on. Screen readers hear the two groups
-  and the layers' full names; the drawing itself is hidden from them. Off screen, or once the
+- **The Narrative Engine** (`TpmHero.astro`, geometry from `src/lib/tpm-engine.ts`; V1.5): the
+  V1.4 stack is gone completely, its object, its drawing module and its words, replaced by one
+  abstract, living system that says how the marketing work was built: research and interviews feed a
+  shared product language, which directs every market-facing expression. At rest it is one central
+  core (a deep teal nucleus with an aqua inner ring and a pale point of light, inside a ring of 48
+  short radial marks and a dotted ring, within a faint dotted orbit) in a sparse system of faint nodes
+  and connections: seven small unnamed nodes on hairlines, and five named ones, two inputs to the left
+  and three outputs to the right, each joined to the core by a dashed hairline. No words at rest. Its
+  only life at rest is ambient and slow: a breath of light behind the core (seven seconds), a signal
+  that passes every eleven seconds from the lower input through the core to the upper output (three
+  soft points of light in turn), and a drift of a pixel and a half over nine seconds; nothing spins,
+  swells or follows the pointer.
+- **Engaged** (V1.5): the system expands, deliberately, over about 0.8 seconds on an ease-out curve:
+  the core's marks lengthen from their resting length into their full pattern, from the input side
+  round to the output side; the dotted ring gives way to a wider solid one; the orbit widens 16% and
+  the nucleus 6%; the five named nodes move out, the inputs to the left and the outputs to the right;
+  the resting hairlines fade and curved connections take their place. Then the connections light in
+  sequence, a line of light drawn along each: from the two inputs into the core (from 0.3 seconds,
+  75ms apart, each run 0.44 seconds), the core's point brightening as they arrive (0.78 seconds), and
+  from the core out to the three outputs (from 0.92 seconds). Each node lights as the light reaches
+  it and its label arrives beside it: Stakeholder interviews and Product research under INPUTS,
+  Shared product language under CORE, below the core, and Website, Technical documentation and
+  Campaigns and content under OUTPUTS. Leaving, the labels go first (0.16 seconds) and the system
+  returns calmly to rest over about 0.6 seconds. It stays distinct from the product architecture
+  diagram in 05, the technical architecture of the product: this one is the architecture of the
+  marketing work, a radial, curved drawing read left to right, with no boxes, right-angled connectors
+  or product components. The Nimbus Ops reference informed only the feeling of one restrained object
+  expanding into a larger system; nothing of its object, colors or theme.
+- **Its control** (V1.5): only direct engagement opens it. A mouse or pen engages it by moving over
+  the engine's own area (a circle about the size of the faint orbit; the whole box once it is open)
+  and releases it by leaving; a layout change under a still pointer never opens it, and a pointer
+  anywhere else on the page never moves it. A tap on it opens a quicker version of the same (the
+  light's schedule compressed into about 0.7 seconds); a second tap or a tap elsewhere closes it; and
+  on touch screens a visible control beneath it, "Show the system" or, open, "Hide the system", does
+  the same. For a keyboard that control is a real button (`aria-expanded`, controlling the labels),
+  out of sight until it takes focus; Enter or Space toggles it, Escape closes it. Screen readers hear
+  the three groups and the six names; the drawing itself is hidden from them. Off screen, or once the
   Foundation starts to cover the hero, it rests closed. Without JavaScript it opens on hover or focus
-  within it (CSS). With reduced motion there is no ambient life, and it opens and closes at once.
-- **The field** (`src/lib/tpm-field.ts`; V1.4): thin, irregular contour lines behind the system, as on
-  a topographic map: ten levels traced at build time from a smooth height field centered under the
-  object, softened, drawn as one inline SVG of about 14 KB in slate at 8.5% (at most 18 of 255 levels
-  from the ground), concentrated on the right and fading out toward the copy and the field's edges.
-  That fade is drawn into the lines (each stretch of line carries its own opacity, in tenths), not laid
-  over them as a CSS mask, because a mask over a field this size had to be composited on every frame
-  of a scroll. While a fine pointer moves anywhere in the hero, a soft light follows it (a 560px window
-  in which the same lines read in deep teal at 20%, over a 7% aqua glow) and the map shifts a few
-  pixels against it (7px across, 5px up and down at most); the light dims 1.4 seconds after the
-  pointer rests, at once when the page scrolls and when the pointer leaves, and then is hidden
-  outright. No grid, particles, icons, nodes or bright gradients. The system takes no part in the
-  field's response: it answers only a pointer over the stack itself. Touch and reduced motion get the
-  lines alone.
-- **Performance** (V1.4): SVG and CSS transforms and opacity only, no WebGL or canvas. The pointer is
-  read once a frame through `requestAnimationFrame`; the field and the light move by transforms of
-  their own compositor layers (given only to fine pointers), and their loop stops as soon as they
-  settle; the stack's hit area is a clip-path measured on resize, never per move, so moving the pointer
-  never lays the page out. The drift moves the whole drawing (its outer SVG, which the compositor
-  animates by itself), so at rest the hero costs the main thread almost nothing (about 17ms in five
-  seconds in headless Chromium; animating a group inside the drawing cost 410ms, laying it out on
-  every frame). The ambient life pauses while the system is open and off screen, and is gone while
-  the Foundation rises over the hero, which the field also leaves over the first half of the rise.
+  within it (CSS). With reduced motion it is shown composed and complete, expanded, connected and
+  labeled, and still, with no control and no ambient life.
+- **The signal field** (`src/lib/tpm-signal.ts`; V1.5): the V1.4 contour lines are gone
+  (`tpm-field.ts` with them), replaced by a faint field of short marks after the background of the
+  Bolt website recording John supplied, in the portfolio's own slate and teal (no yellow, no black
+  ground). The marks, 6 to 8.5px long and a pixel wide, stand on a staggered, triangular lattice 25px
+  apart (22px under 700px wide), each nudged a little off its point and leaning a few degrees with a
+  slow drift of direction across the field, so no square grid shows. At rest they are slate at about
+  a tenth of full strength, quieter still behind the copy (22% of that), the scope line (30%), the
+  engine's core (15%) and the header row, and toward the edges; those fades are drawn into each mark's
+  own strength, never laid over the field as a CSS mask, so the headline and paragraph keep their full
+  contrast. While a fine pointer moves anywhere in the hero, the marks within 190px of it turn to run
+  round it, lengthen by up to 40%, draw back from it by up to 4.5px and take on the page's deep teal,
+  in soft rings about 44px apart that travel outward as the pointer travels, so the field reads the
+  direction it is moved in. 1.3 seconds after the pointer rests the response settles to 42% of its
+  strength; it fades when the pointer leaves the hero and is gone at once when the page scrolls. While
+  the engine is engaged the field answers at 45%, so the engine leads. Touch screens and reduced motion get the
+  still field alone; without JavaScript there is no field.
+- **Performance** (V1.5): one 2D canvas (no WebGL and no shader), at no more than twice the CSS
+  pixels, drawn in full only after a resize. While the pointer acts, each frame clears and redraws
+  only the box the response covers now and covered a frame ago (about 400px square), clipped to it,
+  with its marks batched into one path for each tone and strength; the loop stops as soon as the field
+  settles, a still pointer costs nothing, and nothing runs off screen. The engine's ambient life is
+  CSS animation of opacity and transform on HTML boxes (the drawing's own box, the glow and three
+  points of light), which the compositor runs by itself, never anything inside the SVG; its SVG parts move only while it opens or closes; the ambient life
+  pauses while it is open or off screen and is gone while the Foundation rises over the hero. In
+  headless Chromium at 1440x900, the hero at rest costs the main thread about 10ms in five seconds,
+  and no frame took longer than 34ms while a pointer swept the hero or the page scrolled through the
+  hold (V1.4 dropped one or two).
 - **01 Hero, into the Foundation** (wide, tall-enough screens with motion allowed): a layered reveal
   over one screen of scrolling. The live hero is two screens tall and gives its last screen to the
   Foundation (a negative bottom margin), so the Foundation's full-width dark surface rises over the
@@ -766,8 +850,9 @@ place outside the repository; this section follows it, revised in place with it.
   `--rise` to `TpmFlow.astro`). Everywhere else (reduced motion, phones, tablets, short windows) the
   hero reads in normal flow and the Foundation's opening crossfades in (0.7 seconds) as its top passes
   four fifths of the way down the screen. The Pinterest reference informed the feeling only. V1.4
-  keeps all of this; the scope line fades with the copy and the system, the system rests closed and
-  still from the first moment of the rise, and the field fades out over its first half.
+  and V1.5 keep all of this; the scope line fades with the copy and the engine, the engine's ambient
+  life stops from the first moment of the rise and the engine rests closed once the rise is 15% of the
+  way along, and the signal field fades out over the rise's first half.
 - **02 Foundation** (dark surface): a centered opening, unlike the split hero: the headline on exactly
   two lines ("Before the message" / "comes the foundation.", each its own unbroken line, "the
   foundation." in the accent since V1.3), the approved paragraph beneath it at 52rem, about 830px (V1.4;
@@ -891,7 +976,9 @@ place outside the repository; this section follows it, revised in place with it.
   data saving autoplay nothing (the controls still play on request, and Play with sound plays the film
   with sound); phones get the 720p encodes. V1.4 was checked at 1920x1080, 1440x900, 1280x800 and
   1024x768 with a mouse, at 768x1024 with a mouse and with touch, and at 390x844 and 320x640 with touch;
-  with reduced motion and without JavaScript at 1440x900 and 390x844.
+  with reduced motion and without JavaScript at 1440x900 and 390x844. V1.5 was checked at 1440x900,
+  1280x800, 1024x768, 768x1024 and 390x844, with a mouse, touch and the keyboard, and with reduced
+  motion and without JavaScript, for the hero, the conclusion and the closing ground into Contact.
 - **HOME** (every page but the homepage): the header leads with a HOME link to the homepage in place
   of the name, in the navigation's pill and padding and the small tracked capitals the site keeps for
   labels (the capitals are CSS, so it reads as "Home"). Since the V1.2 delta a small outlined house
@@ -977,21 +1064,37 @@ place outside the repository; this section follows it, revised in place with it.
   spacer, hidden markup, style or script is left, and the campaign leads straight into the conclusion.
   For a later Writing page or archive, the covers, their provenance notes and the excerpts are in the
   repository's history (the V1.3 commit, 083fb76).
-- **07 The conclusion** (light surface, the hero's, so the page closes where it began; V1.3, renumbered
-  in V1.4): "One foundation. Every expression aligned." (each sentence on its own line where there is
-  room, the second in the accent), then "The work began with a shared product language and carried
-  through the website, technical documentation, and flagship campaign, giving every public-facing
-  expression the same strategic foundation." Then (V1.4), in place of the "Next case study" label and
-  title, one conversational sentence, the whole of it the link to the next case study, Events and
-  Multimedia Production (`/work/events-video/`): "Next, see how I bring events and multimedia
-  production from concept through execution." It sits in the paragraph's column at the paragraph's
-  size, a step darker and a little heavier, set apart by space alone (no rule, card or box), balanced
-  over two lines on wide screens, and ends in a small arrow that never wraps alone. A quiet pale-teal
-  underline says it is a link; on hover and keyboard focus the sentence and its underline take the
-  accent and the arrow moves a quarter of an em; focus keeps the site's outline. It is a navigation
-  landmark named "Next case study" for screen readers. `TpmConclusion.astro` stops the build if the
-  case study it names is missing or is no longer the next in the collection's order. No metrics,
-  services, credits or roles are repeated. Contact follows, unchanged.
+- **07 The conclusion** (V1.3, renumbered in V1.4, rebuilt as the page's closing movement in V1.5):
+  "One foundation. Every expression aligned." (each sentence on its own line where there is room, the
+  second in the accent), then "The work began with a shared product language and carried through the
+  website, technical documentation, and flagship campaign, giving every public-facing expression the
+  same strategic foundation." Then (V1.4), in place of the "Next case study" label and title, one
+  conversational sentence, the whole of it the link to the next case study, Events and Multimedia
+  Production (`/work/events-video/`): "Next, see how I bring events and multimedia production from
+  concept through execution."
+- **The closing ground** (V1.5): one continuous movement from the campaign into Contact, black, deep
+  charcoal teal, the established Contact green. The campaign keeps its black; the conclusion begins on
+  that same black (#0D0F10) and turns as it goes, through a deep charcoal teal (#141E1F at its middle),
+  to exactly the Contact green (#1F4546) where Contact begins: eleven stops interpolated in OKLab, so
+  the steps are even and each is a little lighter and a little more teal than the last, never a muddy
+  grey. No cream band and no seam; nothing animates the gradient. The type is the warm cream of the
+  green surface, the paragraph a step softer, the accent the green surface's light aqua: the paragraph
+  keeps 14.6:1 on the black start and 8.4:1 on the green, the accent 13:1 and 7.2:1. Contact's grid
+  rises out of the lower part of the conclusion, from nothing to its usual strength where Contact
+  begins (see [Contact and the closing frame](#contact-and-the-closing-frame)), and the conclusion's
+  words sit above its lines.
+- **Its spacing** (V1.5): on wide screens the conclusion is a full screen tall (`min-height: 100svh`,
+  the header row reserved at its top), its beats centered in it: the headline; about 48 to 64px (53px
+  at 1440 wide); the paragraph, as wide as the chapters' contributions (53rem, 848px, where it sets 70,
+  70 and 55 characters a line at 1440); about 80 to 100px (95px at 1440); and the sentence, lower in
+  the frame as the page's last forward movement. Tablets and phones keep the beats a little closer (40
+  and 64px) and let the section take its natural height. The sentence is the paragraph's size, cream
+  and a little heavier, set apart by space alone (no rule, card or box), and ends in a small arrow that
+  never wraps alone. A quiet pale-aqua underline says it is a link; on hover and keyboard focus the
+  sentence and its underline take the light aqua and the arrow moves a quarter of an em; focus keeps
+  the site's outline. It is a navigation landmark named "Next case study" for screen readers.
+  `TpmConclusion.astro` stops the build if the case study it names is missing or is no longer the next
+  in the collection's order. No metrics, services, credits or roles are repeated.
 - **00 The opening sequence** (homepage only): "Welcome." is gone; exactly three phrases, "Product
   complexity.", "Market clarity." and "Strategy into execution.", centered in the viewport on one
   shared center, in the portfolio's display face (Archivo) at weight 450 and full width rather than the
@@ -1021,19 +1124,24 @@ place outside the repository; this section follows it, revised in place with it.
 - **Checks**: `verify.mjs` holds the approved copy word for word (the hero, the two-line foundation
   headline, the paragraph, the statement, the three chapters' metadata and contribution statements,
   the conclusion and its sentence); the hero's headline, paragraph and seven scope terms with no
-  kicker, media or canvas (the loop files, poster and manifest entry gone), the split (copy before
-  the system, 7fr and 5fr, centered, the first screen tall), the scope line (at the stage's foot, not
-  in the copy column, centered, one line on wide screens, no term broken, fixed type), the system (six
-  layers, foundation first, separating vertically, the expressions rising above and fanning 24px at
-  most, by transforms; no words on the layers; two groups and six one- or two-word labels in order,
-  with the full names for screen readers; the labels hidden at rest, shown only after half a second,
-  gone before the stack starts to close; one real button with its name, `aria-expanded` and
-  `aria-controls`, its focus ring; its own hit area; a 1 to 2px drift of the whole drawing, slow, and
-  a faint light, paused open and off screen and gone during the rise; nothing waiting for reduced
-  motion; hover and focus for no JavaScript), the field (contour paths only, no grid, particles,
-  nodes, icons or images, under 24 KB, thin and very low contrast, quieter than 35% even in the light,
-  its fades drawn into the lines with no CSS mask over it, behind everything, the light soft, shown
-  only while lit and gone for reduced motion), the V1.2 bands and rising ground gone, and the layered
+  kicker or media (the loop files, poster and manifest entry gone), the split (copy before
+  the engine, 7fr and 5fr, centered, the first screen tall), the scope line (at the stage's foot, not
+  in the copy column, centered, one line on wide screens, no term broken, fixed type), the Narrative Engine
+  (V1.5: the V1.4 object, its module and the topographic field gone; one decorative drawing hidden
+  from assistive technology, circles, marks and curves only, with no words, boxes or polygons; one
+  core, a nucleus inside a ring of at least 36 short marks and its rings, in a sparse system of at
+  least five faint unnamed nodes; five named nodes, two inputs moving out to the left and three
+  outputs to the right, each with its connection and a line of light along it, curves with no right
+  angles; the labels in three groups, Inputs, Core and Outputs, naming the inputs, the core and the
+  outputs in order, the same words in `tpm.json` and no V1.4 system block, hidden at rest; the light's
+  schedule inputs, core, outputs, each label arriving after its light; the nodes moving by transforms
+  with transitions; an ambient life that is a breath, a passing signal and a drift of 1 to 2px, on HTML
+  boxes only and only with motion allowed, paused while open or off screen and gone during the rise;
+  the pointer's own circular area, the whole box once open; one control, its two names,
+  `aria-expanded` and `aria-controls`, out of sight for a mouse until focused; reduced motion composed
+  and complete; hover and focus for no JavaScript), the signal field (one canvas hidden from assistive
+  technology, behind everything, taking no pointer, with no CSS mask or filter, its marks on a
+  triangular lattice), the V1.2 bands and rising ground gone, and the layered
   reveal (one screen of scrolling, the hero giving its last screen to the Foundation, the rounded
   leading edge, the headline's 24 to 40px rise); the twelve
   documents' numbers, titles and sublines in order, each card's strip, icon and nothing else, a
@@ -1050,9 +1158,10 @@ place outside the repository; this section follows it, revised in place with it.
   H.264, silent, fast start, dimensions, sizes), both walkthroughs' hold and fade back to the start, the
   chapters (titles, order, the diagram longest, their buttons, the centered introducing line that names
   them, no page count or spotlight), the `is-live`, width, height and motion guards on every sticky
-  rule, no vertical text, the motion script's guards (including the hold on the last frame, the hero
-  system's hit area, toggle, Escape, touch and off-screen guards, the field's frame loop, transforms,
-  rest and scroll dimming and touch guard, the rise's stilling of the system, and no WebGL), the
+  rule, no vertical text, the motion script's guards (including the hold on the last frame, the
+  engine's hit area, toggle, Escape, touch, quick and off-screen guards, the field's 2D canvas at the
+  device's pixel ratio, its frame loop, clipped redraws, observers for view and size, fine-pointer,
+  reduced-motion and touch guards, the rise's stilling of the engine, and no WebGL), the
   closing Contact frame, HOME with its
   house on every inner page (its size, the hover rise and none for reduced motion) and not on the
   homepage. For 06: its place after 05, its surface, headline, metadata and centered contribution (no
@@ -1069,7 +1178,12 @@ place outside the repository; this section follows it, revised in place with it.
   case study by the collection's order (and naming it), ending in its decorative arrow that never
   wraps alone, a navigation landmark, no label or title block and nothing repeated; no border, fill,
   shadow or outline of its own, a quiet underline with a color transition, the accent on hover and
-  focus, the arrow moving slightly, the site's focus outline kept. Across the page: the order (hero,
+  focus, the arrow moving slightly, the site's focus outline kept; and since V1.5 a dark ground (read
+  as dark by the header) from the campaign's black (#0D0F10) to the Contact green (#1F4546) in at
+  least eight stops, each lighter than the last and on the teal side, with no cream band, the cream
+  type, a full screen on wide screens, the paragraph exactly as wide as the chapters' contributions
+  (800 to 860px), the beats (48 to 64px, then 80 to 100px), the words above the rising grid, and
+  Contact's lead and its fade (and none on the homepage). Across the page: the order (hero,
   foundation, website, documentation, campaign, conclusion, Contact), one emphasis per paragraph at most, the
   accent in a few headlines only, never stacked with bold or the highlight, and no icons in headlines.
   For 00: the three phrases (no Welcome.), the display face lighter than the headlines, one line, one
@@ -1080,10 +1194,199 @@ place outside the repository; this section follows it, revised in place with it.
   crossfade for reduced motion, the head decision's guards, the preloads matching the hero's pictures
   and the stylesheet's faces, the dismissal events and the homepage-only placement.
 
+### Events and Multimedia Production, Version 1.0
+
+John's Combined Build Brief (October 14, 2026), Part Two: the first full build of the third and final
+case study, on its own page. The page is `src/pages/work/events-video.astro` with
+`src/components/events/` (EvHero, EvRun, EvActivation, EvRoom, EvSetup, EvSuiFest, EvAfter and
+EvConclusion; EvCue, a section's tally; EvCredits, the credits under each piece of work; EvPlayer,
+the player for a video with sound; EvSlot, a media slot; EvExtras, a section's slots still to come),
+its words and media configuration in `src/data/events.json`, its media in `assets.json`, and its
+behavior in `src/lib/ev-media.ts` (the program, the players, silent loops and the reveals) with
+`src/lib/ev-copy.ts` (its time labels); `src/pages/work/[slug].astro` no longer builds this case
+study. It keeps the portfolio's type, palette, navigation, buttons, radii and Contact, and shares no
+component with the Technical Product Marketing page: its structure and motion are its own. The
+production layer is restrained: a tally of five small squares above each headline (the stages of the
+run of show, the ones the section covers lit), cue readings, a running timecode, crop marks at the
+corners of frames, progress lines and frame numbers on stills; no imitation editing interface and no
+glitching. The ground cuts between the dark of the screens (the hero, the run of show, the room, Sui
+Fest) and the warm light of the planning (the activation, the production room, what continued after),
+and at the end cuts to black and turns into the Contact green.
+
+- **01 Hero** (dark): the kicker "03 / Events and Multimedia Production" and the headline "From live
+  experience to lasting momentum." ("lasting momentum." in the accent) across the top like a title
+  card; below, one dominant program monitor (16:9, 8fr of the width) beside the paragraph and three
+  restrained cues (4fr): 01 PRESENT (the Sui Summit session), 02 PRODUCE (the production room, the
+  default) and 03 ENGAGE (Sui Fest), each with a line saying where it was shot and a progress line
+  that fills as its source plays. On the monitor: a cue reading ("Cue 02 · Produce") with a tally
+  light that glows slowly while the program plays, a running timecode (hours, minutes, seconds and
+  frames at 24), a pause control and crop marks. A full screen tall on wide screens; phones and
+  tablets stack the title, the monitor, the paragraph and the cues.
+- **The program** (`Program` in `ev-media.ts`): only one source is loaded and playing at a time,
+  muted and inline. It plays through once and the program cuts to the next, like a live switcher (a
+  180ms dissolve, nothing more), until the reader picks a source, which then loops and holds; the next
+  source starts loading three seconds before its cut. The program pauses when less than 15% of the
+  monitor is in view and resumes once 35% is, pauses with a hidden tab, and never starts for reduced
+  motion or a data-saving preference (the poster stays, and its control plays it on request). The
+  cues are one named group of buttons with `aria-pressed`, the same for keyboard, touch and mouse;
+  nothing depends on hover. Without JavaScript each source keeps its poster and native controls. A
+  source whose video is not approved has no cue in a production build (a labeled placeholder in
+  development), so the program never cuts to an empty monitor.
+- **02 Run of show** (dark): "Run of show" and "The event is only the middle of the work.", then the
+  page's table of contents and thesis on one timeline: Secure, Build, Capture, Cut and Amplify, each
+  with its line from the brief and a link to the section that shows it, under three spans, Before the
+  event, In the room and After the room clears. No cards: a ruler with ticks, five cue marks and type.
+  As the timeline crosses the screen a line of light runs along the ruler with the scroll, and each
+  stage arrives as the line reaches it: its mark lights, and its words brighten from the muted ink
+  (which stays readable, above 4.5:1) and settle 6px. Once complete it stays complete. Wide screens
+  read it left to right, narrow ones top to bottom; reduced motion and no JavaScript show every stage
+  at once.
+- **03 Build the activation** (light; Secure and Build): "The work starts before anyone enters the
+  room.", one paragraph (Phi Labs' sponsorship of the Sui Summit side event at ETHDenver in 2025 and
+  2026: the sponsorship and its pricing, the host, the merchandise, the screen animations and table
+  assets made with design, and how it all reached the room), six short numbered annotations, and a
+  drawing: a schematic of the activation package in elevation, numbered against the annotations,
+  captioned "Schematic of the activation package, drawn for this page" and drawn in line once as it
+  arrives. It is a designed visualization, never presented as documentary photography; on wide
+  screens it holds beside the annotations as they pass. The activation kit (event banner, social
+  flyer, merchandise designs, the screen animation, the table or booth plan, a credential or schedule,
+  networking imagery) follows as one coordinated package as soon as any genuine piece is approved.
+- **04 Command the room** (dark; Secure, Capture and Amplify): "Build the session. Fill the room.
+  Extend its life." in three beats, the second in the accent, with one line of context (Bolt
+  Liquidity's presentation at Sui Summit in 2025 and 2026, this recording from 2026), then the
+  presentation as the dominant visual, at full width with sound. Then three chapters, Fill, Run and
+  Extend, with the brief's points, arriving in turn along one line (0.28 seconds apart), and the
+  public-safe outcome, "The presentation attracted ecosystem attention and opened conversations that
+  continued beyond the event."
+- **05 From setup to final output** (light; Capture and Cut): "A compact setup. A full content
+  system." One paragraph (the production room booked at the venue; the DJI camera and the iPhone on two
+  tripods, the clip-on microphone, the laptop, the venue's lighting and props; about 20 interview
+  questions; Max McKendry directed through multiple takes; the footage review, the chosen takes and
+  the edit direction for Bob van der Meer) and four beats, Prepare, Direct, Select and Brief, the last
+  two set forward because they carry the editorial work. Then one frame with two labeled tabs: A,
+  Setup, the behind-the-scenes photograph with five numbered points on short offset leaders (read from
+  the legend beneath), and B, Final, the finished Slippage Explained with sound. The tabs follow the
+  ARIA tabs pattern (arrow keys, Home and End), switching away from Final pauses it, and without
+  JavaScript both views are shown, one after the other; no draggable comparison. Then a second
+  finished explainer from the same session, Bolt vs AMM.
+- **06 Sui Fest** (dark; Capture and Amplify): "If you cannot own the stage, create the moment
+  everyone shares." One paragraph (Bolt was not a sponsor, so the moment had to be made: an interview
+  concept, John as the interviewer, established teams across the ecosystem with Bolt as one voice
+  among many, every team tagged and given a reason to share it). The video with sound beside the teams
+  in the piece, each name a chapter that starts the video at that team's interview, with sound:
+  Cetus, Bluefin, 7K DeFi, NAVI & Astros, Bolt Liquidity, FlowX Finance, DoubleUp, Claynosaurz and
+  Talus. Then four stills in a strip, each with its frame number and moment; the path the piece took
+  (Interview, Edit and review, Publish, Tag every team, Teams share, Ecosystem reach); and what it
+  did, in the brief's words only: tens of thousands of impressions, hundreds of likes, engagement from
+  ecosystem teams and developers, broader distribution through participant sharing. No feed, and no
+  engagement count as the centerpiece.
+- **07 What continued after the event** (light; Amplify): "Every event opens a longer conversation."
+  (the brief suggested "The room clears. The relationships continue."; the page keeps "The room
+  clears" for the conclusion alone, so the two headlines do not repeat each other). One paragraph,
+  then a trail that leaves the room and keeps going, On site, Capture, Follow-up, Ecosystem and
+  Integrations, its line running on past the edge of the frame, and the public-safe outcome:
+  "Event-led relationship development contributed to subsequent conversations and integrations with
+  ecosystem partners." No single event or person is credited with an integration; the Sui DEX
+  aggregator integration appears by name only once its public record and wording are verified.
+- **08 The conclusion** (dark): the five cue marks return in one row, all lit, as the program's last
+  reading; then "The room clears. The work keeps moving." (the second sentence in the accent) and "The
+  strongest events do more than fill a room. They create content, relationships, conversations, and
+  opportunities that continue long after the final session ends." No next case study: this is the
+  third and last, and the page runs straight into the full Contact frame and the brand footer. On
+  wide screens it is a full screen tall; its ground is the same closing movement as the Technical
+  Product Marketing conclusion's (black to the Contact green in the same eleven OKLab stops), and
+  Contact's grid rises out of its lower part.
+- **Credits** sit beneath the work they describe, never in one large section, and keep strategy,
+  production direction, design, editing and on-camera roles distinct, with no titles: the activation
+  (John Cowin; Phi Labs design for the screen animations and table assets), the room (John Cowin; Bob
+  van der Meer, deck design; Max McKendry, speaker), the production room (John Cowin; Bob van der Meer,
+  final video editing and visual production; Max McKendry, on-camera subject), Sui Fest (John Cowin;
+  the participating teams) and what continued after (John Cowin). The page carries no "My role:" line.
+- **Players** (`EvPlayer.astro`, `Player` in `ev-media.ts`): every video with sound sits on its poster
+  with one "Play with sound" button that shows its length; nothing but the poster loads until it is
+  pressed (the file's index is read once the frame is within a screen, for its length). Playing, one
+  bar along the foot of the frame holds pause or play (replay at the end), a seek bar in whole seconds
+  that answers to the arrow keys, the time, and mute or unmute, each labeled for screen readers.
+  Starting one player pauses any other, so two never sound at once, and a player pauses when it
+  leaves the screen (under a fifth in view) or the tab is hidden, then waits for the reader. Without
+  JavaScript the native controls remain. Every frame holds its ratio before anything loads, so
+  nothing shifts.
+- **Reveals**: headlines rise once into place from behind their own edge as they arrive (0.75
+  seconds, their beats 0.12 seconds apart); with reduced motion or without JavaScript they are simply
+  there.
+- **Media**: H.264 (High) with fast start at 23.976 fps, from the masters in the Portfolio folder,
+  which stay outside the repository; sizes are decimal megabytes.
+
+  | Slot | File | Range | Length | Size |
+  | --- | --- | --- | --- | --- |
+  | Hero, PRESENT | `ev-hero-present.mp4`, 1600x742, silent | Sui Summit 0:00 to 0:11 (the homepage loop's range) | 11.0 s | 0.9 MB |
+  | Hero, PRODUCE | `bolt-slippage-explainer-preview.mp4`, the homepage card's preview | Slippage Explained from 1:08.25 | 9.7 s | 1.2 MB |
+  | Hero, ENGAGE | `ev-hero-engage.mp4`, 1600x900, silent | Sui Fest 0:22.4 to 0:31.9 | 9.5 s | 2.1 MB |
+  | 04, the room | `sui-summit-presentation-excerpt.mp4`, 1280x594, AAC | Sui Summit 0:00 to 1:15 | 75.0 s | 3.9 MB |
+  | 05, Final | `bolt-slippage-explained.mp4`, 1280x720, AAC | complete | 97.5 s | 7.8 MB |
+  | 05, second explainer | `bolt-vs-amm-explainer.mp4`, 1280x720, AAC | complete | 63.7 s | 5.2 MB |
+  | 06, Sui Fest | `suifest-interviews.mp4`, 960x540, AAC | complete | 211.7 s | 23.6 MB |
+
+  PRESENT keeps the recording's own wide frame, its slides beside the speaker, letterboxed into the
+  16:9 monitor (`fit: contain`); ENGAGE runs from the first interview's opening cut to just before the
+  guest's name card. Posters: the first frames of the two hero sources, the presentation at 0:01.92
+  (the frame approved for the homepage loop), Slippage Explained at 0:04.6, Bolt vs AMM at 0:36.6 and
+  Sui Fest at 0:22.8; the four Sui Fest stills are frames at 0:50.3 (7K DeFi), 1:04.0 (Bolt
+  Liquidity), 1:08.1 (FlowX Finance) and 1:19.6 (Claynosaurz); the behind-the-scenes photograph is the
+  supplied `sui-summit-bts.jpg`. The Sui Fest file is the largest on the site and stays under the 25 MB
+  ceiling `verify.mjs` holds.
+- **Placeholders still waiting for final assets** (every one at its final ratio, labeled in
+  `npm run dev` only, absent from the production build until approved; see [Replacing
+  placeholders](#replacing-placeholders)): the activation kit, `ev-kit-banner` (3:1), `ev-kit-flyer`
+  (4:5), `ev-kit-merch` (1:1), `ev-kit-screen` (16:9, a silent loop), `ev-kit-plan` (4:3),
+  `ev-kit-credential` (3:4) and `ev-kit-networking` (3:2); the presentation, `ev-room-full` (the full
+  recording, at the excerpt's ratio, waiting on a hosting decision: thirty minutes will not fit the
+  site's 25 MB ceiling at a watchable quality), `ev-room-deck` (16:9), `ev-room-promo` (4:5) and
+  `ev-room-clip` (9:16, a video with sound); the production room, `ev-setup-questions` (4:3, a question
+  sheet or transcript fragment); Sui Fest, `ev-suifest-metrics` (verified figures); and the outcomes,
+  `ev-after-integration` (the verified named integration) and `ev-after-logos` (4:1, public partner or
+  integration logos).
+- **Checks** (`verify.mjs`): the page's order (hero, run of show, activation, room, setup to final,
+  Sui Fest, after, conclusion, Contact), its own hero and no "My role" line, and no Technical Product
+  Marketing component; the hero on the dark ground, its kicker, headline and paragraph word for word,
+  three cues PRESENT, PRODUCE and ENGAGE in one named group, PRODUCE pressed and the default (in the
+  page and in `events.json`), one video per source, each muted, inline, with a poster, loading nothing
+  and never autoplaying from the markup, one source on the monitor, a 16:9 monitor with its cue
+  reading, timecode and pause control, and no autoplay anywhere on the page; the run of show's five
+  stages and lines in order, each linking to a section that exists, a named navigation, and no faded
+  text while a stage waits; the five headlines word for word, a headline of its own after the event
+  that does not say "The room clears", the conclusion's copy, no link and no next case study, and the
+  full Contact frame with its lead and the brand footer after it; the conclusion's ground from black to
+  exactly the Contact green; the room's three chapters and their points, its outcome and the outcome
+  after the event in the public-safe wording, and the presentation as the room's dominant visual;
+  nothing about a pilot, contracts, diligence, data rooms, fundraising, Foundation discussions,
+  YouTube or Sui Network, no named integration and no exact engagement figure except from an approved
+  metric entry (and any such figure on the page has one), and Sui Fest's results in the brief's words;
+  the story saying the team was not a sponsor; at least six teams, Bolt among them, each starting the
+  video at their moment, in order; credits under at least five pieces of work, no collaboration-credit
+  section, Bob van der Meer credited with the deck design and the final video editing, and Max
+  McKendry as the speaker and the on-camera subject, without a title; at least four players, each
+  loading nothing before it is asked, with a poster, native controls without JavaScript, "Play with
+  sound" and labeled play or pause, mute or unmute and seek controls; every video file present and
+  under 25 MB; no placeholder in the production build; any silent loop muted, looped, inline, on its
+  poster, loading nothing early and carrying its own labeled pause control; the section tallies and
+  the crop marks; no glitch or flicker, and looping motion only with motion allowed; and the page's
+  script holding its program, source, view, tab, motion, data-saving, refusal, player, tabs, run,
+  reveal and loop guards, with one video with sound at a time. Every `ev-` id in `events.json` must be
+  in the manifest.
+- **Verified** at 1440x900, 1280x800, 1024x768, 768x1024 and 390x844 (no horizontal overflow at any of
+  them), with a mouse, touch and the keyboard, with reduced motion and without JavaScript; and, in a
+  copy with every kind of pending slot approved with stand-in files (the kit's banner and screen loop,
+  the deck, the extracted clip, the question sheet, the logos and both metrics), the slots appear in
+  place with no overflow, the loop plays only in view and holds the reader's pause, and the full check
+  and the accessibility scan still pass.
+
 ### Case-study roles
 
 - Since its Version 1 redesign Technical Product Marketing states John's part in its own hero copy and
-  scope line, without a "My role:" line; the two other case studies keep theirs.
+  scope line, without a "My role:" line, and since its Version 1.0 Events and Multimedia Production
+  states it in the credits beneath each piece of work, also without one; the creator campaigns case
+  study keeps its line.
 - Each case study states John's part in one compact line under its intro: "My role:" in bold, then the
   responsibilities that apply to that project, from the `role` field in its frontmatter. The lines name
   the strategy, the briefs, the review and approval, and the distribution or publishing, the ways John
@@ -1103,12 +1406,15 @@ scripts/                og.mjs (social previews), icons.py (browser icons), veri
 src/
   content.config.ts     Case-study collection schema
   content/work/*.mdx    Case studies
-  data/                 site.json, home.json, logos.json, assets.json, tpm.json (Technical Product Marketing)
+  data/                 site.json, home.json, logos.json, assets.json, tpm.json (Technical Product Marketing),
+                        events.json (Events and Multimedia Production)
   assets/               images by page and section; reel/ (the 24 reel stills), stack/ (the 18 logos)
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution),
                         tpm-motion.ts (the Technical Product Marketing page's stages,
-                        walkthroughs and film), tpm-copy.ts (its emphasis), tpm-system.ts
-                        (the hero system's drawing), tpm-field.ts (the hero field's contours)
+                        walkthroughs and film), tpm-copy.ts (its emphasis), tpm-engine.ts
+                        (the Narrative Engine's geometry), tpm-signal.ts (the hero's signal
+                        field), ev-media.ts (the Events page's program, players, loops and
+                        reveals), ev-copy.ts (its time labels)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
   components/           Intro (the homepage opening sequence), Hero, About, LogoBar, WorkPanels
@@ -1117,9 +1423,12 @@ src/
   components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 the statement), TpmWebsite, TpmDocs,
                         TpmCampaign (06), TpmConclusion (07), TpmCase (a chapter's opening),
                         TpmWalkthrough (the walkthroughs' player), DocIcon
+  components/events/    EvHero, EvRun, EvActivation, EvRoom, EvSetup, EvSuiFest, EvAfter,
+                        EvConclusion, EvCue (a section's tally), EvCredits, EvPlayer (a video
+                        with sound), EvSlot (a media slot), EvExtras (a section's slots to come)
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
-  pages/                index, work/technical-marketing, work/[slug] (the other case studies), 404,
-                        robots.txt, site.webmanifest
+  pages/                index, work/technical-marketing, work/events-video, work/[slug] (the
+                        creator campaigns case study), 404, robots.txt, site.webmanifest
 ```
 
 ## Third-party notices

@@ -1,0 +1,438 @@
+---
+/**
+ * 05 From setup to final output (Events, V1.0): the production room. Not the
+ * camera equipment as the accomplishment, but what a compact setup and an
+ * editor's judgment made of it. One paragraph and four beats (prepare,
+ * direct, select, brief), the last two set forward because they carry the
+ * editorial work. Then one frame with two clear tabs: Setup, the
+ * behind-the-scenes photograph with its kit numbered (the numbers are read
+ * from the legend beneath), and Final, the finished explainer with sound.
+ * Switching away from Final pauses it. A second finished explainer from the
+ * same session follows, then the credits. Without JavaScript both views are
+ * shown, one after the other.
+ */
+import events from '@data/events.json';
+import EvCue from './EvCue.astro';
+import EvCredits from './EvCredits.astro';
+import EvExtras from './EvExtras.astro';
+import EvPlayer from './EvPlayer.astro';
+import EvSlot from './EvSlot.astro';
+
+const { setup } = events;
+---
+
+<section class="evs" id="ev-setup" data-surface="light" aria-labelledby="ev-setup-title">
+  <div class="container evs__inner">
+    <div class="evs__head">
+      <div class="evs__text">
+        <EvCue keys={setup.cues} />
+        <p class="eyebrow evs__eyebrow">{setup.eyebrow}</p>
+        <h2 id="ev-setup-title" class="display evs__title" data-ev-reveal>
+          <span class="ev-cut"><span>{setup.headline}</span></span>
+        </h2>
+        <p class="evs__copy">{setup.copy}</p>
+      </div>
+      <ol class="evs__steps" aria-label="From the session to the cut">
+        {
+          setup.steps.map((s, i) => (
+            <li class:list={['evs__step', s.lead && 'evs__step--lead']}>
+              <span class="evs__step-n" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="evs__step-label">{s.label}</span>
+              <span class="evs__step-line">{s.line}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="evs__compare" data-ev-tabs>
+      <div class="evs__tabs" role="tablist" aria-label="Setup and final output" data-tablist hidden>
+        <button type="button" role="tab" id="ev-tab-setup" aria-controls="ev-panel-setup" aria-selected="true" class="evs__tab" data-tab="setup">
+          <span class="evs__tab-n" aria-hidden="true">A</span>
+          {setup.tabs.setup}
+        </button>
+        <button type="button" role="tab" id="ev-tab-final" aria-controls="ev-panel-final" aria-selected="false" tabindex="-1" class="evs__tab" data-tab="final">
+          <span class="evs__tab-n" aria-hidden="true">B</span>
+          {setup.tabs.final}
+        </button>
+      </div>
+
+      <div class="evs__panel" id="ev-panel-setup" role="tabpanel" aria-labelledby="ev-tab-setup" data-panel="setup">
+        <p class="evs__panel-label">{setup.tabs.setup}</p>
+        <div class="evs__photo">
+          <EvSlot id={setup.photo} sizes="(min-width: 75rem) 1200px, 100vw" />
+          {
+            setup.marks.map((m) => (
+              <span
+                class="evs__mark"
+                style={`left: ${m.x}%; top: ${m.y}%; --ox: ${m.ox}em; --oy: ${m.oy}em; --len: ${Math.hypot(m.ox, m.oy).toFixed(3)}em; --ang: ${((Math.atan2(m.oy, m.ox) * 180) / Math.PI).toFixed(2)}deg`}
+                aria-hidden="true"
+              >
+                <span class="evs__lead" />
+                <span class="evs__spot" />
+                <span class="evs__pin">{m.n}</span>
+              </span>
+            ))
+          }
+        </div>
+        <ol class="evs__legend">
+          {
+            setup.marks.map((m) => (
+              <li>
+                <span class="evs__legend-n" aria-hidden="true">
+                  {m.n}
+                </span>
+                {m.label}
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <div class="evs__panel" id="ev-panel-final" role="tabpanel" aria-labelledby="ev-tab-final" data-panel="final">
+        <p class="evs__panel-label">{setup.tabs.final}</p>
+        <EvPlayer id={setup.final} label="Slippage Explained" domId="ev-final-player" />
+      </div>
+    </div>
+
+    <div class="evs__more">
+      <div class="evs__more-text">
+        <p class="eyebrow evs__eyebrow">{setup.moreLabel}</p>
+        <EvCredits items={setup.credits} />
+      </div>
+      <EvPlayer id={setup.more} label="Bolt vs AMM" class="evs__more-player" />
+    </div>
+
+    <EvExtras ids={setup.pending} class="evs__pending" />
+  </div>
+</section>
+
+<script>
+  // Tabs: one view at a time, arrow keys between the tabs; leaving Final pauses it.
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('[data-ev-tabs]'))) {
+    const list = root.querySelector<HTMLElement>('[data-tablist]');
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+    if (!list || !tabs.length) continue;
+    list.hidden = false;
+    root.classList.add('is-tabbed');
+    const show = (key: string, focus = false) => {
+      for (const t of tabs) {
+        const on = t.dataset.tab === key;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      }
+      for (const p of panels) {
+        const on = p.dataset.panel === key;
+        p.hidden = !on;
+        if (!on) for (const v of Array.from(p.querySelectorAll('video'))) if (!v.paused) v.pause();
+      }
+      root.dataset.view = key;
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => show(t.dataset.tab as string));
+      t.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End') return;
+        e.preventDefault();
+        const j = k === 'Home' ? 0 : k === 'End' ? tabs.length - 1 : (i + (k === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        show(tabs[j].dataset.tab as string, true);
+      });
+    });
+    show('setup');
+  }
+</script>
+
+<style>
+  .evs {
+    padding-block: var(--section-y);
+  }
+
+  .evs__inner {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .evs__head {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  .evs__text {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.4rem);
+    align-content: start;
+  }
+
+  .evs__eyebrow {
+    color: var(--accent);
+  }
+
+  .evs__title {
+    max-width: 15ch;
+    font-size: var(--text-2xl);
+  }
+
+  .evs__copy {
+    max-width: 42rem;
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ---- the four beats, the editorial two set forward ------------------------------------ */
+  .evs__steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    align-content: end;
+  }
+
+  .evs__step {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.15rem 0.5rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .evs__step-n {
+    grid-row: span 2;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
+
+  .evs__step-label {
+    font-weight: 700;
+    font-size: var(--text-sm);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+
+  .evs__step-line {
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+
+  .evs__step--lead .evs__step-label {
+    color: var(--accent-ink);
+  }
+
+  .evs__step--lead .evs__step-line {
+    font-size: var(--text-md);
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* ---- setup and final ----------------------------------------------------------------------- */
+  .evs__compare {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .evs__tabs {
+    display: inline-flex;
+    justify-self: start;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--bg-elev);
+  }
+
+  .evs__tabs[hidden] {
+    display: none;
+  }
+
+  .evs__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.5rem;
+    padding: 0.5rem 1.15rem 0.5rem 0.6rem;
+    border-radius: 999px;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .evs__tab-n {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+  }
+
+  .evs__tab:hover {
+    color: var(--ink);
+  }
+
+  .evs__tab[aria-selected='true'] {
+    background: var(--c-ink);
+    color: var(--c-bone);
+  }
+
+  .evs__tab[aria-selected='true'] .evs__tab-n {
+    border-color: rgba(243, 239, 232, 0.4);
+  }
+
+  .evs__panel {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .evs__panel[hidden] {
+    display: none;
+  }
+
+  /* With the tabs in place the panel's own label is the tab's. */
+  .evs__compare.is-tabbed .evs__panel-label {
+    display: none;
+  }
+
+  .evs__panel-label {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .evs__photo {
+    position: relative;
+  }
+
+  /* Each item: a small spot on it, a short leader, and its number beside it
+     (never covering what it marks). */
+  .evs__mark {
+    position: absolute;
+    width: 0;
+    height: 0;
+    font-size: clamp(0.75rem, 0.62rem + 0.35vw, 0.875rem);
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  .evs__spot {
+    position: absolute;
+    left: -5px;
+    top: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--c-teal);
+    box-shadow: 0 0 0 2px rgba(243, 239, 232, 0.9);
+  }
+
+  .evs__lead {
+    position: absolute;
+    left: 0;
+    top: -0.5px;
+    width: var(--len);
+    height: 1px;
+    background: rgba(243, 239, 232, 0.95);
+    box-shadow: 0 0 0 0.5px rgba(31, 69, 70, 0.6);
+    transform-origin: 0 50%;
+    transform: rotate(var(--ang));
+  }
+
+  .evs__pin {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    transform: translate(calc(-50% + var(--ox)), calc(-50% + var(--oy)));
+    background: var(--c-teal);
+    color: var(--c-bone);
+    box-shadow:
+      0 0 0 2px rgba(243, 239, 232, 0.9),
+      0 4px 12px rgba(13, 15, 16, 0.25);
+  }
+
+  .evs__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    color: var(--ink-2);
+  }
+
+  .evs__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .evs__legend-n {
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--c-teal);
+    color: var(--c-bone);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  /* ---- another finished explainer -------------------------------------------------------- */
+  .evs__more {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .evs__more-text {
+    display: grid;
+    gap: 1.25rem;
+    align-content: start;
+  }
+
+  .evs__pending {
+    display: grid;
+    grid-template-columns: minmax(0, 24rem);
+  }
+
+  @media (min-width: 60rem) {
+    .evs__head {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: clamp(2.5rem, 5vw, 6rem);
+      align-items: end;
+    }
+
+    .evs__more {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: clamp(2.5rem, 5vw, 6rem);
+      align-items: center;
+    }
+  }
+</style>

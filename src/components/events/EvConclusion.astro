@@ -1,0 +1,148 @@
+---
+/**
+ * 08 The conclusion (Events, V1.0): the end of the portfolio's work narrative.
+ * No next case study: this is the third and last, and the page runs straight
+ * into Contact. The run of show's five cues return in one row, all lit, as
+ * the program's last reading; then the headline (the second sentence in the
+ * accent) and one paragraph, with generous room around them. The ground
+ * carries on from the dark the page has been playing on and turns, as it
+ * goes, to exactly the Contact green (the same OKLab stops as the Technical
+ * Product Marketing conclusion), and Contact's grid rises out of its lower
+ * part (events-video.astro gives Contact its lead).
+ */
+import events from '@data/events.json';
+import { emphasize } from '@lib/tpm-copy';
+
+const { conclusion: c, run } = events;
+const sentences = c.headline.split(/(?<=[.!?])\s+/);
+const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'events conclusion headline') : [{ text: line, em: false }]));
+---
+
+<section class="evc" data-surface="dark" aria-labelledby="ev-conclusion-title">
+  <div class="container evc__inner">
+    <p class="evc__cues" aria-hidden="true">
+      {
+        run.stages.map((s) => (
+          <span class="evc__cue">
+            <span class="evc__sq" />
+            {s.label}
+          </span>
+        ))
+      }
+    </p>
+    <h2 id="ev-conclusion-title" class="display evc__title" data-ev-reveal>
+      {
+        lines.map((line, i) => [
+          i ? ' ' : '',
+          <span class="ev-cut" style={`--k: ${i}`}>
+            <span>{line.map(({ text, em }) => (em ? <span class="evc__accent">{text}</span> : text))}</span>
+          </span>,
+        ])
+      }
+    </h2>
+    <p class="evc__copy">{c.copy}</p>
+  </div>
+</section>
+
+<style>
+  .evc {
+    --view-h: 100vh;
+    --bg: #141e1f;
+    --heading: var(--c-bone);
+    --ink: var(--c-bone);
+    --ink-2: var(--c-bone-2);
+    --ink-3: #c7cecf;
+    --accent: #aad5cf;
+    --accent-ink: #aad5cf;
+    --line-strong: rgba(243, 239, 232, 0.34);
+    --focus: var(--c-aqua-light);
+    position: relative;
+    display: grid;
+    padding-block: calc(var(--section-y) * 1.1) calc(var(--section-y) * 1.4);
+    background: linear-gradient(
+      to bottom,
+      #0d0f10 0%,
+      #0d1011 10%,
+      #0e1213 20%,
+      #101516 30%,
+      #12191a 40%,
+      #141e1f 50%,
+      #162425 60%,
+      #182b2c 70%,
+      #1a3334 80%,
+      #1d3b3c 90%,
+      #1f4546 100%
+    );
+  }
+
+  @supports (height: 1svh) {
+    .evc {
+      --view-h: 100svh;
+    }
+  }
+
+  .evc__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: clamp(2rem, 1.4rem + 1.6vw, 3.25rem);
+    text-align: center;
+  }
+
+  .evc__cues {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.25rem;
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .evc__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .evc__sq {
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+
+  .evc__title {
+    margin: 0;
+    font-size: clamp(2.5rem, 1.2rem + 3.8vw, 5.25rem);
+  }
+
+  .evc__title :global(.ev-cut) {
+    display: block;
+  }
+
+  .evc__accent {
+    color: var(--accent-ink);
+  }
+
+  .evc__copy {
+    max-width: 46rem;
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 60rem) {
+    .evc {
+      min-height: var(--view-h);
+      padding-block: calc(var(--header-row) + clamp(2rem, 6vh, 4rem)) clamp(5rem, 14vh, 9rem);
+    }
+  }
+</style>

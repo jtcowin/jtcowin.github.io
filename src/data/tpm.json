@@ -1,33 +1,19 @@
 {
-  "_readme": "Technical Product Marketing, Version 1.4: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3 and V1.4 briefs and the V1.2 delta brief (October 12 and 13, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
+  "_readme": "Technical Product Marketing, Version 1.5: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4; V1.5 gave the hero the Narrative Engine and the signal field and made the conclusion the dark closing movement into Contact). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3, V1.4 and V1.5 briefs and the V1.2 delta brief (October 12 to 14, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
   "hero": {
-    "_hero": "Headline and paragraph on the left, the narrative-system object on the right, the seven scope terms in one centered line at the foot of the hero (V1.4); no kicker and no media. The headline never changes.",
+    "_hero": "Headline and paragraph on the left, the Narrative Engine on the right (V1.5, replacing the V1.4 stacked object), the seven scope terms in one centered line at the foot of the hero (V1.4), and a faint signal field behind it all; no kicker and no media. The headline never changes.",
     "headline": "Building the system behind the message.",
     "accent": "the system",
     "copy": "I built the strategic foundation that turned Bolt Liquidity’s technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
     "em": "a clear market narrative",
     "scope": ["Research", "Positioning", "Messaging", "Claims Governance", "Technical Documentation", "Web Content", "Campaign Direction"],
-    "_system": "The hero object's six layers (V1.4), bottom to top, in two groups. `label` is the one or two words shown beside a layer once the stack has opened; `name` is what assistive technology reads. `toggle` names the control that opens the stack for keyboards and screen readers.",
-    "system": {
-      "toggle": "Show the system behind the message",
-      "groups": [
-        {
-          "name": "Foundation",
-          "layers": [
-            { "label": "Research", "name": "Research and interviews" },
-            { "label": "Shared language", "name": "Shared internal language" },
-            { "label": "Positioning", "name": "Positioning and claims" }
-          ]
-        },
-        {
-          "name": "Market expressions",
-          "layers": [
-            { "label": "Website", "name": "Website" },
-            { "label": "Documentation", "name": "Technical documentation" },
-            { "label": "Campaigns", "name": "Campaigns and content" }
-          ]
-        }
-      ]
+    "_engine": "The Narrative Engine (V1.5), the hero's system visual: research and interviews feed a shared product language, which directs every market-facing expression. Two inputs, one core and three outputs, in the order they are drawn and lit; the labels appear only once the engine is engaged. `captions` name the three groups; `toggle` is the control that opens and closes it for keyboards, screen readers and touch screens.",
+    "engine": {
+      "inputs": [{ "label": "Stakeholder interviews" }, { "label": "Product research" }],
+      "core": "Shared product language",
+      "outputs": [{ "label": "Website" }, { "label": "Technical documentation" }, { "label": "Campaigns and content" }],
+      "captions": { "inputs": "Inputs", "core": "Core", "outputs": "Outputs" },
+      "toggle": { "show": "Show the system", "hide": "Hide the system" }
     }
   },
   "foundation": {
@@ -118,7 +104,7 @@
     }
   },
   "conclusion": {
-    "_conclusion": "07 The closing frame (V1.3, renumbered when Selected Writing left in V1.4): a synthesis, not a summary. Only the way on to the next case study follows the copy, as one linked sentence (V1.4) that names it; `next` is that case study's id, which must be the next in the collection's order. No metrics, services, credits or roles.",
+    "_conclusion": "07 The closing frame (V1.3, renumbered when Selected Writing left in V1.4; since V1.5 a full screen on the dark closing ground that turns into the Contact green): a synthesis, not a summary. Only the way on to the next case study follows the copy, as one linked sentence (V1.4) that names it; `next` is that case study's id, which must be the next in the collection's order. No metrics, services, credits or roles.",
     "headline": "One foundation. Every expression aligned.",
     "accent": "Every expression aligned.",
     "copy": "The work began with a shared product language and carried through the website, technical documentation, and flagship campaign, giving every public-facing expression the same strategic foundation.",

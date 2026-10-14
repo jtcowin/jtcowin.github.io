@@ -1,0 +1,206 @@
+---
+/**
+ * 07 What continued after the event (Events, V1.0): events as the start of a
+ * longer commercial and ecosystem process. One paragraph, then a trail that
+ * leaves the room and keeps going (on site, captured, followed up, the wider
+ * ecosystem, later integrations), running on past the edge of the frame, and
+ * the public-safe outcome. No single event or person is credited with an
+ * integration; a named integration appears only once its public record and
+ * the wording of the attribution are verified (an authoring placeholder until
+ * then, set beneath the outcome once its entry is approved with its wording),
+ * as do partner logos.
+ */
+import events from '@data/events.json';
+import EvCue from './EvCue.astro';
+import EvCredits from './EvCredits.astro';
+import EvExtras from './EvExtras.astro';
+
+const { after } = events;
+---
+
+<section class="evt" id="ev-after" data-surface="light" aria-labelledby="ev-after-title">
+  <div class="container evt__inner">
+    <div class="evt__head">
+      <EvCue keys={after.cues} />
+      <h2 id="ev-after-title" class="display evt__title" data-ev-reveal>
+        <span class="ev-cut"><span>{after.headline}</span></span>
+      </h2>
+      <p class="evt__copy">{after.copy}</p>
+    </div>
+
+    <ol class="evt__trail" data-ev-reveal aria-label="After the event">
+      {
+        after.trail.map((t, i) => (
+          <li class="evt__step" style={`--i: ${i}`}>
+            <span class="evt__dot" aria-hidden="true" />
+            <span class="evt__label">{t.label}</span>
+            <span class="evt__line">{t.line}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="evt__close">
+      <p class="evt__outcome">{after.outcome}</p>
+      <EvCredits items={after.credits} />
+    </div>
+
+    <EvExtras ids={after.pending} class="evt__pending" />
+  </div>
+</section>
+
+<style>
+  .evt {
+    padding-block: var(--section-y);
+    overflow-x: clip;
+  }
+
+  .evt__inner {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .evt__head {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.4rem);
+    max-width: 52rem;
+  }
+
+  .evt__title {
+    max-width: 16ch;
+    font-size: var(--text-2xl);
+  }
+
+  .evt__copy {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ---- the trail: down the page on phones, across and past the edge on wide screens ---- */
+  .evt__trail {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0 0 0 1.75rem;
+    list-style: none;
+  }
+
+  .evt__trail::before {
+    content: '';
+    position: absolute;
+    left: 0.3rem;
+    top: 0.45rem;
+    bottom: -2rem;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent-ink), var(--line-strong) 70%, transparent);
+  }
+
+  .evt__step {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    align-content: start;
+  }
+
+  .evt__dot {
+    position: absolute;
+    left: calc(-1.75rem + 0.3rem - 4.5px);
+    top: 0.4rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--accent-ink);
+    background: var(--bg);
+  }
+
+  .evt__step:first-child .evt__dot {
+    background: var(--accent-ink);
+  }
+
+  .evt__label {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .evt__line {
+    max-width: 18rem;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .evt__trail:not(.is-in) .evt__step {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+
+    :global(html.js) .evt__step {
+      transition:
+        opacity 0.5s var(--ease-out) calc(var(--i) * 0.14s),
+        transform 0.6s var(--ease-out) calc(var(--i) * 0.14s);
+    }
+  }
+
+  .evt__close {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .evt__outcome {
+    max-width: 44rem;
+    margin: 0;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--accent);
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: var(--text-xl);
+    line-height: 1.15;
+    color: var(--heading);
+    text-wrap: balance;
+  }
+
+  .evt__pending {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 60rem) {
+    .evt__trail {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1.5rem;
+      padding: 1.75rem 0 0;
+    }
+
+    /* The line runs on past the last step and out of the frame. */
+    .evt__trail::before {
+      left: 0;
+      right: calc(-1 * var(--gutter) - 4rem);
+      top: 0.3rem;
+      bottom: auto;
+      width: auto;
+      height: 1px;
+      background: linear-gradient(to right, var(--accent-ink), var(--line-strong) 75%, transparent);
+    }
+
+    .evt__dot {
+      left: 0;
+      top: calc(-1.75rem + 0.3rem - 4.5px);
+    }
+
+    .evt__close {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: clamp(2.5rem, 5vw, 6rem);
+      align-items: start;
+    }
+  }
+</style>

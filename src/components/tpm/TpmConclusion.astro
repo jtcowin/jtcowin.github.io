@@ -1,15 +1,27 @@
 ---
 /**
  * 07 The conclusion (Technical Product Marketing; V1.3, renumbered and its way
- * on rewritten in V1.4): the case study's closing frame, straight after the
- * flagship campaign and before Contact. A synthesis, not a summary: the
- * headline (each sentence on its own line where there is room, one phrase in
- * the accent), one short paragraph, and then one conversational sentence that
- * closes this story and opens the next. The whole sentence is the link to the
- * next case study, with a small arrow at its end that moves a little on hover;
- * no label, no card, no rule. No metrics, services, credits or roles are
- * repeated here. On the warm light surface the hero opens on, so the page
- * closes where it began.
+ * on rewritten in V1.4, rebuilt as the page's closing movement in V1.5): the
+ * case study's last frame, straight after the flagship campaign and straight
+ * into Contact. A synthesis, not a summary: the headline (each sentence on its
+ * own line where there is room, one phrase in the accent), one paragraph as
+ * wide as the page's other primary paragraphs, and then one conversational
+ * sentence that closes this story and opens the next. The whole sentence is
+ * the link to the next case study, with a small arrow at its end that moves a
+ * little on hover; no label, no card, no rule. No metrics, services, credits
+ * or roles are repeated here.
+ *
+ * V1.5: one continuous closing ground. The flagship campaign's black carries
+ * on into the conclusion, which begins nearly black and turns, as it goes, to
+ * a deep charcoal teal and then exactly the Contact green where Contact
+ * begins (eleven stops interpolated in OKLab, so the steps are even and the
+ * hue never passes through a muddy grey), with no seam and no light band
+ * between the two. The type is the warm cream used on the green, the accent
+ * the light aqua the green uses. Contact's grid rises out of the lower part
+ * of the conclusion (technical-marketing.astro gives Contact its lead), from
+ * nothing to its usual strength where Contact begins. On wide screens the
+ * conclusion is a full screen tall, with distinct beats: headline, about 48
+ * to 64px, paragraph, about 80 to 100px, and the way on, lower in the frame.
  *
  * The sentence and the case study it names come from tpm.json (`nextLine`,
  * `next`); the build stops if that case study is missing or is no longer the
@@ -42,12 +54,14 @@ const words = conclusion.nextLine.trim().split(/\s+/);
 const last = words.pop() ?? '';
 ---
 
-<section class="tpm-conclusion" data-surface="light" aria-labelledby="tpm-conclusion-title">
+<section class="tpm-conclusion" data-surface="dark" aria-labelledby="tpm-conclusion-title" data-tpm-conclusion>
   <div class="container tpm-conclusion__inner">
-    <h2 id="tpm-conclusion-title" class="display tpm-conclusion__title">
-      {lines.map((line, i) => [i ? ' ' : '', <span>{line.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}</span>])}
-    </h2>
-    <p class="tpm-conclusion__copy">{conclusion.copy}</p>
+    <div class="tpm-conclusion__lead">
+      <h2 id="tpm-conclusion-title" class="display tpm-conclusion__title">
+        {lines.map((line, i) => [i ? ' ' : '', <span>{line.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}</span>])}
+      </h2>
+      <p class="tpm-conclusion__copy">{conclusion.copy}</p>
+    </div>
     <nav class="tpm-onward" aria-label="Next case study">
       <p class="tpm-onward__line">
         <a class="tpm-onward__link" href={withBase(`/work/${next.id}/`)}>
@@ -59,14 +73,62 @@ const last = words.pop() ?? '';
 </section>
 
 <style>
+  /* ---- the closing ground: black, deep charcoal teal, the Contact green ---------------- */
   .tpm-conclusion {
-    padding-block: calc(var(--section-y) * 1.25) calc(var(--section-y) * 1.1);
+    --view-h: 100vh;
+    /* The warm cream and light aqua of the green surface, on every step of the
+       ground (14.6:1 on its black start and 8.4:1 on the green for the
+       paragraph; the accent 13:1 and 7.2:1). The header reads --bg: the
+       middle of the ground. */
+    --bg: #141e1f;
+    --heading: var(--c-bone);
+    --ink: var(--c-bone);
+    --ink-2: var(--c-bone-2);
+    --ink-3: #c7cecf;
+    --accent: #aad5cf;
+    --accent-ink: #aad5cf;
+    --accent-line: rgba(170, 213, 207, 0.45);
+    --line-strong: rgba(243, 239, 232, 0.34);
+    --focus: var(--c-aqua-light);
+    position: relative;
+    display: grid;
+    padding-block: calc(var(--section-y) * 1.1) calc(var(--section-y) * 1.25);
+    background: linear-gradient(
+      to bottom,
+      #0d0f10 0%,
+      #0d1011 10%,
+      #0e1213 20%,
+      #101516 30%,
+      #12191a 40%,
+      #141e1f 50%,
+      #162425 60%,
+      #182b2c 70%,
+      #1a3334 80%,
+      #1d3b3c 90%,
+      #1f4546 100%
+    );
   }
 
+  @supports (height: 1svh) {
+    .tpm-conclusion {
+      --view-h: 100svh;
+    }
+  }
+
+  /* Above Contact's grid where the grid rises into the conclusion. */
   .tpm-conclusion__inner {
+    position: relative;
+    z-index: 1;
     display: grid;
     justify-items: center;
+    align-content: center;
     text-align: center;
+  }
+
+  .tpm-conclusion__lead {
+    display: grid;
+    justify-items: center;
+    gap: 2.5rem;
   }
 
   .tpm-conclusion__title {
@@ -80,9 +142,11 @@ const last = words.pop() ?? '';
     }
   }
 
+  /* As wide as the case study's other primary paragraphs (53rem at the same
+     size and leading): 65 to 78 characters a line on wide screens. */
   .tpm-conclusion__copy {
-    max-width: 46rem;
-    margin: clamp(1.5rem, 1.1rem + 1.2vw, 2.25rem) 0 0;
+    max-width: 53rem;
+    margin: 0;
     font-size: var(--text-lg);
     line-height: 1.45;
     color: var(--ink-2);
@@ -90,11 +154,22 @@ const last = words.pop() ?? '';
   }
 
   /* ---- the way on: one sentence, the whole of it the link -------------------------- */
-  /* The paragraph's own size and column, a step darker and a little heavier,
-     set apart by space alone: it reads as the story's last line. */
+  /* The paragraph's size, a step brighter and a little heavier, set apart by
+     space alone and lower in the frame: the page's last forward movement. */
   .tpm-onward {
-    max-width: 46rem;
-    margin-top: clamp(2.25rem, 1.6rem + 2.2vw, 3.75rem);
+    max-width: 53rem;
+    margin-top: 4rem;
+  }
+
+  /* About 48 to 64px, then about 80 to 100px, from tablets up. */
+  @media (min-width: 48rem) {
+    .tpm-conclusion__lead {
+      gap: clamp(3rem, 1.9rem + 1.6vw, 4rem);
+    }
+
+    .tpm-onward {
+      margin-top: clamp(5rem, 3.6rem + 2.6vw, 6.25rem);
+    }
   }
 
   .tpm-onward__line {
@@ -136,5 +211,27 @@ const last = words.pop() ?? '';
   .tpm-onward__link:hover :global(.tpm-onward__arrow),
   .tpm-onward__link:focus-visible :global(.tpm-onward__arrow) {
     transform: translateX(0.25em);
+  }
+
+  /* ---- wide screens: a full screen, the beats centered a little above the
+     middle and the way on lower in the frame ------------------------------------------ */
+  @media (min-width: 60rem) {
+    .tpm-conclusion {
+      min-height: var(--view-h);
+      padding-block: calc(var(--header-row) + clamp(2rem, 6vh, 4rem)) clamp(4rem, 12vh, 8rem);
+    }
+
+    .tpm-conclusion__inner {
+      grid-template-rows: 1fr auto auto 1fr;
+      align-content: stretch;
+    }
+
+    .tpm-conclusion__lead {
+      grid-row: 2;
+    }
+
+    .tpm-onward {
+      grid-row: 3;
+    }
   }
 </style>

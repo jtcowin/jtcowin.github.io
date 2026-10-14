@@ -831,9 +831,10 @@ else {
 // and creators, without implying he was the hands-on designer. The label
 // appears once per page.
 // (Technical Product Marketing left the shared case-study layout in its
-// Version 1 redesign; its hero states John's part in its own copy and scope
-// line, checked below.)
-for (const slug of ['creator-campaigns', 'events-video']) {
+// Version 1 redesign and Events and Multimedia Production in its Version 1.0;
+// each states John's part in its own copy, the latter with credits under each
+// piece of work, checked below.)
+for (const slug of ['creator-campaigns']) {
   const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
   const roles = [...page.matchAll(/<p class="cs-hero__role[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
   if (roles.length !== 1) {
@@ -853,12 +854,13 @@ for (const slug of ['creator-campaigns', 'events-video']) {
 }
 
 // ------------------------------------------------ Technical Product Marketing
-// Version 1.4 (John's TPM V1.1 to V1.4 briefs and the V1.2 delta, October 12
-// and 13, 2026): the case study's own page through 01 Hero, 02 Foundation, 03
-// the transitional statement, 04 Website, 05 Technical documentation, 06 the
-// flagship animation campaign and 07 the conclusion, then Contact and the
-// footer (Selected Writing, added in V1.3, was taken out in V1.4). Copy is
-// checked word for word against the briefs and the approved concept.
+// Version 1.5 (John's TPM V1.1 to V1.4 briefs, the V1.2 delta and the
+// Combined Build Brief, October 12 to 14, 2026): the case study's own page
+// through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website,
+// 05 Technical documentation, 06 the flagship animation campaign and 07 the
+// conclusion, then Contact and the footer (Selected Writing, added in V1.3,
+// was taken out in V1.4). Copy is checked word for word against the briefs
+// and the approved concept.
 const tpmPage = fs.readFileSync(path.join(dist, 'work/technical-marketing/index.html'), 'utf8');
 const tpmData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/tpm.json'), 'utf8'));
 const norm = (t) => (t || '').replace(/[‘’]/g, "'");
@@ -880,13 +882,13 @@ const TPM = {
 };
 if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not use the shared case-study hero (cs-hero)');
 
-// ---- 01 Hero (V1.4): an asymmetrical split. The headline and the paragraph
+// ---- 01 Hero (V1.5): an asymmetrical split. The headline and the paragraph
 // on the left, vertically centered in the first screen; on the right, in open
-// space, the narrative-system object; the seven scope terms in one centered
-// line at the foot of the hero (wrapping, still centered, only on narrow
-// screens); behind the object a quiet contour field. No kicker and no media;
-// the headline never changes. Leaving the hero (the live choreography only),
-// the Foundation's full-width surface rises over it, its leading edge slightly
+// space, the Narrative Engine; the seven scope terms in one centered line at
+// the foot of the hero (wrapping, still centered, only on narrow screens);
+// behind it all a faint signal field. No kicker and no media; the headline
+// never changes. Leaving the hero (the live choreography only), the
+// Foundation's full-width surface rises over it, its leading edge slightly
 // rounded, as the hero's content fades and softens a little and the
 // Foundation headline fades up 24 to 40px: a layered reveal within about 0.8
 // to 1.2 viewports, nothing passing from one section to the other (V1.3).
@@ -898,19 +900,19 @@ if (scopeItems.join(' · ') !== TPM.scope.join(' · ')) failures.push(`[tpm] the
 if ((textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length) failures.push('[tpm] the redesigned page carries no "My role" line');
 const tpmHeroHtml = (tpmPage.match(/<section class="tpm-hero"[\s\S]*?<\/section>/) || [''])[0];
 if (!tpmHeroHtml) failures.push('[tpm] the page opens with its own hero');
-if (/<(?:video|img|picture|iframe|canvas)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media or canvas (the animation plays in full in 06)');
+if (/<(?:video|img|picture|iframe)\b|data-loop-toggle|tpm-screen/.test(tpmHeroHtml)) failures.push('[tpm] the hero has no media (the animation plays in full in 06)');
 const assetIds = (JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || []).map((a) => a.id);
 if (/bolt-in-60-seconds-hero/.test(tpmPage) || assetIds.includes('tm-bolt-60-loop')) failures.push('[tpm] the short hero loop and its poster are gone from the page and the manifest');
 for (const gone of ['public/media/bolt-in-60-seconds-hero-loop.mp4', 'public/media/bolt-in-60-seconds-hero-loop-720.mp4', 'src/assets/technical-marketing/bolt-in-60-seconds-hero-poster.jpg']) {
   if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
 }
 // V1.4: the headline and the paragraph together in the copy column, before
-// the object; the scope line after the split, the foot row of the stage (not
+// the visual; the scope line after the split, the foot row of the stage (not
 // in the copy column), centered, one line on wide screens.
 const heroCopyAt = tpmHeroHtml.indexOf('class="tpm-hero__copy');
 const heroVisualAt = tpmHeroHtml.indexOf('class="tpm-hero__visual');
 const heroCopyHtml = heroCopyAt < 0 || heroVisualAt < 0 ? '' : tpmHeroHtml.slice(heroCopyAt, heroVisualAt);
-if (!heroCopyHtml || !/<h1 id="tpm-title"/.test(heroCopyHtml) || !/tpm-hero__lede/.test(heroCopyHtml) || /tpm-hero__scope/.test(heroCopyHtml)) failures.push('[tpm] the headline and the paragraph sit together in the copy column, before the object; the scope is not in it');
+if (!heroCopyHtml || !/<h1 id="tpm-title"/.test(heroCopyHtml) || !/tpm-hero__lede/.test(heroCopyHtml) || /tpm-hero__scope/.test(heroCopyHtml)) failures.push('[tpm] the headline and the paragraph sit together in the copy column, before the visual; the scope is not in it');
 const heroStageAt = tpmHeroHtml.indexOf('<div class="tpm-hero__stage');
 const heroScopeAt = tpmHeroHtml.indexOf('<ul class="tpm-hero__scope');
 const divDepth = (html) => (html.match(/<div\b/g) || []).length - (html.match(/<\/div>/g) || []).length;
@@ -921,114 +923,94 @@ if (!/text-align:\s*center/.test(scopeRule) || !/justify-self:\s*center/.test(sc
 if (!tpmRules(/^\.tpm-hero__scope$/).some((r) => DESKTOP.test(r.at) && /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] on wide screens the scope is one line');
 if (!tpmRules(/^\.tpm-hero__scope li$/).some((r) => /white-space:\s*nowrap/.test(r.body))) failures.push('[tpm] a scope term never breaks inside itself when the line wraps');
 const heroGrid = tpmRules(/^\.tpm-hero__grid$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
-if (!/grid-template-columns:\s*minmax\(0,\s*7fr\)\s*minmax\(0,\s*5fr\)/.test(heroGrid) || !/align-items:\s*center/.test(heroGrid)) failures.push('[tpm] wide screens split the hero asymmetrically, copy and object centered on each other');
+if (!/grid-template-columns:\s*minmax\(0,\s*7fr\)\s*minmax\(0,\s*5fr\)/.test(heroGrid) || !/align-items:\s*center/.test(heroGrid)) failures.push('[tpm] wide screens split the hero asymmetrically, copy and engine centered on each other');
 if (!tpmRules(/^\.tpm-hero__stage$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*var\(--view-h\)/.test(r.body)) || !tpmRules(/^\.tpm-hero__grid$/).some((r) => !r.at && /align-self:\s*center/.test(r.body))) failures.push('[tpm] the split is vertically centered in the first screen');
 if (/tpm-hero__band|tpm-hero__dusk|\bdata-band\b|tpm-hero__foot/.test(tpmPage)) failures.push('[tpm] the V1.2 bands, rising ground and centered foot are gone: no fragments, strips or morphing between the sections');
 
-// The narrative system (V1.4): two states. At rest a compact, stable stack of
-// six layers with only a little ambient life; pointed at, tapped or toggled,
-// an exploded view that settles: the foundation (research and interviews,
-// the shared internal language, positioning and claims) separates and the
-// market expressions (website, technical documentation, campaigns and
-// content) rise above it, fanning out slightly; short labels beside the
-// layers (never on them) appear once they have arrived and fade before the
-// stack closes. One labeled control for keyboards and screen readers; without
-// JavaScript it opens on hover or focus.
-const SYSTEM = {
-  toggle: 'Show the system behind the message',
-  groups: ['Foundation', 'Market expressions'],
-  labels: ['Research', 'Shared language', 'Positioning', 'Website', 'Documentation', 'Campaigns'],
-  names: ['Research and interviews', 'Shared internal language', 'Positioning and claims', 'Website', 'Technical documentation', 'Campaigns and content'],
+// The Narrative Engine (V1.5) replaces the V1.4 stacked object, which is gone
+// with its drawing module, and with it the topographic field. One central
+// core (a nucleus in a ring of short marks) with a sparse, faint system of
+// nodes and connections around it; engaged, it expands, the connections
+// light in sequence from the two inputs into the core and from the core to
+// the three outputs, and short labels arrive as the light reaches them. A
+// radial, curved drawing read left to right, never the boxes and right-angled
+// connectors of the product architecture diagram in 05.
+if (/class="[^"]*\btpm-(?:system|object|layer|field)\b|data-system-|data-field-(?:drift|light|lit)/.test(tpmPage)) failures.push('[tpm] the V1.4 stacked object and topographic field are gone from the page');
+for (const gone of ['src/lib/tpm-system.ts', 'src/lib/tpm-field.ts']) if (fs.existsSync(path.join(root, gone))) failures.push(`[tpm] ${gone} is no longer used and is removed`);
+const ENGINE = {
+  inputs: ['Stakeholder interviews', 'Product research'],
+  core: 'Shared product language',
+  outputs: ['Website', 'Technical documentation', 'Campaigns and content'],
+  captions: ['Inputs', 'Core', 'Outputs'],
+  toggle: ['Show the system', 'Hide the system'],
 };
-const systemHtml = (tpmHeroHtml.match(/<div class="tpm-system"[\s\S]*?<div class="tpm-system__hit[^>]*><\/div>/) || [''])[0];
-const objectSvg = (systemHtml.match(/<svg\b[^>]*class="tpm-object"[\s\S]*?<\/svg>/) || [''])[0];
-if (!objectSvg || !/aria-hidden="true"/.test((objectSvg.match(/<svg\b[^>]*>/) || [''])[0])) failures.push('[tpm] the narrative-system object is one decorative SVG, hidden from assistive technology');
-if (/<text\b|<foreignObject\b|<image\b/.test(objectSvg)) failures.push('[tpm] no words on the layers: the labels sit beside them, never on a foreshortened face');
-const layerTags = [...objectSvg.matchAll(/<g class="tpm-layer tpm-layer--[\w-]+"[^>]*>/g)].map((m) => m[0]);
-const layerVar = (tag, name) => Number((tag.match(new RegExp(`--${name}:\\s*(-?[\\d.]+)`)) || [])[1]);
-const layerIs = layerTags.map((t) => layerVar(t, 'i'));
-const layerDx = layerTags.map((t) => layerVar(t, 'dx'));
-const layerDy = layerTags.map((t) => layerVar(t, 'dy'));
-if (layerTags.length !== 6 || layerIs.join() !== '0,1,2,3,4,5') failures.push(`[tpm] the object is six layers, foundation first (found ${layerTags.length})`);
-else {
-  if (layerDx.slice(0, 3).some((d) => d !== 0) || !(layerDy[0] > layerDy[1] && layerDy[1] > layerDy[2])) failures.push('[tpm] open, the three foundation layers separate vertically, without fanning');
-  if (!(layerDy[3] > layerDy[4] && layerDy[4] > layerDy[5]) || !(layerDy[2] > layerDy[3])) failures.push('[tpm] open, the market expressions rise above the foundation in order');
-  if (layerDx.slice(3).some((d) => Math.abs(d) > 24) || layerDx.slice(3).every((d) => d === 0)) failures.push(`[tpm] the market expressions fan out only slightly (found ${layerDx.slice(3).join(', ')}px)`);
-}
-if (!tpmRules(/^\.tpm-system\.is-open \.tpm-layer$/).some((r) => /transform:\s*translate\(var\(--dx\),\s*var\(--dy\)\)/.test(r.body))) failures.push('[tpm] open, each layer moves to its place by a transform');
-const layerRest = tpmRules(/^\.tpm-layer$/).filter((r) => !r.at).map((r) => r.body).join(';');
-const closeSecs = Number((layerRest.match(/transition:\s*transform\s+([\d.]+)s/) || [])[1]);
-const closeDelay = Number((layerRest.match(/calc\(([\d.]+)s\s*\+/) || [])[1]);
-if (!(closeSecs >= 0.5) || /transition:[^;]*\b(?:top|left|height|width|margin)\b/.test(layerRest)) failures.push('[tpm] the stack closes smoothly, by transforms, never snapping shut');
-// The labels: one or two words each, in two groups, the full names for
-// assistive technology; hidden at rest, shown after the layers separate,
-// gone before the stack closes.
-const legendHtml = (systemHtml.match(/<div class="tpm-system__legend"[\s\S]*?(?=<div class="tpm-system__hit)/) || [''])[0];
-const legendGroups = [...legendHtml.matchAll(/<p class="tpm-system__heading[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
-const legendLabels = [...legendHtml.matchAll(/<span class="tpm-system__label[^"]*"[^>]*aria-hidden="true"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
-const legendNames = [...legendHtml.matchAll(/<span class="sr-only"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
-if (JSON.stringify(legendGroups) !== JSON.stringify(SYSTEM.groups) || JSON.stringify((tpmData.hero?.system?.groups || []).map((g) => g.name)) !== JSON.stringify(SYSTEM.groups)) failures.push(`[tpm] the layers fall in two groups, Foundation and Market expressions (found ${legendGroups.join(', ')})`);
-if (JSON.stringify(legendLabels) !== JSON.stringify(SYSTEM.labels) || legendLabels.some((l) => l.split(' ').length > 2)) failures.push(`[tpm] the labels are one or two words, in the hierarchy's order (found ${legendLabels.join(', ')})`);
-if (JSON.stringify(legendNames) !== JSON.stringify(SYSTEM.names)) failures.push(`[tpm] assistive technology hears the full names, in order (found ${legendNames.join(', ')})`);
-const legendRest = tpmRules(/^\.tpm-system__legend$/).filter((r) => !r.at).map((r) => r.body).join(';');
-const legendOpen = tpmRules(/^\.tpm-system\.is-open \.tpm-system__legend$/).map((r) => r.body).join(';');
-const legendIn = Number((legendOpen.match(/transition:\s*opacity\s+[\d.]+s\s+(?:ease\s+)?([\d.]+)s/) || [])[1]);
-const legendOut = Number((legendRest.match(/transition:\s*opacity\s+([\d.]+)s/) || [])[1]);
-if (!/visibility:\s*hidden/.test(legendRest) || !/opacity:\s*0\b/.test(legendRest) || !/pointer-events:\s*none/.test(legendRest)) failures.push('[tpm] at rest the labels are hidden');
-if (!(legendIn >= 0.5)) failures.push(`[tpm] the labels appear only once the layers have separated (found a ${legendIn}s delay)`);
-if (!(legendOut > 0) || !(closeDelay >= legendOut)) failures.push(`[tpm] the labels fade away before the stack closes (labels ${legendOut}s, stack after ${closeDelay}s)`);
-// The control: a real button, named, telling whether the system is shown.
-const heroButtons = [...tpmHeroHtml.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
-const toggleTag = (heroButtons[0] || '').match(/<button\b[^>]*>/)?.[0] || '';
-if (heroButtons.length !== 1 || !/\bdata-system-toggle\b/.test(toggleTag) || !/type="button"/.test(toggleTag) || !/aria-expanded="false"/.test(toggleTag) || !/aria-controls="tpm-system-legend"/.test(toggleTag) || !/<div class="tpm-system__legend"[^>]*id="tpm-system-legend"/.test(legendHtml)) failures.push('[tpm] the hero has one control, the object\'s own: a button that says whether the system is shown and names what it shows');
-if (textOf(heroButtons[0] || '') !== SYSTEM.toggle || tpmData.hero?.system?.toggle !== SYSTEM.toggle) failures.push(`[tpm] the control is named "${SYSTEM.toggle}"`);
-if (!tpmRules(/\.tpm-system__toggle:focus-visible\s*~\s*\.tpm-object \.tpm-object__ring--rest/).some((r) => /opacity:\s*1/.test(r.body))) failures.push('[tpm] keyboard focus on the control is shown as a ring around the object');
-if (!tpmRules(/^\.tpm-system__hit$/).length || !/class="tpm-system__hit"[^>]*aria-hidden="true"/.test(systemHtml)) failures.push('[tpm] the pointer counts only over the object (its own hit area)');
-// Ambient life at rest: a 1 to 2px drift and a light passing up the layers, paused open or off screen.
-const driftKf = keyframesOf('tpm-drift');
-const driftPx = Math.max(0, ...[...driftKf.matchAll(/translate(?:Y|3d)?\(\s*(?:0(?:px)?\s*,\s*)?(-?[\d.]+)px/g)].map((m) => Math.abs(Number(m[1]))));
-if (!driftKf || !(driftPx >= 1 && driftPx <= 2)) failures.push(`[tpm] at rest the stack shifts only 1 to 2px (found ${driftPx}px)`);
-// The drift moves the outer svg (an HTML box the compositor animates by
-// itself), never a group inside it, which would lay the drawing out again on
-// every frame.
-if (!tpmRules(/^\.tpm-object$/).some((r) => /animation:[^;]*\b(\d+(?:\.\d+)?)s[^;]*tpm-drift/.test(r.body) && Number(r.body.match(/animation:[^;]*?\b(\d+(?:\.\d+)?)s/)[1]) >= 6)) failures.push('[tpm] the drift is very slow, and moves the whole drawing');
-if (tpmRules(/\.tpm-(?:object__stack|layer)$/).some((r) => /animation:[^;]*tpm-drift/.test(r.body))) failures.push('[tpm] no group inside the drawing drifts (that would lay it out on every frame)');
-const glints = tpmRules(/tpm-layer__glint$/).flatMap((r) => [...r.body.matchAll(/--glint:\s*([\d.]+)/g)].map((m) => Number(m[1])));
-if (!keyframesOf('tpm-glint') || !glints.length || glints.some((g) => g > 0.35)) failures.push('[tpm] the light passing through the layers stays faint');
-if (!tpmRules(/\.tpm-system\.is-held \.tpm-object(?:,|$)/).some((r) => /animation:\s*none/.test(r.body))) failures.push('[tpm] while the Foundation rises over the hero, the object has no ambient life (softening it then costs no more than before)');
-if (!tpmRules(/\.tpm-system\.is-open \.tpm-object(?:,|$)/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/\.tpm-system\.is-asleep \.tpm-object(?:,|$)/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/\.tpm-system\.is-asleep \.tpm-layer__glint/).some((r) => /animation-play-state:\s*paused/.test(r.body))) failures.push('[tpm] the ambient life pauses while the system is open and while the hero is off screen');
-// Reduced motion: no ambient life, nothing waiting; without JavaScript, hover or focus opens it.
-if (!tpmRules(/\.tpm-object(?:,|$)/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /animation:\s*none/.test(r.body) && /tpm-layer__glint/.test(r.sel))) failures.push('[tpm] reduced motion: no ambient life');
-if (!tpmRules(/tpm-system__legend/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transition-delay:\s*0s\s*!important/.test(r.body) && /\.tpm-layer\b/.test(r.sel))) failures.push('[tpm] reduced motion: the system opens and closes at once');
-if (!tpmRules(/^html:not\(\.js\) \.tpm-system:is\(:hover,\s*:focus-within\) \.tpm-layer$/).some((r) => /translate\(var\(--dx\)/.test(r.body)) || !tpmRules(/^html:not\(\.js\) .*\.tpm-system__legend/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] without JavaScript the system opens on hover or focus');
+const engineHtml = (tpmHeroHtml.match(/<div class="nx"[\s\S]*?<\/button>/) || [''])[0];
+const engineArt = (engineHtml.match(/<svg\b[^>]*class="nx__art"[\s\S]*?<\/svg>/) || [''])[0];
+const engineBody = (engineHtml.match(/<div class="nx__body"[^>]*>/) || [''])[0];
+if (!engineArt || !/aria-hidden="true"/.test(engineBody)) failures.push('[tpm] the engine is one decorative drawing, hidden from assistive technology (its words are in the legend)');
+if (/<text\b|<foreignObject\b|<image\b|<rect\b|<polygon\b/.test(engineArt)) failures.push('[tpm] the engine draws no words, boxes or polygons: circles, marks and curves only');
+const engineMarks = ((engineArt.match(/<g class="nx__marks"[\s\S]*?<\/g>/) || [''])[0].match(/<path\b/g) || []).length;
+if (engineMarks < 36 || !/class="nx__nucleus"/.test(engineArt) || !/class="nx__ring"/.test(engineArt) || !/class="nx__ring-open"/.test(engineArt)) failures.push(`[tpm] one central core: a nucleus inside a ring of short marks and its rings (found ${engineMarks} marks)`);
+const engineNodes = [...engineArt.matchAll(/<g class="nx__node nx__node--(in|out)"[^>]*style="--dx: (-?[\d.]+); --dy: (-?[\d.]+); --o: (\d)"/g)].map((m) => ({ side: m[1], dx: Number(m[2]), dy: Number(m[3]), o: Number(m[4]) }));
+if (engineNodes.length !== 5 || engineNodes.filter((n) => n.side === 'in').length !== 2) failures.push(`[tpm] five named nodes, two inputs and three outputs (found ${engineNodes.length})`);
+else if (engineNodes.some((n) => (n.side === 'in' ? n.dx >= 0 : n.dx <= 0))) failures.push('[tpm] engaged, the system expands: the inputs move out to the left, the outputs to the right');
+const litWires = [...engineArt.matchAll(/<path class="nx__lit nx__lit--(in|out)"[^>]*>/g)].map((m) => m[0]);
+if (litWires.length !== 5 || litWires.some((w) => !/pathLength="1"/.test(w)) || (engineArt.match(/<path class="nx__wire"/g) || []).length !== 5) failures.push('[tpm] each node has its connection and a line of light along it (five of each)');
+if (/\bL\s*-?[\d.]+\s+-?[\d.]+\s*L/.test(litWires.join(''))) failures.push('[tpm] no right-angled connectors: the connections are curves (or one straight run)');
+if (engineArt.match(/<g class="nx__sats"[\s\S]*?<\/g>/)?.[0].match(/<circle\b/g)?.length < 5) failures.push('[tpm] the core sits in a sparse system of faint unnamed nodes');
+const engineLegend = (engineHtml.match(/<div class="nx__legend"[\s\S]*?(?=<div class="nx__hit)/) || [''])[0];
+const engineCaptions = [...engineLegend.matchAll(/<p class="nx__caption[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
+const engineLabels = [...engineLegend.matchAll(/<(?:li|p) class="nx__label[^"]*"[^>]*>([\s\S]*?)<\/(?:li|p)>/g)].map((m) => textOf(m[1]));
+if (JSON.stringify(engineCaptions) !== JSON.stringify(ENGINE.captions)) failures.push(`[tpm] the labels fall in three groups, Inputs, Core and Outputs (found ${engineCaptions.join(', ')})`);
+if (JSON.stringify(engineLabels) !== JSON.stringify([...ENGINE.inputs, ENGINE.core, ...ENGINE.outputs])) failures.push(`[tpm] the engine names its inputs, its core and its outputs, in order (found ${engineLabels.join(', ')})`);
+const eData = tpmData.hero?.engine || {};
+if (JSON.stringify((eData.inputs || []).map((x) => x.label)) !== JSON.stringify(ENGINE.inputs) || eData.core !== ENGINE.core || JSON.stringify((eData.outputs || []).map((x) => x.label)) !== JSON.stringify(ENGINE.outputs) || tpmData.hero?.system) failures.push('[tpm] tpm.json carries the engine words (and no V1.4 system block)');
+const legendRest = tpmRules(/^\.nx__legend$/).filter((r) => !r.at).map((r) => r.body).join(';');
+if (!/visibility:\s*hidden/.test(legendRest) || !/pointer-events:\s*none/.test(legendRest) || !tpmRules(/^\.nx\.is-open \.nx__legend$/).some((r) => /visibility:\s*visible/.test(r.body)) || !tpmRules(/^\.nx__label,\s*\.nx__caption$/).some((r) => /opacity:\s*0\b/.test(r.body))) failures.push('[tpm] at rest the labels are hidden; engaged, they show');
+// The light's schedule: inputs, then the core, then outputs; each label after its light.
+const nxRoot = tpmRules(/^\.nx$/).filter((r) => !r.at).map((r) => r.body).join(';');
+const tNum = (name) => Number((nxRoot.match(new RegExp(`--${name}:\\s*([\\d.]+)`)) || [])[1]);
+if (!(tNum('t-in') < tNum('t-core') && tNum('t-core') < tNum('t-out') && tNum('run') >= 0.3)) failures.push(`[tpm] the connections light in sequence, inputs, core, outputs (found ${tNum('t-in')}, ${tNum('t-core')}, ${tNum('t-out')})`);
+const litIn = tpmRules(/^\.nx\.is-open \.nx__lit--in$/).map((r) => r.body).join(';');
+const litOut = tpmRules(/^\.nx\.is-open \.nx__lit--out$/).map((r) => r.body).join(';');
+if (!/--t-in/.test(litIn) || !/--t-out/.test(litOut) || !/stroke-dashoffset/.test(litIn + litOut)) failures.push('[tpm] each line of light is drawn along its connection on that schedule');
+if (!tpmRules(/\.nx\.is-open :is\(\.nx__label--out,\s*\.nx__caption--out\)/).some((r) => /--t-out/.test(r.body) && /--run/.test(r.body)) || !tpmRules(/\.nx\.is-open :is\(\.nx__label--in,\s*\.nx__caption--in\)/).some((r) => /--t-in/.test(r.body))) failures.push('[tpm] each label arrives as the light reaches its node');
+if (!tpmRules(/^\.nx\.is-open \.nx__node$/).some((r) => /transform:\s*translate\(calc\(var\(--dx\)/.test(r.body)) || !tpmRules(/^\.nx__node$/).some((r) => !r.at && /transition:\s*transform\s+\.?[\d.]+s/.test(r.body))) failures.push('[tpm] the nodes move out and back by transforms, controlled, never snapping');
+// Controlled motion: no spinning, no particles, no parallax; the return is calm.
+const nxKeyframes = ['nx-drift', 'nx-breathe', 'nx-signal', 'nx-signal-core', 'nx-signal-out'].map(keyframesOf);
+if (nxKeyframes.some((k) => !k) || nxKeyframes.some((k) => /rotate|scale\(/.test(k))) failures.push('[tpm] the ambient life is a breath, a passing signal and a drift: nothing spins or swells');
+const nxDrift = Math.max(0, ...[...(keyframesOf('nx-drift') || '').matchAll(/translate(?:Y|3d)?\(\s*(?:0(?:px)?\s*,\s*)?(-?[\d.]+)px/g)].map((m) => Math.abs(Number(m[1]))));
+if (!(nxDrift >= 1 && nxDrift <= 2)) failures.push(`[tpm] at rest the drawing drifts only 1 to 2px (found ${nxDrift}px)`);
+// The ambient life runs on HTML boxes (the compositor runs it alone), never on
+// anything inside the SVG; it pauses open or off screen and is gone while the
+// Foundation rises over the hero.
+const nxAnimated = tpmRules(/\.nx/).filter((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body));
+if (!nxAnimated.length || nxAnimated.some((r) => /nx__(?:art|marks|node|lit|wire|core|nucleus|ring|orbit|sat)\b/.test(bare(r.sel)) || !MOTION_OK.test(r.at))) failures.push('[tpm] the ambient life moves HTML boxes only, and only with motion allowed');
+if (!tpmRules(/\.nx\.is-open :is\(\.nx__body,\s*\.nx__glow,\s*\.nx__signal\)/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/\.nx\.is-asleep :is\(/).some((r) => /animation-play-state:\s*paused/.test(r.body)) || !tpmRules(/\.nx\.is-held :is\(/).some((r) => /animation:\s*none/.test(r.body))) failures.push('[tpm] the ambient life pauses while engaged or off screen and is gone during the rise');
+// Only direct engagement: the pointer's area is a circle round the resting
+// system (the whole box once open); a tap or the control otherwise.
+const hitRest = tpmRules(/^\.nx__hit$/).filter((r) => !r.at).map((r) => r.body).join(';');
+if (!/clip-path:\s*circle\(/.test(hitRest) || !tpmRules(/^\.nx\.is-open \.nx__hit$/).some((r) => /clip-path:\s*inset\(0\)/.test(r.body)) || !/class="nx__hit"[^>]*aria-hidden="true"/.test(engineHtml)) failures.push('[tpm] the engine answers only to a pointer over its own area');
+const engineButtons = [...tpmHeroHtml.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
+const toggleTag = (engineButtons[0] || '').match(/<button\b[^>]*>/)?.[0] || '';
+if (engineButtons.length !== 1 || !/\bdata-engine-toggle\b/.test(toggleTag) || !/type="button"/.test(toggleTag) || !/aria-expanded="false"/.test(toggleTag) || !/aria-controls="tpm-engine-legend"/.test(toggleTag) || !/<div class="nx__legend"[^>]*id="tpm-engine-legend"/.test(engineLegend)) failures.push('[tpm] the hero has one control, the engine\'s own: a button that says whether the system is shown and names what it shows');
+const toggleWords = [...(engineButtons[0] || '').matchAll(/<span data-engine-(?:show|hide)[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
+if (JSON.stringify(toggleWords) !== JSON.stringify(ENGINE.toggle)) failures.push(`[tpm] the control reads "${ENGINE.toggle[0]}" and, open, "${ENGINE.toggle[1]}"`);
+if (!tpmRules(/^\.nx__toggle:not\(:focus-visible\)$/).some((r) => /hover:\s*hover/.test(r.at) && /clip-path:\s*inset\(50%\)/.test(r.body))) failures.push('[tpm] with a mouse the control is out of sight until keyboard focus reaches it; on touch screens it stays in view');
+// Reduced motion: the system composed, complete and still. Without JavaScript, hover or focus opens it.
+const rmEngine = tpmRules(/^\.nx /).filter((r) => /prefers-reduced-motion:\s*reduce/.test(r.at));
+if (!rmEngine.some((r) => /\.nx__legend/.test(r.sel) && /visibility:\s*visible/.test(r.body)) || !rmEngine.some((r) => /\.nx__node$/.test(bare(r.sel)) && /translate\(calc\(var\(--dx\)/.test(r.body)) || !rmEngine.some((r) => /\.nx__lit/.test(r.sel) && /stroke-dashoffset:\s*0/.test(r.body))) failures.push('[tpm] reduced motion: the engine is shown composed and complete');
+if (!tpmRules(/^html:not\(\.js\) \.nx:is\(:hover,\s*:focus-within\) \.nx__node$/).some((r) => /translate\(calc\(var\(--dx\)/.test(r.body)) || !tpmRules(/^html:not\(\.js\) \.nx:is\(:hover,\s*:focus-within\) \.nx__legend$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] without JavaScript the engine opens on hover or focus');
 
-// The field (V1.4): thin irregular contour lines behind the object, very low
-// contrast, fading out toward the copy; a soft light follows a fine pointer
-// across the hero and the lines shift a few pixels. No grid, particles,
-// icons, nodes or bright gradients; light enough to inline.
-const fieldHtml = (tpmHeroHtml.match(/<div class="tpm-field"[\s\S]*?(?=<div class="container tpm-hero__grid)/) || [''])[0];
-const fieldLines = (fieldHtml.match(/<path\b/g) || []).length;
-if (!fieldHtml || !/aria-hidden="true"/.test((fieldHtml.match(/<div\b[^>]*>/) || [''])[0])) failures.push('[tpm] the hero carries its contour field, hidden from assistive technology');
-if (fieldLines < 6 || fieldLines > 16 || /<(?:circle|rect|line|polyline|polygon|pattern|image|text|img|video|canvas)\b/.test(fieldHtml)) failures.push(`[tpm] the field is contour lines only: no grid, particles, nodes, icons or images (found ${fieldLines} paths)`);
-if (Buffer.byteLength(fieldHtml) > 24000) failures.push(`[tpm] the field stays light: under 24 KB of markup (found ${(Buffer.byteLength(fieldHtml) / 1000).toFixed(1)} KB)`);
-const fieldMap = tpmRules(/^\.tpm-field__map$/).map((r) => r.body).join(';');
-const fieldLit = tpmRules(/^\.tpm-field__lit \.tpm-field__map$/).map((r) => r.body).join(';');
-const fieldBase = tpmRules(/^\.tpm-field$/).map((r) => r.body).join(';');
-if (!(Number((fieldMap.match(/stroke-opacity:\s*([\d.]+)/) || [])[1]) <= 0.12) || !(Number((fieldMap.match(/stroke-width:\s*([\d.]+)/) || [])[1]) <= 1.25)) failures.push('[tpm] the contour lines are thin and very low contrast');
-if (!(Number((fieldLit.match(/stroke-opacity:\s*([\d.]+)/) || [])[1]) <= 0.35)) failures.push('[tpm] even in the light the lines stay quiet');
+// The signal field (V1.5): one canvas behind the stage, short marks on a
+// staggered lattice, barely visible, quieter behind the copy; a fine pointer
+// turns the marks near it and lights them in soft rings. No CSS mask, no
+// pointer of its own, nothing in front of the copy.
+const fieldHtml = (tpmHeroHtml.match(/<div class="tpm-signal"[\s\S]*?<\/div>/) || [''])[0];
+if (!fieldHtml || !/aria-hidden="true"/.test((fieldHtml.match(/<div\b[^>]*>/) || [''])[0]) || (fieldHtml.match(/<canvas\b/g) || []).length !== 1 || (tpmHeroHtml.match(/<canvas\b/g) || []).length !== 1) failures.push('[tpm] the hero carries one signal field, a canvas hidden from assistive technology');
+const fieldBase = tpmRules(/^\.tpm-signal$/).map((r) => r.body).join(';');
 if (!/pointer-events:\s*none/.test(fieldBase) || !/z-index:\s*-1/.test(fieldBase)) failures.push('[tpm] the field sits behind everything and takes no pointer');
-// The fades toward its edges and toward the copy are drawn into the lines
-// (stretches of line in stepped opacities), never a CSS mask over the field,
-// which the browser would composite on every frame of a scroll; only the
-// small moving light has a soft (masked) edge, and only while it shows.
-const fieldSteps = new Set([...fieldHtml.matchAll(/<path\b[^>]*\bopacity="([\d.]+)"/g)].map((m) => m[1]));
-if (fieldSteps.size < 6) failures.push(`[tpm] the lines fade toward the field's edges and the copy by themselves (found ${fieldSteps.size} opacity steps)`);
-if (tpmRules(/tpm-field(?!__light)/).some((r) => /mask-image:/.test(r.body))) failures.push('[tpm] no CSS mask over the field: it would be composited on every frame of a scroll');
-if (!tpmRules(/^\.tpm-field__light$/).some((r) => /visibility:\s*hidden/.test(r.body)) || !tpmRules(/^\.tpm-field\.is-lit \.tpm-field__light$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] the light shows only while lit, and is hidden once it dims (the script checks are below)');
-const lightBg = tpmRules(/^\.tpm-field__light$/).map((r) => r.body).join(';');
-const lightAlpha = Math.max(0, ...[...lightBg.matchAll(/#4f918a([0-9a-f]{2})\b/gi)].map((m) => parseInt(m[1], 16) / 255), ...[...lightBg.matchAll(/rgba\(\s*79[,\s]+145[,\s]+138\s*[,/]\s*(0?\.\d+)\s*\)/g)].map((m) => Number(m[1])));
-if (!(lightAlpha > 0 && lightAlpha <= 0.1)) failures.push(`[tpm] the pointer's light is soft, never a bright gradient (found ${lightAlpha.toFixed(3)})`);
-if (!tpmRules(/tpm-field__light/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /display:\s*none/.test(r.body))) failures.push('[tpm] reduced motion: the field does not respond to the pointer');
+if (tpmRules(/tpm-signal/).some((r) => /mask-image:|filter:/.test(r.body))) failures.push('[tpm] no CSS mask or filter over the field: its fades are drawn into the marks');
 // One accent in the headline, one emphasis in the paragraph (V1.3).
 const accentsIn = (html) => [...html.matchAll(/<span class="tpm-accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(norm(m[1])));
 const emsIn = (html) => [...html.matchAll(/<strong class="tpm-em"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(norm(m[1])));
@@ -1090,8 +1072,11 @@ const docRows = docItems.map((li) => [
 ]);
 if (JSON.stringify(docRows) !== JSON.stringify(FOUNDATION)) failures.push(`[tpm] the library lists the twelve named documents in the brief's order, numbered 00 to 11, with their sublines (found ${docRows.map((r) => r.join(' ')).join(', ')})`);
 const pageText = textOf(tpmPage.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, ''));
+// (The retired library documents; since V1.5 the hero's Narrative Engine
+// names its core "Shared product language", so that one is checked outside it.)
+const pageTextOutsideHero = textOf(tpmPage.replace(/<section class="tpm-hero"[\s\S]*?<\/section>/, '').replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, ''));
 for (const gone of ['Invariants', 'Mission Statement', 'Category North Star', 'Brand Manifesto', 'Copy Bank', 'Shared product language']) {
-  if (pageText.includes(gone)) failures.push(`[tpm] "${gone}" is no longer on the page`);
+  if (pageTextOutsideHero.includes(gone)) failures.push(`[tpm] "${gone}" is no longer in the library or anywhere outside the hero`);
 }
 if (/\b(?:six|6)\s+(?:structured\s+)?(?:stakeholder\s+)?interviews\b/i.test(pageText)) failures.push('[tpm] the interview count is not published');
 const accents = docItems.map((li) => ((li.match(/--doc:\s*(#[0-9a-f]{6})/i) || [])[1] || '').toLowerCase());
@@ -1435,6 +1420,47 @@ else {
   if (tpmRules(/\.tpm-onward/).some((r) => /outline:\s*(?:none|0)\b/.test(r.body))) failures.push('[tpm] the sentence keeps the site\'s visible keyboard focus');
 }
 
+// V1.5: the closing movement. The conclusion is a dark ground that begins on
+// the campaign's black and ends exactly on the Contact green, through a deep
+// charcoal teal (OKLab stops, each a little lighter and a little more teal
+// than the last, never a muddy grey), with no light band and no seam; the type
+// is the warm cream of the green surface; a full screen tall on wide screens,
+// with distinct beats (about 48 to 64px, then about 80 to 100px); its
+// paragraph as wide as the case study's other primary paragraphs. Contact's
+// grid rises out of its lower part, and the conclusion's words sit above it.
+{
+  const head = (conclusionHtml.match(/<section[^>]*>/) || [''])[0];
+  const base = tpmRules(/^\.tpm-conclusion$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const grad = (base.match(/background:\s*linear-gradient\(([^;]*)\)/) || [, ''])[1];
+  const stops = [...grad.matchAll(/#([0-9a-f]{6})\b/gi)].map((m) => m[1].toLowerCase());
+  const lum = (hex) => {
+    const c = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  if (!/data-surface="dark"/.test(head)) failures.push('[tpm] the conclusion is a dark ground (the header reads it as one)');
+  if (stops[0] !== '0d0f10' || stops[stops.length - 1] !== '1f4546' || stops.length < 8) failures.push(`[tpm] the conclusion's ground runs from the campaign's black (#0d0f10) to the Contact green (#1f4546) (found ${stops.join(' ')})`);
+  if (stops.some((s, i) => i && lum(s) < lum(stops[i - 1])) || stops.some((s) => parseInt(s.slice(0, 2), 16) > parseInt(s.slice(2, 4), 16) || parseInt(s.slice(0, 2), 16) > parseInt(s.slice(4, 6), 16))) failures.push('[tpm] each step of the closing ground is a little lighter and stays on the teal side: no muddy intermediate color');
+  if (!/--heading:\s*var\(--c-bone\)/.test(base) || !/--ink-2:\s*var\(--c-bone-2\)/.test(base)) failures.push('[tpm] the conclusion is set in the warm cream of the green surface');
+  if (/data-surface="light"/.test(head) || tpmRules(/^\.tpm-conclusion/).some((r) => /background(?:-color)?:\s*(?:var\(--c-bone\)|#f3efe8(?![0-9a-f]))/i.test(r.body))) failures.push('[tpm] no cream band between the campaign and Contact');
+  if (!tpmRules(/^\.tpm-conclusion$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*var\(--view-h\)/.test(r.body)) || !tpmRules(/^\.tpm-conclusion$/).some((r) => /--view-h:\s*100svh/.test(r.body))) failures.push('[tpm] on wide screens the conclusion is a full screen tall');
+  const conclMeasure = tpmRules(/^\.tpm-conclusion__copy$/).map((r) => remOf(r.body)).find((v) => v > 0);
+  const caseMeasure = tpmRules(/^\.tpm-case__contribution$/).map((r) => remOf(r.body)).find((v) => v > 0);
+  if (!measureOk(conclMeasure) || conclMeasure !== caseMeasure) failures.push(`[tpm] the conclusion's paragraph is as wide as the other primary paragraphs, about 800 to 860px (found ${conclMeasure ? conclMeasure * 16 : 'none'}px)`);
+  const clampPx = (body, prop) => {
+    const m = body.match(new RegExp(`${prop}:\\s*clamp\\(([\\d.]+)rem,[^,]+,\\s*([\\d.]+)rem\\)`));
+    return m ? [Number(m[1]) * 16, Number(m[2]) * 16] : [];
+  };
+  const leadGap = clampPx(tpmRules(/^\.tpm-conclusion__lead$/).filter((r) => /min-width:\s*48rem|width\s*>=\s*48rem/.test(r.at)).map((r) => r.body).join(';'), 'gap');
+  const onwardGap = clampPx(tpmRules(/^\.tpm-onward$/).filter((r) => /min-width:\s*48rem|width\s*>=\s*48rem/.test(r.at)).map((r) => r.body).join(';'), 'margin-top');
+  if (!(leadGap[0] >= 48 && leadGap[1] <= 64)) failures.push(`[tpm] about 48 to 64px between the headline and the paragraph (found ${leadGap.join(' to ')})`);
+  if (!(onwardGap[0] >= 80 && onwardGap[1] <= 100)) failures.push(`[tpm] about 80 to 100px between the paragraph and the way on (found ${onwardGap.join(' to ')})`);
+  if (!tpmRules(/^\.tpm-conclusion__inner$/).some((r) => /z-index:\s*1/.test(r.body) && /position:\s*relative/.test(r.body))) failures.push('[tpm] the conclusion\'s words sit above the rising grid');
+  if (!/<section id="contact" class="[^"]*\bcontact--lead\b[^"]*" style="--grid-lead:\s*[^"]+"/.test(tpmPage)) failures.push('[tpm] Contact\'s grid rises out of the conclusion (Contact has a lead)');
+  const leadRule = rulesFor(/\.contact--lead.*\.contact__grid/).map((r) => r.body).join(';');
+  if (!/inset:\s*calc\(-1\s*\*\s*var\(--grid-lead\)\)/.test(leadRule) || !/--grid-fade:\s*linear-gradient\(to bottom,\s*transparent 0,[^;]*#000 var\(--grid-lead\)/.test(leadRule)) failures.push('[tpm] the grid begins above Contact, from nothing to its usual strength where Contact begins');
+  if (/contact--lead/.test(home)) failures.push('[tpm] the homepage Contact keeps its own grid (no lead)');
+}
+
 // ---- the page's order (V1.4), Contact kept after the conclusion.
 const tpmOrder = [['hero', '<section class="tpm-hero"'], ['foundation', 'data-tpm-flow'], ['website', 'class="tpm-case tpm-website"'], ['documentation', 'class="tpm-case tpm-docs"'], ['campaign', 'class="tpm-case tpm-campaign"'], ['conclusion', '<section class="tpm-conclusion"'], ['contact', 'id="contact"']].map(([n, s]) => [n, tpmPage.indexOf(s)]);
 if (tpmOrder.some(([, i]) => i < 0) || tpmOrder.some(([, i], k) => k && i < tpmOrder[k - 1][1])) failures.push(`[tpm] the page runs hero, foundation, website, documentation, campaign, conclusion, contact (${tpmOrder.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
@@ -1495,19 +1521,20 @@ if (!/addEventListener\(\s*[`"']ended[`"']/.test(tpmScripts)) failures.push('[tp
 // cut; out of view they pause, and nothing in the loop touches the mute state.
 if (!/cycle:\{hold:(?:1e3|1000),fade:(?:[5-9]\d\d)\}/.test(tpmScripts)) failures.push('[tpm] the website walkthrough holds its form for about a second, then fades back to the hero before it replays');
 if (!/\{threshold:\.55,cycle:\{hold:(?:1e3|1000|1[0-5]\d\d),fade:(?:[5-9]\d\d)\}\}/.test(tpmScripts)) failures.push('[tpm] the documentation walkthrough runs continuously: a moment on its final page, a fade back to the start, and again (V1.3)');
-// The hero (V1.4): SVG and CSS transforms, no WebGL. The object opens only
-// for a pointer over its own silhouette (a clip-path measured on resize, never
-// per move), for a tap (touch) or for its control (keyboard), and closes on
-// leaving, a second tap, a tap elsewhere or Escape; off screen it rests closed
-// and its ambient life pauses. The field follows a fine pointer anywhere in
-// the hero, read once a frame through requestAnimationFrame, moved by
-// transforms alone, and stops when it settles or leaves the screen.
-if (/webgl|getContext\(/i.test(tpmScripts)) failures.push('[tpm] no WebGL or canvas drawing: the hero is SVG moved with CSS transforms');
-for (const token of ['[data-tpm-system]', '[data-system-hit]', '[data-system-toggle]', 'aria-expanded', 'Escape', 'pointerleave', 'pointerup', 'pointerdown', 'clipPath', 'ResizeObserver', 'is-asleep']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the hero object's script is missing ${token}`);
-for (const token of ['[data-tpm-field]', 'pointermove', 'requestAnimationFrame', 'cancelAnimationFrame', 'translate3d(', 'IntersectionObserver', '(hover: hover) and (pointer: fine)']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the hero field's script is missing ${token}`);
-if (!/pointerType===?[`"']touch[`"']/.test(tpmScripts)) failures.push('[tpm] neither the object nor the field follows a touch pointer');
-if (!tpmScripts.includes('is-lit') || !/setTimeout/.test(tpmScripts) || !/clearTimeout/.test(tpmScripts)) failures.push('[tpm] the field\'s light dims once the pointer rests or the page scrolls');
-if (!tpmScripts.includes('is-held')) failures.push('[tpm] the hero script stills the object while the Foundation rises over it');
+// The hero (V1.5): no WebGL. The engine opens only for a pointer over its own
+// area (a clip-path circle, the whole box once open), for a tap (touch, a
+// quicker version) or for its control (keyboard), and closes on leaving, a
+// second tap, a tap elsewhere or Escape; off screen or under the rising
+// Foundation it rests closed and still. The field is one 2D canvas, drawn in
+// full on resize and then only where a fine pointer acts, frame by frame
+// while it acts, never off screen, and its marks stand on a staggered
+// (triangular) lattice.
+if (/webgl/i.test(tpmScripts)) failures.push('[tpm] no WebGL: the engine is SVG and CSS, the field one 2D canvas');
+for (const token of ['[data-engine]', '[data-engine-hit]', '[data-engine-toggle]', 'aria-expanded', 'Escape', 'pointerleave', 'pointerup', 'pointerdown', 'is-quick', 'is-asleep']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the engine's script is missing ${token}`);
+for (const token of ['[data-tpm-field]', 'getContext', 'devicePixelRatio', 'pointermove', 'requestAnimationFrame', 'cancelAnimationFrame', 'clearRect', 'clip()', 'IntersectionObserver', 'ResizeObserver', '(hover: hover) and (pointer: fine)', '(prefers-reduced-motion: reduce)']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the signal field's script is missing ${token}`);
+if (!/pointerType===?[`"']touch[`"']/.test(tpmScripts)) failures.push('[tpm] neither the engine nor the field follows a touch pointer');
+if (!/\.866\b/.test(tpmScripts)) failures.push('[tpm] the field\'s marks stand on a staggered (triangular) lattice, never a square grid');
+if (!tpmScripts.includes('is-held')) failures.push('[tpm] the hero script stills the engine while the Foundation rises over it');
 // The layered reveal hands the Foundation its edge, its shadow and its rise.
 for (const token of ['--lead-r', '--lead-shadow', '--rise']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the layered reveal's script is missing ${token}`);
 // Nothing is left of Selected Writing's entrance.
@@ -1518,6 +1545,160 @@ for (const token of ['prefers-reduced-motion: no-preference', 'prefers-reduced-m
 }
 if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" class="[^"]*\bcontact--frame\b/.test(tpmPage)) failures.push('[tpm] the page closes with the full Contact frame on the brand surface');
 if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) failures.push('[tpm] the footer continues the brand surface');
+
+// ------------------------------------------ Events and Multimedia Production
+// Version 1.0 (John's Combined Build Brief, October 14, 2026): the third and
+// final case study, on its own page. 01 Hero (one program monitor, three
+// sources, PRODUCE first), 02 Run of show, 03 Build the activation, 04 Command
+// the room, 05 From setup to final output, 06 Sui Fest, 07 What continued
+// after, 08 the conclusion, then Contact (no next case study). Copy is checked
+// against the brief; only public-safe outcomes, no unverified metrics.
+{
+  const evPage = fs.readFileSync(path.join(dist, 'work/events-video/index.html'), 'utf8');
+  const evData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/events.json'), 'utf8'));
+  const evNoCode = evPage.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, '');
+  const evText = textOf(norm(evNoCode));
+  const evSection = (cls) => (evPage.match(new RegExp(`<section class="${cls}"[\\s\\S]*?<\\/section>`)) || [''])[0];
+  const evRules = (re) => CSS_RULES.filter((r) => re.test(bare(r.sel)));
+  const one = (html, re) => textOf(norm((html.match(re) || [, ''])[1]));
+  if (/class="cs-hero[\s"_]/.test(evPage) || /My role/.test(evText)) failures.push('[events] the page has its own hero and no "My role" line: credits sit with the work they describe');
+  if (/class="tpm-/.test(evNoCode)) failures.push('[events] the page shares no Technical Product Marketing component: its own structure and motion');
+  const order = [['hero', '<section class="evh"'], ['run', '<section class="evr"'], ['activation', '<section class="eva"'], ['room', '<section class="evm"'], ['setup', '<section class="evs"'], ['suifest', '<section class="evf"'], ['after', '<section class="evt"'], ['conclusion', '<section class="evc"'], ['contact', 'id="contact"']].map(([n, s]) => [n, evPage.indexOf(s)]);
+  if (order.some(([, i]) => i < 0) || order.some(([, i], k) => k && i < order[k - 1][1])) failures.push(`[events] the page runs hero, run of show, activation, room, setup to final, Sui Fest, after, conclusion, Contact (${order.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
+
+  // ---- 01 Hero
+  const EV = {
+    kicker: '03 / Events and Multimedia Production',
+    headline: 'From live experience to lasting momentum.',
+    copy: 'I turn live opportunities into complete marketing systems, from sponsorship and on-site production to content, distribution, and the relationships that continue after the room clears.',
+  };
+  const hero = evSection('evh');
+  if (!/data-surface="dark"/.test(hero.match(/<section[^>]*>/)?.[0] || '')) failures.push('[events] the hero is on the dark ground of the screens');
+  if (one(hero, /<p class="evh__kicker[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== EV.kicker) failures.push(`[events] the kicker reads "${EV.kicker}"`);
+  if (one(hero, /<h1 id="ev-title"[^>]*>([\s\S]*?)<\/h1>/) !== EV.headline) failures.push(`[events] the headline reads "${EV.headline}"`);
+  if (one(hero, /<p class="lede evh__lede[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== EV.copy) failures.push('[events] the hero carries the approved supporting copy');
+  const cues = [...hero.matchAll(/<button\b[^>]*class="evh__cue"[^>]*>[\s\S]*?<\/button>/g)].map((m) => ({ key: (m[0].match(/data-cue-btn="(\w+)"/) || [])[1], pressed: (m[0].match(/aria-pressed="(\w+)"/) || [])[1], label: one(m[0], /<span class="evh__cue-label[^"]*"[^>]*>([\s\S]*?)<\/span>/) }));
+  if (cues.map((c) => c.label.toUpperCase()).join(' ') !== 'PRESENT PRODUCE ENGAGE') failures.push(`[events] three restrained cues: PRESENT, PRODUCE, ENGAGE (found ${cues.map((c) => c.label).join(', ')})`);
+  if (cues.filter((c) => c.pressed === 'true').map((c) => c.key).join() !== 'produce' || !/data-ev-program[^>]*data-default="produce"/.test(hero) || evData.hero?.default !== 'produce') failures.push('[events] the program starts on PRODUCE, the production room');
+  if (!/role="group" aria-label="Program source"/.test(hero)) failures.push('[events] the cues are one named group of buttons');
+  const heroVideos = [...hero.matchAll(/<video\b[^>]*>/g)].map((m) => m[0]);
+  if (heroVideos.length !== 3 || heroVideos.some((v) => !/\bmuted\b/.test(v) || !/\bplaysinline\b/.test(v) || !/preload="none"/.test(v) || !/\bposter="/.test(v) || /\bautoplay\b/.test(v))) failures.push('[events] one video per source, each muted, inline, with a poster, and nothing loaded or autoplayed by the markup (the script plays only the active one)');
+  if ((hero.match(/class="evh__layer[^"]*\bis-on\b/g) || []).length !== 1) failures.push('[events] only one source is on the monitor');
+  if (!evRules(/^\.evh__monitor$/).some((r) => /aspect-ratio:\s*16\s*\/\s*9/.test(r.body))) failures.push('[events] the program monitor keeps one 16:9 frame for every source');
+  if (!/data-program-tc/.test(hero) || !/data-program-cue/.test(hero) || !/data-program-toggle/.test(hero)) failures.push('[events] the monitor carries its cue reading, its timecode and its pause control');
+  if (/<(?:video|audio)\b[^>]*\bautoplay\b/.test(evPage)) failures.push('[events] no video on the page autoplays from the markup');
+
+  // ---- 02 Run of show
+  const run = evSection('evr');
+  const RUN = [['Secure', 'Partnerships, sponsorships, and access'], ['Build', 'Activation, merchandise, and programming'], ['Capture', 'Presentations, interviews, and live moments'], ['Cut', 'Footage review, edit direction, and final production'], ['Amplify', 'Distribution, follow-up, and continued opportunity']];
+  const stages = [...run.matchAll(/<li class="evr__stage"[\s\S]*?<\/li>/g)].map((m) => [one(m[0], /<span class="evr__label[^"]*"[^>]*>([\s\S]*?)<\/span>/), one(m[0], /<span class="evr__line[^"]*"[^>]*>([\s\S]*?)<\/span>/), (m[0].match(/href="#([\w-]+)"/) || [])[1]]);
+  if (JSON.stringify(stages.map((s) => [s[0], s[1]])) !== JSON.stringify(RUN)) failures.push(`[events] the run of show is Secure, Build, Capture, Cut, Amplify, each with its line (found ${stages.map((s) => s[0]).join(', ')})`);
+  if (stages.some((s) => !s[2] || !evPage.includes(`id="${s[2]}"`))) failures.push('[events] every stage leads to the section that shows it');
+  if (!/<nav class="evr__show"[^>]*aria-label="Run of show"/.test(run)) failures.push('[events] the run of show is the page\'s table of contents, a named navigation');
+  if (evRules(/evr__stage/).some((r) => /opacity:\s*0?\.[0-4]/.test(r.body))) failures.push('[events] a stage waiting for the line stays readable (no faded text)');
+
+  // ---- the sections' headlines and words
+  const H = {
+    eva: ['ev-activation-title', 'The work starts before anyone enters the room.'],
+    evm: ['ev-room-title', 'Build the session. Fill the room. Extend its life.'],
+    evs: ['ev-setup-title', 'A compact setup. A full content system.'],
+    evf: ['ev-suifest-title', 'If you cannot own the stage, create the moment everyone shares.'],
+    evc: ['ev-conclusion-title', 'The room clears. The work keeps moving.'],
+  };
+  for (const [cls, [id, text]] of Object.entries(H)) {
+    const got = one(evSection(cls), new RegExp(`<h2 id="${id}"[^>]*>([\\s\\S]*?)<\\/h2>`));
+    if (got !== text) failures.push(`[events] headline: "${text}" (found "${got}")`);
+  }
+  const after = evSection('evt');
+  if (!one(after, /<h2 id="ev-after-title"[^>]*>([\s\S]*?)<\/h2>/)) failures.push('[events] the section after the event has its headline');
+  if (/The room clears/.test(one(after, /<h2 id="ev-after-title"[^>]*>([\s\S]*?)<\/h2>/))) failures.push('[events] only the conclusion says "The room clears"');
+  const conclCopy = 'The strongest events do more than fill a room. They create content, relationships, conversations, and opportunities that continue long after the final session ends.';
+  const concl = evSection('evc');
+  if (one(concl, /<p class="evc__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== conclCopy) failures.push('[events] the conclusion carries the approved copy');
+  if (/<a\b/.test(concl) || /\bNext\b/.test(textOf(concl))) failures.push('[events] the last case study ends without a next case study');
+  if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" class="[^"]*\bcontact--frame\b[^"]*\bcontact--lead\b/.test(evPage) || !/<footer class="site-footer" data-surface="brand"[\s>]/.test(evPage)) failures.push('[events] the conclusion runs straight into the full Contact frame and the brand footer');
+  const evcBase = evRules(/^\.evc$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  if (!/#0d0f10 0%/.test(evcBase) || !/#1f4546 100%/.test(evcBase)) failures.push('[events] the conclusion turns from black to exactly the Contact green');
+
+  // ---- Command the room: three chapters and the public-safe outcome
+  const room = evSection('evm');
+  const CH = [
+    ['Fill', ['Booked the speaking slot', 'Promoted the session', 'Helped develop the subject and positioning', 'Supported audience attendance']],
+    ['Run', ['Collaborated with the speaker', 'Directed the deck development', 'Coordinated the presentation setup', 'Managed the laptop, projector, and live slide progression', 'Captured the presentation from multiple angles']],
+    ['Extend', ['Published the full presentation', 'Extracted shorter clips', 'Repackaged key moments for social distribution', 'Used the session to support continued ecosystem conversations']],
+  ];
+  const chapters = [...room.matchAll(/<li class="evm__chapter"[\s\S]*?<\/ul>\s*<\/li>/g)].map((m) => [one(m[0], /<span class="evm__chapter-label[^"]*"[^>]*>([\s\S]*?)<\/span>/), [...m[0].matchAll(/<li\b[^>]*>([^<]*)<\/li>/g)].map((x) => textOf(x[1]))]);
+  if (JSON.stringify(chapters) !== JSON.stringify(CH)) failures.push('[events] the room\'s three chapters, Fill, Run and Extend, as the brief lists them');
+  if (one(room, /<p class="evm__outcome[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== 'The presentation attracted ecosystem attention and opened conversations that continued beyond the event.') failures.push('[events] the presentation\'s outcome uses the public-safe wording');
+  if (one(after, /<p class="evt__outcome[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== 'Event-led relationship development contributed to subsequent conversations and integrations with ecosystem partners.') failures.push('[events] the outcome after the event uses the public-safe wording');
+  if (!/<div class="evp\b|<figure class="evp\b/.test(room)) failures.push('[events] the presentation footage is the room\'s dominant visual');
+
+  // ---- what may not be said
+  // A verified figure or named outcome reaches the page only from its approved
+  // metric entry in assets.json (EvSlot sets it as .ev-slot__metric); outside
+  // those, the page never names an integration or gives an exact figure.
+  const evMetricIds = [...evNoCode.matchAll(/<p class="ev-slot__metric[^"]*"[^>]*data-asset="([\w-]+)"/g)].map((m) => m[1]);
+  for (const id of evMetricIds) {
+    const a = (JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || []).find((x) => x.id === id);
+    if (!a || a.type !== 'metric' || a.permission !== 'approved' || !a.value) failures.push(`[events] ${id}: a figure or named outcome on the page comes only from an approved metric entry`);
+  }
+  const evUnverified = evNoCode.replace(/<p class="ev-slot__metric[\s\S]*?<\/p>/g, ' ');
+  const evUnverifiedText = textOf(norm(evUnverified));
+  for (const [re, what] of [[/\bpilot\b/i, 'an unannounced pilot'], [/\bcontract\b/i, 'contract discussions'], [/diligence/i, 'investor diligence'], [/data room/i, 'data rooms'], [/fundrais|funding round|raising/i, 'fundraising'], [/Foundation discussion/i, 'Foundation discussions'], [/youtube|youtu\.be/i, 'YouTube'], [/Sui Network/, 'confidential Sui negotiations']]) {
+    if (re.test(evText) || re.test(evNoCode.replace(/<[^>]+>/g, ' '))) failures.push(`[events] the page never mentions ${what}`);
+  }
+  if (/Aftermath/i.test(evUnverifiedText) || /Aftermath/i.test(evUnverified.replace(/<[^>]+>/g, ' '))) failures.push('[events] the page never mentions a named integration before it is verified');
+  if (/\d[\d,.]*\s*[KkMm]?\+?\s+(?:impressions|likes|views|reposts|shares)/.test(evUnverifiedText)) failures.push('[events] no exact engagement figures until they are verified');
+  const RESULTS = ['Tens of thousands of impressions', 'Hundreds of likes', 'Engagement from ecosystem teams and developers', 'Broader distribution through participant sharing'];
+  const sf = evSection('evf');
+  const results = [...((sf.match(/<ul class="evf__result-list[\s\S]*?<\/ul>/) || [''])[0]).matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
+  if (JSON.stringify(results) !== JSON.stringify(RESULTS)) failures.push('[events] Sui Fest\'s results in the brief\'s qualitative words only');
+  if (!/\bnot a sponsor\b/.test(one(sf, /<p class="evf__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/))) failures.push('[events] the Sui Fest story says the team was not a sponsor');
+  const teams = [...sf.matchAll(/<button\b[^>]*class="evf__team"[^>]*data-seek="([\d.]+)"[\s\S]*?<span class="evf__team-name[^"]*"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => [Number(m[1]), textOf(m[2])]);
+  if (teams.length < 6 || teams.some(([t], i) => i && t <= teams[i - 1][0]) || !teams.some(([, n]) => n === 'Bolt Liquidity')) failures.push('[events] the teams in the piece, Bolt among them, each start the video at their interview');
+
+  // ---- credits with the work, never one large section
+  const credits = [...evPage.matchAll(/<div class="ev-credits[^"]*"[\s\S]*?<\/dl>/g)].map((m) => [...m[0].matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((x) => [textOf(x[1]), textOf(x[2])]));
+  const flat = credits.flat();
+  if (credits.length < 5) failures.push(`[events] credits sit under each piece of work (found ${credits.length})`);
+  if (/Collaboration Credit/i.test(evText)) failures.push('[events] no single defensive collaboration-credit section');
+  if (!flat.some(([w, d]) => w === 'Bob van der Meer' && /Deck design/.test(d)) || !flat.some(([w, d]) => w === 'Bob van der Meer' && /Final video editing/.test(d))) failures.push('[events] Bob van der Meer is credited with the deck design and the final video editing');
+  if (!flat.some(([w, d]) => w === 'Max McKendry' && /^Speaker$/.test(d)) || !flat.some(([w, d]) => w === 'Max McKendry' && /On-camera subject/.test(d))) failures.push('[events] Max McKendry is credited as the speaker and the on-camera subject, without a title');
+
+  // ---- media: posters, nothing loaded early, controls where sound matters
+  const players = [...evPage.matchAll(/<figure class="evp\b[\s\S]*?<\/figure>/g)].map((m) => m[0]);
+  if (players.length < 4) failures.push(`[events] the films with sound each have a player (found ${players.length})`);
+  for (const p of players) {
+    const v = (p.match(/<video\b[^>]*>/) || [''])[0];
+    if (!/preload="none"/.test(v) || !/\bposter="/.test(v) || !/\bcontrols\b/.test(v) || /\bautoplay\b/.test(v)) failures.push('[events] a player\'s video loads nothing before it is asked, has a poster, and keeps native controls without JavaScript');
+    if (textOf(norm((p.match(/<button\b[^>]*data-evp-start[^>]*>([\s\S]*?)<\/button>/) || [, ''])[1])).replace(/\s*\d+:\d\d$/, '') !== 'Play with sound') failures.push('[events] each player offers "Play with sound"');
+    if (!/<button\b[^>]*data-evp-play[^>]*aria-label="[^"]+"/.test(p) || !/<button\b[^>]*data-evp-mute[^>]*aria-label="[^"]+"/.test(p) || !/<input\b[^>]*type="range"[^>]*aria-label="Seek: [^"]+"[^>]*data-evp-seek/.test(p)) failures.push('[events] each player has labeled play or pause, mute or unmute, and seek controls');
+  }
+  for (const src of new Set([...evPage.matchAll(/<source src="[^"]*\/media\/([^"]+)"/g)].map((m) => m[1]))) {
+    const f = path.join(root, 'public/media', src);
+    if (!fs.existsSync(f)) failures.push(`[events] public/media/${src} is missing`);
+    else if (fs.statSync(f).size > 25 * 1024 * 1024) failures.push(`[events] public/media/${src} is over 25 MB`);
+  }
+  // Placeholders exist only while authoring.
+  if (/data-pending|ev-slot--pending|Placeholder ·/.test(evPage)) failures.push('[events] no placeholder reaches the production build');
+  // A silent loop (an approved screen animation) sits on its poster, muted,
+  // looped and inline, loads nothing before it is in view, never autoplays from
+  // the markup, and carries its own labeled pause control.
+  for (const loop of [...evPage.matchAll(/<div class="ev-slot ev-slot--loop[\s\S]*?<\/button>/g)].map((m) => m[0])) {
+    const v = (loop.match(/<video\b[^>]*>/) || [''])[0];
+    if (!/\bmuted\b/.test(v) || !/\bloop\b/.test(v) || !/\bplaysinline\b/.test(v) || !/preload="none"/.test(v) || !/\bposter="/.test(v) || /\bautoplay\b/.test(v) || !/data-ev-loop\b/.test(loop) || !/<button\b[^>]*data-ev-loop-toggle[^>]*aria-label="Play: [^"]+"/.test(loop)) failures.push('[events] a silent loop is muted, looped, inline, on its poster, loads nothing early and has its own pause control');
+  }
+  // The production layer stays restrained: cue tallies, crop marks, timecodes and progress lines.
+  if ((evPage.match(/class="ev-cue\b/g) || []).length < 5 || !/evp__crop|evh__crop/.test(evPage)) failures.push('[events] the sections carry their cue tallies and the frames their crop marks');
+  if (evRules(/^\.(?:evh|evr|eva|evm|evs|evf|evt|evc|ev-cue|evp)/).some((r) => /(?:^|;)\s*animation:[^;]*(?:glitch|flicker|shake)/.test(r.body))) failures.push('[events] no glitching or flicker');
+  if (evRules(/^\.(?:evh|evr|eva|evm|evs|evf|evt|evc|evp)/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body) && !MOTION_OK.test(r.at) && !/\.ev-in$/.test(bare(r.sel)))) failures.push('[events] looping motion only with motion allowed');
+  // The scripts: one source at a time, paused off screen or hidden, posters for reduced motion or saving data, one sound at a time.
+  const evScripts = pageScripts(evPage);
+  for (const token of ['[data-ev-program]', '[data-cue-btn]', 'aria-pressed', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-tabs]', 'aria-selected', 'ArrowRight', 'ArrowLeft', '[data-ev-run]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]']) {
+    if (!evScripts.includes(token)) failures.push(`[events] the page's script is missing ${token}`);
+  }
+  if (!/\.pause\(\)/.test(evScripts) || !/addEventListener\(\s*[`"']play[`"']/.test(evScripts)) failures.push('[events] starting one video with sound pauses every other');
+}
 
 // HOME (TPM V1, global): every page but the homepage leads its header with a
 // restrained HOME link to the homepage in place of the name.
@@ -1707,6 +1888,11 @@ for (const id of idRefs) {
     // Section ids in MDX also match the pattern; only flag ids that look like asset ids.
     if (/^(hero|card|about|cc|tm|ev|og|rail|reel)-/.test(id)) failures.push(`[manifest] referenced asset id "${id}" is not in assets.json`);
   }
+}
+// Ids named by the Events page's data (its sources, players, kit and placeholders).
+for (const m of fs.readFileSync(path.join(root, 'src/data/events.json'), 'utf8').matchAll(/"(ev-[a-z0-9-]+)"/g)) {
+  if (ids.has(m[1])) idRefs.add(m[1]);
+  else failures.push(`[manifest] events.json names "${m[1]}", which is not in assets.json`);
 }
 const unused = [...ids].filter((id) => !idRefs.has(id));
 if (unused.length) notes.push(`[manifest] unreferenced asset ids (fine, but tidy up if unneeded): ${unused.join(', ')}`);

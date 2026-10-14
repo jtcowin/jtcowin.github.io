@@ -1,0 +1,39 @@
+---
+/**
+ * A section's media still to come (Events, V1.0): the slots its `pending`
+ * list in events.json names. A video with sound renders through EvPlayer;
+ * anything else (an image, an artifact, a slide, a silent loop, a metric)
+ * through EvSlot. So an entry approved in assets.json appears here in a
+ * production build with nothing else to change, at the ratio its placeholder
+ * already held. Until then the slots are labeled placeholders in
+ * `npm run dev`, and a production build leaves the block out entirely.
+ */
+import { getAsset, isSlotReady, SHOW_PLACEHOLDERS } from '@lib/assets';
+import EvPlayer from './EvPlayer.astro';
+import EvSlot from './EvSlot.astro';
+
+interface Props {
+  ids: string[];
+  /** The wrapper's class (the section lays the slots out). */
+  class?: string;
+  /** No wrapper: the slots go straight into the parent's layout. */
+  bare?: boolean;
+}
+
+// `rest` carries the parent's style scope onto the wrapper, so the section's
+// own rules for its class lay the slots out.
+const { ids, class: className, bare = false, ...rest } = Astro.props;
+const items = ids.map((id) => getAsset(id));
+const show = SHOW_PLACEHOLDERS || items.some((entry) => isSlotReady(entry));
+---
+
+{
+  show &&
+    (bare ? (
+      items.map((entry) => (entry.type === 'video' ? <EvPlayer id={entry.id} label={entry.label} /> : <EvSlot id={entry.id} />))
+    ) : (
+      <div class={className} {...rest}>
+        {items.map((entry) => (entry.type === 'video' ? <EvPlayer id={entry.id} label={entry.label} /> : <EvSlot id={entry.id} />))}
+      </div>
+    ))
+}

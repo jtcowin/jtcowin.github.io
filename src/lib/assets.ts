@@ -40,6 +40,8 @@ export interface AssetEntry {
    * beside `file`. Optional; without it every screen gets `file`.
    */
   fileSmall?: string | null;
+  /** A video's length in seconds (shown before it has loaded). */
+  duration?: number;
   alt: string;
   source?: string | null;
   externalUrl?: string | null;
@@ -164,6 +166,18 @@ export function isVisible(entry: AssetEntry): boolean {
 /** Convenience: look an id up and report whether it will render anything. */
 export function isIdVisible(id: string): boolean {
   return hasAsset(id) && isVisible(getAsset(id));
+}
+
+/**
+ * Whether an approved entry has what a media slot needs to show it (the
+ * Events page, V1.0): a video's file, a metric's value, or an image's file
+ * (an artifact or slide included).
+ */
+export function isSlotReady(entry: AssetEntry): boolean {
+  if (!isVisible(entry)) return false;
+  if (entry.type === 'video') return Boolean(entry.file);
+  if (entry.type === 'metric') return Boolean(entry.value);
+  return Boolean(resolveImage(entry));
 }
 
 /** Resolved optimized image for an entry (or its poster, for video), if present. */

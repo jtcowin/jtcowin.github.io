@@ -1,0 +1,230 @@
+---
+/**
+ * A media slot on the Events page (V1.0): an approved asset at its own aspect
+ * ratio, or, while it is still pending, a placeholder at the same ratio, so
+ * replacing it never moves the layout.
+ *
+ * - An image (a still, an artifact, a slide) is served as a responsive picture.
+ * - A silent video (the activation kit's screen loop) sits on its poster and
+ *   plays muted and looped only while it is well in view, never for reduced
+ *   motion or a data-saving preference, with its own pause control (ev-media.ts,
+ *   mountLoops). Videos with sound use EvPlayer.astro instead.
+ * - A metric (a verified figure, or a verified named outcome) is set as text,
+ *   its value and its label, once its entry is approved with a value.
+ *
+ * Placeholders are labeled and appear only in `npm run dev`; a production
+ * build renders nothing for a pending slot (the asset manifest's rule: the
+ * public site never shows a placeholder), and the slot appears in its place
+ * as soon as its entry is approved.
+ */
+import { getImage, Picture } from 'astro:assets';
+import { getAsset, isSlotReady, resolveImage, aspectToCss, SHOW_PLACEHOLDERS } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from '@components/Icon.astro';
+
+interface Props {
+  id: string;
+  class?: string;
+  sizes?: string;
+  priority?: boolean;
+  /** Override the frame's aspect ratio (the image is cropped to it). */
+  aspect?: string;
+  /** CSS object-position for a crop. */
+  focus?: string;
+}
+
+const { id, class: className, sizes = '(min-width: 60rem) 50vw, 100vw', priority = false, aspect, focus } = Astro.props;
+const entry = getAsset(id);
+const kind = entry.type === 'video' ? 'video' : entry.type === 'metric' ? 'metric' : 'image';
+// For a video, its poster.
+const image = kind === 'metric' ? null : resolveImage(entry);
+const ready = isSlotReady(entry);
+const ratio = aspectToCss(aspect ?? (entry.aspect === 'auto' ? '16:9' : entry.aspect));
+const widths = image && kind === 'image' ? [480, 768, 1024, 1440, 1920].filter((w) => w <= image.width * 1.05) : [];
+const poster = ready && kind === 'video' && image ? await getImage({ src: image, width: Math.min(1600, image.width), format: 'webp', quality: 80 }) : null;
+const pending = !ready && SHOW_PLACEHOLDERS;
+const kindLabel = entry.type === 'video' ? 'Video' : entry.type === 'metric' ? 'Metric' : entry.type === 'artifact' ? 'Artifact' : entry.type === 'slides' ? 'Slides' : 'Image';
+---
+
+{
+  ready && kind === 'image' && image && (
+    <div class:list={['ev-slot', className]} style={`aspect-ratio: ${ratio}`} data-asset={entry.id}>
+      <Picture
+        src={image}
+        alt={entry.alt}
+        widths={widths.length ? widths : [image.width]}
+        sizes={sizes}
+        formats={['avif', 'webp']}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        class="ev-slot__img"
+        style={focus ? `object-position: ${focus}` : undefined}
+      />
+    </div>
+  )
+}
+{
+  ready && kind === 'video' && (
+    <div class:list={['ev-slot', 'ev-slot--loop', className]} style={`aspect-ratio: ${ratio}`} data-asset={entry.id} data-ev-loop data-label={entry.label}>
+      <video class="ev-slot__video" muted loop playsinline preload="none" poster={poster?.src} aria-label={entry.alt} style={focus ? `object-position: ${focus}` : undefined}>
+        <source src={withBase(`/media/${entry.file}`)} type="video/mp4" />
+      </video>
+      <button type="button" class="ev-slot__toggle" data-ev-loop-toggle aria-label={`Play: ${entry.label}`} hidden>
+        <span class="ev-slot__ico ev-slot__ico--play">
+          <Icon name="play" size={12} />
+        </span>
+        <span class="ev-slot__ico ev-slot__ico--pause">
+          <Icon name="pause" size={12} />
+        </span>
+      </button>
+    </div>
+  )
+}
+{
+  ready && kind === 'metric' && (
+    <p class:list={['ev-slot__metric', className]} data-asset={entry.id}>
+      <strong class="ev-slot__value">{entry.value}</strong>
+      {entry.metricLabel && <span class="ev-slot__metric-label">{entry.metricLabel}</span>}
+    </p>
+  )
+}
+{
+  pending && (
+    <div class:list={['ev-slot', 'ev-slot--pending', className]} style={entry.type === 'metric' ? undefined : `aspect-ratio: ${ratio}`} data-asset={entry.id} data-pending>
+      <span class="ev-slot__kind">
+        Placeholder · {kindLabel} · {entry.aspect}
+      </span>
+      <span class="ev-slot__label">{entry.label}</span>
+      {entry.source && <span class="ev-slot__note">{entry.source}</span>}
+    </div>
+  )
+}
+
+<style>
+  .ev-slot {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg-sunk);
+  }
+
+  .ev-slot :global(picture),
+  .ev-slot :global(.ev-slot__img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ev-slot :global(.ev-slot__img) {
+    object-fit: cover;
+  }
+
+  /* ---- a silent loop on its poster, with its own pause control -------------------- */
+  .ev-slot__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #050607;
+  }
+
+  .ev-slot__toggle {
+    position: absolute;
+    right: 0.7rem;
+    bottom: 0.7rem;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid rgba(237, 240, 239, 0.35);
+    border-radius: 50%;
+    background: rgba(13, 15, 16, 0.62);
+    color: var(--c-fog);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .ev-slot__toggle:hover {
+    background: rgba(13, 15, 16, 0.85);
+  }
+
+  .ev-slot__toggle:focus-visible {
+    outline: 2px solid var(--c-fog);
+    outline-offset: 2px;
+  }
+
+  .ev-slot__ico {
+    display: grid;
+    place-items: center;
+  }
+
+  .ev-slot__ico--pause,
+  .ev-slot__toggle[data-state='playing'] .ev-slot__ico--play {
+    display: none;
+  }
+
+  .ev-slot__toggle[data-state='playing'] .ev-slot__ico--pause {
+    display: grid;
+  }
+
+  .ev-slot--loop[data-failed] .ev-slot__toggle {
+    display: none;
+  }
+
+  /* ---- an approved metric: its value, then its label --------------------------------- */
+  .ev-slot__metric {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+  }
+
+  .ev-slot__value {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: var(--text-xl);
+    line-height: 1.05;
+    color: var(--heading);
+  }
+
+  .ev-slot__metric-label {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  /* Authoring only: never in a production build. */
+  .ev-slot--pending {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 0.4rem;
+    min-height: 5.5rem;
+    padding: clamp(0.85rem, 2vw, 1.25rem);
+    border: 1px dashed var(--line-strong);
+    background: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--line) 45%, transparent) 10px 11px), var(--bg-sunk);
+    color: var(--ink-3);
+  }
+
+  .ev-slot__kind {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .ev-slot__label {
+    font-size: var(--text-sm);
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  .ev-slot__note {
+    max-width: 34rem;
+    font-size: var(--text-xs);
+    line-height: 1.45;
+  }
+</style>

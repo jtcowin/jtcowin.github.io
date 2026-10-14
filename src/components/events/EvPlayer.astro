@@ -1,0 +1,322 @@
+---
+/**
+ * A video with sound on the Events page (V1.0): its poster and one "Play with
+ * sound" button with the film's length; nothing else loads until the reader
+ * asks (src/lib/ev-media.ts reads only the file's index once the frame is
+ * near the screen). Once playing: pause or play, a seek bar that answers to
+ * arrow keys, the time, and mute or unmute, on one bar along the foot of the
+ * frame. Starting one player pauses any other, and a player that leaves the
+ * screen pauses. Thin crop marks at the frame's corners are the page's
+ * production accent. Without JavaScript the native controls remain.
+ *
+ * A pending asset renders its placeholder (in `npm run dev` only) at the same
+ * ratio, through EvSlot.
+ */
+import { getImage } from 'astro:assets';
+import { getAsset, isVisible, resolveImage, aspectToCss } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import { clockLabel } from '@lib/ev-copy';
+import Icon from '@components/Icon.astro';
+import EvSlot from './EvSlot.astro';
+
+interface Props {
+  id: string;
+  /** Short name read with each control ("Pause: Sui Fest interviews"). */
+  label: string;
+  /** An id for the root, so other controls (chapters) can reach the player. */
+  domId?: string;
+  class?: string;
+  /** Override the frame's ratio; the video is letterboxed into it. */
+  aspect?: string;
+}
+
+const { id, label, domId, class: className, aspect } = Astro.props;
+const entry = getAsset(id);
+const ready = isVisible(entry) && entry.type === 'video' && Boolean(entry.file);
+const ratio = aspectToCss(aspect ?? entry.aspect);
+const still = ready ? resolveImage(entry) : null;
+const poster = still ? await getImage({ src: still, width: Math.min(1600, still.width), format: 'webp', quality: 82 }) : null;
+const src = ready ? withBase(`/media/${entry.file}`) : '';
+const length = entry.duration ? clockLabel(entry.duration) : '';
+---
+
+{
+  ready ? (
+    <figure class:list={['evp', className]} data-evp id={domId} data-label={label} data-state="idle">
+      <div class="evp__frame" style={`aspect-ratio: ${ratio}`}>
+        <video class="evp__video" controls preload="none" playsinline poster={poster?.src} aria-label={entry.alt}>
+          <source src={src} type="video/mp4" />
+        </video>
+        <div class="evp__surface" data-evp-surface aria-hidden="true" />
+        <span class="evp__crop evp__crop--tl" aria-hidden="true" />
+        <span class="evp__crop evp__crop--tr" aria-hidden="true" />
+        <span class="evp__crop evp__crop--bl" aria-hidden="true" />
+        <span class="evp__crop evp__crop--br" aria-hidden="true" />
+        <button type="button" class="evp__start" data-evp-start hidden>
+          <span class="evp__start-icon">
+            <Icon name="play" size={14} />
+          </span>
+          <span>Play with sound</span>
+          {length && <span class="evp__len">{length}</span>}
+        </button>
+        <div class="evp__bar" role="group" aria-label={`Video controls: ${label}`} data-evp-bar hidden>
+          <button type="button" class="evp__btn" data-evp-play aria-label={`Pause: ${label}`}>
+            <span class="evp__ico evp__ico--pause">
+              <Icon name="pause" size={14} />
+            </span>
+            <span class="evp__ico evp__ico--play">
+              <Icon name="play" size={14} />
+            </span>
+            <span class="evp__ico evp__ico--replay">
+              <Icon name="replay" size={16} />
+            </span>
+          </button>
+          <input class="evp__seek" type="range" min="0" max={Math.max(1, Math.floor(entry.duration ?? 60))} step="1" value="0" aria-label={`Seek: ${label}`} data-evp-seek />
+          <span class="evp__time" data-evp-time aria-hidden="true">
+            0:00 / {length || '0:00'}
+          </span>
+          <button type="button" class="evp__btn" data-evp-mute aria-label={`Mute: ${label}`}>
+            <span class="evp__ico evp__ico--sound">
+              <Icon name="sound" size={17} />
+            </span>
+            <span class="evp__ico evp__ico--muted">
+              <Icon name="muted" size={17} />
+            </span>
+          </button>
+        </div>
+      </div>
+      <slot />
+    </figure>
+  ) : (
+    <EvSlot id={id} aspect={aspect} class={className} />
+  )
+}
+
+<style>
+  .evp {
+    position: relative;
+    margin: 0;
+  }
+
+  .evp__frame {
+    position: relative;
+    overflow: visible;
+    background: #050607;
+    border-radius: var(--radius);
+  }
+
+  .evp__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: inherit;
+    background: #050607;
+  }
+
+  .evp__surface {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: none;
+    cursor: pointer;
+  }
+
+  .evp.is-enhanced .evp__surface {
+    display: block;
+  }
+
+  /* ---- crop marks, just outside the corners ------------------------------------ */
+  .evp__crop {
+    position: absolute;
+    z-index: 0;
+    width: 0.85rem;
+    height: 0.85rem;
+    pointer-events: none;
+    border-color: var(--line-strong);
+    border-style: solid;
+    border-width: 0;
+  }
+
+  .evp__crop--tl {
+    left: -0.6rem;
+    top: -0.6rem;
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+
+  .evp__crop--tr {
+    right: -0.6rem;
+    top: -0.6rem;
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+
+  .evp__crop--bl {
+    left: -0.6rem;
+    bottom: -0.6rem;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  .evp__crop--br {
+    right: -0.6rem;
+    bottom: -0.6rem;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  /* ---- the call to play with sound ------------------------------------------------ */
+  .evp__start {
+    position: absolute;
+    left: clamp(0.75rem, 3%, 1.5rem);
+    bottom: clamp(0.75rem, 4%, 1.5rem);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65em;
+    min-height: 2.75rem;
+    padding: 0.55em 1.1em 0.55em 0.55em;
+    border: 0;
+    border-radius: 999px;
+    background: #f2f1ec;
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-size: clamp(0.8125rem, 0.72rem + 0.3vw, 1rem);
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow:
+      0 0 0 1px rgba(13, 15, 16, 0.1),
+      0 12px 26px -12px rgba(0, 0, 0, 0.7);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .evp.is-enhanced .evp__start:not([hidden]) {
+    display: inline-flex;
+  }
+
+  .evp__start:hover {
+    background: #ffffff;
+  }
+
+  .evp__start:active {
+    transform: scale(0.98);
+  }
+
+  .evp__start-icon {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--c-ink);
+    color: #f2f1ec;
+  }
+
+  .evp__start-icon :global(svg) {
+    margin-left: 2px;
+  }
+
+  .evp__len {
+    padding-left: 0.65em;
+    border-left: 1px solid rgba(13, 15, 16, 0.18);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-steel-deep);
+  }
+
+  /* ---- the bar: play, seek, time, sound ------------------------------------------- */
+  .evp__bar {
+    position: absolute;
+    left: clamp(0.5rem, 2%, 1rem);
+    right: clamp(0.5rem, 2%, 1rem);
+    bottom: clamp(0.5rem, 2.5%, 1rem);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.4rem;
+    border: 1px solid rgba(237, 240, 239, 0.18);
+    border-radius: 999px;
+    background: rgba(13, 15, 16, 0.7);
+    color: #f2f1ec;
+    backdrop-filter: blur(6px);
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+
+  /* While it plays, the bar steps back until the pointer is over the frame. */
+  @media (hover: hover) and (pointer: fine) {
+    .evp[data-state='playing'] .evp__frame:not(:hover):not(:focus-within) .evp__bar {
+      opacity: 0;
+      transition: opacity 0.6s ease 1.2s;
+    }
+  }
+
+  .evp__btn {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    color: inherit;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .evp__btn:hover {
+    background: rgba(237, 240, 239, 0.14);
+  }
+
+  .evp__btn:focus-visible {
+    outline: 2px solid var(--c-aqua-light);
+    outline-offset: 1px;
+  }
+
+  .evp__ico {
+    display: none;
+  }
+
+  [data-evp-play][data-state='playing'] .evp__ico--pause,
+  [data-evp-play]:is([data-state='paused'], [data-state='idle']) .evp__ico--play,
+  [data-evp-play][data-state='ended'] .evp__ico--replay,
+  [data-evp-mute][data-muted='false'] .evp__ico--sound,
+  [data-evp-mute][data-muted='true'] .evp__ico--muted {
+    display: grid;
+  }
+
+  .evp__seek {
+    flex: 1 1 auto;
+    min-width: 3rem;
+    height: 2.25rem;
+    margin: 0;
+    background: transparent;
+    accent-color: var(--c-aqua-light);
+    cursor: pointer;
+  }
+
+  .evp__seek:focus-visible {
+    outline: 2px solid var(--c-aqua-light);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .evp__time {
+    flex: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: #d5d9d4;
+  }
+
+  @media (max-width: 30rem) {
+    .evp__time {
+      display: none;
+    }
+  }
+</style>

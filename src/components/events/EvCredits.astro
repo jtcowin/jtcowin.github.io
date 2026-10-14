@@ -1,0 +1,75 @@
+---
+/**
+ * Contextual credits (Events, V1.0): under the work they describe, who did
+ * what, so strategy, production direction, design, editing and on-camera
+ * roles stay distinct. Never one large credits section.
+ */
+interface Props {
+  items: Array<{ who: string; what: string }>;
+  class?: string;
+}
+
+const { items, class: className } = Astro.props;
+---
+
+<div class:list={['ev-credits', className]}>
+  <p class="ev-credits__label">Credits</p>
+  <dl class="ev-credits__list">
+    {
+      items.map((c) => (
+        <div class="ev-credits__row">
+          <dt>{c.who}</dt>
+          <dd>{c.what}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>
+
+<style>
+  .ev-credits {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-size: var(--text-sm);
+  }
+
+  .ev-credits__label {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .ev-credits__list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .ev-credits__row {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .ev-credits__row dt {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .ev-credits__row dd {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  @media (min-width: 40rem) {
+    .ev-credits__row {
+      grid-template-columns: minmax(9.5rem, auto) 1fr;
+      gap: 1.25rem;
+    }
+  }
+</style>

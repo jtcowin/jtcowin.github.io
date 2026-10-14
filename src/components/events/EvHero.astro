@@ -1,0 +1,520 @@
+---
+/**
+ * 01 Hero (Events and Multimedia Production, V1.0): the kicker and the
+ * headline across the top like a title card; below, one program monitor
+ * (16:9) beside the paragraph and the three sources it can take: PRESENT
+ * (the Sui Summit session), PRODUCE (the production room's explainer, the
+ * default) and ENGAGE (the Sui Fest interviews). Only the active source is
+ * loaded and playing, muted; it plays through and the program cuts to the
+ * next, like a live switcher, until the reader picks one, which then loops.
+ * A brief clean cut between sources (a 180ms dissolve), a small cue reading
+ * on the monitor and a running timecode are the only production accents.
+ * The program pauses off screen, stays on its poster for reduced motion or a
+ * data-saving preference, and has its own pause control. Sources and their
+ * order come from events.json; the media from assets.json.
+ */
+import { getImage } from 'astro:assets';
+import events from '@data/events.json';
+import { getAsset, isVisible, resolveImage, SHOW_PLACEHOLDERS } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import { emphasize } from '@lib/tpm-copy';
+import Icon from '@components/Icon.astro';
+
+const { hero } = events;
+const title = emphasize(hero.headline, hero.accent, 'events hero headline');
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const all = await Promise.all(
+  hero.cues.map(async (cue) => {
+    const entry = getAsset(cue.asset);
+    const ready = isVisible(entry) && entry.type === 'video' && Boolean(entry.file);
+    const still = resolveImage(entry);
+    const poster = still ? await getImage({ src: still, width: Math.min(1600, still.width), format: 'webp', quality: 80 }) : null;
+    return { ...cue, entry, ready, poster: poster?.src ?? null, src: ready ? withBase(`/media/${entry.file}`) : null };
+  }),
+);
+// A source whose video is not yet approved and present has no cue in a
+// production build (in `npm run dev` it is a labeled placeholder), so the
+// program never cuts to an empty monitor; the cues are numbered as shown.
+const sources = all.filter((s) => s.ready || SHOW_PLACEHOLDERS).map((s, i) => ({ ...s, n: pad(i + 1) }));
+const def = sources.find((s) => s.key === hero.default) ?? sources[0];
+if (!def) throw new Error('[events] the hero needs at least one approved source video (events.json hero.cues, assets.json)');
+---
+
+<section class="evh" data-surface="dark" aria-labelledby="ev-title">
+  <div class="container evh__inner">
+    <header class="evh__head">
+      <p class="evh__kicker ev-in" style="--in: 0">
+        <span class="evh__tally" aria-hidden="true"></span>
+        {hero.kicker}
+      </p>
+      <h1 id="ev-title" class="display evh__title ev-in" style="--in: 1">
+        {title.map(({ text, em }) => (em ? <span class="ev-accent">{text}</span> : text))}
+      </h1>
+    </header>
+
+    <div class="evh__body" data-ev-program data-default={def.key} data-active={def.key}>
+      <div class="evh__program ev-in" style="--in: 2">
+        <div class="evh__monitor">
+          {
+            sources.map((s) =>
+              s.ready ? (
+                <div class:list={['evh__layer', s.key === def.key && 'is-on', s.fit === 'contain' && 'evh__layer--contain']} data-cue-layer>
+                  <video class="evh__video" data-cue={s.key} muted playsinline preload="none" controls poster={s.poster ?? undefined} aria-label={s.entry.alt}>
+                    <source src={s.src} type="video/mp4" />
+                  </video>
+                </div>
+              ) : (
+                SHOW_PLACEHOLDERS && (
+                  <div class:list={['evh__layer', 'evh__layer--pending', s.key === def.key && 'is-on']} data-cue-layer>
+                    <span>Placeholder · {s.entry.label} · 16:9</span>
+                  </div>
+                )
+              ),
+            )
+          }
+          <div class="evh__hud" aria-hidden="true">
+            <span class="evh__reading">
+              <span class="evh__rec"></span>
+              <span data-program-cue>Cue {def.n} · {def.label}</span>
+            </span>
+            <span class="evh__tc" data-program-tc>00:00:00:00</span>
+          </div>
+          <button type="button" class="evh__toggle" data-program-toggle data-pause={hero.pause} data-play={hero.play} aria-label={hero.play} data-state="paused">
+            <span class="evh__ico evh__ico--pause"><Icon name="pause" size={12} /></span>
+            <span class="evh__ico evh__ico--play"><Icon name="play" size={12} /></span>
+          </button>
+          <span class="evh__crop evh__crop--tl" aria-hidden="true"></span>
+          <span class="evh__crop evh__crop--tr" aria-hidden="true"></span>
+          <span class="evh__crop evh__crop--bl" aria-hidden="true"></span>
+          <span class="evh__crop evh__crop--br" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="evh__side">
+        <p class="lede evh__lede ev-in" style="--in: 2">{hero.copy}</p>
+        <div class="evh__cues ev-in" style="--in: 3" role="group" aria-label="Program source">
+          {
+            sources.map((s) => (
+              <button type="button" class="evh__cue" data-cue-btn={s.key} data-label={s.label} aria-pressed={s.key === def.key ? 'true' : 'false'}>
+                <span class="evh__cue-n" aria-hidden="true">
+                  {s.n}
+                </span>
+                <span class="evh__cue-text">
+                  <span class="evh__cue-label">{s.label}</span>
+                  <span class="evh__cue-source">{s.source}</span>
+                </span>
+                <span class="evh__cue-track" aria-hidden="true">
+                  <span class="evh__cue-fill" data-cue-progress />
+                </span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { Program } from '@lib/ev-media';
+  const root = document.querySelector<HTMLElement>('[data-ev-program]');
+  if (root) new Program(root);
+</script>
+
+<style>
+  .evh {
+    --view-h: 100vh;
+    position: relative;
+    padding-block: calc(var(--header-row) + clamp(1.5rem, 4vh, 3rem)) clamp(2.5rem, 6vh, 4.5rem);
+  }
+
+  @supports (height: 1svh) {
+    .evh {
+      --view-h: 100svh;
+    }
+  }
+
+  .evh__inner {
+    display: grid;
+    gap: clamp(1.5rem, 3.5vh, 2.5rem);
+  }
+
+  .evh__head {
+    display: grid;
+    gap: clamp(0.75rem, 1.6vh, 1.25rem);
+  }
+
+  .evh__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+  }
+
+  /* A tally light: lit while the program runs. */
+  .evh__tally {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 145, 138, 0.22);
+  }
+
+  .evh__title {
+    max-width: 22ch;
+    font-size: clamp(2.6rem, 1.2rem + 4.6vw, 6.25rem);
+    line-height: 0.96;
+  }
+
+  .ev-accent,
+  .evh :global(.ev-accent) {
+    color: var(--accent-ink);
+  }
+
+  .evh__body {
+    display: grid;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: end;
+  }
+
+  .evh__side {
+    display: grid;
+    gap: clamp(1.25rem, 3vh, 2rem);
+    align-content: space-between;
+    align-self: stretch;
+  }
+
+  .evh__lede {
+    max-width: 34rem;
+    font-size: clamp(1.0625rem, 0.98rem + 0.3vw, 1.25rem);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  /* ---- the program monitor --------------------------------------------------------- */
+  .evh__monitor {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #050607;
+    border-radius: var(--radius);
+  }
+
+  .evh__layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.18s ease,
+      visibility 0s linear 0.18s;
+  }
+
+  .evh__layer.is-on {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.18s ease,
+      visibility 0s linear 0s;
+  }
+
+  .evh__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #050607;
+  }
+
+  .evh__layer--contain .evh__video {
+    object-fit: contain;
+  }
+
+  .evh__layer--pending {
+    display: grid;
+    place-items: center;
+    border: 1px dashed rgba(237, 240, 239, 0.3);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* The monitor's readings: the cue and the timecode, on small dark chips. */
+  .evh__hud {
+    position: absolute;
+    inset: clamp(0.5rem, 2%, 1rem) clamp(0.5rem, 2%, 1rem) auto;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    pointer-events: none;
+  }
+
+  .evh__reading,
+  .evh__tc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.35em 0.65em;
+    border-radius: 4px;
+    background: rgba(13, 15, 16, 0.62);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: #edf0ef;
+    backdrop-filter: blur(4px);
+  }
+
+  .evh__tc {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    color: #c3cacb;
+  }
+
+  .evh__rec {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #7e8995;
+  }
+
+  .evh__body.is-playing .evh__rec {
+    background: #9fc9c3;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .evh__body.is-playing .evh__rec {
+      animation: evh-tally 2.4s ease-in-out infinite;
+    }
+  }
+
+  @keyframes evh-tally {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .evh__toggle {
+    position: absolute;
+    left: clamp(0.5rem, 2%, 1rem);
+    bottom: clamp(0.5rem, 2%, 1rem);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid rgba(237, 240, 239, 0.3);
+    border-radius: 50%;
+    background: rgba(13, 15, 16, 0.6);
+    color: #f2f1ec;
+    backdrop-filter: blur(4px);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .evh__toggle:hover {
+    background: rgba(13, 15, 16, 0.85);
+  }
+
+  .evh__ico {
+    display: none;
+  }
+
+  .evh__toggle[data-state='playing'] .evh__ico--pause,
+  .evh__toggle[data-state='paused'] .evh__ico--play {
+    display: grid;
+  }
+
+  :global(html:not(.js)) .evh__toggle,
+  :global(html:not(.js)) .evh__hud {
+    display: none;
+  }
+
+  /* Crop marks just outside the monitor's corners. */
+  .evh__crop {
+    position: absolute;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 0 solid var(--line-strong);
+    pointer-events: none;
+  }
+
+  .evh__crop--tl {
+    left: -0.65rem;
+    top: -0.65rem;
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+
+  .evh__crop--tr {
+    right: -0.65rem;
+    top: -0.65rem;
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+
+  .evh__crop--bl {
+    left: -0.65rem;
+    bottom: -0.65rem;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  .evh__crop--br {
+    right: -0.65rem;
+    bottom: -0.65rem;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  /* ---- the cues --------------------------------------------------------------------- */
+  .evh__cues {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .evh__cue {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.15rem 0.6rem;
+    padding: 0.7rem 0.1rem 0.85rem;
+    text-align: left;
+    color: var(--ink-3);
+    border-top: 1px solid var(--line-strong);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .evh__cue:hover {
+    color: var(--ink);
+  }
+
+  .evh__cue[aria-pressed='true'] {
+    color: var(--ink);
+  }
+
+  .evh__cue-n {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+  }
+
+  .evh__cue[aria-pressed='true'] .evh__cue-n {
+    color: var(--accent-ink);
+  }
+
+  .evh__cue-text {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .evh__cue-label {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  .evh__cue-source {
+    font-size: var(--text-xs);
+    line-height: 1.35;
+    color: var(--ink-3);
+  }
+
+  /* The active source's progress, along the cue's top rule. */
+  .evh__cue-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    overflow: hidden;
+  }
+
+  .evh__cue-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--accent-ink);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .evh__cue[aria-pressed='false'] .evh__cue-fill {
+    visibility: hidden;
+  }
+
+  @media (max-width: 30rem) {
+    .evh__cue-source {
+      display: none;
+    }
+
+    .evh__cue {
+      grid-template-columns: 1fr;
+    }
+
+    .evh__cue-label {
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* ---- entrance ----------------------------------------------------------------------- */
+  .ev-in {
+    animation: rise-in 700ms var(--ease-out) both;
+    animation-delay: calc(60ms + var(--in, 0) * 90ms);
+  }
+
+  /* ---- wide screens: the title across, then the monitor beside the paragraph and cues - */
+  @media (min-width: 60rem) {
+    .evh {
+      min-height: var(--view-h);
+      display: grid;
+      align-content: center;
+    }
+
+    .evh__body {
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      gap: clamp(1.75rem, 3vw, 3.5rem);
+    }
+
+    .evh__cues {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .evh__cue {
+      padding: 0.85rem 0 1rem;
+    }
+
+    .evh__title {
+      max-width: none;
+    }
+  }
+
+  /* Short desktop screens: the monitor is held to the height that keeps the
+     title and the monitor on one screen together. */
+  @media (min-width: 60rem) and (max-height: 50rem) {
+    .evh__title {
+      font-size: clamp(2.6rem, 1rem + 4vw, 5rem);
+    }
+  }
+</style>

@@ -1,13 +1,16 @@
 ---
 /**
- * Technical Product Marketing, Version 1.4.
+ * Technical Product Marketing, Version 1.5.
  *
- * The rebuilt case study: 01 Hero (the split hero, its two-state
- * narrative-system object and the field behind it), 02 Foundation (the
- * document library, rising over the hero), 03 the transitional statement,
- * 04 Website, 05 Technical documentation, 06 the flagship animation campaign
- * and 07 the conclusion, then Contact and the footer, as the homepage closes.
- * (Selected Writing, added in V1.3, was taken out in V1.4.)
+ * The rebuilt case study: 01 Hero (the split hero, the Narrative Engine and
+ * the signal field behind it, V1.5), 02 Foundation (the document library,
+ * rising over the hero), 03 the transitional statement, 04 Website,
+ * 05 Technical documentation, 06 the flagship animation campaign and 07 the
+ * conclusion, then Contact and the footer, as the homepage closes. From the
+ * campaign on, one continuous closing ground: the campaign's black, the
+ * conclusion turning to a deep charcoal teal, and Contact's green, its grid
+ * rising out of the conclusion (V1.5). (Selected Writing, added in V1.3, was
+ * taken out in V1.4.)
  * Metadata and the Select Work card still come from the case study's
  * frontmatter (src/content/work/technical-marketing.mdx); its older MDX body
  * is no longer rendered.
@@ -40,8 +43,9 @@ const d = entry.data;
     <TpmConclusion />
   </article>
 
+  {/* The conclusion's ground turns into Contact's green, and Contact's grid rises out of it (V1.5). */}
   <div class="chapter" data-surface="brand">
-    <Contact />
+    <Contact lead="clamp(10rem, 40svh, 26rem)" />
   </div>
 </BaseLayout>
 

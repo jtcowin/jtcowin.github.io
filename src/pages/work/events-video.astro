@@ -1,0 +1,95 @@
+---
+/**
+ * Events and Multimedia Production, Version 1.0.
+ *
+ * The third and final selected-work case study, built around the five stages
+ * of the work: 01 Hero (one program monitor, three sources), 02 Run of show
+ * (Secure, Build, Capture, Cut, Amplify: the table of contents and thesis),
+ * 03 Build the activation, 04 Command the room (the Sui Summit session),
+ * 05 From setup to final output (the production room), 06 Sui Fest, 07 What
+ * continued after, 08 the conclusion, then Contact and the footer. It keeps
+ * the portfolio's type, palette, navigation, buttons and Contact, and adds a
+ * restrained production layer: cue readings, timecodes, crop marks and
+ * progress lines. The ground cuts between the dark of the screens and the
+ * warm light of the planning, and at the end cuts to black and fades up into
+ * the Contact green.
+ *
+ * Words and media configuration: src/data/events.json; media: assets.json
+ * (a pending slot is a labeled placeholder in `npm run dev` only, and appears
+ * in its place once its entry is approved); client behavior:
+ * src/lib/ev-media.ts. Metadata and the Select Work card
+ * still come from the case study's frontmatter
+ * (src/content/work/events-video.mdx); its older MDX body is not rendered.
+ *
+ * The page pulls itself up under the header row, so its opening screen is the
+ * whole viewport and the header's links float over it.
+ */
+import { getEntry } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Contact from '@components/Contact.astro';
+import EvHero from '@components/events/EvHero.astro';
+import EvRun from '@components/events/EvRun.astro';
+import EvActivation from '@components/events/EvActivation.astro';
+import EvRoom from '@components/events/EvRoom.astro';
+import EvSetup from '@components/events/EvSetup.astro';
+import EvSuiFest from '@components/events/EvSuiFest.astro';
+import EvAfter from '@components/events/EvAfter.astro';
+import EvConclusion from '@components/events/EvConclusion.astro';
+
+const entry = await getEntry('work', 'events-video');
+if (!entry) throw new Error('[events-video] the case study entry is missing');
+const d = entry.data;
+---
+
+<BaseLayout title={d.title} description={d.description} path="/work/events-video/" ogAsset={d.ogAsset} ogType="article" footerSurface="brand">
+  <article class="ev" aria-labelledby="ev-title">
+    <EvHero />
+    <EvRun />
+    <EvActivation />
+    <EvRoom />
+    <EvSetup />
+    <EvSuiFest />
+    <EvAfter />
+    <EvConclusion />
+  </article>
+
+  {/* The conclusion's ground turns into Contact's green, and Contact's grid rises out of it. */}
+  <div class="chapter" data-surface="brand">
+    <Contact lead="clamp(10rem, 40svh, 26rem)" />
+  </div>
+</BaseLayout>
+
+<script>
+  import { mountLoops, mountPlayers, mountReveals } from '@lib/ev-media';
+  mountPlayers();
+  mountLoops();
+  mountReveals();
+</script>
+
+<style>
+  .ev {
+    margin-top: calc(-1 * var(--header-row));
+  }
+
+  /* ---- the page's cut: a headline rises into place from behind its own edge, once ---- */
+  :global(.ev .ev-cut) {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+
+  :global(.ev .ev-cut > span) {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js .ev [data-ev-reveal]:not(.is-in) .ev-cut > span) {
+      transform: translate3d(0, 105%, 0);
+    }
+
+    :global(html.js .ev [data-ev-reveal] .ev-cut > span) {
+      transition: transform 0.75s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k, 0) * 0.12s);
+    }
+  }
+</style>

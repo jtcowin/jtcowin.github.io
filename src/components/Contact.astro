@@ -27,14 +27,27 @@ import Icon from './Icon.astro';
 interface Props {
   /** Compact variant used at the bottom of case-study pages. */
   compact?: boolean;
+  /**
+   * How far above Contact its grid begins (a CSS length), for a page whose
+   * last section runs straight into Contact on a continuous ground (V1.5):
+   * the grid rises out of that section, from nothing at that height to its
+   * usual strength where Contact begins. Omitted, the grid starts where
+   * Contact starts, as on the homepage.
+   */
+  lead?: string;
 }
 
-const { compact = false } = Astro.props;
+const { compact = false, lead } = Astro.props;
 const { contact } = home;
 const resumeHref = withBase(site.resumePath);
 ---
 
-<section id="contact" class:list={['section', 'contact', compact ? 'contact--compact' : 'contact--frame']} aria-labelledby="contact-heading">
+<section
+  id="contact"
+  class:list={['section', 'contact', compact ? 'contact--compact' : 'contact--frame', !compact && lead && 'contact--lead']}
+  style={!compact && lead ? `--grid-lead: ${lead}` : undefined}
+  aria-labelledby="contact-heading"
+>
   {
     !compact && (
       <div class="contact__grid" aria-hidden="true" data-contact-grid>
@@ -320,6 +333,15 @@ const resumeHref = withBase(site.resumePath);
     .contact__lines {
       padding-inline: round(max(var(--gutter), calc((100% - var(--container)) / 2 + var(--gutter))), 1px);
     }
+  }
+
+  /* A grid that rises out of the section before (V1.5): it begins
+     --grid-lead above Contact, from nothing there to a few percent halfway
+     and its usual strength where Contact begins, and its rows stay counted
+     from the footer's rule, so they line up as before. */
+  .contact--lead .contact__grid {
+    inset: calc(-1 * var(--grid-lead)) 0 calc(-1 * var(--footer-h));
+    --grid-fade: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, 0.05) calc(var(--grid-lead) * 0.4), rgba(0, 0, 0, 0.22) calc(var(--grid-lead) * 0.7), rgba(0, 0, 0, 0.6) calc(var(--grid-lead) * 0.9), #000 var(--grid-lead), #000 calc(100% - 3rem), transparent 100%);
   }
 
   /* Only a fine pointer that can hover, without reduced motion, lights the
