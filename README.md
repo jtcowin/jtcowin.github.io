@@ -5,27 +5,29 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Technical Product Marketing Version 1.3 in review.** Version 2.0 and Technical Product
-Marketing Version 1.2, with its delta, are published. Version 1.3 (the split hero and its
-narrative-system object, the layered reveal into the Foundation, the emphasis system, Selected Writing
-and the conclusion) is committed locally and not pushed until it has been reviewed in the browser.
-Placeholders render only in `npm run dev`; production builds hide
+**Status: Technical Product Marketing Version 1.4 in review.** Version 2.0 and Technical Product
+Marketing Version 1.3 are published. Version 1.4 (the hero's two-state system and the field behind
+it, the scope line at the foot of the hero, wider paragraphs, Selected Writing taken out, and the
+conclusion's one-sentence way on) is committed locally and not pushed until it has been reviewed in
+the browser. Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
 
-Technical Product Marketing replaces the case study's page with its own, now at Version 1.3, built
+Technical Product Marketing replaces the case study's page with its own, now at Version 1.4, built
 through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation,
-06 the flagship animation campaign, 07 Selected Writing and 08 the conclusion (see [Technical Product
-Marketing, Version 1.3](#technical-product-marketing-version-13)). The hero is a split: the copy on the
-left and, on the right, an abstract narrative-system object whose planes lift slightly apart as the
-pointer moves and settle when it rests; the Foundation's dark surface then rises over it. The foundation opens
+06 the flagship animation campaign and 07 the conclusion (see [Technical Product Marketing, Version
+1.4](#technical-product-marketing-version-14)). The hero is a split: the copy on the left and, on the
+right, a compact stack of six layers that opens, when the reader points at it, taps it or presses its
+control, into a labeled view of the system behind the message (the foundation and the market
+expressions it carries), with quiet contour lines behind it and the seven areas of scope in one line
+at its foot; the Foundation's dark surface then rises over it. The foundation opens
 centered, then from a compact stack into a library of twelve named documents, each with its own accent
 and icon, moving right to left; one statement follows, revealed word by word, its key clause then
 highlighted; then the website plays in an oversized desktop display and the documentation in a large
 browser frame, both continuously, from their posters; then the complete one-minute film plays in a
 nearly full-width frame on the dark ground, silently until the reader asks for sound, above its launch
-results; then two articles, each with its original cover and an excerpt; then a short conclusion and
-the way on to the next case study. Contact and the footer close the page. Two site-wide changes came with Version 1: inner pages
+results; then a short conclusion, whose last sentence leads on to the next case study. Contact and the
+footer close the page. Two site-wide changes came with Version 1: inner pages
 lead their header with a restrained HOME link in place of the name, and the homepage opens, once per
 browsing session, with a short sequence; since Version 1.2 it is three phrases, "Product complexity.",
 "Market clarity." and "Strategy into execution.", turning as the faces of one restrained cylinder and
@@ -175,17 +177,19 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
   `fallback` stand-ins, and optional `focus`). `role` (optional) is the one-line "My role:" summary
   under the intro (see Case-study roles below).
-- **Technical Product Marketing** (Version 1.3): `src/data/tpm.json` holds the hero copy and scope
-  line, the foundation's two headline lines and paragraph, the twelve documents in order (display
+- **Technical Product Marketing** (Version 1.4): `src/data/tpm.json` holds the hero copy and scope
+  line, the hero system (`hero.system`: its control's name, and its two groups, Foundation and Market
+  expressions, each layer with its short `label` and its full `name` for screen readers, bottom layer
+  first), the foundation's two headline lines and paragraph, the twelve documents in order (display
   number, title, subline, icon, accent name and color) and the number of blank covers, the statement
   and its highlighted clause (`highlight`), and for Website and Technical documentation their name,
   metadata (label and paragraphs; `**name**` sets a name in bold), contribution statement and
   walkthrough asset, with the website's live link (`live`) and the documentation's three chapters
   (start in seconds, title and note); `campaign` holds the flagship chapter's headline, metadata,
   contribution, film asset and results (the label, the four figures, each with an optional `spoken`
-  form for screen readers, and the supporting lines); `writing` holds Selected Writing's title and its
-  two articles (title, category, cover asset, layout and excerpt paragraphs, with each source in a note);
-  `conclusion` holds the closing headline and paragraph. Beside a headline, `accent` names the one phrase
+  form for screen readers, and the supporting lines); `conclusion` holds the closing headline and
+  paragraph, the sentence that leads on (`nextLine`) and the case study it leads to (`next`, which must
+  be the next in the collection's order, or the build stops). Beside a headline, `accent` names the one phrase
   set in the accent color, and beside a paragraph, `em` names the one phrase set a little heavier; each
   must appear in its text exactly once, or the build stops (`src/lib/tpm-copy.ts`). The page's metadata and its Select Work
   card still come from the case study's frontmatter; its older MDX body is no longer rendered. The
@@ -411,7 +415,7 @@ included) is tracked or shipped; and the trust bar shows seven logo files, Ambur
 supplied SVG byte for byte, carrying its optical sizing.
 
 The Technical Product Marketing checks are listed with the page (see [Technical Product Marketing,
-Version 1.3](#technical-product-marketing-version-13)).
+Version 1.4](#technical-product-marketing-version-14)).
 
 The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
 highlights, in order ("globally distributed music project", "more than 200,000 people", "market
@@ -661,46 +665,94 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
 
-### Technical Product Marketing, Version 1.3
+### Technical Product Marketing, Version 1.4
 
 John's TPM briefs, Version 1.1 (October 12, 2026), Version 1.2 and its delta (October 13: the HOME
 house, the hero without media, the Foundation's copy and icons, the statement, and the Website and
-Technical documentation metadata, contributions and playback) and Version 1.3, an incremental update
+Technical documentation metadata, contributions and playback), Version 1.3, an incremental update
 of the same page (the split hero and its object, the layered reveal into the Foundation, paragraph
 widths, equal metadata columns, the live-site button, the documentation's loop, the emphasis system,
-the campaign's amplification line, Selected Writing and the conclusion; everything else as it was),
-built through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical
-documentation, 06 the flagship animation campaign, 07 Selected Writing and 08 the conclusion, then
-Contact and the footer; 00, the homepage opening sequence, is site-wide. The page is
+the campaign's amplification line, Selected Writing and the conclusion), and Version 1.4, another
+(the hero object as a two-state system, the field behind it, the scope line at the foot of the hero,
+wider paragraphs, Selected Writing taken out, and the conclusion's way on as one sentence; everything
+else as it was), built through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05
+Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact and
+the footer; 00, the homepage opening sequence, is site-wide. The page is
 `src/pages/work/technical-marketing.astro` with `src/components/tpm/` (TpmHero; TpmFlow for 02 and 03;
 TpmWebsite, TpmDocs and TpmCampaign, which share TpmCase for their opening; TpmWalkthrough, the
-walkthroughs' player; DocIcon; TpmWriting; TpmConclusion), its copy and library in `src/data/tpm.json`,
-its emphasis helper in `src/lib/tpm-copy.ts` and its motion in `src/lib/tpm-motion.ts`; `src/pages/work/[slug].astro` no longer
-builds this case study. The page runs up under the header row (`--header-row`), so its opening screen
-is the whole viewport. The brief itself is kept and revised in place outside the repository; this
-section follows it, revised in place with it.
+walkthroughs' player; DocIcon; TpmConclusion), its copy and library in `src/data/tpm.json`, its
+emphasis helper in `src/lib/tpm-copy.ts`, the hero system's drawing in `src/lib/tpm-system.ts`, the
+hero field's contours in `src/lib/tpm-field.ts` and its motion in `src/lib/tpm-motion.ts`;
+`src/pages/work/[slug].astro` no longer builds this case study. The page runs up under the header row
+(`--header-row`), so its opening screen is the whole viewport. The brief itself is kept and revised in
+place outside the repository; this section follows it, revised in place with it.
 
-- **01 Hero** (light surface; V1.3): an asymmetrical split. The headline "Building the system behind
-  the message.", the supporting paragraph and the seven scope terms sit together on the left (7fr of
-  the width), vertically centered in the first screen with the space above them removed; on the right
-  (5fr), in open space, one abstract narrative-system object. The headline never changes (no rotating
-  or replaced words); "the system" is in the accent and "a clear market narrative" carries the
-  paragraph's emphasis. No kicker, no media and no control: the Bolt animation plays in full in 06. The
-  scope rail wraps where it must, never in smaller type; every item but the first has a middle dot,
-  skipped by screen readers, which the script hides where an item opens a line. Phones and tablets stack
-  the copy above the object. The copy and the object rise in.
-- **The narrative-system object** (`TpmHero.astro`): one teal foundation slab with five light planes
-  stacked on it, each a little smaller than the one below and marked with abstract content (lines, a
-  block, a ring), the top one in the accent; no words, labels or literal diagram. At rest the planes sit
-  together on the slab; as a fine pointer moves they lift slightly apart into an exploded stack (each
-  gap opening by up to about 19 units of the drawing's 504, the first plane rising about 13 off the
-  slab), joined to the layer beneath by dashed posts with small teal nodes, and lean a little toward the
-  pointer (the higher planes further); when the pointer rests they settle back, aligned. Bone, slate and teal with one restrained
-  aqua plane. SVG moved with transforms, no WebGL or canvas; its loop runs only while the planes are
-  moving, and stops once they settle, outside the viewport, in a hidden tab and once the Foundation has
-  begun to cover the hero. On arrival the planes open slightly and settle together; touch screens get
-  that settle and no pointer response; reduced motion holds them still, a little apart, so the layers
-  read. The motionsites.ai (Nimbus Ops) reference informed the idea only.
+- **01 Hero** (light surface; V1.3, V1.4): an asymmetrical split. The headline "Building the system
+  behind the message." and the supporting paragraph sit together on the left (7fr of the width),
+  vertically centered in the first screen; on the right (5fr), in open space, the narrative system,
+  with the field behind it. The headline never changes (no rotating or replaced words); "the system" is
+  in the accent and "a clear market narrative" carries the paragraph's emphasis. No kicker and no
+  media: the Bolt animation plays in full in 06. Phones and tablets stack the copy above the system.
+  The copy, the system and the scope line rise in.
+- **The scope line** (V1.4): the seven areas (Research, Positioning, Messaging, Claims Governance,
+  Technical Documentation, Web Content, Campaign Direction) back at the foot of the hero, in one
+  centered line clear of the paragraph and the system: small tracked capitals, 11px with 0.1em
+  tracking and a 1.6em space between terms, and from 80rem 12px with 0.12em and 2em, never shrinking
+  to fit (one line from 60rem wide: at 1024px it keeps 74px of margin each side). Below 60rem it wraps,
+  every line centered on its terms (each term has half the space on either side, so no line is pulled
+  off center by a trailing gap), a term never breaking inside itself: two lines at 768px, four at 390
+  and 320. Every term but the first has a middle dot, skipped by screen readers, which the script hides
+  where a term opens a line.
+- **The narrative system** (`TpmHero.astro`, drawn by `src/lib/tpm-system.ts`; V1.4): a deliberate
+  two-state object in place of the V1.3 planes that followed the pointer. At rest it is a compact,
+  stable stack of six isometric layers, bottom to top the foundation (Research and interviews, deep
+  teal with a scatter of points; Shared internal language, the one aqua layer, with lines; Positioning
+  and claims, teal with a ring) and the market expressions it carries (Website, a bone page with a
+  block and lines; Technical documentation, fog with lines; Campaigns and content, bone with a ring and
+  a point). Its only life at rest: a faint light that passes up through the layers every nine seconds
+  (each layer's faces brighten briefly, a quarter second after the one below) and a 1.5px drift over
+  eight seconds; no tilting, wobbling or following. Pointing at the stack itself (its own silhouette,
+  not the box around it and not the hero), tapping it, or pressing its control opens it into an
+  exploded view that settles and stays settled: the foundation's three layers separate vertically, the
+  market expressions rise above them and fan out slightly (16px to either side), each joined to the
+  layer below by dashed posts, those between the foundation and its expressions in the accent. Once the
+  layers have arrived (0.62 seconds), short labels appear to the left of the stack, each a one- or
+  two-word callout on a hairline leader to its layer's corner (Research, Shared language, Positioning;
+  Website, Documentation, Campaigns), under two small headings, FOUNDATION and MARKET EXPRESSIONS;
+  nothing is written on the layers. To give the labels room the stack slides right as it opens, by
+  only as much as the column needs. Leaving, the labels fade first (0.16 seconds), then the layers
+  return, top first, over 0.75 seconds, and the stack slides back: nothing snaps. Opening takes 0.85
+  seconds on an ease-out curve, the layers 45ms apart.
+- **Its control** (V1.4): a mouse or pen opens it by moving over the stack and closes it by leaving (a
+  layout change under a still pointer never opens it); a touch toggles it, and a touch anywhere else
+  closes it; a keyboard reaches a real button, "Show the system behind the message" (hidden from sight,
+  `aria-expanded`, controlling the labels), whose focus shows as a ring around the stack; Enter or
+  Space toggles it, Escape closes it and so does moving focus on. Screen readers hear the two groups
+  and the layers' full names; the drawing itself is hidden from them. Off screen, or once the
+  Foundation starts to cover the hero, it rests closed. Without JavaScript it opens on hover or focus
+  within it (CSS). With reduced motion there is no ambient life, and it opens and closes at once.
+- **The field** (`src/lib/tpm-field.ts`; V1.4): thin, irregular contour lines behind the system, as on
+  a topographic map: ten levels traced at build time from a smooth height field centered under the
+  object, softened, drawn as one inline SVG of about 14 KB in slate at 8.5% (at most 18 of 255 levels
+  from the ground), concentrated on the right and fading out toward the copy and the field's edges.
+  That fade is drawn into the lines (each stretch of line carries its own opacity, in tenths), not laid
+  over them as a CSS mask, because a mask over a field this size had to be composited on every frame
+  of a scroll. While a fine pointer moves anywhere in the hero, a soft light follows it (a 560px window
+  in which the same lines read in deep teal at 20%, over a 7% aqua glow) and the map shifts a few
+  pixels against it (7px across, 5px up and down at most); the light dims 1.4 seconds after the
+  pointer rests, at once when the page scrolls and when the pointer leaves, and then is hidden
+  outright. No grid, particles, icons, nodes or bright gradients. The system takes no part in the
+  field's response: it answers only a pointer over the stack itself. Touch and reduced motion get the
+  lines alone.
+- **Performance** (V1.4): SVG and CSS transforms and opacity only, no WebGL or canvas. The pointer is
+  read once a frame through `requestAnimationFrame`; the field and the light move by transforms of
+  their own compositor layers (given only to fine pointers), and their loop stops as soon as they
+  settle; the stack's hit area is a clip-path measured on resize, never per move, so moving the pointer
+  never lays the page out. The drift moves the whole drawing (its outer SVG, which the compositor
+  animates by itself), so at rest the hero costs the main thread almost nothing (about 17ms in five
+  seconds in headless Chromium; animating a group inside the drawing cost 410ms, laying it out on
+  every frame). The ambient life pauses while the system is open and off screen, and is gone while
+  the Foundation rises over the hero, which the field also leaves over the first half of the rise.
 - **01 Hero, into the Foundation** (wide, tall-enough screens with motion allowed): a layered reveal
   over one screen of scrolling. The live hero is two screens tall and gives its last screen to the
   Foundation (a negative bottom margin), so the Foundation's full-width dark surface rises over the
@@ -713,11 +765,13 @@ section follows it, revised in place with it.
   and the hero's slight blur are scrubbed (`TpmHero.astro` hands `--lead-r`, `--lead-shadow` and
   `--rise` to `TpmFlow.astro`). Everywhere else (reduced motion, phones, tablets, short windows) the
   hero reads in normal flow and the Foundation's opening crossfades in (0.7 seconds) as its top passes
-  four fifths of the way down the screen. The Pinterest reference informed the feeling only.
+  four fifths of the way down the screen. The Pinterest reference informed the feeling only. V1.4
+  keeps all of this; the scope line fades with the copy and the system, the system rests closed and
+  still from the first moment of the rise, and the field fades out over its first half.
 - **02 Foundation** (dark surface): a centered opening, unlike the split hero: the headline on exactly
   two lines ("Before the message" / "comes the foundation.", each its own unbroken line, "the
-  foundation." in the accent since V1.3), the approved paragraph beneath it at 46rem, about 740px (V1.3;
-  it was 38rem), with "a shared internal language" set a little heavier ("Before a product can be
+  foundation." in the accent since V1.3), the approved paragraph beneath it at 52rem, about 830px (V1.4;
+  46rem in V1.3), in three balanced lines on wide screens, with "a shared internal language" set a little heavier ("Before a product can be
   explained externally, it needs a shared internal language. For Bolt Liquidity, I built that language
   from stakeholder interviews and product research, shaping the positioning, claims, proof points, and
   narrative architecture behind every public-facing expression."), then a generous gap before the
@@ -833,10 +887,11 @@ section follows it, revised in place with it.
   minimum height and no reduced motion. Without it (phones, tablets, short windows, reduced motion, no
   JavaScript) every section reads in normal flow: the hero's entry state, the library as a grid with the
   covers at its end, and the statement in full; the Website and Technical documentation chapters are the
-  same everywhere, as are the flagship chapter, Selected Writing and the conclusion. Reduced motion and
+  same everywhere, as are the flagship chapter and the conclusion. Reduced motion and
   data saving autoplay nothing (the controls still play on request, and Play with sound plays the film
-  with sound); phones get the 720p encodes. V1.3 was checked live at 1280x720, 1440x900 and 1920x1080
-  and at 1024x768, and still at 390x844, 768x1024 and 820x1180 and at 1440x900 with reduced motion.
+  with sound); phones get the 720p encodes. V1.4 was checked at 1920x1080, 1440x900, 1280x800 and
+  1024x768 with a mouse, at 768x1024 with a mouse and with touch, and at 390x844 and 320x640 with touch;
+  with reduced motion and without JavaScript at 1440x900 and 390x844.
 - **HOME** (every page but the homepage): the header leads with a HOME link to the homepage in place
   of the name, in the navigation's pill and padding and the small tracked capitals the site keeps for
   labels (the capitals are CSS, so it reads as "Home"). Since the V1.2 delta a small outlined house
@@ -846,7 +901,7 @@ section follows it, revised in place with it.
   reduced motion. The header is shared, so every inner page has it; the navigation is otherwise
   unchanged.
 - **06 Flagship animation campaign** (dark surface, its own chapter, after Technical documentation
-  and before Selected Writing): the headline "One minute to make the product clear.", the metadata row
+  and, since V1.4, straight before the conclusion): the headline "One minute to make the product clear.", the metadata row
   (Goal, Services and Credits, Bob van der Meer in bold), and the contribution statement centered
   beneath it (Bob's name is in the credits only; "mapped the one-minute narrative from first frame to
   final CTA" set a little heavier since V1.3). Then the film in a large 16:9 frame with no device around it:
@@ -893,9 +948,16 @@ section follows it, revised in place with it.
   support one trade, then another, then another"). No essential information is carried by the voice
   alone, so, as the brief allows, no caption track ships and nothing is shown on screen. An optional CC
   track, off by default, is one `<track>` and a control to add if wanted.
-- **Paragraphs and metadata** (V1.3, 02 and 04 to 06): the Foundation paragraph is 46rem wide (about
-  740px) and each chapter's contribution 47rem (about 750px): a readable measure that never stretches
-  across the page, its lines running close to it rather than balanced shorter. Goal, Services and
+- **Paragraphs and metadata** (V1.3 and V1.4, 02 and 04 to 06): V1.4 widens the narrative
+  paragraphs to the brief's 800 to 860px. Each chapter's contribution is 53rem (848px; 47rem in V1.3):
+  at its 24px it sets 65 to 77 characters a line, and the Website statement now reads in four lines
+  (five before), Technical documentation in five (six) and the campaign in five (six); its lines run
+  close to the measure rather than balanced shorter. The Foundation paragraph is 52rem (832px; 46rem in
+  V1.3) and, on wide screens, balanced, so it reads in three even lines instead of four with a short
+  last line. At its smaller 18px that is about 91 to 100 characters a line, longer than the brief's
+  65 to 78: three lines and that measure, or four balanced lines of about 71 characters that would read
+  narrower than V1.3's, was the choice, and the type stays as it is; its generous leading carries the
+  longer line, and it is only three lines. Below 60rem it wraps as before. Goal, Services and
   Credits are three equal columns on screens 60rem and wider in every chapter (one column below, so no
   entry is left alone on a second row), their labels and first lines aligned, a long entry wrapping
   inside its column without widening it (`TpmCase.astro`).
@@ -904,38 +966,32 @@ section follows it, revised in place with it.
   complete rebuild and launch in two weeks" (04), "useful, accurate, and appropriate for public
   release" (05) and "mapped the one-minute narrative from first frame to final CTA" (06). The accent
   color marks one phrase in three headlines only: "the system" (hero), "the foundation." (02) and
-  "Every expression aligned." (08). The statement's highlight is the only animated emphasis. Bold,
+  "Every expression aligned." (07). The statement's highlight is the only animated emphasis. Bold,
   accent and highlight never meet on one phrase, and no headline carries an icon. Each phrase is named
   beside its text in `tpm.json` (`em`, `accent`), and the build stops if it is not there exactly once.
-- **07 Selected Writing** (light-return surface, V1.3): titled "Selected Writing", with two large
-  editorial rows and generous space around and between them: "The Missing Price Layer" (Market
-  structure thesis) with its cover on the left, then "DeFi's Billion-Dollar Problem" (Technical
-  product explainer) with its cover on the right; on phones the cover always comes first. Each row
-  pairs the article's original cover with its category, its title and an excerpt taken word for word
-  from the article, in its own paragraphs: 89 words from The Missing Price Layer's "Fragmentation is
-  not the disease" and 101 from the Billion-Dollar article's "What Causes Slippage?". The excerpts
-  were taken from the Google Docs the articles were published from (X itself could not be read here),
-  so they should be checked once against the published posts. No embeds, links, engagement figures or
-  invented diagrams in this first build; the X posts are noted in `tpm.json` and the manifest only.
-  "Bolt Liquidity: Solving DeFi's Liquidity Puzzle" is not included. The only motion is an entrance,
-  once per row as it comes into view: the cover fades in from 104% scale, the text from 14px lower
-  (none for reduced motion or without JavaScript). The chapter is self-contained: removing its line
-  from the page, its `writing` block and `TpmWriting.astro` takes it out cleanly (the two covers can
-  stay in the manifest).
-- **The covers**: the articles' original artwork, unaltered, as supplied in John's Downloads folder:
-  `article-missing-price-layer.png` (image (49).png, 1920x1080) and
-  `article-billion-dollar-problem.png` (Billion Dollar Problem.png, 3840x1536), entries
-  `tm-article-2` and `tm-article-1`. Both are framed at 2:1, which trims a little from the top and
-  bottom of the first and from the decorative circles at the sides of the second and keeps both titles
-  whole; Astro serves them as AVIF and WebP up to 1600px wide, lazily, with alt text from the manifest.
-- **08 The conclusion** (light surface, the hero's, so the page closes where it began; V1.3): "One
-  foundation. Every expression aligned." (each sentence on its own line where there is room, the
-  second in the accent), then "The work began with a shared product language and carried through the
-  website, technical documentation, and flagship campaign, giving every public-facing expression the
-  same strategic foundation." Beneath it, after a hairline, only the way on: "Next case study" and the
-  next case study's card title with an arrow, in the collection's order (Events and Multimedia
-  Production, `/work/events-video/`). No metrics, services, credits or roles are repeated. Contact
-  follows, unchanged.
+- **Selected Writing** (V1.3) was taken out in V1.4, completely: the section (its headline, the two
+  editorial rows for The Missing Price Layer and DeFi's Billion-Dollar Problem, their excerpts and
+  covers, and their entrance), `TpmWriting.astro`, its line in the page and the `writing` block of
+  `tpm.json`; the two covers are deleted from `src/assets/technical-marketing/`, `tm-article-2` is
+  gone from the manifest and `tm-article-1` is back to the pending placeholder it was before V1.3. No
+  spacer, hidden markup, style or script is left, and the campaign leads straight into the conclusion.
+  For a later Writing page or archive, the covers, their provenance notes and the excerpts are in the
+  repository's history (the V1.3 commit, 083fb76).
+- **07 The conclusion** (light surface, the hero's, so the page closes where it began; V1.3, renumbered
+  in V1.4): "One foundation. Every expression aligned." (each sentence on its own line where there is
+  room, the second in the accent), then "The work began with a shared product language and carried
+  through the website, technical documentation, and flagship campaign, giving every public-facing
+  expression the same strategic foundation." Then (V1.4), in place of the "Next case study" label and
+  title, one conversational sentence, the whole of it the link to the next case study, Events and
+  Multimedia Production (`/work/events-video/`): "Next, see how I bring events and multimedia
+  production from concept through execution." It sits in the paragraph's column at the paragraph's
+  size, a step darker and a little heavier, set apart by space alone (no rule, card or box), balanced
+  over two lines on wide screens, and ends in a small arrow that never wraps alone. A quiet pale-teal
+  underline says it is a link; on hover and keyboard focus the sentence and its underline take the
+  accent and the arrow moves a quarter of an em; focus keeps the site's outline. It is a navigation
+  landmark named "Next case study" for screen readers. `TpmConclusion.astro` stops the build if the
+  case study it names is missing or is no longer the next in the collection's order. No metrics,
+  services, credits or roles are repeated. Contact follows, unchanged.
 - **00 The opening sequence** (homepage only): "Welcome." is gone; exactly three phrases, "Product
   complexity.", "Market clarity." and "Strategy into execution.", centered in the viewport on one
   shared center, in the portfolio's display face (Archivo) at weight 450 and full width rather than the
@@ -964,19 +1020,30 @@ section follows it, revised in place with it.
   handoff simply finishes. It is `aria-hidden`, and it ends by itself even if its script never runs.
 - **Checks**: `verify.mjs` holds the approved copy word for word (the hero, the two-line foundation
   headline, the paragraph, the statement, the three chapters' metadata and contribution statements,
-  the writing excerpts against `tpm.json`, the conclusion); the hero's headline, paragraph and seven
-  scope terms with no kicker, media, canvas or control (the loop files, poster and manifest entry gone),
-  the split (copy before object, 7fr and 5fr, centered, the first screen tall), the object (one
-  decorative SVG, a foundation and five planes, no text or images), the V1.2 bands and rising ground
-  gone, the scope's fixed type, and the layered reveal (one screen of scrolling, the hero giving its
-  last screen to the Foundation, the rounded leading edge, the headline's 24 to 40px rise); the twelve
+  the conclusion and its sentence); the hero's headline, paragraph and seven scope terms with no
+  kicker, media or canvas (the loop files, poster and manifest entry gone), the split (copy before
+  the system, 7fr and 5fr, centered, the first screen tall), the scope line (at the stage's foot, not
+  in the copy column, centered, one line on wide screens, no term broken, fixed type), the system (six
+  layers, foundation first, separating vertically, the expressions rising above and fanning 24px at
+  most, by transforms; no words on the layers; two groups and six one- or two-word labels in order,
+  with the full names for screen readers; the labels hidden at rest, shown only after half a second,
+  gone before the stack starts to close; one real button with its name, `aria-expanded` and
+  `aria-controls`, its focus ring; its own hit area; a 1 to 2px drift of the whole drawing, slow, and
+  a faint light, paused open and off screen and gone during the rise; nothing waiting for reduced
+  motion; hover and focus for no JavaScript), the field (contour paths only, no grid, particles,
+  nodes, icons or images, under 24 KB, thin and very low contrast, quieter than 35% even in the light,
+  its fades drawn into the lines with no CSS mask over it, behind everything, the light soft, shown
+  only while lit and gone for reduced motion), the V1.2 bands and rising ground gone, and the layered
+  reveal (one screen of scrolling, the hero giving its last screen to the Foundation, the rounded
+  leading edge, the headline's 24 to 40px rise); the twelve
   documents' numbers, titles and sublines in order, each card's strip, icon and nothing else, a
   distinct accent and icon for every document and no near-identical neighbors, the twelve Phosphor
   icons by name on their 256 grid with one rule for their size, place and fade, one or two blank
   covers, the shared card grid, the removed documents and the unpublished interview count, the 80-word
   ceiling; the statement word by word and its one highlight (its clause, a translucent teal band that
   sweeps, no bold or color); no arrow sequence left; the Website display and the browser frame, Goal,
-  Services and Credits only, in three equal columns, the paragraph measures (700 to 780px), the
+  Services and Credits only, in three equal columns, the paragraph measures (800 to 860px, the
+  Foundation's balanced on wide screens), the
   centered contributions with Bob only in the credits, the live-site button (its link, new tab, label,
   arrow, screen-reader note, place outside the display), the walkthroughs' markup (no loop attribute,
   autoplay or controls, phone encode first, a hidden labeled control, a lazy poster) and files (length,
@@ -984,7 +1051,9 @@ section follows it, revised in place with it.
   chapters (titles, order, the diagram longest, their buttons, the centered introducing line that names
   them, no page count or spotlight), the `is-live`, width, height and motion guards on every sticky
   rule, no vertical text, the motion script's guards (including the hold on the last frame, the hero
-  object's pointer, frame and touch guards and no WebGL), the closing Contact frame, HOME with its
+  system's hit area, toggle, Escape, touch and off-screen guards, the field's frame loop, transforms,
+  rest and scroll dimming and touch guard, the rise's stilling of the system, and no WebGL), the
+  closing Contact frame, HOME with its
   house on every inner page (its size, the hover rise and none for reduced motion) and not on the
   homepage. For 06: its place after 05, its surface, headline, metadata and centered contribution (no
   second mention of Bob), the frame (no device, nearly full width at 16:9), the film's markup (muted,
@@ -992,11 +1061,16 @@ section follows it, revised in place with it.
   lazy poster), the Play with sound button (text, speaker icon, prominence) and the standard controls,
   the files (60 seconds, H.264 with its audio, fast start, dimensions, sizes, no project metadata,
   never the master or the loop), and the results word for word, with the 84% only ever of impressions
-  and no account named. For 07: its title, the two rows in order and layout, the excerpts word for
-  word at 80 to 120 words, the covers approved and on disk with their alt text, cover first, no
-  embeds, links, metrics or drawings, and no Liquidity Puzzle article. For 08: the headline and its
-  accent, the paragraph, only the next case study beneath it (by the collection's order) and nothing
-  repeated. Across the page: the order (hero to Contact), one emphasis per paragraph at most, the
+  and no account named. Selected Writing gone without a trace: no section, rows, excerpts, covers,
+  hidden markup or spacer on the page, no `writing` block, no `TpmWriting.astro`, no covers in the
+  repository, the manifest (only the pending placeholder) or the build, no styles or script, and
+  nothing but the campaign's own script between the campaign and the conclusion. For 07: the headline
+  and its accent, the paragraph, then one link only, the whole sentence word for word, to the next
+  case study by the collection's order (and naming it), ending in its decorative arrow that never
+  wraps alone, a navigation landmark, no label or title block and nothing repeated; no border, fill,
+  shadow or outline of its own, a quiet underline with a color transition, the accent on hover and
+  focus, the arrow moving slightly, the site's focus outline kept. Across the page: the order (hero,
+  foundation, website, documentation, campaign, conclusion, Contact), one emphasis per paragraph at most, the
   accent in a few headlines only, never stacked with bold or the highlight, and no icons in headlines.
   For 00: the three phrases (no Welcome.), the display face lighter than the headlines, one line, one
   center, the drum (perspective, an axis behind the screen, rotations from and to only, curves that
@@ -1033,15 +1107,16 @@ src/
   assets/               images by page and section; reel/ (the 24 reel stills), stack/ (the 18 logos)
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution),
                         tpm-motion.ts (the Technical Product Marketing page's stages,
-                        walkthroughs and film), tpm-copy.ts (its emphasis)
+                        walkthroughs and film), tpm-copy.ts (its emphasis), tpm-system.ts
+                        (the hero system's drawing), tpm-field.ts (the hero field's contours)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
   components/           Intro (the homepage opening sequence), Hero, About, LogoBar, WorkPanels
                         (Select Work), WorkReel, Capabilities (From positioning to production),
                         Contact, Media, …
   components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 the statement), TpmWebsite, TpmDocs,
-                        TpmCampaign (06), TpmWriting (07), TpmConclusion (08), TpmCase (a
-                        chapter's opening), TpmWalkthrough (the walkthroughs' player), DocIcon
+                        TpmCampaign (06), TpmConclusion (07), TpmCase (a chapter's opening),
+                        TpmWalkthrough (the walkthroughs' player), DocIcon
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
   pages/                index, work/technical-marketing, work/[slug] (the other case studies), 404,
                         robots.txt, site.webmanifest

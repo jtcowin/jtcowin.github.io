@@ -412,8 +412,10 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
   }
 
   /* Exactly two lines, broken where the brief breaks it. */
+  /* Never wider than the screen: at the narrowest the two lines take a
+     slightly smaller size rather than overflow (V1.4). */
   .tpm-foundation__title {
-    font-size: var(--text-2xl);
+    font-size: min(var(--text-2xl), (100vw - 2 * var(--gutter)) / 9.4);
   }
 
   .tpm-foundation__title > span {
@@ -421,14 +423,22 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
     white-space: nowrap;
   }
 
-  /* V1.3: about 740px, a readable measure that never stretches across the
-     page. */
+  /* V1.4: about 830px (736px in V1.3), so on desktop the paragraph reads in
+     three even lines rather than four with a short last one. At its 18px size
+     that is a longer line than the 24px case paragraphs (about 90 to 100
+     characters); the generous leading carries it, and it is only three lines. */
   .tpm-foundation__copy {
-    max-width: 46rem;
+    max-width: 52rem;
     font-size: var(--text-md);
     line-height: var(--leading-relaxed);
     color: var(--ink-2);
     text-wrap: pretty;
+  }
+
+  @media (min-width: 60rem) {
+    .tpm-foundation__copy {
+      text-wrap: balance;
+    }
   }
 
   /* ---- 02 the library (still layout) ------------------------------------------------ */

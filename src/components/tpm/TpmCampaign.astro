@@ -452,7 +452,14 @@ const { results } = campaign;
   .tpm-results__supporting strong {
     font-weight: 700;
     color: var(--heading);
-    white-space: nowrap;
+  }
+
+  /* Where there is room, a bold phrase stays whole (V1.4: it may wrap on the
+     narrowest phones rather than overflow). */
+  @media (min-width: 30rem) {
+    .tpm-results__supporting strong {
+      white-space: nowrap;
+    }
   }
 
   /* Where there is room, a hyphenated word stays whole. */

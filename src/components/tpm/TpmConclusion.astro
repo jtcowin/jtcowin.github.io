@@ -1,13 +1,20 @@
 ---
 /**
- * 08 The conclusion (Technical Product Marketing, V1.3): the case study's
- * closing frame, after Selected Writing and before Contact. A synthesis, not a
- * summary: the headline (each sentence on its own line where there is room,
- * one phrase in the accent), one short paragraph, and beneath it only the way
- * on to the next case study, in the collection's order (as the other case
- * studies have it). No metrics, services, credits or roles are repeated here.
- * On the warm light surface the hero opens on, so the page closes where it
- * began.
+ * 07 The conclusion (Technical Product Marketing; V1.3, renumbered and its way
+ * on rewritten in V1.4): the case study's closing frame, straight after the
+ * flagship campaign and before Contact. A synthesis, not a summary: the
+ * headline (each sentence on its own line where there is room, one phrase in
+ * the accent), one short paragraph, and then one conversational sentence that
+ * closes this story and opens the next. The whole sentence is the link to the
+ * next case study, with a small arrow at its end that moves a little on hover;
+ * no label, no card, no rule. No metrics, services, credits or roles are
+ * repeated here. On the warm light surface the hero opens on, so the page
+ * closes where it began.
+ *
+ * The sentence and the case study it names come from tpm.json (`nextLine`,
+ * `next`); the build stops if that case study is missing or is no longer the
+ * next one in the collection's order, so the sentence never names one page and
+ * leads to another.
  */
 import { getCollection } from 'astro:content';
 import tpm from '@data/tpm.json';
@@ -24,9 +31,14 @@ const lines = sentences.map((line, i) => (i === at ? emphasize(line, conclusion.
 
 const all = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
 const idx = all.findIndex((e) => e.id === 'technical-marketing');
-const next = idx >= 0 && all.length > 1 ? all[(idx + 1) % all.length] : null;
+const following = idx >= 0 && all.length > 1 ? all[(idx + 1) % all.length] : null;
+const next = all.find((e) => e.id === conclusion.next);
+if (!next) throw new Error(`[tpm] the conclusion's onward sentence leads to "${conclusion.next}", which is not a case study`);
+if (following && following.id !== next.id) {
+  throw new Error(`[tpm] the conclusion's onward sentence leads to "${next.id}", but the next case study in order is "${following.id}"; update conclusion.next and conclusion.nextLine in tpm.json together`);
+}
 // The arrow never wraps onto a line of its own: it travels with the last word.
-const words = next ? next.data.card.title.split(' ') : [];
+const words = conclusion.nextLine.trim().split(/\s+/);
 const last = words.pop() ?? '';
 ---
 
@@ -36,22 +48,13 @@ const last = words.pop() ?? '';
       {lines.map((line, i) => [i ? ' ' : '', <span>{line.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}</span>])}
     </h2>
     <p class="tpm-conclusion__copy">{conclusion.copy}</p>
-    {
-      next && (
-        <nav class="tpm-next" aria-label="Next case study">
-          <a class="tpm-next__link" href={withBase(`/work/${next.id}/`)}>
-            <span class="tpm-next__dir">Next case study</span>
-            <span class="tpm-next__title">
-              {words.join(' ')}{words.length ? ' ' : ''}
-              <span class="tpm-next__end">
-                {last}
-                <Icon name="arrow-right" size="0.7em" class="tpm-next__arrow" />
-              </span>
-            </span>
-          </a>
-        </nav>
-      )
-    }
+    <nav class="tpm-onward" aria-label="Next case study">
+      <p class="tpm-onward__line">
+        <a class="tpm-onward__link" href={withBase(`/work/${next.id}/`)}>
+          {words.join(' ')}{words.length ? ' ' : ''}<span class="tpm-onward__end">{last}<Icon name="arrow-right" size="0.8em" class="tpm-onward__arrow" /></span>
+        </a>
+      </p>
+    </nav>
   </div>
 </section>
 
@@ -86,61 +89,52 @@ const last = words.pop() ?? '';
     text-wrap: pretty;
   }
 
-  /* ---- the way on: the next case study, and nothing else -------------------------- */
-  .tpm-next {
-    width: min(100%, 46rem);
-    margin-top: clamp(3.5rem, 2.25rem + 4.5vw, 7rem);
-    padding-top: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
-    border-top: 1px solid var(--line-strong);
+  /* ---- the way on: one sentence, the whole of it the link -------------------------- */
+  /* The paragraph's own size and column, a step darker and a little heavier,
+     set apart by space alone: it reads as the story's last line. */
+  .tpm-onward {
+    max-width: 46rem;
+    margin-top: clamp(2.25rem, 1.6rem + 2.2vw, 3.75rem);
   }
 
-  .tpm-next__link {
-    display: inline-grid;
-    justify-items: center;
-    gap: 0.7rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: var(--radius);
-    color: var(--heading);
-    text-decoration: none;
-  }
-
-  .tpm-next__dir {
-    font-size: var(--text-xs);
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    line-height: 1.4;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-
-  .tpm-next__title {
-    display: block;
-    font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-stretch: var(--display-stretch);
-    font-size: var(--text-xl);
-    line-height: 1.05;
-    letter-spacing: -0.01em;
+  .tpm-onward__line {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.45;
     text-wrap: balance;
-    transition: color var(--dur-fast) var(--ease-out);
   }
 
-  .tpm-next__end {
+  .tpm-onward__link {
+    color: var(--heading);
+    text-decoration-line: underline;
+    text-decoration-color: var(--accent-line);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.3em;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      text-decoration-color var(--dur-fast) var(--ease-out);
+  }
+
+  .tpm-onward__end {
     white-space: nowrap;
   }
 
-  .tpm-next__title :global(.tpm-next__arrow) {
+  .tpm-onward__link :global(.tpm-onward__arrow) {
     display: inline-block;
-    margin-left: 0.4em;
-    vertical-align: -0.02em;
+    margin-left: 0.35em;
+    vertical-align: -0.06em;
     transition: transform var(--dur-fast) var(--ease-out);
   }
 
-  .tpm-next__link:hover .tpm-next__title {
+  .tpm-onward__link:hover,
+  .tpm-onward__link:focus-visible {
     color: var(--accent-ink);
+    text-decoration-color: var(--accent);
   }
 
-  .tpm-next__link:hover .tpm-next__title :global(.tpm-next__arrow) {
-    transform: translateX(4px);
+  .tpm-onward__link:hover :global(.tpm-onward__arrow),
+  .tpm-onward__link:focus-visible :global(.tpm-onward__arrow) {
+    transform: translateX(0.25em);
   }
 </style>

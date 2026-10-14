@@ -1,12 +1,34 @@
 {
-  "_readme": "Technical Product Marketing, Version 1.3: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign, 07 Selected Writing and 08 the conclusion, then Contact. Copy is John's approved wording from the V1 concept, the V1.1, V1.2 and V1.3 briefs and the V1.2 delta brief (October 12 and 13, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
+  "_readme": "Technical Product Marketing, Version 1.4: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3 and V1.4 briefs and the V1.2 delta brief (October 12 and 13, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
   "hero": {
-    "_hero": "Headline, paragraph and the seven scope terms on the left, the abstract narrative-system object on the right (V1.3); no kicker and no media. The headline never changes.",
+    "_hero": "Headline and paragraph on the left, the narrative-system object on the right, the seven scope terms in one centered line at the foot of the hero (V1.4); no kicker and no media. The headline never changes.",
     "headline": "Building the system behind the message.",
     "accent": "the system",
     "copy": "I built the strategic foundation that turned Bolt Liquidity’s technical complexity into a clear market narrative, then carried it across documentation, web experiences, articles, and campaigns.",
     "em": "a clear market narrative",
-    "scope": ["Research", "Positioning", "Messaging", "Claims Governance", "Technical Documentation", "Web Content", "Campaign Direction"]
+    "scope": ["Research", "Positioning", "Messaging", "Claims Governance", "Technical Documentation", "Web Content", "Campaign Direction"],
+    "_system": "The hero object's six layers (V1.4), bottom to top, in two groups. `label` is the one or two words shown beside a layer once the stack has opened; `name` is what assistive technology reads. `toggle` names the control that opens the stack for keyboards and screen readers.",
+    "system": {
+      "toggle": "Show the system behind the message",
+      "groups": [
+        {
+          "name": "Foundation",
+          "layers": [
+            { "label": "Research", "name": "Research and interviews" },
+            { "label": "Shared language", "name": "Shared internal language" },
+            { "label": "Positioning", "name": "Positioning and claims" }
+          ]
+        },
+        {
+          "name": "Market expressions",
+          "layers": [
+            { "label": "Website", "name": "Website" },
+            { "label": "Documentation", "name": "Technical documentation" },
+            { "label": "Campaigns", "name": "Campaigns and content" }
+          ]
+        }
+      ]
+    }
   },
   "foundation": {
     "_headline": "Always two lines, broken where the brief breaks it.",
@@ -95,39 +117,12 @@
       "supporting": ["More than **16x typical post reach**", "Recognized and amplified by **key ecosystem foundation accounts**"]
     }
   },
-  "writing": {
-    "_writing": "07 Selected Writing (V1.3, experimental and self-contained, so it can be removed cleanly): two articles John wrote for Bolt Liquidity, each with its original cover artwork, its category and an excerpt taken word for word from the article (80 to 120 words, its paragraphs as published). No embeds, no engagement figures and no links in this first build; the sources are kept here for reference only.",
-    "title": "Selected Writing",
-    "articles": [
-      {
-        "title": "The Missing Price Layer",
-        "category": "Market structure thesis",
-        "cover": "tm-article-2",
-        "layout": "cover-left",
-        "_source": "https://x.com/BoltLiquidity/status/2085335475137417401 (August 6, 2026). Excerpt from the section Fragmentation is not the disease, taken from the Google Doc the article was published from (The Missing Price Layer, last edited 47 minutes before the post).",
-        "excerpt": [
-          "Traditional finance is fragmented too. US equities trade across dozens of exchanges and alternative trading venues; the same stock is quoted in many places at once by different firms, and nobody treats this as a crisis. Fragmentation never went away there either.",
-          "What went away was disagreement.",
-          "The venues kept competing. Market makers kept quoting independently. But every participant ended up operating inside the same price discovery system, which meant competition stayed fragmented while price formation became coordinated. Crypto has the first half of that and not the second."
-        ]
-      },
-      {
-        "title": "DeFi’s Billion-Dollar Problem",
-        "category": "Technical product explainer",
-        "cover": "tm-article-1",
-        "layout": "cover-right",
-        "_source": "https://x.com/BoltLiquidity/status/1968407791170687124 (September 17, 2025). Excerpt from the section What Causes Slippage?, taken from the Google Doc the article was written in (Twitter Ad Article, last edited September 4, 2025).",
-        "excerpt": [
-          "In most DeFi protocols, prices are determined by automated market makers (AMMs), where the asset ratios and liquidity depth in pools dictate the price. While AMMs were a breakthrough in DeFi, enabling permissionless trading without relying on order books, these pools only work efficiently when they’re deep. And because bootstrapping deep liquidity is expensive, it’s rarely available outside the most heavily traded pairs.",
-          "When liquidity is shallow, trades cause larger price movements, known as slippage. The bigger the trade, the worse the slippage becomes. As a result, users often receive fewer tokens than expected, a quiet loss hidden in the execution."
-        ]
-      }
-    ]
-  },
   "conclusion": {
-    "_conclusion": "08 The closing frame (V1.3): a synthesis, not a summary. Only the way on to the next case study follows the copy; no metrics, services, credits or roles.",
+    "_conclusion": "07 The closing frame (V1.3, renumbered when Selected Writing left in V1.4): a synthesis, not a summary. Only the way on to the next case study follows the copy, as one linked sentence (V1.4) that names it; `next` is that case study's id, which must be the next in the collection's order. No metrics, services, credits or roles.",
     "headline": "One foundation. Every expression aligned.",
     "accent": "Every expression aligned.",
-    "copy": "The work began with a shared product language and carried through the website, technical documentation, and flagship campaign, giving every public-facing expression the same strategic foundation."
+    "copy": "The work began with a shared product language and carried through the website, technical documentation, and flagship campaign, giving every public-facing expression the same strategic foundation.",
+    "next": "events-video",
+    "nextLine": "Next, see how I bring events and multimedia production from concept through execution."
   }
 }

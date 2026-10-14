@@ -140,10 +140,11 @@ const parts = emphasize(contribution, em, `${title} paragraph`);
   }
 
   /* ---- the contribution ------------------------------------------------------------ */
-  /* About 750px (V1.3): a readable measure that never stretches across the
-     page; its lines run close to it rather than being balanced shorter. */
+  /* About 850px (V1.4; 750px in V1.3): about 70 characters a line at this
+     size, so each paragraph takes a line or two fewer, never across the page;
+     its lines run close to the measure rather than being balanced shorter. */
   .tpm-case__contribution {
-    max-width: 47rem;
+    max-width: 53rem;
     margin: 0;
     font-size: var(--text-lg);
     line-height: 1.45;
