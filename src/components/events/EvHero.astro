@@ -26,6 +26,19 @@
  * hidden tab; with reduced motion or a data-saving preference it rests on a
  * strong poster frame and shows an explicit Play control. Each chapter's crop
  * of the wide frame is set in events.json (`pos`).
+ *
+ * V1.4, a restrained program monitor, nothing more: beside the label a small
+ * steady tally dot (lit while the reel plays, never blinking) and the word
+ * PROGRAM (PROGRAM · 01 / LIVE PRESENTATION); TC before the running counter
+ * (TC 00:00:04:22); the rail along the bottom inside edge as a sequence
+ * timeline, a segment to each chapter at its length (so a fifth chapter takes
+ * its place on its own), completed, active and upcoming segments told apart by
+ * a quiet difference in opacity, and one thin playhead moving through the
+ * active one (it shows where the reel is; it is not a scrubber). On hover with
+ * a fine pointer, or with keyboard focus inside the frame, faint title-safe
+ * corner marks (the classic 80% area) fade in, and out as the pointer or focus
+ * leaves; never on touch-only screens, and with reduced motion they simply
+ * appear. No REC, meters, grain, flicker, crosshair or other decoration.
  */
 import { getImage } from 'astro:assets';
 import events from '@data/events.json';
@@ -35,6 +48,7 @@ import { emphasize } from '@lib/tpm-copy';
 import Icon from '@components/Icon.astro';
 
 const { hero } = events;
+const { monitor } = hero;
 const title = emphasize(hero.headline, hero.accent, 'events hero headline');
 
 const prepared = await Promise.all(
@@ -84,26 +98,28 @@ if (!first) throw new Error('[events] the hero reel needs at least one approved 
             </div>
           ))
         }
+        <span class="evh__safe" aria-hidden="true"></span>
         <div class="evh__hud" aria-hidden="true">
           <span class="evh__reading">
-            <span class="evh__rec"></span>
+            <span class="evh__dot"></span>
+            <span class="evh__bus">{monitor.program}</span>
+            <span class="evh__sep">·</span>
             <span data-reel-label>{first.number} / {first.title}</span>
           </span>
-          <span class="evh__tc" data-reel-tc>00:00:00:00</span>
+          <span class="evh__tc"><span class="evh__tc-key">{monitor.timecode}</span><span data-reel-tc>00:00:00:00</span></span>
         </div>
         <button type="button" class="evh__toggle" data-reel-toggle data-pause={hero.pause} data-play={hero.play} aria-label={hero.play} data-state="paused">
           <span class="evh__ico evh__ico--pause"><Icon name="pause" size={12} /></span>
           <span class="evh__ico evh__ico--play"><Icon name="play" size={12} /></span>
           <span class="evh__toggle-text">{hero.playShown}</span>
         </button>
-        <span class="evh__rail" aria-hidden="true">
+        <span class="evh__rail" aria-hidden="true" data-reel-rail>
           {
-            chapters.map((ch) => (
-              <span class="evh__seg" data-reel-seg={ch.key}>
-                <span class="evh__seg-fill" data-reel-fill />
-              </span>
+            chapters.map((ch, i) => (
+              <span class="evh__seg" data-reel-seg={ch.key} data-state={i === 0 ? 'active' : 'next'} style={`--w: ${ch.duration > 0 ? ch.duration.toFixed(2) : 1}`} />
             ))
           }
+          <span class="evh__playhead" data-reel-head />
         </span>
       </div>
       <span class="evh__crop evh__crop--tl" aria-hidden="true"></span>
@@ -195,6 +211,7 @@ if (!first) throw new Error('[events] the hero reel needs at least one approved 
 
   .evh__frame {
     --hud-in: clamp(0.5rem, 1.4%, 1rem);
+    container-type: inline-size;
     position: relative;
     aspect-ratio: 16 / 9;
     background: #050607;
@@ -305,31 +322,30 @@ if (!first) throw new Error('[events] the hero reel needs at least one approved 
     color: #c3cacb;
   }
 
-  .evh__rec {
+  /* The tally: a small steady dot, lit in the light accent while the reel plays
+     (on program), unlit while it is paused or waiting. It never blinks. */
+  .evh__dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: #7e8995;
   }
 
-  .evh__reel.is-playing .evh__rec {
+  .evh__reel.is-playing .evh__dot {
     background: #9fc9c3;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .evh__reel.is-playing .evh__rec {
-      animation: evh-tally 2.4s ease-in-out infinite;
-    }
+  .evh__bus {
+    color: #c3cacb;
   }
 
-  @keyframes evh-tally {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.35;
-    }
+  .evh__sep {
+    color: #7e8995;
+  }
+
+  .evh__tc-key {
+    color: #8f99a3;
+    letter-spacing: 0.12em;
   }
 
   /* ---- the pause control, at the top right beside the timecode ---------------------- */
@@ -390,45 +406,105 @@ if (!first) throw new Error('[events] the hero reel needs at least one approved 
     display: inline;
   }
 
-  /* ---- the segmented progress rail, along the frame's bottom edge (a segment to a
-     chapter; no words) ----------------------------------------------------------------- */
+  /* ---- the sequence timeline, along the frame's bottom inside edge (V1.4): a segment
+     to each chapter, as long as the chapter; completed, active and upcoming segments
+     told apart by a quiet difference in opacity, and one thin playhead moving through
+     the active one. Information, not a control: nothing to drag, no words. ---------- */
   .evh__rail {
     position: absolute;
     left: var(--hud-in);
     right: var(--hud-in);
-    bottom: clamp(0.35rem, 1.1%, 0.6rem);
+    bottom: clamp(0.2rem, 0.8%, 0.45rem);
     z-index: 2;
     display: flex;
+    align-items: center;
     gap: 4px;
+    height: 9px;
     pointer-events: none;
   }
 
   .evh__seg {
-    position: relative;
-    flex: 1;
+    flex: var(--w, 1) 1 0px;
     height: 3px;
-    overflow: hidden;
     border-radius: 1px;
-    background: rgba(237, 240, 239, 0.26);
+    background: #edf0ef;
+    opacity: 0.2;
+    transition: opacity 0.35s ease;
   }
 
-  .evh__seg-fill {
+  .evh__seg[data-state='done'] {
+    opacity: 0.42;
+  }
+
+  .evh__seg[data-state='active'] {
+    opacity: 0.68;
+  }
+
+  .evh__playhead {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    margin-left: -1px;
+    border-radius: 1px;
     background: #9fc9c3;
-    transform: scaleX(0);
-    transform-origin: left center;
+  }
+
+  /* ---- title-safe guides (V1.4): four faint corner marks at the classic 80% area,
+     only while a fine pointer is over the frame or the keyboard is inside it --------- */
+  .evh__safe {
+    --arm: clamp(0.75rem, 2.2cqi, 1.25rem);
+    --mark: rgba(237, 240, 239, 0.1);
+    position: absolute;
+    inset: 10%;
+    z-index: 2;
+    background:
+      linear-gradient(var(--mark), var(--mark)) left top / var(--arm) 1px no-repeat,
+      linear-gradient(var(--mark), var(--mark)) left top / 1px var(--arm) no-repeat,
+      linear-gradient(var(--mark), var(--mark)) right top / var(--arm) 1px no-repeat,
+      linear-gradient(var(--mark), var(--mark)) right top / 1px var(--arm) no-repeat,
+      linear-gradient(var(--mark), var(--mark)) left bottom / var(--arm) 1px no-repeat,
+      linear-gradient(var(--mark), var(--mark)) left bottom / 1px var(--arm) no-repeat,
+      linear-gradient(var(--mark), var(--mark)) right bottom / var(--arm) 1px no-repeat,
+      linear-gradient(var(--mark), var(--mark)) right bottom / 1px var(--arm) no-repeat;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .evh__frame:hover .evh__safe,
+    .evh__frame:has(:focus-visible) .evh__safe {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .evh__safe,
+    .evh__seg {
+      transition: none;
+    }
   }
 
   :global(html:not(.js)) .evh__toggle,
   :global(html:not(.js)) .evh__rail,
-  :global(html:not(.js)) .evh__hud {
+  :global(html:not(.js)) .evh__hud,
+  :global(html:not(.js)) .evh__safe {
     display: none;
   }
 
-  /* The smallest screens keep the label and the control; the timecode steps aside. */
-  @media (max-width: 23.99rem) {
+  /* Smaller frames keep the tally, the label and the control: first the timecode
+     steps aside, then, on the smallest, the word PROGRAM. */
+  @container (max-width: 31rem) {
     .evh__tc {
+      display: none;
+    }
+  }
+
+  @container (max-width: 21.5rem) {
+    .evh__bus,
+    .evh__sep {
       display: none;
     }
   }

@@ -1586,18 +1586,20 @@ if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" cl
 if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) failures.push('[tpm] the footer continues the brand surface');
 
 // ------------------------------------------ Events and Multimedia Production
-// Version 1.3 (the V1.3 delta brief of October 14, 2026, on the live V1.2
-// page, after the V1.1 and V1.2 deltas and John's Combined Build Brief): the
+// Version 1.4 (the V1.4 delta brief of October 14, 2026, on the live V1.3
+// page, after the V1.1 to V1.3 deltas and John's Combined Build Brief): the
 // third case study, on its own page. 01 Hero (one editorial reel in a wide
-// cinematic frame beneath the headline and its paragraph), 02 the transition
-// (SECURE. BUILD. CAPTURE. CUT. AMPLIFY., and since V1.3 the broadcast signal
-// after the last word), 03 Build the activation (an original 3D concept
-// rendering whose two screens play; since V1.3 about John's capabilities
-// across events), 04 the Expanding Production Deck (V1.3: the live
-// presentation, the production room and the event film in one deck, in place
-// of their three sections), 05 the conclusion, with the way on to the next
-// case study, then Contact. Copy is checked against the briefs; only
-// public-safe outcomes, no unverified metrics.
+// cinematic frame beneath the headline and its paragraph; since V1.4 a
+// restrained program monitor), 02 the transition (SECURE. BUILD. CAPTURE.
+// CUT. AMPLIFY., and since V1.3 the broadcast signal after the last word,
+// since V1.4 moving only inside its tile), 03 Build the activation (an
+// original 3D concept rendering whose two screens play; since V1.3 about
+// John's capabilities across events), 04 the Expanding Production Deck (V1.3:
+// the live presentation, the production room and the event film in one deck,
+// in place of their three sections; V1.4: one vertical accordion at every
+// width, with the production room's Setup and Final), 05 the conclusion, with
+// the way on to the next case study, then Contact. Copy is checked against the
+// briefs; only public-safe outcomes, no unverified metrics.
 {
   const evPage = fs.readFileSync(path.join(dist, 'work/events-video/index.html'), 'utf8');
   const evData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/events.json'), 'utf8'));
@@ -1702,6 +1704,40 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (evRules(/^\.evh__head$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push('[events] on narrow screens the headline, the paragraph and the reel simply stack');
   if (/<(?:video|audio)\b[^>]*\bautoplay\b/.test(evPage)) failures.push('[events] no video on the page autoplays from the markup');
 
+  // V1.4: a restrained program monitor, nothing more. Beside the label a steady
+  // tally dot and the word PROGRAM; TC before the counter; the rail as a
+  // sequence timeline (a segment to each chapter at the chapter's length, so a
+  // fifth takes its place on its own; completed, active and upcoming told apart
+  // by a quiet difference in opacity; one playhead through the active segment;
+  // nothing to drag); faint title-safe corner marks only on hover with a fine
+  // pointer or with keyboard focus. No REC, meters, grain, flicker or crosshair.
+  const hud = block(hero, '<div class="evh__hud"');
+  const reading = block(hud, '<span class="evh__reading"');
+  if (!/^<span class="evh__reading"[^>]*>\s*<span class="evh__dot"[^>]*><\/span>\s*<span class="evh__bus"[^>]*>Program<\/span>\s*<span class="evh__sep"[^>]*>·<\/span>\s*<span data-reel-label/.test(reading) || evData.hero?.monitor?.program !== 'Program') failures.push('[events] the label reads PROGRAM · 01 / LIVE PRESENTATION: a tally dot and the word before the chapter');
+  const dotRules = evRules(/evh__dot/);
+  if (!dotRules.length || dotRules.some((r) => /animation|transition/.test(r.body)) || CSS_RULES.some((r) => /@keyframes evh-tally/.test(r.at)) || !evRules(/^\.evh__reel\.is-playing \.evh__dot$/).some((r) => /background:\s*#9fc9c3/i.test(r.body))) failures.push('[events] the tally dot is steady: lit in the light accent while the reel plays, never blinking');
+  if (!/<span class="evh__tc"[^>]*>\s*<span class="evh__tc-key"[^>]*>TC<\/span>\s*<span data-reel-tc[^>]*>00:00:00:00<\/span>\s*<\/span>/.test(hud) || evData.hero?.monitor?.timecode !== 'TC') failures.push('[events] the counter at the top right reads TC 00:00:00:00');
+  const hudWords = hud.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!/^Program · \d\d \/ [A-Za-z ]+ TC 00:00:00:00$/.test(hudWords)) failures.push(`[events] the monitor's only words are PROGRAM, the chapter and TC (found "${hudWords}")`);
+  const segs = [...rail.matchAll(/<span class="evh__seg"([^>]*)>/g)].map((m) => ({ key: (m[1].match(/data-reel-seg="([\w-]+)"/) || [])[1], state: (m[1].match(/data-state="(\w+)"/) || [])[1], w: Number((m[1].match(/--w:\s*([\d.]+)/) || [])[1]) }));
+  const segLen = (k) => Number(evAsset((evData.hero?.chapters || []).find((c) => c.key === k)?.asset).duration) || 1;
+  if (segs.length !== expected.length || segs.some((g, i) => g.key !== expected[i]?.[0] || Math.abs(g.w - segLen(g.key)) > 0.01 || g.state !== (i === 0 ? 'active' : 'next'))) failures.push(`[events] the timeline: a segment to each chapter, as long as the chapter, the first active (found ${segs.map((g) => `${g.key} ${g.w} ${g.state}`).join(', ')})`);
+  if ((rail.match(/data-reel-head/g) || []).length !== 1 || /<(?:input|button|a)\b|role="slider"|draggable|tabindex/.test(rail) || !evRules(/^\.evh__rail$/).some((r) => /pointer-events:\s*none/.test(r.body))) failures.push('[events] the timeline has one playhead and nothing to drag: information, not a scrubber');
+  const segOp = (re) => Number((evRules(re).filter((r) => !r.at).map((r) => r.body).join(';').match(/opacity:\s*(0?\.\d+)/) || [])[1]);
+  const [opNext, opDone, opActive] = [segOp(/^\.evh__seg$/), segOp(/^\.evh__seg\[data-state=['"]?done['"]?\]$/), segOp(/^\.evh__seg\[data-state=['"]?active['"]?\]$/)];
+  if (!(opNext > 0 && opNext < opDone && opDone < opActive && opActive <= 0.8 && opActive - opNext <= 0.6)) failures.push(`[events] completed, active and upcoming segments differ by a quiet change of opacity (found ${opNext}, ${opDone}, ${opActive})`);
+  const heroScripts = pageScripts(evPage);
+  if (!/data-state/.test(heroScripts) || !/\[data-reel-head\]/.test(heroScripts) || !/head\.style\.left\s*=/.test(heroScripts) || !/['"`]done['"`]/.test(heroScripts) || !/['"`]next['"`]/.test(heroScripts)) failures.push('[events] the reel marks its segments completed, active and upcoming and moves the playhead');
+  const safeTag = (hero.match(/<span class="evh__safe"[^>]*><\/span>/) || [''])[0];
+  const safeRule = evRules(/^\.evh__safe$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const markRaw = (safeRule.match(/--mark:\s*([^;]+)/) || [])[1] || '';
+  const markAlpha = /^#[0-9a-f]{8}$/i.test(markRaw.trim()) ? parseInt(markRaw.trim().slice(7, 9), 16) / 255 : Number((markRaw.match(/rgba?\([^)]*[,/]\s*(0?\.\d+)\)/) || [])[1]);
+  if (!safeTag || !/aria-hidden="true"/.test(safeTag) || !block(hero, '<div class="evh__frame').includes('class="evh__safe"') || !/inset:\s*10%/.test(safeRule) || (safeRule.match(/linear-gradient/g) || []).length !== 8 || /(?:^|;)\s*border(?:-width)?:/.test(safeRule) || !(markAlpha >= 0.08 && markAlpha <= 0.12) || !/opacity:\s*0\b/.test(safeRule)) failures.push(`[events] the title-safe guides: four faint corner marks (8 to 12%) at the 80% area inside the frame, not a rectangle, hidden at rest (found ${markAlpha.toFixed ? markAlpha.toFixed(3) : markAlpha})`);
+  const safeOn = evRules(/evh__safe$/).filter((r) => /opacity:\s*1\b/.test(r.body));
+  if (!safeOn.length || safeOn.some((r) => !/hover:\s*hover/.test(r.at) || !/pointer:\s*fine/.test(r.at)) || !safeOn.some((r) => /:hover \.evh__safe/.test(bare(r.sel))) || !safeOn.some((r) => /:has\(:focus-visible\) \.evh__safe/.test(bare(r.sel))) || !/transition:\s*opacity\s+0?\.[3-5]\d*s/.test(safeRule) || !evRules(/evh__safe/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transition:\s*none/.test(r.body))) failures.push('[events] the guides show only on hover with a fine pointer or with keyboard focus (never on touch), fading gently, at once with reduced motion');
+  const heroChrome = block(hero, '<div class="evh__reel').replace(/<video\b[\s\S]*?<\/video>/g, '');
+  if (/class="evh__rec\b|\bREC\b|wave|meter|grain|crosshair|flicker|glitch|lens/i.test(heroChrome) || CSS_RULES.some((r) => /^\.evh/.test(bare(r.sel)) && /grain|flicker|glitch|noise|crosshair|meter/i.test(r.sel + r.body))) failures.push('[events] no REC, meters, waveforms, grain, crosshair, flicker or glitch in the hero');
+
   // ---- 02 The transition (V1.1): the run of show is gone
   if (/class="evr|data-ev-run|Run of show|The event is only the middle of the work/i.test(evNoCode)) failures.push('[events] the run of show (its headline, copy, line, nodes and layout) is gone');
   const tr = block(evPage, '<div class="evx"');
@@ -1716,7 +1752,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (!evRules(/^\.evx__phrase$/).some((r) => /text-transform:\s*uppercase/.test(r.body) && /text-align:\s*center/.test(r.body)) || !evRules(/^\.evx__line$/).some((r) => /min-width:\s*48rem|width\s*>=\s*48rem/.test(r.at) && /display:\s*inline/.test(r.body)) || !evRules(/^\.evx__line$/).some((r) => !r.at && /display:\s*block/.test(r.body))) failures.push('[events] one centered uppercase line where it fits; two deliberate lines on a small screen');
   const trRun = Number((evRules(/^\.evx\.is-live$/).map((r) => r.body).join(';').match(/var\(--evx-run,\s*([\d.]+)\)/) || [])[1]);
   if (!(trRun >= 1.6 && trRun <= 2) || !evRules(/^\.evx\.is-live \.evx__pin$/).some((r) => /position:\s*sticky/.test(r.body))) failures.push(`[events] the phrase holds at the middle of the screen while it is read (the section about 1.6 to 2 screens tall, found ${trRun || 'none'})`);
-  if (!evRules(/^\.evx\.is-live \.evx__word$/).some((r) => MOTION_OK.test(r.at) && /opacity:\s*0\b/.test(r.body) && /transition:/.test(r.body)) || evRules(/^\.evx/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/evx__signal|evx__tile|evx__g\b|evx__g--|evx__pulse/.test(bare(r.sel)))) failures.push('[events] the words arrive by a short wipe and fade, only with motion allowed; nothing blinks or tunnels');
+  if (!evRules(/^\.evx\.is-live \.evx__word$/).some((r) => MOTION_OK.test(r.at) && /opacity:\s*0\b/.test(r.body) && /transition:/.test(r.body)) || evRules(/^\.evx/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/evx__signal|evx__tile|evx__g\b|evx__g--/.test(bare(r.sel)))) failures.push('[events] the words arrive by a short wipe and fade, only with motion allowed; nothing blinks or tunnels');
   const evScriptsAll = pageScripts(evPage);
   const trSource = fs.readFileSync(path.join(root, 'src/components/events/EvTransition.astro'), 'utf8');
   const trConst = (name) => Number((trSource.match(new RegExp(`const ${name} = ([\\d.]+);`)) || [])[1]);
@@ -1734,19 +1770,22 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // (the word kept, the two never split across lines), punctuation and not a
   // button, hidden from assistive technology with its line; a point and two
   // pairs of arcs in outline weight on a solid tile in the accent; it arrives
-  // only after the last word is in, opens, sends one restrained pulse and
-  // settles (nothing repeats), and with reduced motion it is simply there.
+  // only after the last word is in, and with reduced motion it is simply there.
+  // V1.4: the ring outside the tile is gone; once the tile is revealed, a short
+  // sequence plays inside it, once (about 450 to 600ms): the point brightens,
+  // the inner arcs draw outward, the outer follow, the tile lifts very slightly
+  // in brightness and settles. No halo, ring, bloom, bounce, overshoot or repeat.
   const sigs = tr.match(/class="evx__signal"/g) || [];
   const tail = (tr.match(/<span class="evx__tail"[^>]*>[\s\S]*?<\/svg><\/span><\/span><\/span>/) || [''])[0];
   const lines2 = [...tr.matchAll(/<span class="evx__line"[^>]*aria-hidden="true"[^>]*>/g)].map((m) => m.index);
   const tailAt = tr.indexOf('<span class="evx__tail"');
   if (sigs.length !== 1 || !/^<span class="evx__tail"[^>]*><span class="evx__word"[^>]*>Amplify\.<\/span><span class="evx__signal"[^>]*data-evx-signal/.test(tail) || !(lines2.length === 2 && tailAt > lines2[1]) || !evRules(/^\.evx__tail$/).some((r) => /white-space:\s*nowrap/.test(r.body))) failures.push('[events] one broadcast signal, immediately after AMPLIFY. on its line, the word kept and the two never split');
   if (/<button\b|tabindex=|role="button"|<a\b/.test(tail)) failures.push('[events] the signal is punctuation, not a button');
-  const glyphPaths = [...tail.matchAll(/<path\b[^>]*\bd="([^"]+)"/g)].map((m) => m[1]);
-  if ((tail.match(/<circle\b/g) || []).length !== 1 || glyphPaths.length !== 2 || glyphPaths.some((d) => (d.match(/a/g) || []).length !== 2) || /<(?:rect|polygon|polyline|line|ellipse|image|text)\b/.test(tail)) failures.push('[events] the signal is Option A, Broadcast: a point with two pairs of arcs, and nothing else');
+  const glyphPaths = [...tail.matchAll(/<path\b([^>]*)>/g)].map((m) => [(m[1].match(/evx__g--(near|far)/) || [])[1], (m[1].match(/\bd="([^"]+)"/) || [])[1] || '']);
+  if ((tail.match(/<circle\b/g) || []).length !== 1 || glyphPaths.length !== 4 || glyphPaths.filter(([k]) => k === 'near').length !== 2 || glyphPaths.filter(([k]) => k === 'far').length !== 2 || glyphPaths.some(([, d]) => (d.match(/a/g) || []).length !== 1) || /<(?:rect|polygon|polyline|line|ellipse|image|text)\b/.test(tail)) failures.push('[events] the signal is Option A, Broadcast: a point with two pairs of arcs (each arc drawn on its own), and nothing else');
   const tileRule = evRules(/^\.evx__tile$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const glyphRule = evRules(/^\.evx__glyph$/).filter((r) => !r.at).map((r) => r.body).join(';');
-  if (!/background:\s*var\(--accent\)/.test(tileRule) || !/fill:\s*none/.test(glyphRule) || !/stroke:\s*currentColor/i.test(glyphRule) || !/stroke-width:\s*2(?:\.\d+)?\b/.test(glyphRule)) failures.push('[events] the signal is a solid tile in the accent with the glyph in outline weight');
+  if (!/background:\s*var\(--accent\)/.test(tileRule) || !/overflow:\s*hidden/.test(tileRule) || !/fill:\s*none/.test(glyphRule) || !/stroke:\s*currentColor/i.test(glyphRule) || !/stroke-width:\s*2(?:\.\d+)?\b/.test(glyphRule)) failures.push('[events] the signal is a solid tile in the accent with the glyph in outline weight');
   const sigBox = evRules(/^\.evx__signal$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const sigEm = Number((sigBox.match(/width:\s*([\d.]+)em/) || [])[1]);
   if (!(sigEm >= 0.75 && sigEm <= 1) || !/height:\s*[\d.]+em/.test(sigBox) || !/display:\s*inline-block/.test(sigBox)) failures.push(`[events] the tile sits in the line like punctuation, about the height of the capitals (found ${sigEm || 'none'}em)`);
@@ -1758,10 +1797,35 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
     return times.length >= 2 ? times[1] : NaN;
   };
   if (!tileIn || !(delayOf(tileIn.body) >= 0.2)) failures.push('[events] the tile waits a moment after the last word, then wipes in as the words do');
-  const pulse = evRules(/^\.evx\.is-live \.evx__signal\.is-on \.evx__pulse$/).find((r) => MOTION_OK.test(r.at));
-  const pulseEnd = CSS_RULES.filter((r) => /@keyframes evx-pulse\b/.test(r.at) && /^(?:100%|to)$/.test(r.sel.trim())).map((r) => r.body).join(';');
-  if (!pulse || !/forwards/.test(pulse.body) || /infinite/.test(pulse.body) || !/opacity:\s*0\b/.test(pulseEnd) || evRules(/^\.evx/).some((r) => /infinite/.test(r.body))) failures.push('[events] one restrained outward pulse, then it settles: nothing in the transition repeats');
-  const hides = evRules(/evx__tile|evx__g\b|evx__g--/).filter((r) => /clip-path:\s*inset\(0(?:px)?\s+100%|opacity:\s*0\b/.test(r.body) && !/@keyframes/.test(r.at));
+  // The ring is gone: nothing leaves the tile, nothing scales, glows or repeats.
+  if (/evx__pulse/.test(evPage) || CSS_RULES.some((r) => /evx-pulse/.test(r.at) || /evx__pulse/.test(r.sel)) || evRules(/^\.evx/).some((r) => /box-shadow|drop-shadow|blur\(|infinite/.test(r.body)) || CSS_RULES.some((r) => /@keyframes evx-/.test(r.at) && /scale|transform|filter|box-shadow/.test(r.body))) failures.push('[events] no ring, halo, bloom, scaling or repeat: every movement stays inside the tile');
+  // The sequence inside the tile, once it is revealed (times as the minifier writes the shorthand).
+  const timing = (re) => {
+    const r = evRules(re).find((x) => MOTION_OK.test(x.at) && /animation:/.test(x.body));
+    const times = r ? [...(r.body.match(/animation:([^;]*)/) || [, ''])[1].matchAll(/(?:^|[\s,])(\d*\.?\d+)(m?s)\b/g)].map((m) => Number(m[1]) / (m[2] === 'ms' ? 1000 : 1)) : [];
+    return { dur: times[0], delay: times[1], iter: r ? /infinite/.test(r.body) : false, body: r?.body || '' };
+  };
+  const tileT = timing(/^\.evx\.is-live \.evx__signal\.is-on \.evx__tile$/);
+  const pointT = timing(/^\.evx\.is-live \.evx__signal\.is-on \.evx__g--point$/);
+  const nearT = timing(/^\.evx\.is-live \.evx__signal\.is-on \.evx__g--near$/);
+  const farT = timing(/^\.evx\.is-live \.evx__signal\.is-on \.evx__g--far$/);
+  const liftT = timing(/^\.evx\.is-live \.evx__signal\.is-on \.evx__tile::?after$/);
+  const seqStart = pointT.delay;
+  const seqEnd = Math.max(...[pointT, nearT, farT, liftT].map((t) => t.delay + t.dur));
+  const seqOk = [tileT, pointT, nearT, farT, liftT].every((t) => t.dur > 0 && t.delay >= 0 && !t.iter) && seqStart >= tileT.delay + tileT.dur - 0.1 && pointT.delay < nearT.delay && nearT.delay < farT.delay && farT.delay <= liftT.delay && liftT.delay + liftT.dur === seqEnd && seqEnd - seqStart >= 0.45 && seqEnd - seqStart <= 0.6;
+  if (!seqOk) failures.push(`[events] once the tile is revealed, in about 450 to 600ms: the point brightens, the inner arcs draw, the outer follow, the tile lifts and settles (found ${(seqEnd - seqStart).toFixed(2)}s from ${seqStart}s)`);
+  const kf = (name, step) => CSS_RULES.filter((r) => new RegExp(`@keyframes ${name}\\b`).test(r.at) && step.test(r.sel.trim())).map((r) => r.body).join(';');
+  const drawsOut = (name) => {
+    const from = kf(name, /^(?:0%|from)$/), to = kf(name, /^(?:100%|to)$/);
+    const dash0 = Number((from.match(/stroke-dasharray:\s*([\d.]+)/) || [])[1]);
+    const off0 = Number((from.match(/stroke-dashoffset:\s*(-?[\d.]+)/) || [])[1]);
+    const dash1 = Number((to.match(/stroke-dasharray:\s*([\d.]+)/) || [])[1]);
+    return dash0 === 0 && off0 < 0 && dash1 > 0 && Math.abs(-off0 - dash1 / 2) <= 0.15 && /opacity:\s*0\b/.test(from);
+  };
+  if (!/evx-point/.test(pointT.body) || !/opacity:\s*0?\.[1-5]/.test(kf('evx-point', /^(?:0%|from)$/)) || !/opacity:\s*1\b/.test(kf('evx-point', /^(?:100%|to)$/)) || !/evx-near/.test(nearT.body) || !/evx-far/.test(farT.body) || !drawsOut('evx-near') || !drawsOut('evx-far')) failures.push('[events] the point brightens and each arc draws outward from its middle');
+  const liftPeak = Math.max(...CSS_RULES.filter((r) => /@keyframes evx-lift\b/.test(r.at)).map((r) => Number((r.body.match(/opacity:\s*(0?\.?\d+)/) || [])[1]) || 0));
+  if (!/evx-lift/.test(liftT.body) || !(liftPeak > 0 && liftPeak <= 0.15) || !/opacity:\s*0\b/.test(kf('evx-lift', /^(?:100%|to)$/))) failures.push(`[events] the tile's lift is very slight and settles (found a peak of ${liftPeak})`);
+  const hides = evRules(/evx__tile|evx__g\b|evx__g--/).filter((r) => /clip-path:\s*inset\(0(?:px)?\s+100%|opacity:\s*0\b/.test(r.body) && !/@keyframes/.test(r.at) && !/::?after$/.test(bare(r.sel)));
   if (!hides.length || hides.some((r) => !MOTION_OK.test(r.at))) failures.push('[events] with reduced motion the signal is simply there: it waits to be revealed only with motion allowed');
 
   // ---- the sections' headlines and words
@@ -1874,12 +1938,14 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
 
   // ---- 04 The Expanding Production Deck (V1.3): deployed from the V1.2 review
   // checkpoint as approved, in place of the session, the production room and
-  // Sui Fest. Three chapters in order, every rail always visible, one open at a
-  // time (the first to begin with), each opened by a click, a tap or the
+  // Sui Fest. Three chapters in order, every header always visible, one open at
+  // a time (the first to begin with), each opened by a click, a tap or the
   // keyboard, never by itself; the checkpoint's words; a muted preview of 8 to
-  // 15 seconds and the full film with sound; one credit line each; an
-  // accordion on narrow screens; a short fade with reduced motion; all three
-  // open without JavaScript.
+  // 15 seconds and the full film with sound; one credit line each; a short fade
+  // with reduced motion; all three open without JavaScript. V1.4: one
+  // full-width vertical accordion at every width, the open chapter a
+  // substantial section on wide screens (media and words side by side), and the
+  // production room's Setup and Final inside its chapter.
   if (/<section class="(?:evm|evs|evf)"|id="ev-room"|id="ev-setup"|id="ev-suifest"|class="ev-credits|class="ev-cue\b/.test(evPage)) failures.push('[events] the deck replaces the three separate sections (the session, the production room and Sui Fest), with their tallies and credit blocks');
   const deckSec = evSection('evd');
   const DECK = [
@@ -1937,25 +2003,62 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
     if (textOf(norm((ch.html.match(/<button\b[^>]*data-deck-watch[^>]*>([\s\S]*?)<\/button>/) || [, ''])[1])).replace(/\s*\d+:\d\d$/, '') !== 'Watch full video with sound') failures.push(`[events] chapter ${want.key}: "Watch full video with sound"`);
     if (/\bautoplay\b/.test(ch.html)) failures.push(`[events] chapter ${want.key}: nothing autoplays from the markup`);
   }
-  // Wide: side by side, the closed chapters narrowed to their rails; the open
-  // one's width eases; its content fixed at the open width; narrow: an accordion.
-  const deckWide = (re) => evRules(re).filter((r) => /@container[^@]*(?:min-width:\s*(\d+(?:\.\d+)?)rem|width\s*>=\s*(\d+(?:\.\d+)?)rem)/.test(r.at));
-  const closedRule = deckWide(/^(?:html\.js )?\.evd__ch$/).map((r) => r.body).join(';');
-  const openRule = deckWide(/^(?:html\.js )?\.evd__ch\.is-open$/).map((r) => r.body).join(';');
-  if (!/flex:\s*0 0 var\(--rail\)/.test(closedRule) || !/flex-grow:\s*1\b/.test(openRule) || !/transition:[^;]*flex-grow/.test(closedRule) || !deckWide(/^(?:html\.js )?\.evd__row$/).some((r) => /flex-direction:\s*row/.test(r.body))) failures.push('[events] wide: the chapters side by side, the closed ones on their rails, the open one easing to its width');
+  // V1.4: one vertical stack at every width (never side by side), the open
+  // chapter's height easing open on a curve without bounce; on wide screens a
+  // substantial section (the media 56 to 60% of the two columns, the words 40
+  // to 44%, the chapter about 65 to 75% of the screen's height); stacked on
+  // narrow screens; compact headers with a number, a title and a chevron.
+  if (evRules(/^(?:html\.js )?\.evd__(?:row|ch)$/).some((r) => /flex-direction:\s*row/.test(r.body)) || !evRules(/^\.evd__row$/).some((r) => !r.at && /flex-direction:\s*column/.test(r.body)) || evRules(/evd__/).some((r) => /writing-mode|flex-grow/.test(r.body))) failures.push('[events] the deck is one vertical stack at every width: no chapters side by side, no vertical rails');
+  const bodyClosed = evRules(/^(?:html\.js )?\.evd__body$/).find((r) => !r.at && /grid-template-rows:\s*0fr/.test(r.body));
+  const rowsDur = Number(((bodyClosed?.body || '').match(/grid-template-rows\s+(\d*\.?\d+)s/) || [])[1]);
+  const deckEase = ((evRules(/^\.evd$/).map((r) => r.body).join(';').match(/--deck-ease:\s*([^;]+)/) || [])[1] || '').trim();
+  const easeYs = ((deckEase.match(/cubic-bezier\(([^)]+)\)/) || [, ''])[1].split(',').map(Number));
+  if (!bodyClosed || !(rowsDur >= 0.4 && rowsDur <= 0.7) || !/var\(--deck-ease\)/.test(bodyClosed.body) || easeYs.length !== 4 || easeYs[1] < 0 || easeYs[1] > 1 || easeYs[3] < 0 || easeYs[3] > 1) failures.push(`[events] the open chapter's height eases in 0.4 to 0.7s on a curve without bounce or overshoot (found ${rowsDur || 'none'}s, ${deckEase || 'none'})`);
+  const deckWide = (re) => evRules(re).filter((r) => /@container\b[^@]*?(?:min-width:\s*[\d.]+rem|width\s*>=\s*[\d.]+rem)/.test(r.at) && !/@container\s+media\b/.test(r.at));
+  const wideContent = deckWide(/^\.evd__content$/).map((r) => r.body).join(';');
+  const split = (wideContent.match(/grid-template-columns:\s*minmax\(0(?:px)?,\s*(\d+)fr\)\s*minmax\(0(?:px)?,\s*(\d+)fr\)/) || []).slice(1).map(Number);
+  const mediaShare = split.length === 2 ? split[0] / (split[0] + split[1]) : 0;
+  const tallVh = Number((wideContent.match(/min-height:\s*min\(\s*calc\(\s*(\d+)svh/) || [])[1]);
+  if (!(mediaShare >= 0.56 && mediaShare <= 0.6) || !(tallVh >= 65 && tallVh <= 75) || !/align-items:\s*center/.test(wideContent)) failures.push(`[events] wide: the open chapter's media 56 to 60% and its words 40 to 44%, the chapter about 65 to 75% of the screen's height (found ${split.join('/') || 'none'} and ${tallVh || 'none'}svh)`);
+  const wideAt = Number(((deckWide(/^\.evd__content$/)[0]?.at || '').match(/([\d.]+)rem/) || [])[1]);
+  if (!(wideAt >= 52 && wideAt <= 64) || evRules(/^\.evd__content$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push(`[events] two columns only where the deck is wide (52 to 64rem, found ${wideAt || 'none'}); on narrow screens the media above the words`);
+  if (!evRules(/^\.evd__rail$/).some((r) => !r.at && /min-height:\s*(?:3\.(?:2[5-9]|[3-9])\d*|[4-9](?:\.\d+)?)rem/.test(r.body))) failures.push('[events] the headers stay comfortable to tap (3.25rem or more)');
+  for (const ch of deckChs) {
+    const head = (ch.html.match(/<h3 class="evd__h"[^>]*>[\s\S]*?<\/h3>/) || [''])[0];
+    if (/<(?:img|picture|video|p|svg|ul)\b/.test(head) || !/class="evd__chev"[^>]*aria-hidden="true"/.test(head) || !/class="evd__num"/.test(head)) failures.push(`[events] chapter ${ch.key}: its header carries its number, its title and a chevron, and no thumbnail or summary`);
+  }
   if (!evRules(/^(?:html\.js )?\.evd__body$/).some((r) => !r.at && /grid-template-rows:\s*0fr/.test(r.body) && /visibility:\s*hidden/.test(r.body)) || !evRules(/^(?:html\.js )?\.evd__ch\.is-open \.evd__body$/).some((r) => !r.at && /grid-template-rows:\s*1fr/.test(r.body))) failures.push('[events] narrow: a vertical accordion, closed chapters hidden from everyone');
   if (evRules(/^\.evd__body$/).some((r) => !r.at && /grid-template-rows:\s*0fr|visibility:\s*hidden/.test(r.body))) failures.push('[events] without JavaScript every chapter is open (the accordion needs the script)');
   const deckReduce = evRules(/evd__ch|evd__body|evd__chev/).filter((r) => /prefers-reduced-motion:\s*reduce/.test(r.at));
-  if (!deckReduce.some((r) => /transition:\s*none/.test(r.body)) || !deckReduce.some((r) => /transition:\s*opacity\s+0?\.[1-3]\d*s/.test(r.body))) failures.push('[events] with reduced motion a chapter changes through a short fade, nothing morphs');
+  if (!deckReduce.some((r) => /transition:\s*none/.test(r.body)) || !deckReduce.some((r) => /transition:\s*opacity\s+0?\.[1-3]\d*s/.test(r.body)) || !deckReduce.some((r) => /evd__body/.test(bare(r.sel)) && /transition:\s*none/.test(r.body)) || deckReduce.some((r) => /transition:[^;]*(?:grid-template-rows|height|flex-grow|width)/.test(r.body))) failures.push('[events] with reduced motion a chapter changes through a short fade, nothing morphs');
   const deckScript = pageScripts(evPage);
-  if (!/\[data-ev-deck\]/.test(deckScript) || !/classList\.toggle\(\s*[`'"]is-open[`'"],\s*\w+\s*\)/.test(deckScript) || !/aria-expanded/.test(deckScript) || !['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].every((k) => deckScript.includes(k)) || !/\[data-deck-watch\]/.test(deckScript) || !/\.begin\(\)/.test(deckScript)) failures.push('[events] the deck opens a chapter on a click, a tap or the keyboard (arrows, Home, End), one at a time, and Watch plays the film with sound');
+  const deckKeys = deckScript.replace(/\s+/g, '');
+  if (!/\[data-ev-deck\]/.test(deckScript) || !/classList\.toggle\(\s*[`'"]is-open[`'"],\s*\w+\s*\)/.test(deckScript) || !/aria-expanded/.test(deckScript) || !/aria-disabled/.test(deckScript) || !/scrollBy/.test(deckScript) || !['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].every((k) => deckScript.includes(k)) || !/ArrowDown:\w+\+1/.test(deckKeys) || !/ArrowUp:\w+-1/.test(deckKeys) || !/Home:0/.test(deckKeys) || !/End:\w+-1/.test(deckKeys) || !/\[data-deck-watch\]/.test(deckScript) || !/\.begin\(\)/.test(deckScript)) failures.push('[events] the deck opens a chapter on a click, a tap or the keyboard (arrows, Home, End), one at a time, and Watch plays the film with sound');
   if (/setInterval|requestIdleCallback/.test(deckScript.slice(deckScript.indexOf('[data-ev-deck]'), deckScript.indexOf('[data-ev-deck]') + 4000))) failures.push('[events] nothing advances the deck by itself');
   if (!evRules(/^\.evd__rail:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body)) || !evRules(/^\.evd__watch:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body))) failures.push('[events] the rails and the watch buttons show a strong focus ring');
-  // Kept for the next revision: the setup photograph, its caption and the
-  // finished explainer stay in the project (not on the page).
+  // V1.4: the production room's Setup and Final, inside its chapter: two compact
+  // tabs over one stage; Setup (the photograph and its caption) to begin with,
+  // Final (the explainer's preview and its film) a crossfade away; never side
+  // by side, never switched by itself, the stage the same size either way, at
+  // once with reduced motion.
+  const roomHtml = deckChs.find((c) => c.key === 'room')?.html || '';
+  const sfBlock = block(roomHtml, '<div class="evd__sf"');
+  const sfList = (sfBlock.match(/<div class="evd__sf-tabs"[^>]*>/) || [''])[0];
+  const sfTabs = [...sfBlock.matchAll(/<button\b([^>]*role="tab"[^>]*)>([\s\S]*?)<\/button>/g)].map((m) => ({ attrs: m[1], text: textOf(m[2]) }));
+  const sfPanels = [...sfBlock.matchAll(/<div class="evd__sf-panel[^"]*"[^>]*>/g)].map((m) => m[0]);
+  if (deckChs.filter((c) => /data-sf\b/.test(c.html)).length !== 1 || evData.setupFinal?.chapter !== 'room' || !/role="tablist"/.test(sfList) || !/aria-label="[^"]+"/.test(sfList) || JSON.stringify(sfTabs.map((t) => t.text)) !== '["Setup","Final"]' || !/aria-selected="true"/.test(sfTabs[0]?.attrs || '') || !/aria-selected="false"/.test(sfTabs[1]?.attrs || '') || !/tabindex="-1"/.test(sfTabs[1]?.attrs || '') || sfPanels.length !== 2 || !sfPanels.every((x) => /role="tabpanel"/.test(x) && /aria-labelledby="ev-sf-tab-/.test(x)) || !/is-shown/.test(sfPanels[0] || '') || /is-shown/.test(sfPanels[1] || '')) failures.push('[events] the production room has two tabs, SETUP (selected) and FINAL, each controlling its panel, Setup shown to begin with');
+  const setupPanel = block(sfBlock, '<div class="evd__sf-panel is-shown"');
+  const finalPanel = block(sfBlock, '<div class="evd__sf-panel"');
+  if (!new RegExp(`data-asset="${evData.setupFinal?.photo}"`).test(setupPanel) || !/<picture\b/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(finalPanel) || one(setupPanel, /<figcaption class="evd__sf-caption[^"]*"[^>]*>([\s\S]*?)<\/figcaption>/) !== norm(evData.setupFinal?.caption || '')) failures.push('[events] Setup shows the behind-the-scenes photograph, whole, with its equipment caption');
+  if (!/data-asset="ev-slippage-preview"/.test(finalPanel) || !/data-ev-loop-toggle/.test(finalPanel) || !finalPanel.includes(`/media/${evAsset(evData.setupFinal?.final).file}`) || !/data-loop-off/.test((finalPanel.match(/<div[^>]*>/) || [''])[0])) failures.push('[events] Final holds the finished explainer: its muted preview with its pause control (waiting while Setup shows) and the film behind Watch');
+  const sfPanelRule = evRules(/^(?:html\.js )?\.evd__sf-panel$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const sfPanelOn = evRules(/^(?:html\.js )?\.evd__sf-panel\.is-shown$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  if (!/grid-area:\s*2\s*\/\s*1/.test(sfPanelRule) || evRules(/^\.evd__sf$/).some((r) => /grid-template-columns/.test(r.body)) || !/visibility:\s*hidden/.test(sfPanelRule) || !/transition:\s*opacity\s+0?\.[2-5]\d*s/.test(sfPanelOn) || !evRules(/evd__sf-panel/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transition:\s*none/.test(r.body))) failures.push('[events] Setup and Final share one stage (never side by side), cross-fading, and change at once with reduced motion');
+  const sfScript = deckScript.includes('[data-sf]') ? deckScript.slice(deckScript.indexOf('[data-sf]'), deckScript.indexOf('[data-sf]') + 2500) : '';
+  if (!sfScript || !/aria-selected/.test(sfScript) || !['ArrowRight', 'ArrowLeft', 'Home', 'End'].every((k) => sfScript.includes(k)) || !/ev:loop-sync/.test(deckScript) || /setTimeout|setInterval|requestIdleCallback/.test(sfScript)) failures.push('[events] the reader switches Setup and Final (a click, a tap or the arrow keys); nothing switches by itself');
   const setupPhoto = evAsset('ev-image-production-setup');
   const finalFilm = evAsset('ev-video-slippage-full');
-  if (setupPhoto.permission !== 'approved' || !fs.existsSync(path.join(root, 'src/assets', setupPhoto.file || '-')) || evData.setupFinal?.photo !== 'ev-image-production-setup' || evData.setupFinal?.caption !== 'Two cameras, two tripods, a clip-on mic, a laptop, and the venue’s existing lighting.' || evData.setupFinal?.final !== 'ev-video-slippage-full' || finalFilm.permission !== 'approved' || !fs.existsSync(path.join(root, 'public/media', finalFilm.file || '-')) || !fs.existsSync(path.join(root, 'src/assets', finalFilm.poster || '-'))) failures.push('[events] the setup photograph, its caption and the finished explainer stay in the project for the next revision');
+  if (setupPhoto.permission !== 'approved' || !fs.existsSync(path.join(root, 'src/assets', setupPhoto.file || '-')) || evData.setupFinal?.photo !== 'ev-image-production-setup' || evData.setupFinal?.caption !== 'Two cameras, two tripods, a clip-on mic, a laptop, and the venue’s existing lighting.' || evData.setupFinal?.final !== 'ev-video-slippage-full' || finalFilm.permission !== 'approved' || !fs.existsSync(path.join(root, 'public/media', finalFilm.file || '-')) || !fs.existsSync(path.join(root, 'src/assets', finalFilm.poster || '-'))) failures.push('[events] the setup photograph, its caption and the finished explainer are in the project (setupFinal)');
   // Credits: one line per chapter, never a block per item; titles never invented.
   const deckCredits = deckChs.map((c) => one(c.html, /<p class="evd__credit[^"]*"[^>]*>([\s\S]*?)<\/p>/));
   if (!deckCredits[0]?.includes('Speaker Max McKendry') || !deckCredits[0]?.includes('Deck design Bob van der Meer') || !deckCredits[1]?.includes('On camera Max McKendry') || !deckCredits[1]?.includes('Final edit Bob van der Meer') || !deckCredits[2]?.includes('Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus')) failures.push('[events] each chapter credits its collaborators in one line: the speaker and on-camera subject, the deck design and the final edit, the participating teams');
@@ -1995,7 +2098,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // reduced motion or saving data; the screens mapped onto the render; one
   // sound at a time.
   const evScripts = evScriptsAll;
-  for (const token of ['[data-ev-reel]', '[data-reel-toggle]', 'is-waiting', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-deck]', '[data-deck-rail]', '[data-deck-watch]', 'aria-expanded', 'ArrowRight', 'ArrowLeft', '[data-ev-transition]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]', '[data-ev-stage]', 'matrix3d', '(min-width: 48rem)', '[data-evp-sound]', 'ResizeObserver']) {
+  for (const token of ['[data-ev-reel]', '[data-reel-toggle]', 'is-waiting', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-deck]', '[data-deck-rail]', '[data-deck-watch]', 'aria-expanded', 'aria-disabled', '[data-sf]', 'aria-selected', 'ev:loop-sync', 'data-loop-off', '[data-reel-head]', 'ArrowRight', 'ArrowLeft', '[data-ev-transition]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]', '[data-ev-stage]', 'matrix3d', '(min-width: 48rem)', '[data-evp-sound]', 'ResizeObserver']) {
     if (!evScripts.includes(token)) failures.push(`[events] the page's script is missing ${token}`);
   }
   if (!/\.pause\(\)/.test(evScripts) || !/addEventListener\(\s*[`"']play[`"']/.test(evScripts) || !/addEventListener\(\s*[`"']volumechange[`"']/.test(evScripts)) failures.push('[events] starting one video with sound, or turning its sound on, pauses every other');

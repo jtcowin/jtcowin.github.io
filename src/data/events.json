@@ -1,5 +1,5 @@
 {
-  "_readme": "Events and Multimedia Production, Version 1.3: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2 and V1.3 delta briefs (October 14, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
+  "_readme": "Events and Multimedia Production, Version 1.4: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3 and V1.4 delta briefs (October 14, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
   "stages": [
     { "key": "secure", "label": "Secure" },
     { "key": "build", "label": "Build" },
@@ -22,7 +22,12 @@
     ],
     "pause": "Pause the reel",
     "play": "Play the reel",
-    "playShown": "Play reel"
+    "playShown": "Play reel",
+    "monitor": {
+      "_monitor": "V1.4, the program monitor's few words: beside the label at the top left a steady tally dot (lit while the reel plays) and `program`, so it reads PROGRAM · 01 / LIVE PRESENTATION; `timecode` before the running counter at the top right (TC 00:00:04:22). On the smallest frames the counter steps aside first, then the word.",
+      "program": "Program",
+      "timecode": "TC"
+    }
   },
   "transition": {
     "_transition": "Replaces the run of show (V1.1): the five stages as one phrase, revealed word by word over about seven tenths of a screen of scrolling, held, then straight into the activation. On small screens it breaks into two lines after `break` words.",
@@ -39,7 +44,7 @@
     "kit": ["ev-kit-banner", "ev-kit-flyer", "ev-kit-merch", "ev-kit-screen", "ev-kit-plan", "ev-kit-credential", "ev-kit-networking"]
   },
   "deck": {
-    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint as approved): one section in place of the session (Command the room), the production room (From setup to final output) and Sui Fest. Three chapters, every rail always visible and one chapter open at a time, opened by a click, a tap or the keyboard; nothing advances by itself. An open chapter holds its headline, one line of context, up to three things John did, the outcome, one credit line, and its media: a muted preview (an approved loop of 8 to 15 seconds that plays only while its chapter is open and in view, with its own pause control) and the full film, which `watch` plays in place with sound and its controls. To be reviewed live: the media may need to be larger, and the production room should recover its Setup and Final contrast (see setupFinal below).",
+    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint; V1.4 made it one vertical accordion at every width): the live presentation, the production room and the event film in one stack, every chapter's header always visible and one chapter open at a time (the live presentation to begin with), opened by a click, a tap or the keyboard; nothing advances by itself. An open chapter holds its media and its words side by side on wide screens (the media about 58% of the two columns), stacked on narrow ones: its headline, one line of context, up to three things John did, the outcome, one credit line, and its media, a muted preview (an approved loop of 8 to 15 seconds that plays only while it is shown and in view, with its own pause control) and the full film, which `watch` plays in place with sound and its controls. The production room opens on its setup photograph (setupFinal below).",
     "watch": "Watch full video with sound",
     "chapters": [
       {
@@ -94,7 +99,9 @@
     ]
   },
   "setupFinal": {
-    "_setupFinal": "Kept for the next revision, not on the page (V1.3): the production room's Setup and Final contrast, to be restored in a clean treatment once the deck has been reviewed live. The setup photograph (assets.json ev-image-production-setup, src/assets/events-video/sui-summit-bts.jpg), its caption below, and the finished explainer (ev-video-slippage-full, with its poster) all stay in the project; the explainer also plays in the deck's production room chapter. The Setup and Final comparison as it was built is in the repository's history at 44b1e42 (src/components/events/EvSetup.astro).",
+    "_setupFinal": "V1.4: the production room's Setup and Final, restored inside its chapter of the deck. Two tabs in the media area: Setup, the default, shows the behind-the-scenes photograph with its caption beneath; Final crossfades, within the same stage, to the finished explainer (the chapter's muted preview with its pause control, and Watch full video with sound). The reader makes the switch; nothing changes by itself, the stage keeps its size, and with reduced motion the change is immediate. Never side by side. `label` names the two tabs for assistive technology.",
+    "chapter": "room",
+    "label": "Setup and final",
     "photo": "ev-image-production-setup",
     "caption": "Two cameras, two tripods, a clip-on mic, a laptop, and the venue’s existing lighting.",
     "final": "ev-video-slippage-full",

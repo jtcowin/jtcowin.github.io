@@ -19,10 +19,15 @@
  * point and two pairs of arcs inside in outline weight. It is punctuation, not
  * a button, and is hidden from assistive technology (the phrase reads as
  * before). As the reader scrolls, it arrives once the last word is in: the
- * tile wipes in like the words, the point and the arcs open outward, one
- * restrained pulse leaves the tile, and it settles; nothing loops. If the
- * reader scrolls back above the last word it steps away, and arrives again
- * when the phrase completes. With reduced motion it is simply there.
+ * tile wipes in like the words. If the reader scrolls back above the last word
+ * it steps away, and arrives again when the phrase completes. With reduced
+ * motion it is simply there, complete.
+ *
+ * V1.4: the ring that left the tile is gone; all the motion stays inside the
+ * tile and plays once as it is revealed, in about half a second: the point
+ * brightens, the inner arcs draw outward from their middles, the outer arcs
+ * follow, and the tile lifts very slightly in brightness and settles. No halo,
+ * ring, bloom, bounce, overshoot or repeat.
  */
 import events from '@data/events.json';
 
@@ -44,7 +49,7 @@ const phrase = words.join(' ');
               {line.map((w, i) => [
                 i ? ' ' : '',
                 k === lines.length - 1 && i === line.length - 1 ? (
-                  <span class="evx__tail"><span class="evx__word" data-word>{w}</span><span class="evx__signal" data-evx-signal><span class="evx__pulse" /><span class="evx__tile"><svg class="evx__glyph" viewBox="0 0 24 24" focusable="false"><circle class="evx__g evx__g--point" cx="12" cy="12" r="2" /><path class="evx__g evx__g--near" d="M8.6 8.6a4.8 4.8 0 0 0 0 6.8M15.4 8.6a4.8 4.8 0 0 1 0 6.8" /><path class="evx__g evx__g--far" d="M5.8 5.8a8.8 8.8 0 0 0 0 12.4M18.2 5.8a8.8 8.8 0 0 1 0 12.4" /></svg></span></span></span>
+                  <span class="evx__tail"><span class="evx__word" data-word>{w}</span><span class="evx__signal" data-evx-signal><span class="evx__tile"><svg class="evx__glyph" viewBox="0 0 24 24" focusable="false"><circle class="evx__g evx__g--point" cx="12" cy="12" r="2" /><path class="evx__g evx__g--near" d="M8.6 8.6a4.8 4.8 0 0 0 0 6.8" /><path class="evx__g evx__g--near" d="M15.4 8.6a4.8 4.8 0 0 1 0 6.8" /><path class="evx__g evx__g--far" d="M5.8 5.8a8.8 8.8 0 0 0 0 12.4" /><path class="evx__g evx__g--far" d="M18.2 5.8a8.8 8.8 0 0 1 0 12.4" /></svg></span></span></span>
                 ) : (
                   <span class="evx__word" data-word>{w}</span>
                 ),
@@ -211,7 +216,8 @@ const phrase = words.join(' ');
 
   /* ---- the signal after AMPLIFY. (V1.3): a solid tile in the accent, set in the
      line like punctuation (a little taller than the capitals, sitting on the line
-     the way the word does), with the broadcast glyph in outline weight ----------- */
+     the way the word does), with the broadcast glyph in outline weight. V1.4: every
+     movement stays inside the tile (it clips its own contents). -------------------- */
   .evx__tail {
     white-space: nowrap;
   }
@@ -230,16 +236,27 @@ const phrase = words.join(' ');
     inset: 0;
     display: grid;
     place-items: center;
+    overflow: hidden;
     border-radius: 0.04em;
     background: var(--accent);
     color: var(--heading);
+  }
+
+  /* The brightness lift: a faint wash over the tile, at rest invisible. */
+  .evx__tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--c-fog);
+    opacity: 0;
+    pointer-events: none;
   }
 
   .evx__glyph {
     display: block;
     width: 72%;
     height: 72%;
-    overflow: visible;
     fill: none;
     stroke: currentColor;
     stroke-width: 2.1;
@@ -247,35 +264,31 @@ const phrase = words.join(' ');
     stroke-linejoin: round;
   }
 
-  .evx__g {
-    transform-box: view-box;
-    transform-origin: 12px 12px;
-  }
-
   .evx__g--point {
     fill: currentColor;
     stroke: none;
   }
 
-  .evx__pulse {
-    position: absolute;
-    inset: 0;
-    border-radius: 0.04em;
-    box-shadow: 0 0 0 0.045em var(--accent-ink);
-    opacity: 0;
-    pointer-events: none;
-  }
-
   /* Live, with motion allowed: it waits until the last word is in, then the tile
-     wipes in as the words do, the point and the arcs open outward, and one
-     restrained pulse leaves the tile (once: nothing repeats). With reduced motion
-     none of this applies and the signal is simply there. */
+     wipes in as the words do (with the point at a low glow), and once it is
+     revealed the sequence plays inside it, once, in a little over half a second:
+     the point brightens (0.70 to 0.86s), the inner arcs draw outward from their
+     middles (0.78 to 1.02s), the outer arcs follow (0.90 to 1.16s), and the tile
+     lifts very slightly in brightness and settles (0.98 to 1.26s). Each arc is
+     drawn by its dash: from nothing at its middle to its whole length, so it opens
+     out both ways at once. Nothing scales, glows beyond the tile or repeats. With
+     reduced motion none of this applies and the signal is simply there, complete. */
   @media (prefers-reduced-motion: no-preference) {
     .evx.is-live .evx__tile {
       clip-path: inset(0 100% 0 0);
     }
 
-    .evx.is-live .evx__g {
+    .evx.is-live .evx__g--point {
+      opacity: 0.35;
+    }
+
+    .evx.is-live .evx__g--near,
+    .evx.is-live .evx__g--far {
       opacity: 0;
     }
 
@@ -284,19 +297,19 @@ const phrase = words.join(' ');
     }
 
     .evx.is-live .evx__signal.is-on .evx__g--point {
-      animation: evx-point 0.26s cubic-bezier(0.2, 0.7, 0.3, 1) 0.62s both;
+      animation: evx-point 0.16s ease-out 0.7s both;
     }
 
     .evx.is-live .evx__signal.is-on .evx__g--near {
-      animation: evx-arc 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) 0.74s both;
+      animation: evx-near 0.24s cubic-bezier(0.3, 0.6, 0.3, 1) 0.78s both;
     }
 
     .evx.is-live .evx__signal.is-on .evx__g--far {
-      animation: evx-arc 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) 0.86s both;
+      animation: evx-far 0.26s cubic-bezier(0.3, 0.6, 0.3, 1) 0.9s both;
     }
 
-    .evx.is-live .evx__signal.is-on .evx__pulse {
-      animation: evx-pulse 0.95s cubic-bezier(0.2, 0.7, 0.3, 1) 1.2s forwards;
+    .evx.is-live .evx__signal.is-on .evx__tile::after {
+      animation: evx-lift 0.28s ease-in-out 0.98s both;
     }
   }
 
@@ -311,34 +324,57 @@ const phrase = words.join(' ');
 
   @keyframes evx-point {
     from {
-      opacity: 0;
-      transform: scale(0);
+      opacity: 0.35;
     }
     to {
       opacity: 1;
-      transform: scale(1);
     }
   }
 
-  @keyframes evx-arc {
+  /* The arcs' lengths: the inner 7.557, the outer 13.759 (in the glyph's units).
+     The dash grows from nothing to a little over the whole arc while its offset
+     keeps it centered on the arc's middle. */
+  @keyframes evx-near {
     from {
       opacity: 0;
-      transform: scale(0.55);
+      stroke-dasharray: 0 8.6;
+      stroke-dashoffset: -3.78;
+    }
+    25% {
+      opacity: 1;
     }
     to {
       opacity: 1;
-      transform: scale(1);
+      stroke-dasharray: 7.66 8.6;
+      stroke-dashoffset: 0.05;
     }
   }
 
-  @keyframes evx-pulse {
+  @keyframes evx-far {
+    from {
+      opacity: 0;
+      stroke-dasharray: 0 14.8;
+      stroke-dashoffset: -6.88;
+    }
+    25% {
+      opacity: 1;
+    }
+    to {
+      opacity: 1;
+      stroke-dasharray: 13.86 14.8;
+      stroke-dashoffset: 0.05;
+    }
+  }
+
+  @keyframes evx-lift {
     0% {
-      opacity: 0.8;
-      transform: scale(1);
+      opacity: 0;
+    }
+    45% {
+      opacity: 0.1;
     }
     100% {
       opacity: 0;
-      transform: scale(1.6);
     }
   }
 </style>

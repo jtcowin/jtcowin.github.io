@@ -1,11 +1,12 @@
 /**
- * Client-side media and motion for Events and Multimedia Production (V1.2).
+ * Client-side media and motion for Events and Multimedia Production (V1.4).
  *
  * The reel (the hero, V1.2): its chapters in order, one video each, only the
  * one on air loaded and playing, muted. Each plays through once and the reel
  * crossfades (350ms) into the next, round and round; the label reads the
- * chapter's number and title, the timecode the reel's own clock, and a
- * segmented rail fills a segment per chapter. Only the chapter on air plays:
+ * chapter's number and title, the timecode the reel's own clock, and the
+ * sequence timeline (V1.4) marks each chapter's segment completed, active or
+ * upcoming and moves one playhead through the active one. Only the chapter on air plays:
  * the one left behind pauses once it is covered. The reel pauses whenever its
  * frame leaves the screen or the tab is hidden, never starts by itself for
  * reduced motion or a data-saving preference (its poster stays, and its
@@ -24,9 +25,10 @@
  * reader with the full controls. The native controls in the markup serve
  * readers without JavaScript and are removed here.
  *
- * Silent loops (a media slot's video, such as the activation kit's screen
- * animation once it is approved): muted and looped only while well in view,
- * never for reduced motion or a data-saving preference, with a pause control.
+ * Silent loops (a media slot's video, such as the deck's previews): muted and
+ * looped only while well in view and shown (not inside a [data-loop-off]
+ * stage, V1.4: the production room's Final while Setup is selected), never for
+ * reduced motion or a data-saving preference, with a pause control.
  *
  * Reveals: elements marked [data-ev-reveal] arrive once as they come into
  * view (a short cut up into place); with reduced motion they are simply there.
@@ -72,8 +74,9 @@ const FADE = 350;
  * the one on air loaded and playing, muted. A chapter plays through once and
  * the reel crossfades (FADE) into the next, round and round; the label reads
  * the chapter's number and title; the timecode runs on the reel's own clock
- * (the chapters before the one on air, plus its time); the rail fills a
- * segment per chapter. The reel pauses off screen or in a hidden tab, never
+ * (the chapters before the one on air, plus its time); the timeline marks the
+ * chapters before the one on air completed, it active and the rest upcoming,
+ * and its playhead moves through the active segment. The reel pauses off screen or in a hidden tab, never
  * starts by itself for reduced motion, a data-saving preference or a refused
  * autoplay (then it waits on its poster and its control says Play), and its
  * one control pauses and plays it.
@@ -82,7 +85,9 @@ export class Reel {
   private root: HTMLElement;
   private sources = new Map<string, HTMLVideoElement>();
   private layers = new Map<string, HTMLElement>();
-  private fills = new Map<string, HTMLElement>();
+  private segs = new Map<string, HTMLElement>();
+  private rail: HTMLElement | null;
+  private head: HTMLElement | null;
   private lengths = new Map<string, number>();
   private order: string[] = [];
   private active: string;
@@ -125,10 +130,9 @@ export class Reel {
       v.addEventListener('pause', () => this.render());
       v.addEventListener('error', () => layer?.setAttribute('data-failed', ''));
     }
-    for (const seg of Array.from(root.querySelectorAll<HTMLElement>('[data-reel-seg]'))) {
-      const fill = seg.querySelector<HTMLElement>('[data-reel-fill]');
-      if (fill) this.fills.set(seg.dataset.reelSeg as string, fill);
-    }
+    for (const seg of Array.from(root.querySelectorAll<HTMLElement>('[data-reel-seg]'))) this.segs.set(seg.dataset.reelSeg as string, seg);
+    this.rail = root.querySelector('[data-reel-rail]');
+    this.head = root.querySelector('[data-reel-head]');
     this.toggle = root.querySelector('[data-reel-toggle]');
     this.label = root.querySelector('[data-reel-label]');
     this.tc = root.querySelector('[data-reel-tc]');
@@ -208,9 +212,11 @@ export class Reel {
       }
     }
     if (this.label && into) this.label.textContent = `${into.dataset.number} / ${into.dataset.title}`;
-    // The rail: the chapters before this one full, the rest empty.
+    // The timeline: the chapters before this one completed, this one active, the rest
+    // upcoming; the playhead at the start of the active segment.
     const at = this.order.indexOf(key);
-    this.order.forEach((k, i) => this.progress(k, i < at ? 1 : 0));
+    this.order.forEach((k, i) => this.segs.get(k)?.setAttribute('data-state', i < at ? 'done' : i === at ? 'active' : 'next'));
+    this.progress(key, 0);
     this.sync();
     this.render();
   }
@@ -264,9 +270,14 @@ export class Reel {
     this.loop();
   }
 
+  /** The playhead, a share of the way through the active chapter's segment (as a share of the timeline, so it holds when the frame is resized). */
   private progress(key: string, share: number) {
-    const fill = this.fills.get(key);
-    if (fill) fill.style.transform = `scaleX(${Math.min(1, Math.max(0, share)).toFixed(4)})`;
+    const seg = this.segs.get(key);
+    if (!seg || !this.rail || !this.head || key !== this.active) return;
+    const width = this.rail.clientWidth;
+    if (!width) return;
+    const x = ((seg.offsetLeft + Math.min(1, Math.max(0, share)) * seg.offsetWidth) / width) * 100;
+    this.head.style.left = `${x.toFixed(3)}%`;
   }
 
   /** The reel's clock: the chapters before the one on air, plus its own time. */
@@ -566,7 +577,9 @@ export function mountLoops(scope: ParentNode = document) {
       }
     };
     const sync = () => {
-      const go = inView && !held && !document.hidden && (asked || (!reduceMq.matches && !saving()));
+      // Not while its stage is set aside (the production room's Final while Setup shows).
+      const shown = !root.closest('[data-loop-off]');
+      const go = inView && shown && !held && !document.hidden && (asked || (!reduceMq.matches && !saving()));
       if (go && video.paused) {
         if (video.preload !== 'auto') video.preload = 'auto';
         const p = video.play();
@@ -603,6 +616,8 @@ export function mountLoops(scope: ParentNode = document) {
     }
     document.addEventListener('visibilitychange', sync);
     onMotionChange(sync);
+    // A stage that is set aside or brought back asks its loops to look again.
+    root.addEventListener('ev:loop-sync', sync);
     render();
   }
 }
