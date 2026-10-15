@@ -1,5 +1,5 @@
 {
-  "_readme": "Events and Multimedia Production, Version 1.2: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1 and V1.2 delta briefs (October 14, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
+  "_readme": "Events and Multimedia Production, Version 1.3: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2 and V1.3 delta briefs (October 14, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
   "stages": [
     { "key": "secure", "label": "Secure" },
     { "key": "build", "label": "Build" },
@@ -30,88 +30,75 @@
   },
   "activation": {
     "headline": "The work starts before anyone enters the room.",
-    "copy": "Bolt Liquidity sponsored the Sui Summit side event at ETHDenver in 2025 and 2026. Before the doors opened, I negotiated the sponsorship and its pricing, coordinated with the event host, sourced and priced the merchandise, worked with design on the screen animations and table assets, and planned how all of it would reach the people in the room.",
-    "_visual": "An original 3D render of the activation (V1.1, replacing the schematic): a representative visualization, not a photograph, made for this page in Blender (scripts/render/; the spatial and lighting reference is reference/events-video/booth-render.png, never published). The television and the projected wall play their loops while the frame is in view; reduced motion, a data-saving preference, a small screen or no JavaScript keep the render with both screens on their poster frames.",
+    "copy": "Before the doors open, I negotiate sponsorships and pricing, coordinate with event hosts, source and price merchandise, and work with design on screen animations and physical assets. I plan how those pieces come together on site and how the activation continues through content and distribution afterward.",
+    "_visual": "An original 3D render of the activation (V1.1, replacing the schematic; since V1.3 a concept rendering combining the activation elements John plans and coordinates across events, tied to no one event or booth, as the paragraph and the caption say): an illustrative composite, not a photograph, made for this page in Blender (scripts/render/; the spatial and lighting reference is reference/events-video/booth-render.png, never published). The television and the projected wall play their loops while the frame is in view; reduced motion, a data-saving preference, a small screen or no JavaScript keep the render with both screens on their poster frames.",
     "visual": "ev-activation-render",
     "tv": "ev-activation-tv",
     "wall": "ev-activation-wall",
-    "caption": "A representative rendering of the activation, made for this page.",
+    "caption": "Concept rendering combining the activation elements I plan and coordinate across events.",
     "kit": ["ev-kit-banner", "ev-kit-flyer", "ev-kit-merch", "ev-kit-screen", "ev-kit-plan", "ev-kit-credential", "ev-kit-networking"]
   },
-  "room": {
-    "cues": ["secure", "capture", "amplify"],
-    "eyebrow": "Sui Summit, ETHDenver",
-    "headline": "Build the session. Fill the room. Extend its life.",
-    "copy": "I organized and ran Bolt Liquidity’s presentation at Sui Summit in both 2025 and 2026. The recording here is from 2026, captured from the room as the session ran.",
-    "video": "ev-room-presentation",
+  "deck": {
+    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint as approved): one section in place of the session (Command the room), the production room (From setup to final output) and Sui Fest. Three chapters, every rail always visible and one chapter open at a time, opened by a click, a tap or the keyboard; nothing advances by itself. An open chapter holds its headline, one line of context, up to three things John did, the outcome, one credit line, and its media: a muted preview (an approved loop of 8 to 15 seconds that plays only while its chapter is open and in view, with its own pause control) and the full film, which `watch` plays in place with sound and its controls. To be reviewed live: the media may need to be larger, and the production room should recover its Setup and Final contrast (see setupFinal below).",
+    "watch": "Watch full video with sound",
     "chapters": [
       {
-        "key": "fill",
-        "label": "Fill",
-        "points": ["Booked the speaking slot", "Promoted the session", "Helped develop the subject and positioning", "Supported audience attendance"]
+        "key": "live",
+        "label": "Live presentation",
+        "headline": "Build the session. Fill the room. Extend its life.",
+        "context": "I organized and ran Bolt Liquidity’s presentation at Sui Summit, ETHDenver, in 2025 and 2026, from the speaking slot to the recording.",
+        "points": [
+          "Booked the slot, helped shape the subject and promoted the session",
+          "Directed the deck and ran the setup and live slides",
+          "Captured it from multiple angles, then published it whole and in clips"
+        ],
+        "outcome": "Event-led relationships contribute to ongoing conversations and integrations with key partners.",
+        "credit": "Organized, directed and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer",
+        "preview": "ev-max-loop",
+        "previewFit": "contain",
+        "full": "ev-room-presentation",
+        "fullLabel": "Sui Summit presentation"
       },
       {
-        "key": "run",
-        "label": "Run",
-        "points": ["Collaborated with the speaker", "Directed the deck development", "Coordinated the presentation setup", "Managed the laptop, projector, and live slide progression", "Captured the presentation from multiple angles"]
+        "key": "room",
+        "label": "Production room",
+        "headline": "A compact setup. A full content system.",
+        "context": "At ETHDenver 2026 I booked a production room at the venue and built a studio from what was on hand.",
+        "points": [
+          "Set up two cameras, a clip-on mic and the venue’s own light",
+          "Wrote about 20 questions and directed multiple takes",
+          "Chose the strongest takes and wrote the edit direction"
+        ],
+        "outcome": "Finished explainers, edited by Bob van der Meer from my takes and direction.",
+        "credit": "Questions, direction, capture and edit briefs by John Cowin · On camera Max McKendry · Final edit Bob van der Meer",
+        "preview": "ev-slippage-preview",
+        "full": "ev-video-slippage-full",
+        "fullLabel": "Slippage Explained"
       },
       {
-        "key": "extend",
-        "label": "Extend",
-        "points": ["Published the full presentation", "Extracted shorter clips", "Repackaged key moments for social distribution", "Used the session to support continued ecosystem conversations"]
+        "key": "film",
+        "label": "Event film",
+        "headline": "If you cannot own the stage, create the moment everyone shares.",
+        "context": "Bolt was not a sponsor at Sui Fest, TOKEN2049 Singapore, so the opportunity had to be made.",
+        "points": [
+          "Developed the interview concept",
+          "Interviewed established teams on camera, Bolt one voice among many",
+          "Tagged every team, giving each a reason to share it"
+        ],
+        "outcome": "Tens of thousands of impressions and hundreds of likes, shared by the teams themselves.",
+        "credit": "Concept, interviews, coordination and distribution by John Cowin · With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus",
+        "preview": "ev-suifest-loop",
+        "full": "ev-video-suifest-full",
+        "fullLabel": "Sui Fest interviews"
       }
-    ],
-    "outcome": "The presentation attracted ecosystem attention and opened conversations that continued beyond the event.",
-    "pending": ["ev-room-full", "ev-room-deck", "ev-room-promo", "ev-room-clip"]
+    ]
   },
-  "setup": {
-    "cues": ["capture", "cut"],
-    "eyebrow": "Production room, ETHDenver 2026",
-    "headline": "A compact setup. A full content system.",
-    "copy": "At ETHDenver I booked a production room at the venue and built a studio from what was on hand: a DJI camera and an iPhone on two tripods, a clip-on microphone, a laptop, the venue’s lighting and props. I wrote about 20 interview questions and directed Max McKendry through multiple takes. The finished explainers came from what happened after the session: the footage review, the takes I chose, and the edit direction I wrote for Bob van der Meer.",
-    "steps": [
-      { "key": "prepare", "label": "Prepare", "line": "About 20 interview questions" },
-      { "key": "direct", "label": "Direct", "line": "Multiple takes from two angles" },
-      { "key": "select", "label": "Select", "line": "The strongest takes, combined across takes where needed", "lead": true },
-      { "key": "brief", "label": "Brief", "line": "Transcript-based edit direction for the final cut", "lead": true }
-    ],
-    "tabs": { "setup": "Setup", "final": "Final" },
+  "setupFinal": {
+    "_setupFinal": "Kept for the next revision, not on the page (V1.3): the production room's Setup and Final contrast, to be restored in a clean treatment once the deck has been reviewed live. The setup photograph (assets.json ev-image-production-setup, src/assets/events-video/sui-summit-bts.jpg), its caption below, and the finished explainer (ev-video-slippage-full, with its poster) all stay in the project; the explainer also plays in the deck's production room chapter. The Setup and Final comparison as it was built is in the repository's history at 44b1e42 (src/components/events/EvSetup.astro).",
     "photo": "ev-image-production-setup",
     "caption": "Two cameras, two tripods, a clip-on mic, a laptop, and the venue’s existing lighting.",
     "final": "ev-video-slippage-full",
-    "pending": ["ev-setup-questions"]
-  },
-  "credits": {
-    "_credits": "One consolidated block per major chapter (V1.1), never one per media item: the Sui Summit work at ETHDenver (the activation, the session and the production room) closes the production room; Sui Fest keeps its own. V1.2 folded the section on what continued after into the conclusion, and its credit block with it.",
-    "ethdenver": {
-      "scope": "Sui Summit at ETHDenver",
-      "items": [
-        { "who": "John Cowin", "what": "Sponsorship negotiation and pricing, logistics, merchandise sourcing, production planning, the speaking slot, session strategy, deck direction, live production, the production room and equipment, interview questions, direction, camera capture, footage review, transcript-based edit briefs, and distribution" },
-        { "who": "Phi Labs design", "what": "Screen animations and table assets, made in collaboration" },
-        { "who": "Bob van der Meer", "what": "Deck design, final video editing, and visual production" },
-        { "who": "Max McKendry", "what": "Speaker and on-camera subject" }
-      ]
-    }
-  },
-  "suifest": {
-    "cues": ["capture", "amplify"],
-    "eyebrow": "Sui Fest, TOKEN2049 Singapore",
-    "headline": "If you cannot own the stage, create the moment everyone shares.",
-    "copy": "Bolt was not a sponsor at Sui Fest, so the opportunity had to be made. I developed an interview concept, stepped in front of the camera as the interviewer, and spoke with established teams across the ecosystem, with Bolt as one voice among many. Every team in the piece was tagged, which gave each a reason to share it, and placed Bolt as a contributor to the ecosystem rather than a spectator at its edge.",
-    "_video": "Muted by default (V1.1): it plays silently while in view, with motion allowed, and the reader turns the sound on.",
-    "video": "ev-video-suifest-full",
-    "stills": ["ev-still-7k", "ev-still-bolt", "ev-still-claynosaurz"],
-    "outcome": {
-      "_outcome": "Distribution and performance in one block (V1.1), from the brief's qualitative facts only; a verified figure joins it once its metric entry is approved.",
-      "label": "What it did",
-      "lead": "Tens of thousands of impressions. Hundreds of likes.",
-      "line": "Published with every team tagged and then shared by the teams themselves, it drew engagement from ecosystem teams and developers."
-    },
-    "pending": ["ev-suifest-metrics"],
-    "credits": [
-      { "who": "John Cowin", "what": "Interview concept, on-camera interviewer, team coordination, draft reviews, publishing, and distribution" },
-      { "who": "Participating teams", "what": "Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz, and Talus" }
-    ]
+    "tabs": { "setup": "Setup", "final": "Final" }
   },
   "conclusion": {
     "_conclusion": "V1.2: the conclusion and the former Amplify section (Every event opens a longer conversation.) in one closing: the static row of the five stages as a quiet callback (never animated a second time), the headline, one paragraph, then the way on to the next case study in order, Creator Campaigns (the collection wraps around), then Contact.",

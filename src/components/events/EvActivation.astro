@@ -9,6 +9,12 @@
  * hoodies), and a restrained conversation area at right. It is rendered for
  * this page in Blender (scripts/render/), representative and never presented
  * as a photograph of the real activation, and carries no hotspots or labels.
+ * V1.3 made the section about John's capabilities across events: the
+ * paragraph names no one event, and the caption calls the image a concept
+ * rendering combining the activation elements he plans and coordinates across
+ * events (the Sui Summit story lives in the deck's live presentation chapter).
+ * It also set the rendering a little narrower on large desktops and a little
+ * closer to the copy.
  *
  * Its two screens play their loops while the frame is in view. V1.2 calmed
  * the television into the stable branded anchor: one short card (the wireless
@@ -53,7 +59,7 @@ const layer = (file: string) => {
 };
 // The live layers (only loaded once a screen that can play them reaches the frame).
 const live = isVisible(tv) && isVisible(wall) && Boolean(tv.file && wall.file);
-const plate = live ? await getImage({ src: layer('activation-plate.jpg'), widths: [1280, 1920, 2560], sizes: '(min-width: 87.5rem) 1310px, 100vw', format: 'webp', quality: 82 }) : null;
+const plate = live ? await getImage({ src: layer('activation-plate.jpg'), widths: [1280, 1920, 2560], sizes: '(min-width: 87.5rem) 1272px, 100vw', format: 'webp', quality: 82 }) : null;
 const spillTv = live ? await getImage({ src: layer('activation-spill-tv.jpg'), width: 1280, format: 'webp', quality: 78 }) : null;
 const spillWall = live ? await getImage({ src: layer('activation-spill-wall.jpg'), width: 1280, format: 'webp', quality: 78 }) : null;
 const mask = live ? await getImage({ src: layer('activation-wall-mask.png'), width: 1280, format: 'webp', quality: 85 }) : null;
@@ -85,7 +91,7 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
           src={still}
           alt={render.alt}
           widths={[640, 960, 1280, 1920, 2560].filter((w) => w <= still.width)}
-          sizes="(min-width: 87.5rem) 1310px, 100vw"
+          sizes="(min-width: 87.5rem) 1272px, 100vw"
           formats={['avif', 'webp']}
           loading="lazy"
           decoding="async"
@@ -94,7 +100,7 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
         {
           live && plate && spillTv && spillWall && mask && (
             <div class="eva__live" data-ev-live hidden aria-hidden="true">
-              <img class="eva__plate" src={plate.src} srcset={plate.srcSet.attribute} sizes="(min-width: 87.5rem) 1310px, 100vw" alt="" loading="lazy" decoding="async" />
+              <img class="eva__plate" src={plate.src} srcset={plate.srcSet.attribute} sizes="(min-width: 87.5rem) 1272px, 100vw" alt="" loading="lazy" decoding="async" />
               <div class="eva__wall" style={`-webkit-mask-image: url(${mask.src}); mask-image: url(${mask.src})`}>
                 <video class="eva__screen" data-screen="wall" width="960" height="640" muted loop playsinline preload="none" poster={wallPoster}>
                   <source src={withBase(`/media/${wall.file}`)} type="video/mp4" />
@@ -147,9 +153,11 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
     padding-block: var(--section-y);
   }
 
+  /* V1.3: the copy row and the rendering about 12% closer than before (from
+     clamp(2.5rem, 5vw, 4rem)). */
   .eva__inner {
     display: grid;
-    gap: clamp(2.5rem, 5vw, 4rem);
+    gap: clamp(2.2rem, 4.4vw, 3.5rem);
   }
 
   .eva__head {
@@ -178,9 +186,15 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
   }
 
   /* ---- the visualization ----------------------------------------------------------- */
+  /* V1.3: on large desktops the rendering is about 8% narrower than the content
+     (79.5rem, from the content's full 86.7rem at most), centered; below that width it
+     spans the content as before. Always whole: nothing of it is cropped. */
   .eva__viz {
     display: grid;
     gap: 0.85rem;
+    justify-self: center;
+    width: 100%;
+    max-width: 79.5rem;
     margin: 0;
   }
 

@@ -1,17 +1,18 @@
 ---
 /**
- * Events and Multimedia Production, Version 1.2.
+ * Events and Multimedia Production, Version 1.3.
  *
  * The third and final selected-work case study, built around the five stages
  * of the work: 01 Hero (one editorial reel in a wide cinematic frame beneath
  * the headline and paragraph; V1.2 removed V1.1's three programs and their
  * control), 02 the transition (SECURE. BUILD. CAPTURE. CUT. AMPLIFY., revealed
- * as the reader scrolls), 03 Build the activation (an original 3D render whose
- * screens play), 04 Command the room (the Sui Summit session), 05 From setup
- * to final output (the production room, closing with the credits of the Sui
- * Summit work at ETHDenver), 06 Sui Fest, 07 the conclusion (V1.2 folded the
- * standalone section on what continued after into it), with the way on to the
- * next case study, then Contact and the footer. It keeps the portfolio's type, palette, navigation,
+ * as the reader scrolls, and since V1.3 the broadcast signal after the last
+ * word), 03 Build the activation (an original 3D concept rendering whose
+ * screens play), 04 the Expanding Production Deck (V1.3: the live
+ * presentation, the production room and the event film in one deck, in place
+ * of their three sections), 05 the conclusion (V1.2 folded the standalone
+ * section on what continued after into it), with the way on to the next case
+ * study, then Contact and the footer. It keeps the portfolio's type, palette, navigation,
  * buttons and Contact, and adds a restrained production layer: cue readings,
  * timecodes, crop marks and progress lines. The ground cuts between the dark
  * of the screens and the warm light of the planning, and at the end cuts to
@@ -33,9 +34,7 @@ import Contact from '@components/Contact.astro';
 import EvHero from '@components/events/EvHero.astro';
 import EvTransition from '@components/events/EvTransition.astro';
 import EvActivation from '@components/events/EvActivation.astro';
-import EvRoom from '@components/events/EvRoom.astro';
-import EvSetup from '@components/events/EvSetup.astro';
-import EvSuiFest from '@components/events/EvSuiFest.astro';
+import EvDeck from '@components/events/EvDeck.astro';
 import EvConclusion from '@components/events/EvConclusion.astro';
 
 const entry = await getEntry('work', 'events-video');
@@ -48,9 +47,7 @@ const d = entry.data;
     <EvHero />
     <EvTransition />
     <EvActivation />
-    <EvRoom />
-    <EvSetup />
-    <EvSuiFest />
+    <EvDeck />
     <EvConclusion />
   </article>
 

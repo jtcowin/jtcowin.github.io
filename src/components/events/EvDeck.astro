@@ -1,0 +1,539 @@
+---
+/**
+ * 04 The Expanding Production Deck (Events, V1.3): deployed from the V1.2
+ * review checkpoint as approved, in place of three sections (the Sui Summit
+ * session, the production room and Sui Fest). Three chapters, LIVE
+ * PRESENTATION, PRODUCTION ROOM and EVENT FILM (events.json `deck`): every
+ * chapter's rail always visible and one chapter open at a time, opened by a
+ * click, a tap or the keyboard (each rail is a button: Tab to it, Enter or
+ * Space opens it, the arrow keys, Home and End move between them). Nothing
+ * advances by itself.
+ *
+ * An open chapter holds its headline, one line of context, up to three things
+ * John did, the outcome, one credit line, and its media at about 43% of its
+ * width: a muted preview (an approved loop of 8 to 15 seconds; it plays only
+ * while its chapter is open and well in view, never for reduced motion or a
+ * data-saving preference, and has its own pause control), and the full film,
+ * which "Watch full video with sound" plays in place with its sound and its
+ * controls (EvPlayer; one sound at a time, as everywhere on the page).
+ *
+ * Wide (the deck 68rem or more): the chapters side by side, the closed ones
+ * narrowed to their rails, labeled vertically; the open chapter's width eases
+ * over about half a second, its content fixed at its open width so it is
+ * revealed rather than reflowed, and the deck keeps the height of its longest
+ * chapter, so nothing below it moves. Narrow: a vertical accordion. With
+ * reduced motion a chapter changes through a short fade, with no change of
+ * width or height in motion and no scroll pinning. Without JavaScript all
+ * three chapters are open, each with its film's native controls.
+ *
+ * Kept for the next revision (events.json `setupFinal`): the production room's
+ * setup photograph, its caption and the finished explainer, for a Setup and
+ * Final treatment once the deck has been reviewed live.
+ */
+import events from '@data/events.json';
+import { getAsset } from '@lib/assets';
+import { clockLabel } from '@lib/ev-copy';
+import Icon from '@components/Icon.astro';
+import EvPlayer from './EvPlayer.astro';
+import EvSlot from './EvSlot.astro';
+
+const { deck } = events;
+const pad = (n: number) => String(n).padStart(2, '0');
+const chapters = deck.chapters.map((ch, i) => {
+  const full = getAsset(ch.full);
+  return { ...ch, num: pad(i + 1), length: full.duration ? clockLabel(full.duration) : '' };
+});
+---
+
+<section class="evd" id="ev-deck" data-surface="dark" aria-labelledby="ev-deck-title">
+  <div class="container">
+    <h2 id="ev-deck-title" class="sr-only">{chapters.map((c) => c.label).join(', ')}</h2>
+    <div class="evd__deck" data-ev-deck>
+      <div class="evd__row">
+        {
+          chapters.map((ch, i) => (
+            <article class:list={['evd__ch', i === 0 && 'is-open']} data-deck-ch={ch.key}>
+              <h3 class="evd__h">
+                <button type="button" class="evd__rail" id={`ev-deck-rail-${ch.key}`} aria-expanded={i === 0 ? 'true' : 'false'} aria-controls={`ev-deck-${ch.key}`} data-deck-rail>
+                  <span class="evd__num">{ch.num}</span>{' '}
+                  <span class="evd__label">{ch.label}</span>
+                  <span class="evd__chev" aria-hidden="true" />
+                </button>
+              </h3>
+              <div class="evd__body" id={`ev-deck-${ch.key}`} role="region" aria-labelledby={`ev-deck-rail-${ch.key}`}>
+                <div class="evd__clip">
+                  <div class="evd__content">
+                    <div class="evd__media">
+                      <div class="evd__preview" data-deck-preview>
+                        <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
+                      </div>
+                      <div class="evd__full" data-deck-full>
+                        <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
+                      </div>
+                      <button type="button" class="evd__watch" data-deck-watch>
+                        <span class="evd__watch-icon" aria-hidden="true">
+                          <Icon name="play" size={12} />
+                        </span>
+                        <span>{deck.watch}</span>
+                        {ch.length && <span class="evd__len">{ch.length}</span>}
+                      </button>
+                    </div>
+                    <div class="evd__text">
+                      <h4 class="display evd__title">{ch.headline}</h4>
+                      <p class="evd__context">{ch.context}</p>
+                      <ul class="evd__points">
+                        {ch.points.map((p) => (
+                          <li>{p}</li>
+                        ))}
+                      </ul>
+                      <p class="evd__outcome">{ch.outcome}</p>
+                      <p class="evd__credit">{ch.credit}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { mountLoops, mountPlayers, players } from '@lib/ev-media';
+
+  for (const deck of Array.from(document.querySelectorAll<HTMLElement>('[data-ev-deck]'))) {
+    mountPlayers(deck);
+    mountLoops(deck);
+    const chapters = Array.from(deck.querySelectorAll<HTMLElement>('[data-deck-ch]'));
+    const rails = chapters.map((ch) => ch.querySelector<HTMLButtonElement>('[data-deck-rail]') as HTMLButtonElement);
+
+    // One chapter open at a time; a chapter that closes pauses whatever plays in it
+    // (a film keeps its place for when the reader comes back).
+    const open = (index: number) => {
+      chapters.forEach((ch, k) => {
+        const on = k === index;
+        ch.classList.toggle('is-open', on);
+        rails[k].setAttribute('aria-expanded', String(on));
+        if (!on) for (const v of Array.from(ch.querySelectorAll('video'))) if (!v.paused) v.pause();
+      });
+    };
+
+    // In the accordion (narrow screens), a chapter that closes above the one being
+    // opened shrinks out from under the reader; once it has, bring the opened
+    // chapter's rail back into view below the header if it has slipped above it.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const row = deck.querySelector<HTMLElement>('.evd__row');
+    const keepInView = (rail: HTMLElement) => {
+      if (!row || getComputedStyle(row).flexDirection !== 'column') return;
+      window.setTimeout(() => {
+        const root = getComputedStyle(document.documentElement);
+        const header = parseFloat(root.getPropertyValue('--header-row')) * parseFloat(root.fontSize) || 68;
+        const top = rail.getBoundingClientRect().top;
+        if (top < header) window.scrollTo({ top: window.scrollY + top - header - 12, behavior: reduce.matches ? 'auto' : 'smooth' });
+      }, reduce.matches ? 30 : 480);
+    };
+
+    rails.forEach((rail, i) => {
+      rail.addEventListener('click', () => {
+        open(i);
+        keepInView(rail);
+      });
+      rail.addEventListener('keydown', (event) => {
+        const n = rails.length;
+        const to = ({ ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: n - 1 } as Record<string, number>)[event.key];
+        if (to === undefined) return;
+        event.preventDefault();
+        rails[(to + n) % n].focus();
+      });
+    });
+
+    // Watch full video with sound: the preview steps aside and the full film plays
+    // in its place, with sound and its controls (the reader's press allows the sound).
+    for (const ch of chapters) {
+      const watch = ch.querySelector<HTMLButtonElement>('[data-deck-watch]');
+      const preview = ch.querySelector<HTMLElement>('[data-deck-preview]');
+      const full = ch.querySelector<HTMLElement>('[data-deck-full]');
+      watch?.addEventListener('click', () => {
+        preview?.querySelector('video')?.pause();
+        if (preview) preview.hidden = true;
+        full?.classList.add('is-shown');
+        watch.hidden = true;
+        const root = full?.querySelector<HTMLElement>('[data-evp]');
+        if (!root) return;
+        players.get(root.id)?.begin();
+        root.querySelector<HTMLElement>('[data-evp-play]')?.focus({ preventScroll: true });
+      });
+    }
+  }
+</script>
+
+<style>
+  .evd {
+    --rail: 3.75rem;
+    --deck-gap: 0.6rem;
+    padding-block: var(--section-y);
+  }
+
+  .evd__deck {
+    container-type: inline-size;
+  }
+
+  .evd__row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--deck-gap);
+  }
+
+  /* ---- a chapter: its rail, then its body ------------------------------------------- */
+  .evd__ch {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+    transition: border-color var(--dur) var(--ease-out);
+  }
+
+  .evd__ch.is-open {
+    border-color: var(--line-strong);
+  }
+
+  .evd__h {
+    display: flex;
+    margin: 0;
+    font: inherit;
+  }
+
+  .evd__rail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1.05rem 1.15rem;
+    border: 0;
+    background: none;
+    color: var(--heading);
+    font: 700 var(--text-xs) / 1.3 var(--font-sans);
+    letter-spacing: 0.14em;
+    text-align: left;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .evd__rail:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -5px;
+    border-radius: calc(var(--radius-lg) - 2px);
+  }
+
+  .evd__num {
+    color: var(--accent-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .evd__chev {
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-left: auto;
+    border-right: 1.5px solid var(--ink-3);
+    border-bottom: 1.5px solid var(--ink-3);
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .evd__ch.is-open .evd__chev {
+    transform: translateY(2px) rotate(225deg);
+  }
+
+  :global(html:not(.js)) .evd__chev {
+    display: none;
+  }
+
+  .evd__clip {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .evd__content {
+    display: grid;
+    gap: 1.25rem;
+    padding: 0 1.15rem 1.35rem;
+  }
+
+  /* ---- the media: the preview, or the full film in its place -------------------------- */
+  .evd__media {
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    min-width: 0;
+  }
+
+  .evd__media :global(.ev-slot),
+  .evd__media :global(.evp__frame) {
+    border-radius: var(--radius);
+  }
+
+  .evd__watch {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    white-space: nowrap;
+    gap: 0.55rem;
+    padding: 0.6rem 1rem 0.6rem 0.75rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--heading);
+    font: 600 var(--text-sm) / 1 var(--font-sans);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .evd__watch:hover {
+    border-color: var(--accent);
+    background: var(--bg-sunk);
+  }
+
+  .evd__watch:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .evd__watch-icon {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--c-ink);
+  }
+
+  .evd__len {
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The smallest phones: the label a touch smaller and the film's length left to
+     the player, so the button stays on one line within its column. */
+  @container (max-width: 21rem) {
+    .evd__watch {
+      font-size: 0.8125rem;
+    }
+
+    .evd__len {
+      display: none;
+    }
+  }
+
+  /* With JavaScript the full film waits behind its preview until it is asked for;
+     without it there is no preview, only the film with its native controls. */
+  :global(html.js) .evd__full:not(.is-shown) {
+    display: none;
+  }
+
+  :global(html:not(.js)) .evd__preview,
+  :global(html:not(.js)) .evd__watch {
+    display: none;
+  }
+
+  /* ---- the words ------------------------------------------------------------------------ */
+  .evd__text {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+    min-width: 0;
+  }
+
+  .evd__title {
+    margin: 0;
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+    color: var(--heading);
+    text-wrap: balance;
+  }
+
+  .evd__context {
+    max-width: 36rem;
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .evd__points {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .evd__points li {
+    display: grid;
+    grid-template-columns: 0.9rem minmax(0, 1fr);
+    gap: 0.45rem;
+  }
+
+  .evd__points li::before {
+    content: '';
+    width: 0.38rem;
+    height: 0.38rem;
+    margin-top: 0.55em;
+    background: var(--accent);
+  }
+
+  .evd__outcome {
+    margin: 0;
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--accent);
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--heading);
+  }
+
+  .evd__credit {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.55;
+    color: var(--ink-3);
+  }
+
+  /* ---- with JavaScript: one chapter open at a time ----------------------------------- */
+  /* Narrow: a vertical accordion. */
+  :global(html.js) .evd__body {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows 0.45s var(--ease-out),
+      visibility 0s linear 0.45s;
+  }
+
+  :global(html.js) .evd__ch.is-open .evd__body {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.45s var(--ease-out),
+      visibility 0s linear 0s;
+  }
+
+  /* Wide (the deck 68rem or more, so the open chapter has room for its media and
+     its words side by side): the closed chapters narrowed to their rails. */
+  @container (min-width: 68rem) {
+    :global(html.js) .evd__row {
+      flex-direction: row;
+    }
+
+    :global(html.js) .evd__ch {
+      flex: 0 0 var(--rail);
+      flex-direction: row;
+      transition:
+        flex-grow 0.55s var(--ease-out),
+        border-color var(--dur) var(--ease-out);
+    }
+
+    :global(html.js) .evd__ch.is-open {
+      flex-grow: 1;
+    }
+
+    /* The rail: a column as tall as the deck, the whole of it the button, its
+       number and label running up from the foot. The label is laid out vertically
+       at its own length (a flex item that then grows to fill the column), so it
+       never sets the deck's height. */
+    :global(html.js) .evd__h {
+      flex: 0 0 auto;
+      flex-direction: column;
+      width: calc(var(--rail) - 2px);
+    }
+
+    :global(html.js) .evd__rail {
+      flex: 1 1 auto;
+      flex-direction: row;
+      justify-content: flex-start;
+      width: auto;
+      padding: 1.35rem 0;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    :global(html.js) .evd__rail:focus-visible {
+      outline-offset: -6px;
+    }
+
+    :global(html.js) .evd__chev {
+      display: none;
+    }
+
+    :global(html.js) .evd__ch.is-open .evd__rail {
+      color: var(--accent-ink);
+    }
+
+    :global(html.js) .evd__body,
+    :global(html.js) .evd__ch.is-open .evd__body {
+      display: block;
+      flex: 1 1 auto;
+      min-width: 0;
+      grid-template-rows: none;
+    }
+
+    :global(html.js) .evd__body {
+      opacity: 0;
+      transition:
+        opacity 0.25s ease,
+        visibility 0s linear 0.55s;
+    }
+
+    :global(html.js) .evd__ch.is-open .evd__body {
+      opacity: 1;
+      transition:
+        opacity 0.35s ease 0.2s,
+        visibility 0s linear 0s;
+    }
+
+    :global(html.js) .evd__clip {
+      height: 100%;
+    }
+
+    /* Fixed at the open chapter's width (the row less three rails and two gaps), so
+       opening reveals it rather than reflowing it. */
+    :global(html.js) .evd__content {
+      grid-template-columns: minmax(0, 43fr) minmax(0, 57fr);
+      align-items: center;
+      gap: clamp(1.5rem, 3.2cqi, 3rem);
+      width: calc(100cqi - 3 * var(--rail) - 2 * var(--deck-gap));
+      height: 100%;
+      padding: clamp(1.5rem, 3cqi, 2.5rem) clamp(1.5rem, 3cqi, 2.5rem) clamp(1.5rem, 3cqi, 2.5rem) 0.75rem;
+    }
+  }
+
+  /* Reduced motion: a chapter changes through a short fade, nothing morphs. */
+  @media (prefers-reduced-motion: reduce) {
+    .evd__ch,
+    .evd__chev {
+      transition: none !important;
+    }
+
+    :global(html.js) .evd__body,
+    :global(html.js) .evd__ch.is-open .evd__body {
+      transition: opacity 0.2s ease !important;
+    }
+
+    :global(html.js) .evd__body {
+      opacity: 0;
+    }
+
+    :global(html.js) .evd__ch.is-open .evd__body {
+      opacity: 1;
+    }
+  }
+</style>

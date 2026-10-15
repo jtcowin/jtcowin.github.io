@@ -5,14 +5,14 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Events and Multimedia Production Version 1.2 in review.** Version 2.0, Technical Product
-Marketing Version 1.6 and Events and Multimedia Production Version 1.1 are published. Events Version
-1.2 (one editorial reel in the hero, in place of the three programs and their control, set beneath an
-editorial header as a trial; the activation's television calmed to one charger card and its projection's
-edge tightened; the Amplify section folded into the conclusion; and the way on to the next case study as
-one shared container on both case studies) is committed locally and not pushed until it has been
-reviewed in the browser. Three of its directions wait for John's confirmation and are not built: the
-signal icon after AMPLIFY., the Expanding Production Deck and the shortened copy inside its chapters.
+**Status: Events and Multimedia Production Version 1.3 in review.** Version 2.0, Technical Product
+Marketing Version 1.6 and Events and Multimedia Production Version 1.2 are published. Events Version
+1.3 (the broadcast signal after AMPLIFY., the activation's paragraph and caption made event-agnostic
+and its rendering a little narrower on large desktops, the Expanding Production Deck in place of the
+session, the production room and Sui Fest, and a new Contact subline across the site) is committed
+locally and not pushed until it has been reviewed in the browser. Two deck decisions wait for the live
+review: whether its video should be larger, and how the production room recovers its Setup and Final
+contrast (the photograph, its caption and the finished explainer are kept for it).
 Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
@@ -43,17 +43,18 @@ browsing session, with a short sequence; since Version 1.2 it is three phrases, 
 handing over to the hero in about 3.8 seconds.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
-1.0, now at Version 1.2 (see [Events and Multimedia Production, Version
-1.2](#events-and-multimedia-production-version-12)): a hero whose headline and paragraph share one
+1.0, now at Version 1.3 (see [Events and Multimedia Production, Version
+1.3](#events-and-multimedia-production-version-13)): a hero whose headline and paragraph share one
 header row above a full-width cinematic reel of four chapters (01 / LIVE PRESENTATION, 02 / CREATOR
 PODCAST, 03 / TECHNICAL EXPLAINER, 04 / EVENT FILM; the team interview joins as the third once its
 footage is approved), played through in order and crossfading from one to the next; a transition,
-SECURE. BUILD. CAPTURE. CUT. AMPLIFY., revealed word by word as the reader scrolls; then the activation
-(an original 3D render of the booth whose television and projected wall play their loops), the Sui
-Summit session, the production room from setup to final output, Sui Fest, and a conclusion that closes
-on the five stages and leads on to the next case study, Creator Campaigns, before Contact. One credit
-block closes each major chapter, and every media slot still waiting for its final asset is a
-placeholder at its final ratio in `npm run dev` only.
+SECURE. BUILD. CAPTURE. CUT. AMPLIFY., revealed word by word as the reader scrolls and closed by a
+broadcast signal; then the activation (an original 3D concept rendering whose television and projected
+wall play their loops), the Expanding Production Deck (the live presentation, the production room and
+the event film, one chapter open at a time), and a conclusion that closes on the five stages and leads
+on to the next case study, Creator Campaigns, before Contact. Each deck chapter carries one credit
+line, and every media slot still waiting for its final asset is a placeholder at its final ratio in
+`npm run dev` only.
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -217,7 +218,7 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   must appear in its text exactly once, or the build stops (`src/lib/tpm-copy.ts`). The page's metadata and its Select Work
   card still come from the case study's frontmatter; its older MDX body is no longer rendered. The
   opening sequence's three phrases are in `src/components/Intro.astro`.
-- **Events and Multimedia Production** (Version 1.2): `src/data/events.json` holds every word on the
+- **Events and Multimedia Production** (Version 1.3): `src/data/events.json` holds every word on the
   page and its media configuration, section by section. `stages`: the five stages (Secure, Build,
   Capture, Cut, Amplify), read by the transition's phrase, the sections' tallies and the conclusion.
   `hero`: the kicker, the headline and its `accent`, the paragraph, the reel's `chapters` in their order
@@ -226,11 +227,15 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   whole on narrow screens) and the pause control's words (`pause`, `play`, and `playShown`, the words on
   the control while the reel waits on its poster). A chapter appears only when its asset is approved and
   present, and the chapters are numbered among those, so a pending chapter (the team interview) leaves
-  no gap. `transition`: where the phrase breaks on small screens. Each section after that names the
-  stages it covers (`cues`), its headline and copy, its media (asset ids), its chapters, steps, caption,
-  stills or outcome, the slots still waiting for final media (`pending`) and, where it closes a chapter,
-  its `credits`; `credits.ethdenver` is the one block for the Sui Summit work at ETHDenver, which closes
-  the production room. `conclusion` holds the headline, its accent, the paragraph, the sentence that
+  no gap. `transition`: where the phrase breaks on small screens (the signal after AMPLIFY. is part of
+  `EvTransition.astro`). `activation`: its headline, paragraph, rendering, screens, caption and kit
+  slots. `deck` (V1.3): the words of "Watch full video with sound" (`watch`) and the three `chapters` in
+  order, each with its `key`, `label` (on its rail), `headline`, one line of `context`, up to three
+  `points`, the `outcome`, one `credit` line, its muted `preview` (an approved loop; `previewFit:
+  contain` shows a video wider than 16:9 whole), its `full` film with sound and that film's short name
+  for the player's controls (`fullLabel`). `setupFinal` keeps, off the page, what the next revision needs
+  for the production room's Setup and Final contrast: the setup photograph's asset id, its caption and
+  the finished explainer's asset id. `conclusion` holds the headline, its accent, the paragraph, the sentence that
   leads on (`nextLine`) and the case study it leads to (`next`, which must be the next in the
   collection's order, wrapping around to the first, or the build stops). The activation render's
   geometry, its screens' brightness over time and their luminance in the still are in
@@ -447,8 +452,9 @@ image; the Stack shows the approved 18 tools in their groups and order, ChatGPT 
 (empty alt text, since the name is set beside it), and `src/assets/stack/` holds exactly the 18
 approved SVGs with nothing in them that could run a script or load another file; the four capability
 rows are keyboard reachable and no icon tilts more than 2 degrees; Contact reads "Your product is
-complex. Its story shouldn't be." with the approved subline and keeps exactly the email and resume
-actions; the hero and footer descriptor is exactly "Web3 Marketing, Strategy, & Content"; and John's
+complex. Its story shouldn't be." with the approved subline (since the Events V1.3 brief: "If you need
+someone who can bring clarity from positioning through execution, let's talk.") and keeps exactly the
+email and resume actions; the hero and footer descriptor is exactly "Web3 Marketing, Strategy, & Content"; and John's
 name appears once in the footer.
 
 The Version 1.9 checks: the footer credit reads "© <year> John Cowin — Built end to end." with John's
@@ -1261,6 +1267,119 @@ public-facing expression." Centered as before; the words are unchanged.
   crossfade for reduced motion, the head decision's guards, the preloads matching the hero's pictures
   and the stylesheet's faces, the dismissal events and the homepage-only placement.
 
+### Events and Multimedia Production, Version 1.3
+
+John's Events and Multimedia Production V1.3 brief (October 14, 2026, on the live page after the V1.2
+deployment): a delta, not a rebuild. It implements only what the brief lists; everything else, the
+hero, its reel and labels, the conclusion, the way on, the television's and the projection's loops,
+the rendering itself and the Technical Product Marketing page outside Contact, is as Version 1.2 left
+it. The page now runs: 01 Hero, 02 the transition, 03 Build the activation, 04 the Expanding Production
+Deck, 05 the conclusion (with the way on to the next case study), Contact. No visitor-facing copy uses
+an em dash.
+
+- **02 The transition: the broadcast signal after AMPLIFY.** The approved Option A, Broadcast, in the
+  solid tile treatment of John's reference (the reference's treatment only, not its bell; kept with the
+  project as `reference/events-video/amplify-icon-treatment.png`, out of Git, and the page never points
+  at a desktop file). The words are unchanged; the signal follows AMPLIFY. on its line, the two set
+  so they never split: a square tile in the accent (0.9em, a little taller than the capitals, sitting
+  on the line like the words) with a point and two pairs of arcs inside in outline weight, in the
+  heading color. It is punctuation, not a button, and it is hidden from assistive technology with its
+  line (the phrase reads as before). As the reader scrolls, it arrives only once the last word is in:
+  0.3 seconds later the tile wipes in as the words do, the point and then the arcs open outward, and at
+  1.2 seconds one restrained pulse (a ring in the light accent) leaves the tile and fades, and it
+  settles. Nothing loops. Scrolled back above the last word, it steps away and arrives again when the
+  phrase completes. With reduced motion (or without JavaScript) it is simply there with the phrase. The
+  phrase's size is unchanged: with the tile it still fits one line from 48rem up, and on phones the tile
+  closes the second line.
+- **03 The activation: event-agnostic words, the same rendering.** The headline is kept. The paragraph
+  now reads "Before the doors open, I negotiate sponsorships and pricing, coordinate with event hosts,
+  source and price merchandise, and work with design on screen animations and physical assets. I plan
+  how those pieces come together on site and how the activation continues through content and
+  distribution afterward." (it names no one event; the Sui Summit story lives in the deck's live
+  presentation chapter), and the caption beneath the rendering "Concept rendering combining the
+  activation elements I plan and coordinate across events." The rendering itself, its loops and its
+  behavior are unchanged. On large desktops it is about 8% narrower than the content at its widest (a
+  cap of 79.5rem, centered, from the content's 86.5rem), and the copy row sits about 12% closer to it
+  (the gap clamp(2.2rem, 4.4vw, 3.5rem), from clamp(2.5rem, 5vw, 4rem)); it is always whole, nothing of
+  it cropped, and below about 1,400px wide it spans the content as before.
+- **04 The Expanding Production Deck** (`EvDeck.astro`, `deck` in `events.json`), deployed from the
+  V1.2 review checkpoint as approved, in place of three sections: Command the room (the Sui Summit
+  session), From setup to final output (the production room) and Sui Fest. Three chapters, LIVE
+  PRESENTATION, PRODUCTION ROOM and EVENT FILM, on the dark ground of the screens. Every chapter's rail
+  is always visible and only one chapter is open at a time (the live presentation to begin with); a
+  click or a tap on a rail opens its chapter, and nothing advances by itself. Each rail is a button in a
+  heading (its number and label, announced as expanded or collapsed, controlling its chapter's region):
+  Tab reaches it, Enter or Space opens it, the arrow keys, Home and End move between the rails, and the
+  rails and the watch buttons show a strong focus ring. An open chapter holds its headline, one line of
+  context, three things John did, the outcome, one credit line, and its media at about 43% of the width:
+  a muted preview, the approved Select Work loop for that work (the presentation's opening, 11 s, shown
+  whole; the slippage explainer, 9.7 s; the Sui Fest interview, 12 s), which plays only while its
+  chapter is open and well in view, never for reduced motion or a data-saving preference, with its own
+  pause control; and "Watch full video with sound" (with the film's length), which sets the preview
+  aside and plays the full film in place, with its sound and its controls (the presentation, 1:15;
+  Slippage Explained, 1:37; the Sui Fest film, 3:31; one sound at a time, as everywhere on the page).
+  Closing a chapter stops whatever plays in it; a film keeps its place. The words are the checkpoint's
+  (the live presentation's outcome is the brief's line, "Event-led relationships contribute to ongoing
+  conversations and integrations with key partners.").
+  - **Wide** (the deck 68rem or more, from about 1,200px wide): the chapters side by side, the closed ones
+    narrowed to their 3.75rem rails, labeled vertically from the foot; the open chapter's width eases
+    over 0.55 seconds, its content fixed at the open width so it is revealed rather than reflowed, and
+    the deck keeps the height of its longest chapter, so nothing below it moves. **Narrow**: a vertical
+    accordion; a chapter that closes above the one being opened can carry it up out of view, so once it
+    has, the opened chapter's rail is brought back into view below the header. **Reduced motion**: a
+    chapter changes through a short fade (0.2 s), with no change of width or height in motion and no
+    scroll pinning. **Without JavaScript**: all three chapters open, one after another, each with its
+    film's native controls and no preview.
+  - **Credits**: one credit line per chapter (the consolidated blocks went with the sections): the live
+    presentation (John Cowin, speaker Max McKendry, deck design Bob van der Meer), the production room
+    (John Cowin, on camera Max McKendry, final edit Bob van der Meer) and the event film (John Cowin,
+    with the participating teams).
+  - **To review live, not solved here** (as the brief asks): the supporting video may need to be
+    larger, and the production room should recover the contrast between the behind-the-scenes setup
+    photograph and the finished explainer. For that next revision the setup photograph
+    (`ev-image-production-setup`, `src/assets/events-video/sui-summit-bts.jpg`), its caption and the
+    finished explainer (`ev-video-slippage-full` and its poster, also the production room's full film
+    here) all stay in the project; `setupFinal` in `events.json` names them, and the Setup and Final
+    comparison as it was built is in the repository's history at 44b1e42 (`EvSetup.astro`). The
+    session's, the production room's and Sui Fest's other words, their pending slots and the three Sui
+    Fest stills stay in the manifest or the history, off the page. The replaced components (EvRoom,
+    EvSetup, EvSuiFest, and EvCue, EvExtras and EvCredits, which only they used) are deleted.
+- **Contact, across the site**: the headline is kept and the subline now reads "If you need someone who
+  can bring clarity from positioning through execution, let's talk." on the homepage and every case
+  study (`contact.copy` in `src/data/home.json`).
+- **Checks** (`verify.mjs`, the Events block updated for V1.3): the page's order with the deck fourth
+  and none of the three replaced sections, tallies or credit blocks; the signal (one, immediately after
+  AMPLIFY. on its line and never split from it; not a button; Option A's point and two pairs of arcs
+  and nothing else; a solid tile in the accent with the glyph in outline weight; about the capitals'
+  height; called only once the last word is in, the tile waiting a moment after it; one pulse that
+  ends transparent, and nothing in the transition repeating; hidden states only with motion allowed),
+  with the transition otherwise only its phrase; the activation's new paragraph and caption, no event
+  or booth named, the rendering about 8% narrower than the content on large desktops and centered, the
+  copy row 10 to 15% closer; the deck's three chapters in order, the first open, each rail a labeled
+  button controlling its region, the checkpoint's words, a muted preview of 8 to 15 seconds, the full
+  film waiting behind it, "Watch full video with sound", nothing autoplayed; side by side on wide
+  screens and an accordion on narrow ones, all open without JavaScript, a short fade with reduced
+  motion; the script's one-at-a-time opening, keyboard and watch, and nothing advancing by itself;
+  strong focus rings; the setup photograph, its caption and the finished explainer kept; the credit
+  lines and no invented titles; three films with sound, one per chapter; and the new Contact subline on
+  every page. Each new check was shown to catch what it guards: on a scratch copy of the repository, 53
+  deliberate breaks (the signal in place of the word or wrapping alone, a button, a different symbol, an
+  outline tile, a looping pulse, the old paragraph or caption, the rendering at full width, two chapters
+  open, a deck that advances itself, no focus ring, morphing with reduced motion, the setup photograph
+  removed, the old Contact subline, an em dash, and so on), one at a time, each failed the check meant
+  for it.
+- **Verified** in the browser: no horizontal overflow from 320 to 2,560px wide; the deck side by side
+  from about 1,200px (the media 379 to 469px wide at 1,280 to 2,560px) and an accordion below; the watch button on one line down
+  to 320px; a behavior run of 43 checks (the reel as in V1.2; the signal waiting for the last word,
+  arriving after it, pulsing once, settling beside AMPLIFY. and stepping away when scrolled back; the
+  activation's screens; the deck's rails, one open chapter, its preview, a click, the arrow keys, Enter,
+  Home and End, the focus ring, Watch playing the film with sound and focus moving to its controls,
+  another chapter stopping it, and nothing advancing in twelve seconds; the way on; the new Contact
+  subline; no page errors; with reduced motion the static signal, the fade without morphing and the
+  previews on their posters; on a phone the accordion keeping the opened chapter in view with its
+  preview playing; the desktop proportions); without JavaScript (all three chapters open with native
+  controls); and with the full check and the accessibility scan.
+
 ### Events and Multimedia Production, Version 1.2
 
 John's Events and Multimedia Production V1.2 Draft Brief (October 14, 2026, on the live page after
@@ -1806,9 +1925,9 @@ src/
   components/tpm/       TpmHero, TpmFlow (02 Foundation and 03 the statement), TpmWebsite, TpmDocs,
                         TpmCampaign (06), TpmConclusion (07), TpmCase (a chapter's opening),
                         TpmWalkthrough (the walkthroughs' player), DocIcon
-  components/events/    EvHero, EvTransition, EvActivation, EvRoom, EvSetup, EvSuiFest,
-                        EvConclusion, EvCue (a section's tally), EvCredits, EvPlayer (a video
-                        with sound), EvSlot (a media slot), EvExtras (a section's slots to come)
+  components/events/    EvHero, EvTransition, EvActivation, EvDeck (the Expanding Production
+                        Deck), EvConclusion, EvPlayer (a video with sound), EvSlot (a media
+                        slot)
   components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
   pages/                index, work/technical-marketing, work/events-video, work/[slug] (the
                         creator campaigns case study), 404, robots.txt, site.webmanifest

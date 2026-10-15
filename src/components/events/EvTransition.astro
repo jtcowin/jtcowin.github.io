@@ -9,9 +9,20 @@
  * short hold to read it, then straight into "The work starts before anyone
  * enters the room." as the phrase fades away. One centered line on wide
  * screens, two deliberate lines on small ones (after the third word). No
- * icons, lines, nodes, numbers or paragraphs. With reduced motion (or without
+ * lines, nodes, numbers or paragraphs. With reduced motion (or without
  * JavaScript) the whole phrase is simply there, and fades as the next section
  * arrives.
+ *
+ * V1.3: the broadcast signal after AMPLIFY. (the approved Option A, in the
+ * solid tile treatment of John's reference): a square tile in the accent, set
+ * in the line like punctuation, a little taller than the capitals, with a
+ * point and two pairs of arcs inside in outline weight. It is punctuation, not
+ * a button, and is hidden from assistive technology (the phrase reads as
+ * before). As the reader scrolls, it arrives once the last word is in: the
+ * tile wipes in like the words, the point and the arcs open outward, one
+ * restrained pulse leaves the tile, and it settles; nothing loops. If the
+ * reader scrolls back above the last word it steps away, and arrives again
+ * when the phrase completes. With reduced motion it is simply there.
  */
 import events from '@data/events.json';
 
@@ -30,7 +41,14 @@ const phrase = words.join(' ');
           lines.map((line, k) => [
             k ? ' ' : '',
             <span class="evx__line" aria-hidden="true">
-              {line.map((w, i) => [i ? ' ' : '', <span class="evx__word" data-word>{w}</span>])}
+              {line.map((w, i) => [
+                i ? ' ' : '',
+                k === lines.length - 1 && i === line.length - 1 ? (
+                  <span class="evx__tail"><span class="evx__word" data-word>{w}</span><span class="evx__signal" data-evx-signal><span class="evx__pulse" /><span class="evx__tile"><svg class="evx__glyph" viewBox="0 0 24 24" focusable="false"><circle class="evx__g evx__g--point" cx="12" cy="12" r="2" /><path class="evx__g evx__g--near" d="M8.6 8.6a4.8 4.8 0 0 0 0 6.8M15.4 8.6a4.8 4.8 0 0 1 0 6.8" /><path class="evx__g evx__g--far" d="M5.8 5.8a8.8 8.8 0 0 0 0 12.4M18.2 5.8a8.8 8.8 0 0 1 0 12.4" /></svg></span></span></span>
+                ) : (
+                  <span class="evx__word" data-word>{w}</span>
+                ),
+              ])}
             </span>,
           ])
         }
@@ -46,6 +64,9 @@ const phrase = words.join(' ');
   if (root) {
     const words = Array.from(root.querySelectorAll<HTMLElement>('[data-word]'));
     const phrase = root.querySelector<HTMLElement>('[data-evx-phrase]');
+    // The signal after AMPLIFY. (V1.3) arrives with the last word (its own
+    // delay lets the word land first) and steps away if the reader scrolls back.
+    const signal = root.querySelector<HTMLElement>('[data-evx-signal]');
     // In shares of the screen's height, by the section's top edge: the first
     // word arrives just before the phrase settles at the middle of the screen
     // (the top at 0.15), the last 0.7 of a screen later; the phrase holds
@@ -66,6 +87,7 @@ const phrase = words.join(' ');
       if (live) {
         const p = (START - top) / TRAVEL;
         words.forEach((w, i) => w.classList.toggle('is-on', p >= i / (words.length - 1)));
+        signal?.classList.toggle('is-on', p >= 1);
       }
       // Leaving: the phrase fades as it rises out (from 35% of the screen to
       // 5%), while the next section comes up beneath it.
@@ -184,6 +206,139 @@ const phrase = words.join(' ');
     .evx.is-live .evx__word.is-on {
       opacity: 1;
       clip-path: inset(-0.2em -0.2em -0.2em -0.2em);
+    }
+  }
+
+  /* ---- the signal after AMPLIFY. (V1.3): a solid tile in the accent, set in the
+     line like punctuation (a little taller than the capitals, sitting on the line
+     the way the word does), with the broadcast glyph in outline weight ----------- */
+  .evx__tail {
+    white-space: nowrap;
+  }
+
+  .evx__signal {
+    position: relative;
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+    margin-left: 0.26em;
+    vertical-align: -0.1em;
+  }
+
+  .evx__tile {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 0.04em;
+    background: var(--accent);
+    color: var(--heading);
+  }
+
+  .evx__glyph {
+    display: block;
+    width: 72%;
+    height: 72%;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .evx__g {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+
+  .evx__g--point {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  .evx__pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.04em;
+    box-shadow: 0 0 0 0.045em var(--accent-ink);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Live, with motion allowed: it waits until the last word is in, then the tile
+     wipes in as the words do, the point and the arcs open outward, and one
+     restrained pulse leaves the tile (once: nothing repeats). With reduced motion
+     none of this applies and the signal is simply there. */
+  @media (prefers-reduced-motion: no-preference) {
+    .evx.is-live .evx__tile {
+      clip-path: inset(0 100% 0 0);
+    }
+
+    .evx.is-live .evx__g {
+      opacity: 0;
+    }
+
+    .evx.is-live .evx__signal.is-on .evx__tile {
+      animation: evx-tile 0.45s cubic-bezier(0.2, 0.75, 0.2, 1) 0.3s both;
+    }
+
+    .evx.is-live .evx__signal.is-on .evx__g--point {
+      animation: evx-point 0.26s cubic-bezier(0.2, 0.7, 0.3, 1) 0.62s both;
+    }
+
+    .evx.is-live .evx__signal.is-on .evx__g--near {
+      animation: evx-arc 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) 0.74s both;
+    }
+
+    .evx.is-live .evx__signal.is-on .evx__g--far {
+      animation: evx-arc 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) 0.86s both;
+    }
+
+    .evx.is-live .evx__signal.is-on .evx__pulse {
+      animation: evx-pulse 0.95s cubic-bezier(0.2, 0.7, 0.3, 1) 1.2s forwards;
+    }
+  }
+
+  @keyframes evx-tile {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes evx-point {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes evx-arc {
+    from {
+      opacity: 0;
+      transform: scale(0.55);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes evx-pulse {
+    0% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.6);
     }
   }
 </style>

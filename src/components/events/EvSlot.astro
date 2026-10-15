@@ -31,9 +31,13 @@ interface Props {
   aspect?: string;
   /** CSS object-position for a crop. */
   focus?: string;
+  /** How a video fills its frame: `cover` (the default) or `contain`, which
+   * shows a video wider than its frame whole (V1.3, the deck's previews). */
+  fit?: 'cover' | 'contain';
 }
 
-const { id, class: className, sizes = '(min-width: 60rem) 50vw, 100vw', priority = false, aspect, focus } = Astro.props;
+const { id, class: className, sizes = '(min-width: 60rem) 50vw, 100vw', priority = false, aspect, focus, fit = 'cover' } = Astro.props;
+const videoStyle = [fit === 'contain' && 'object-fit: contain', focus && `object-position: ${focus}`].filter(Boolean).join('; ') || undefined;
 const entry = getAsset(id);
 const kind = entry.type === 'video' ? 'video' : entry.type === 'metric' ? 'metric' : 'image';
 // For a video, its poster.
@@ -66,7 +70,7 @@ const kindLabel = entry.type === 'video' ? 'Video' : entry.type === 'metric' ? '
 {
   ready && kind === 'video' && (
     <div class:list={['ev-slot', 'ev-slot--loop', className]} style={`aspect-ratio: ${ratio}`} data-asset={entry.id} data-ev-loop data-label={entry.label}>
-      <video class="ev-slot__video" muted loop playsinline preload="none" poster={poster?.src} aria-label={entry.alt} style={focus ? `object-position: ${focus}` : undefined}>
+      <video class="ev-slot__video" muted loop playsinline preload="none" poster={poster?.src} aria-label={entry.alt} style={videoStyle}>
         <source src={withBase(`/media/${entry.file}`)} type="video/mp4" />
       </video>
       <button type="button" class="ev-slot__toggle" data-ev-loop-toggle aria-label={`Play: ${entry.label}`} hidden>
