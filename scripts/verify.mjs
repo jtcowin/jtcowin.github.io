@@ -1930,7 +1930,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   }
   const evUnverified = evNoCode.replace(/<p class="ev-slot__metric[\s\S]*?<\/p>/g, ' ');
   const evUnverifiedText = textOf(norm(evUnverified));
-  for (const [re, what] of [[/\bpilot\b/i, 'an unannounced pilot'], [/\bcontract\b/i, 'contract discussions'], [/diligence/i, 'investor diligence'], [/data room/i, 'data rooms'], [/fundrais|funding round|raising/i, 'fundraising'], [/Foundation discussion/i, 'Foundation discussions'], [/youtube|youtu\.be/i, 'YouTube'], [/Sui Network/, 'confidential Sui negotiations']]) {
+  for (const [re, what] of [[/\bpilot\b/i, 'an unannounced pilot'], [/\bcontract\b/i, 'contract discussions'], [/diligence/i, 'investor diligence'], [/data room/i, 'data rooms'], [/fundrais|funding round|raising/i, 'fundraising'], [/Foundation discussion/i, 'Foundation discussions'], [/youtube\.com|youtu\.be/i, 'a YouTube link (the V1.5 outcome may name the channel, as approved)'], [/Sui Network/, 'confidential Sui negotiations']]) {
     if (re.test(evText) || re.test(evNoCode.replace(/<[^>]+>/g, ' '))) failures.push(`[events] the page never mentions ${what}`);
   }
   if (/Aftermath/i.test(evUnverifiedText) || /Aftermath/i.test(evUnverified.replace(/<[^>]+>/g, ' '))) failures.push('[events] the page never mentions a named integration before it is verified');
@@ -1948,29 +1948,35 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // production room's Setup and Final inside its chapter.
   if (/<section class="(?:evm|evs|evf)"|id="ev-room"|id="ev-setup"|id="ev-suifest"|class="ev-credits|class="ev-cue\b/.test(evPage)) failures.push('[events] the deck replaces the three separate sections (the session, the production room and Sui Fest), with their tallies and credit blocks');
   const deckSec = evSection('evd');
+  // V1.5: the approved words for each chapter, the live presentation without
+  // its full film (its preview only), Bob van der Meer credited for the edit in
+  // the fine print only, and the participating teams on a line of their own.
   const DECK = [
     {
-      key: 'live', label: 'Live presentation', headline: 'Build the session. Fill the room. Extend its life.',
-      context: 'I organized and ran Bolt Liquidity’s presentation at Sui Summit, ETHDenver, in 2025 and 2026, from the speaking slot to the recording.',
-      points: ['Booked the slot, helped shape the subject and promoted the session', 'Directed the deck and ran the setup and live slides', 'Captured it from multiple angles, then published it whole and in clips'],
-      outcome: 'Event-led relationships contribute to ongoing conversations and integrations with key partners.',
-      credit: 'Organized, directed and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer',
-      preview: 'ev-max-loop', full: 'ev-room-presentation',
+      key: 'live', label: 'Live presentation', headline: 'From live presentation to lasting content.',
+      context: 'I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.',
+      points: ['Secured the slot, helped shape the subject, and promoted the session', 'Directed the deck, presentation setup, and live slides', 'Captured the presentation from multiple angles and repackaged it for continued distribution'],
+      outcome: 'Event-led relationships contribute to ongoing conversations and integrations with key ecosystem partners.',
+      credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer',
+      participants: '',
+      preview: 'ev-max-loop', full: null,
     },
     {
-      key: 'room', label: 'Production room', headline: 'A compact setup. A full content system.',
-      context: 'At ETHDenver 2026 I booked a production room at the venue and built a studio from what was on hand.',
-      points: ['Set up two cameras, a clip-on mic and the venue’s own light', 'Wrote about 20 questions and directed multiple takes', 'Chose the strongest takes and wrote the edit direction'],
-      outcome: 'Finished explainers, edited by Bob van der Meer from my takes and direction.',
-      credit: 'Questions, direction, capture and edit briefs by John Cowin · On camera Max McKendry · Final edit Bob van der Meer',
+      key: 'room', label: 'Production room', headline: 'Build the set. Direct the take. Shape the final cut.',
+      context: 'At ETHDenver, I turned a production room and a minimal kit into a repeatable technical explainer series.',
+      points: ['Built a compact setup with two cameras and a clip-on mic', 'Wrote 20 interview questions and directed multiple takes', 'Selected the strongest moments and shaped the edit direction'],
+      outcome: 'One focused production session became a library of finished product explainers for the YouTube channel and social media.',
+      credit: 'Concept, questions, direction, capture, and edit briefs by John Cowin · On-camera Max McKendry · Final edit Bob van der Meer',
+      participants: '',
       preview: 'ev-slippage-preview', full: 'ev-video-slippage-full',
     },
     {
-      key: 'film', label: 'Event film', headline: 'If you cannot own the stage, create the moment everyone shares.',
-      context: 'Bolt was not a sponsor at Sui Fest, TOKEN2049 Singapore, so the opportunity had to be made.',
-      points: ['Developed the interview concept', 'Interviewed established teams on camera, Bolt one voice among many', 'Tagged every team, giving each a reason to share it'],
-      outcome: 'Tens of thousands of impressions and hundreds of likes, shared by the teams themselves.',
-      credit: 'Concept, interviews, coordination and distribution by John Cowin · With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus',
+      key: 'film', label: 'Event film', headline: 'Capture the event. Connect the ecosystem.',
+      context: 'At Sui Fest, I developed an interview-led event film featuring established teams across the ecosystem and positioned Bolt alongside them as an active participant. I conducted the interviews, coordinated contributors, shaped the edit, and led content distribution.',
+      points: ['Interviewed established ecosystem teams and included Bolt within the same editorial frame', 'Built the narrative around a shared event experience rather than a standalone brand feature', 'Tagged participating teams and coordinated distribution to extend the film’s reach'],
+      outcome: 'Featuring multiple teams turned the film into a shared distribution asset, expanding Bolt’s presence across the ecosystem.',
+      credit: 'Concept, interviews, coordination, and distribution by John Cowin · Final edit Bob van der Meer',
+      participants: 'With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus',
       preview: 'ev-suifest-loop', full: 'ev-video-suifest-full',
     },
   ];
@@ -1989,18 +1995,23 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
       context: one(ch.html, /<p class="evd__context[^"]*"[^>]*>([\s\S]*?)<\/p>/),
       points: [...(ch.html.match(/<ul class="evd__points[^"]*"[^>]*>([\s\S]*?)<\/ul>/) || [, ''])[1].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1])),
       outcome: one(ch.html, /<p class="evd__outcome[^"]*"[^>]*>([\s\S]*?)<\/p>/),
-      credit: one(ch.html, /<p class="evd__credit[^"]*"[^>]*>([\s\S]*?)<\/p>/),
+      credit: one(ch.html, /<p class="evd__credit"[^>]*>([\s\S]*?)<\/p>/),
+      participants: one(ch.html, /<p class="evd__credit evd__credit--with"[^>]*>([\s\S]*?)<\/p>/),
     };
     // (Apostrophes may be typographic.)
     const flat = (t) => (t || '').replace(/[‘’]/g, "'");
-    for (const k of ['headline', 'context', 'outcome', 'credit']) if (flat(got[k]) !== flat(want[k])) failures.push(`[events] chapter ${want.key}: its ${k} as the checkpoint has it (found "${got[k]}")`);
-    if (JSON.stringify(got.points.map(flat)) !== JSON.stringify(want.points.map(flat)) || got.points.length > 3) failures.push(`[events] chapter ${want.key}: up to three things John did, as the checkpoint has them`);
-    // its media: the preview (a silent loop of 8 to 15 seconds), the full film with sound, and the way to it
+    for (const k of ['headline', 'context', 'outcome', 'credit', 'participants']) if (flat(got[k]) !== flat(want[k])) failures.push(`[events] chapter ${want.key}: its ${k} as the V1.5 brief has it (found "${got[k]}")`);
+    if (JSON.stringify(got.points.map(flat)) !== JSON.stringify(want.points.map(flat)) || got.points.length > 3) failures.push(`[events] chapter ${want.key}: up to three things John did, as the V1.5 brief has them`);
+    // its media: the preview (a silent loop of 8 to 15 seconds), and, where the
+    // chapter has one, the full film with sound and the way to it (V1.5: the
+    // live presentation keeps its preview, with its pause control, and nothing else)
     const prev = evAsset(want.preview);
-    const full = evAsset(want.full);
-    if (!new RegExp(`<div class="evd__preview"[^>]*data-deck-preview[^>]*>\\s*<div class="ev-slot ev-slot--loop[^"]*"[^>]*data-asset="${want.preview}"[^>]*data-ev-loop`).test(ch.html) || prev.permission !== 'approved' || prev.type !== 'video' || !(prev.duration >= 8 && prev.duration <= 15)) failures.push(`[events] chapter ${want.key}: a muted preview of 8 to 15 seconds (${want.preview})`);
-    if (!new RegExp(`<div class="evd__full"[^>]*data-deck-full[^>]*>\\s*<figure class="evp[^"]*"[^>]*data-evp[^>]*id="ev-deck-player-${want.key}"`).test(ch.html) || full.permission !== 'approved' || !ch.html.includes(`/media/${full.file}`)) failures.push(`[events] chapter ${want.key}: the full film (${want.full}) waits behind its preview, to play with sound`);
-    if (textOf(norm((ch.html.match(/<button\b[^>]*data-deck-watch[^>]*>([\s\S]*?)<\/button>/) || [, ''])[1])).replace(/\s*\d+:\d\d$/, '') !== 'Watch full video with sound') failures.push(`[events] chapter ${want.key}: "Watch full video with sound"`);
+    if (!new RegExp(`<div class="evd__preview"[^>]*data-deck-preview[^>]*>\\s*<div class="ev-slot ev-slot--loop[^"]*"[^>]*data-asset="${want.preview}"[^>]*data-ev-loop`).test(ch.html) || !/data-ev-loop-toggle/.test(ch.html) || prev.permission !== 'approved' || prev.type !== 'video' || !(prev.duration >= 8 && prev.duration <= 15)) failures.push(`[events] chapter ${want.key}: a muted preview of 8 to 15 seconds with its pause control (${want.preview})`);
+    if (want.full) {
+      const full = evAsset(want.full);
+      if (!new RegExp(`<div class="evd__full"[^>]*data-deck-full[^>]*>\\s*<figure class="evp[^"]*"[^>]*data-evp[^>]*id="ev-deck-player-${want.key}"`).test(ch.html) || full.permission !== 'approved' || !ch.html.includes(`/media/${full.file}`)) failures.push(`[events] chapter ${want.key}: the full film (${want.full}) waits behind its preview, to play with sound`);
+      if (textOf(norm((ch.html.match(/<button\b[^>]*data-deck-watch[^>]*>([\s\S]*?)<\/button>/) || [, ''])[1])).replace(/\s*\d+:\d\d$/, '') !== 'Watch full video with sound') failures.push(`[events] chapter ${want.key}: "Watch full video with sound"`);
+    } else if (/data-deck-full|data-deck-watch|data-evp\b|Watch full video/.test(ch.html)) failures.push(`[events] chapter ${want.key}: no full film and no Watch full video with sound (V1.5)`);
     if (/\bautoplay\b/.test(ch.html)) failures.push(`[events] chapter ${want.key}: nothing autoplays from the markup`);
   }
   // V1.4: one vertical stack at every width (never side by side), the open
@@ -2019,7 +2030,27 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const split = (wideContent.match(/grid-template-columns:\s*minmax\(0(?:px)?,\s*(\d+)fr\)\s*minmax\(0(?:px)?,\s*(\d+)fr\)/) || []).slice(1).map(Number);
   const mediaShare = split.length === 2 ? split[0] / (split[0] + split[1]) : 0;
   const tallVh = Number((wideContent.match(/min-height:\s*min\(\s*calc\(\s*(\d+)svh/) || [])[1]);
-  if (!(mediaShare >= 0.56 && mediaShare <= 0.6) || !(tallVh >= 65 && tallVh <= 75) || !/align-items:\s*center/.test(wideContent)) failures.push(`[events] wide: the open chapter's media 56 to 60% and its words 40 to 44%, the chapter about 65 to 75% of the screen's height (found ${split.join('/') || 'none'} and ${tallVh || 'none'}svh)`);
+  if (!(mediaShare >= 0.56 && mediaShare <= 0.6) || !(tallVh >= 65 && tallVh <= 75)) failures.push(`[events] wide: the open chapter's media 56 to 60% and its words 40 to 44%, the chapter about 65 to 75% of the screen's height (found ${split.join('/') || 'none'} and ${tallVh || 'none'}svh)`);
+  // V1.5: the words use the column's full height (never one centered cluster),
+  // the headline near the top and the credit toward the bottom: the column
+  // stretches to the chapter, and the groups are parted by spacers that the
+  // chapter sizes at their minimum and that grow with the room, up to a limit,
+  // whatever is left shared above and below; the media centered beside them.
+  if (!/align-items:\s*stretch/.test(wideContent) || /align-items:\s*center/.test(wideContent) || !deckWide(/^\.evd__media$/).some((r) => /align-self:\s*center/.test(r.body))) failures.push('[events] wide: the words fill the column\'s height, the media centered beside them (V1.5)');
+  const textBase = evRules(/^\.evd__text$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const textWide = deckWide(/^\.evd__text$/).map((r) => r.body).join(';');
+  const gapWide = deckWide(/^\.evd__gap$/).map((r) => r.body).join(';');
+  const remIn = (v) => { const m = String(v || '').match(/([\d.]+)rem/); return m ? Number(m[1]) : NaN; };
+  const gapMin = remIn((textWide.match(/--gap:\s*clamp\(([^,]+),/) || [])[1]);
+  const gapMax = remIn((textWide.match(/--gap-max:\s*([^;]+)/) || [])[1]);
+  const leadMin = remIn((textWide.match(/--gap-lead:\s*clamp\(([^,]+),/) || [])[1]);
+  if (!/display:\s*flex/.test(textBase) || !/flex-direction:\s*column/.test(textBase) || !/justify-content:\s*center/.test(textWide) || !/flex:\s*1 1 0/.test(gapWide) || !/min-height:\s*var\(--gap\)/.test(gapWide) || !/max-height:\s*var\(--gap-max\)/.test(gapWide) || !(gapMin >= 1.1) || !(gapMax >= 2 && gapMax <= 3.5) || !(leadMin >= 0.9) || !(remIn((textBase.match(/--gap:\s*([^;]+)/) || [])[1]) >= 1.1)) failures.push(`[events] the words have more room between their groups (V1.5): at least ${'1.1'}rem, growing to 2 to 3.5rem on wide screens (found ${gapMin}, ${gapMax}, ${leadMin})`);
+  for (const ch of deckChs) {
+    const text = block(ch.html, '<div class="evd__text"');
+    const order = [...text.matchAll(/class="(display evd__title|evd__context|evd__points|evd__outcome|evd__credits|evd__gap(?: evd__gap--lead)?)"/g)].map((m) => m[1].replace('display ', ''));
+    const flatOrder = order.map((x) => (x === 'evd__gap evd__gap--lead' ? 'lead' : x === 'evd__gap' ? 'gap' : x.replace('evd__', ''))).join(' ');
+    if (flatOrder !== 'title lead context gap points gap outcome gap credits' || (text.match(/<span class="evd__gap[^"]*"[^>]*>/g) || []).some((t) => !/aria-hidden="true"/.test(t))) failures.push(`[events] chapter ${ch.key}: the headline, the introduction, the things John did, the outcome and the credit, in order, a decorative spacer between each (found ${flatOrder})`);
+  }
   const wideAt = Number(((deckWide(/^\.evd__content$/)[0]?.at || '').match(/([\d.]+)rem/) || [])[1]);
   if (!(wideAt >= 52 && wideAt <= 64) || evRules(/^\.evd__content$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push(`[events] two columns only where the deck is wide (52 to 64rem, found ${wideAt || 'none'}); on narrow screens the media above the words`);
   if (!evRules(/^\.evd__rail$/).some((r) => !r.at && /min-height:\s*(?:3\.(?:2[5-9]|[3-9])\d*|[4-9](?:\.\d+)?)rem/.test(r.body))) failures.push('[events] the headers stay comfortable to tap (3.25rem or more)');
@@ -2049,24 +2080,49 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (deckChs.filter((c) => /data-sf\b/.test(c.html)).length !== 1 || evData.setupFinal?.chapter !== 'room' || !/role="tablist"/.test(sfList) || !/aria-label="[^"]+"/.test(sfList) || JSON.stringify(sfTabs.map((t) => t.text)) !== '["Setup","Final"]' || !/aria-selected="true"/.test(sfTabs[0]?.attrs || '') || !/aria-selected="false"/.test(sfTabs[1]?.attrs || '') || !/tabindex="-1"/.test(sfTabs[1]?.attrs || '') || sfPanels.length !== 2 || !sfPanels.every((x) => /role="tabpanel"/.test(x) && /aria-labelledby="ev-sf-tab-/.test(x)) || !/is-shown/.test(sfPanels[0] || '') || /is-shown/.test(sfPanels[1] || '')) failures.push('[events] the production room has two tabs, SETUP (selected) and FINAL, each controlling its panel, Setup shown to begin with');
   const setupPanel = block(sfBlock, '<div class="evd__sf-panel is-shown"');
   const finalPanel = block(sfBlock, '<div class="evd__sf-panel"');
-  if (!new RegExp(`data-asset="${evData.setupFinal?.photo}"`).test(setupPanel) || !/<picture\b/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(finalPanel) || one(setupPanel, /<figcaption class="evd__sf-caption[^"]*"[^>]*>([\s\S]*?)<\/figcaption>/) !== norm(evData.setupFinal?.caption || '')) failures.push('[events] Setup shows the behind-the-scenes photograph, whole, with its equipment caption');
+  if (!new RegExp(`data-asset="${evData.setupFinal?.photo}"`).test(setupPanel) || !/<picture\b/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(finalPanel) || /<figcaption|evd__sf-caption/.test(sfBlock) || /Two cameras, two tripods/.test(evPage) || 'caption' in (evData.setupFinal || {})) failures.push('[events] Setup shows the behind-the-scenes photograph, whole, with no caption (V1.5)');
   if (!/data-asset="ev-slippage-preview"/.test(finalPanel) || !/data-ev-loop-toggle/.test(finalPanel) || !finalPanel.includes(`/media/${evAsset(evData.setupFinal?.final).file}`) || !/data-loop-off/.test((finalPanel.match(/<div[^>]*>/) || [''])[0])) failures.push('[events] Final holds the finished explainer: its muted preview with its pause control (waiting while Setup shows) and the film behind Watch');
   const sfPanelRule = evRules(/^(?:html\.js )?\.evd__sf-panel$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const sfPanelOn = evRules(/^(?:html\.js )?\.evd__sf-panel\.is-shown$/).filter((r) => !r.at).map((r) => r.body).join(';');
   if (!/grid-area:\s*2\s*\/\s*1/.test(sfPanelRule) || evRules(/^\.evd__sf$/).some((r) => /grid-template-columns/.test(r.body)) || !/visibility:\s*hidden/.test(sfPanelRule) || !/transition:\s*opacity\s+0?\.[2-5]\d*s/.test(sfPanelOn) || !evRules(/evd__sf-panel/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transition:\s*none/.test(r.body))) failures.push('[events] Setup and Final share one stage (never side by side), cross-fading, and change at once with reduced motion');
+  // V1.5: a clear segmented control with the media: two equal options in one
+  // track, just above the stage (never laid over it), the selected one filled
+  // in the page's accent with dark type on it, a hover and a strong focus ring,
+  // no icons; there from the first paint with JavaScript, absent without it.
+  // Watch full video with sound only under Final: under Setup it is out of
+  // sight and reach (its line kept), and nothing switches the stage for it.
+  const sfTabsRule = evRules(/^\.evd__sf-tabs$/).map((r) => r.body).join(';');
+  if (!/grid-template-columns:\s*repeat\(2,\s*minmax\(0(?:px)?,\s*1fr\)\)/.test(sfTabsRule) || evRules(/evd__sf-tabs/).some((r) => /position:\s*absolute/.test(r.body)) || /<svg|<img/.test(sfList + (sfBlock.match(/<div class="evd__sf-tabs"[\s\S]*?<\/div>/) || [''])[0]) || /\bhidden\b/.test(sfList.replace(/class="[^"]*"/, '')) || !evRules(/^html:not\(\.js\) \.evd__sf-tabs$/).some((r) => /display:\s*none/.test(r.body))) failures.push('[events] Setup and Final: a clear segmented control of two equal options just above the stage, no icons, there from the first paint (V1.5)');
+  const sfOn = evRules(/^\.evd__sf-tab\[aria-selected=['"]?true['"]?\]$/).map((r) => r.body).join(';');
+  if (!/background:\s*var\(--accent\)/.test(sfOn) || !/color:\s*var\(--c-ink\)/.test(sfOn) || !evRules(/^\.evd__sf-tab:hover$/).some((r) => /background/.test(r.body)) || !evRules(/^\.evd__sf-tab:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body)) || !evRules(/^\.evd__sf-tab$/).some((r) => /min-height:\s*2\.25rem/.test(r.body))) failures.push('[events] the selected option is filled in the accent, with a hover, a strong focus ring and a comfortable target (V1.5)');
+  const roomWatch = (roomHtml.match(/<button\b[^>]*data-deck-watch[^>]*>/) || [''])[0];
+  if (!/class="evd__watch is-away"/.test(roomWatch) || !evRules(/^html\.js \.evd__watch\.is-away$/).some((r) => /visibility:\s*hidden/.test(r.body) && /opacity:\s*0/.test(r.body)) || !/classList\.toggle\(\s*[`'"]is-away[`'"],\s*\w+\s*!==\s*[`'"]final[`'"]\s*\)/.test(deckScript) || /views\.get|\(['"]final['"]\)/.test(deckScript.slice(deckScript.indexOf('[data-deck-watch]')))) failures.push('[events] Watch full video with sound shows only under Final, its line kept under Setup (V1.5)');
+  if (deckChs.filter((c) => c.key !== 'room').some((c) => /is-away/.test(c.html))) failures.push('[events] the event film keeps its Watch in view');
   const sfScript = deckScript.includes('[data-sf]') ? deckScript.slice(deckScript.indexOf('[data-sf]'), deckScript.indexOf('[data-sf]') + 2500) : '';
   if (!sfScript || !/aria-selected/.test(sfScript) || !['ArrowRight', 'ArrowLeft', 'Home', 'End'].every((k) => sfScript.includes(k)) || !/ev:loop-sync/.test(deckScript) || /setTimeout|setInterval|requestIdleCallback/.test(sfScript)) failures.push('[events] the reader switches Setup and Final (a click, a tap or the arrow keys); nothing switches by itself');
   const setupPhoto = evAsset('ev-image-production-setup');
   const finalFilm = evAsset('ev-video-slippage-full');
-  if (setupPhoto.permission !== 'approved' || !fs.existsSync(path.join(root, 'src/assets', setupPhoto.file || '-')) || evData.setupFinal?.photo !== 'ev-image-production-setup' || evData.setupFinal?.caption !== 'Two cameras, two tripods, a clip-on mic, a laptop, and the venue’s existing lighting.' || evData.setupFinal?.final !== 'ev-video-slippage-full' || finalFilm.permission !== 'approved' || !fs.existsSync(path.join(root, 'public/media', finalFilm.file || '-')) || !fs.existsSync(path.join(root, 'src/assets', finalFilm.poster || '-'))) failures.push('[events] the setup photograph, its caption and the finished explainer are in the project (setupFinal)');
-  // Credits: one line per chapter, never a block per item; titles never invented.
-  const deckCredits = deckChs.map((c) => one(c.html, /<p class="evd__credit[^"]*"[^>]*>([\s\S]*?)<\/p>/));
-  if (!deckCredits[0]?.includes('Speaker Max McKendry') || !deckCredits[0]?.includes('Deck design Bob van der Meer') || !deckCredits[1]?.includes('On camera Max McKendry') || !deckCredits[1]?.includes('Final edit Bob van der Meer') || !deckCredits[2]?.includes('Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus')) failures.push('[events] each chapter credits its collaborators in one line: the speaker and on-camera subject, the deck design and the final edit, the participating teams');
+  if (setupPhoto.permission !== 'approved' || !fs.existsSync(path.join(root, 'src/assets', setupPhoto.file || '-')) || evData.setupFinal?.photo !== 'ev-image-production-setup' || evData.setupFinal?.final !== 'ev-video-slippage-full' || finalFilm.permission !== 'approved' || !fs.existsSync(path.join(root, 'public/media', finalFilm.file || '-')) || !fs.existsSync(path.join(root, 'src/assets', finalFilm.poster || '-'))) failures.push('[events] the setup photograph and the finished explainer are in the project (setupFinal)');
+  // Credits (V1.5): one fine-print line per chapter, the participating teams on a
+  // second; Bob van der Meer's edit credited there and nowhere above it; titles
+  // never invented. Names stay whole in the fine print.
+  const deckCredits = deckChs.map((c) => one(c.html, /<p class="evd__credit"[^>]*>([\s\S]*?)<\/p>/));
+  if (!deckCredits[0]?.includes('Speaker Max McKendry') || !deckCredits[0]?.includes('Deck design Bob van der Meer') || !deckCredits[1]?.includes('On-camera Max McKendry') || !deckCredits[1]?.includes('Final edit Bob van der Meer') || !deckCredits[2]?.includes('Final edit Bob van der Meer') || !/With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus/.test(one(deckChs[2]?.html || '', /<p class="evd__credit evd__credit--with"[^>]*>([\s\S]*?)<\/p>/))) failures.push('[events] each chapter credits its collaborators in the fine print: the speaker and on-camera subject, the deck design, the final edit, and the participating teams on a line of their own');
+  for (const c of deckChs) {
+    const above = textOf(norm(c.html.replace(/<div class="evd__credits"[\s\S]*?<\/div>/, ' ')));
+    if (/Bob van der Meer|edited by/i.test(above)) failures.push(`[events] chapter ${c.key}: Bob van der Meer's credit only in the fine print`);
+  }
+  if (!/\u00a0/.test((deckChs[2]?.html.match(/<div class="evd__credits"[\s\S]*?<\/div>/) || [''])[0]) || !evRules(/^\.evd__credit$/).some((r) => /text-wrap:\s*pretty/.test(r.body)) || !evRules(/^\.evd__keep$/).some((r) => /white-space:\s*nowrap/.test(r.body)) || !/<span class="evd__keep"[^>]*>On-camera Max McKendry<\/span>/.test(deckChs[1]?.html || '')) failures.push('[events] the fine print keeps names whole');
+  // The event film's framing (V1.5): an ecosystem and distribution strategy, no
+  // longer the angle of a company that was not a sponsor or did not own the
+  // stage, and no rounded or estimated reach.
+  const filmText = textOf(norm(deckChs[2]?.html || ''));
+  if (/sponsor|own the stage|opportunity had to be made/i.test(filmText) || /impressions|likes|tens of thousands|hundreds of/i.test(filmText)) failures.push('[events] the event film is framed as ecosystem positioning and distribution, with no sponsorship angle and no estimated reach');
   if (/Max McKendry,\s*(?:Head|Chief|Director|Founder|Co-founder|CEO|CTO|VP)/i.test(evText)) failures.push('[events] no titles are invented for the collaborators');
 
   // ---- media: posters, nothing loaded early, controls where sound matters
   const players = [...evPage.matchAll(/<figure class="evp\b[\s\S]*?<\/figure>/g)].map((m) => m[0]);
-  if (players.length !== 3) failures.push(`[events] the films with sound each have a player, one to a chapter of the deck: the presentation, the explainer, the event film (found ${players.length})`);
+  if (players.length !== 2) failures.push(`[events] the films with sound each have a player: the explainer and the event film, the live presentation's full film gone in V1.5 (found ${players.length})`);
   for (const p of players) {
     const v = (p.match(/<video\b[^>]*>/) || [''])[0];
     if (!/preload="none"/.test(v) || !/\bposter="/.test(v) || !/\bcontrols\b/.test(v) || /\bautoplay\b/.test(v)) failures.push('[events] a player\'s video loads nothing before it is asked, has a poster, and keeps native controls without JavaScript');
@@ -2132,91 +2188,140 @@ for (const f of htmlFiles) {
 if (!rulesFor(/\.brand__house/).some((r) => /width:\s*1\.25em/.test(r.body) && /height:\s*1\.25em/.test(r.body))) failures.push('[home] the house is set at the label\'s optical size');
 if (!rulesFor(/:hover \.brand__house/).some((r) => !r.at && /translateY\(-1px\)/.test(r.body)) || !rulesFor(/:hover \.brand__house/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transform:\s*none/.test(r.body))) failures.push('[home] the house rises a pixel on hover, and not for reduced motion');
 
-// The opening sequence (TPM V1.2, global): homepage only, exactly three
-// phrases ending on "Strategy into execution.", set as the faces of one
-// restrained vertical cylinder, centered, smaller and lighter than the display
-// headlines and one line long; turns of 400 to 550 ms, reading holds of 550 to
-// 700 ms, the last a little longer, about 3.2 to 3.8 seconds in all with the
-// handoff into the hero (which rises 12 to 16 px from slight softness, with a
-// 102 to 100 percent correction, as its name and the navigation fade in, in
-// that order); once per browsing session, decided before the first paint,
-// never for a visit that began inside the site or a link to a section, a
-// still crossfade for reduced motion, dismissed by any intent, hidden from
-// assistive technology, the hero photograph and the faces preloaded.
-const introHtml = (home.match(/<div class="intro"[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
-const faces = [...introHtml.matchAll(/<p class="intro__face[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
-if (faces.join(' | ') !== 'Product complexity. | Market clarity. | Strategy into execution.') failures.push(`[intro] the opening sequence must be Product complexity. / Market clarity. / Strategy into execution. (found ${faces.join(' / ') || 'none'})`);
-if (/Welcome\./.test(introHtml) || /intro__beat/.test(home)) failures.push('[intro] Welcome. is gone from the opening sequence');
+// Work (V1.5, global): a compact menu on the Work item of every page's
+// header: the three case studies with the homepage's numbers and titles, in
+// order, each a step away, the one you are on marked. It opens on hover (a
+// moment's grace on the way in, a short delay on the way out so the pointer can
+// travel into it), on keyboard focus and on a tap; never hover-only (without
+// JavaScript, hover and focus still open it). Escape closes it, the arrow keys
+// move through it, and closed it is out of reach. The phone menu lists the
+// case studies under Work.
+const WORK_MENU = [['01', 'Creator Marketing and Partnerships', '/work/creator-campaigns/'], ['02', 'Technical Product Marketing', '/work/technical-marketing/'], ['03', 'Events and Multimedia Production', '/work/events-video/']];
+const workWant = WORK_MENU.map(([n, t, h]) => `${n} ${t} ${BASE}${h}`).join(' | ');
+for (const f of htmlFiles) {
+  const html = fs.readFileSync(f, 'utf8');
+  const rel = path.relative(dist, f);
+  const headerHtml = (html.match(/<header class="site-header[\s\S]*?<\/header>/) || [''])[0];
+  const item = (headerHtml.match(/<li class="nav__item"[^>]*data-workmenu[^>]*>[\s\S]*?<\/ul>\s*<\/div>\s*<\/li>/) || [''])[0];
+  const trigger = item.match(/<a\b([^>]*data-workmenu-trigger[^>]*)>([\s\S]*?)<\/a>/) || [];
+  const links = [...item.matchAll(/<a href="([^"]+)" class="workmenu__link"([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ href: m[1], attrs: m[2], num: textOf((m[3].match(/<span class="workmenu__num"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]), title: textOf((m[3].match(/<span class="workmenu__title"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1]) }));
+  const got = links.map((l) => `${l.num} ${l.title} ${l.href}`).join(' | ');
+  if (!trigger[0] || textOf(trigger[2]) !== 'Work' || !new RegExp(`href="${BASE}/#work"`).test(trigger[1]) || !/<span class="nav__caret"[^>]*aria-hidden="true"/.test(trigger[2]) || got !== workWant || !/<div class="workmenu"[^>]*id="nav-work"[^>]*data-workmenu-panel/.test(item)) failures.push(`[nav] ${rel}: Work carries a compact menu of the three case studies, in order (found ${got || 'none'})`);
+  if (/aria-expanded|aria-controls/.test(trigger[1] || '')) failures.push(`[nav] ${rel}: Work states aria-expanded and aria-controls only once its script runs`);
+  const self = `${BASE}/${rel.replace(/index\.html$/, '')}`;
+  if (links.some((l) => /aria-current="page"/.test(l.attrs) !== (l.href === self))) failures.push(`[nav] ${rel}: the menu marks the case study you are on, and only it`);
+  const mob = (headerHtml.match(/<ul class="mobile__sub"[\s\S]*?<\/ul>/) || [''])[0];
+  const mobGot = [...mob.matchAll(/<a href="([^"]+)" class="mobile__sublink"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => `${textOf(m[2]).replace(/^(\d\d)\s*/, '$1 ')} ${m[1]}`).join(' | ');
+  if (mobGot !== workWant) failures.push(`[nav] ${rel}: the phone menu lists the case studies under Work (found ${mobGot || 'none'})`);
+}
+const navRules = (re) => CSS_RULES.filter((r) => r.sel.split(',').some((x) => re.test(bare(x).trim())));
+const menuBase = navRules(/^\.workmenu$/).filter((r) => !r.at).map((r) => r.body).join(';');
+const menuOpen = navRules(/^\.nav__item\.is-open \.workmenu$/).filter((r) => !r.at).map((r) => r.body).join(';');
+if (!/visibility:\s*hidden/.test(menuBase) || !/opacity:\s*0/.test(menuBase) || !/position:\s*absolute/.test(menuBase) || !/visibility:\s*visible/.test(menuOpen) || !/opacity:\s*1/.test(menuOpen)) failures.push('[nav] the Work menu is out of sight until it opens');
+if (!navRules(/^html:not\(\.js\) \.nav__item:hover \.workmenu$/).some((r) => /visibility:\s*visible/.test(r.body)) || !navRules(/^html:not\(\.js\) \.nav__item:focus-within \.workmenu$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[nav] without JavaScript, hover and focus still open the Work menu');
+if (!navRules(/^\.workmenu::?before$/).some((r) => /content:/.test(r.body))) failures.push('[nav] the gap between Work and its menu belongs to the menu, so the pointer never leaves on its way down');
+if (!CSS_RULES.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && r.sel.split(',').some((x) => /^\.workmenu$/.test(bare(x).trim())) && /transition:\s*none/.test(r.body))) failures.push('[nav] the Work menu opens without motion for reduced motion');
+const navScriptAll = scriptsText.find((t) => t.includes('[data-workmenu]')) || '';
+const navScript = navScriptAll.slice(navScriptAll.indexOf('[data-workmenu]'), navScriptAll.indexOf('[data-header]') > navScriptAll.indexOf('[data-workmenu]') ? navScriptAll.indexOf('[data-header]') : undefined);
+const delays = [...navScript.matchAll(/setTimeout\(\s*\w+\s*,\s*(\d+)\s*\)/g)].map((m) => Number(m[1]));
+// Touch: a press that is not a mouse's opens the menu on the first tap instead of following the link.
+if (!/!==\s*[`'"]mouse[`'"]/.test(navScript) || !/===\s*[`'"]mouse[`'"]/.test(navScript)) failures.push('[nav] on a touch screen the first tap on Work opens its menu; hover is for a mouse');
+for (const token of ['pointerenter', 'pointerleave', 'pointerType', 'focusin', 'focusout', ':focus-visible', 'Escape', 'ArrowDown', 'ArrowUp', 'preventDefault', 'aria-expanded', 'aria-controls', 'inert', 'pageshow']) if (!navScript.includes(token)) failures.push(`[nav] the Work menu's script is missing ${token}`);
+if (!delays.some((d) => d > 0 && d <= 150) || !delays.some((d) => d >= 200 && d <= 500)) failures.push(`[nav] the Work menu opens after a moment on hover and closes after a short delay when the pointer leaves (found ${delays.join(', ') || 'none'})`);
+
+// The opening sequence (V1.5, homepage only): a brisk, directional loader on
+// the ink ground. The viewing note, exactly BEST EXPERIENCED ON DESKTOP, then
+// exactly Product complexity. / Market clarity. / Strategy, executed., one at
+// a time at one center, each arriving from the left and leaving to the right;
+// a small marker travelling a hairline from the left end of the screen to the
+// right while they come, arriving as the last phrase ends; no loading
+// percentage. About 2.4 to 3 seconds in all: the note about 0.7, each phrase
+// 0.4 to 0.55, the dissolve and the hero's layered entrance 0.6 to 0.8, the
+// layers in the brief's order (the ambient photograph, the name, the
+// descriptor, the navigation, then the rule and the arrow), overlapping. Once
+// per browsing session, decided before the first paint, never for a return
+// from a case study, a visit that began inside the site or a link to a
+// section; near-instant with reduced motion; dismissed by any intent; hidden
+// from assistive technology; the hero photograph and the faces preloaded.
+const introRules = (re) => CSS_RULES.filter((r) => r.sel.split(',').some((x) => re.test(bare(x).trim())));
+const introAt = home.indexOf('<div class="intro"');
+const introHtml = introAt < 0 ? '' : home.slice(introAt, home.indexOf('<section class="hero"', introAt));
+const introNote = textOf((introHtml.match(/<p class="intro__note[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]);
+const introPhrases = [...introHtml.matchAll(/<p class="intro__phrase[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
+if (introNote !== 'BEST EXPERIENCED ON DESKTOP') failures.push(`[intro] the viewing note is exactly BEST EXPERIENCED ON DESKTOP (found "${introNote}")`);
+if (introPhrases.join(' | ') !== 'Product complexity. | Market clarity. | Strategy, executed.') failures.push(`[intro] the opening sequence must be Product complexity. / Market clarity. / Strategy, executed. (found ${introPhrases.join(' / ') || 'none'})`);
+if (introHtml.indexOf('intro__note') > introHtml.indexOf('intro__phrase')) failures.push('[intro] the note comes before the phrases');
+if (/\d\s*%|percent|loading/i.test(textOf(introHtml))) failures.push('[intro] no loading percentage (the marker is a pace, not a measure)');
+if (/Strategy into execution\.|Welcome\./.test(introHtml) || /intro__face|intro__drum/.test(home)) failures.push('[intro] the V1.2 drum and its phrases are gone');
 if (!/<div class="intro"[^>]*aria-hidden="true"/.test(home)) failures.push('[intro] the opening sequence is decorative: aria-hidden');
+if (!/class="intro__track"[\s\S]*class="intro__marker"/.test(introHtml)) failures.push('[intro] a small marker on a path');
 const headHome = (home.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
 const introHead = [...headHome.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('jc-intro')) || '';
 for (const token of ['prefers-reduced-motion: reduce', 'sessionStorage', 'jc-intro', "classList.add('intro', 'intro-hold')", 'intro-still', 'document.referrer', 'location.hash', 'visibilityState', 'intro-wait']) if (!introHead.includes(token)) failures.push(`[intro] the head decision is missing "${token}"`);
-// The session flag is set before any reason to skip, so it never plays later in a visit that began elsewhere on the site.
-if (introHead.indexOf("setItem('jc-intro'") < 0 || introHead.indexOf("setItem('jc-intro'") > introHead.indexOf('location.hash')) failures.push('[intro] the session flag is set before the sequence decides to skip');
+// The session flag is set before any reason to skip, so it never plays later in a visit that began elsewhere on the site, or again on a return.
+if (introHead.indexOf("setItem('jc-intro'") < 0 || introHead.indexOf("setItem('jc-intro'") > introHead.indexOf('location.hash') || introHead.indexOf("getItem('jc-intro')") < 0 || introHead.indexOf("getItem('jc-intro')") > introHead.indexOf("setItem('jc-intro'")) failures.push('[intro] once per browsing session: the flag is read, then set before the sequence decides to skip');
 const ms = (v) => {
   const m = String(v).trim().match(/^(-?[\d.]+)(ms|s)$/);
   return m ? Number(m[1]) * (m[2] === 's' ? 1000 : 1) : NaN;
 };
 const varsOf = (body) => Object.fromEntries([...body.matchAll(/--intro-([a-z0-9]+):\s*([^;]+)/g)].map((m) => [m[1], m[2].trim()]));
-const holdRules = rulesFor(/^html\.intro-hold$/);
-const PHONE = /max-width:\s*47\.99rem|width\s*<\s*48rem|width\s*<=\s*47\.99rem/;
-const baseVars = varsOf(holdRules.filter((r) => !r.at).map((r) => r.body).join(';'));
-const phoneVars = { ...baseVars, ...varsOf(holdRules.filter((r) => PHONE.test(r.at)).map((r) => r.body).join(';')) };
-const hero = (name) => rulesFor(new RegExp(`^html\\.intro-hold \\.${name}\\b`)).filter((r) => MOTION_OK.test(r.at));
+const holdVars = varsOf(rulesFor(/^html\.intro-hold$/).filter((r) => !r.at).map((r) => r.body).join(';'));
+const T = Object.fromEntries(['lead', 'in', 'out', 'beat', 'note', 'step', 'last', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
 const handoff = (re) => {
-  const rule = CSS_RULES.find((r) => MOTION_OK.test(r.at) && re.test(r.sel) && /animation:/.test(r.body));
+  const rule = CSS_RULES.find((r) => MOTION_OK.test(r.at) && r.sel.split(',').some((x) => re.test(bare(x).trim())) && /animation:/.test(r.body));
   const v = rule ? (rule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
   const dur = ms((v.match(/(?:^|\s)(-?[\d.]+m?s)\b/) || [])[1] || '');
-  const off = ms((v.match(/calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1] || '0ms');
-  return { v, dur, off };
+  const off = /var\(--intro-hero\)/.test(v) ? ms((v.match(/calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1] || '0ms') : NaN;
+  return { v, dur, off, name: (v.match(/^\s*([a-z-]+)/) || [])[1] };
 };
-const nameIn = handoff(/^html\.intro-hold \.hero__name\b/);
-const navIn = handoff(/^html\.intro-hold \.site-header\b/);
-const infoIn = handoff(/^html\.intro-hold \.hero__info\b/);
-for (const [label, vars] of [['wide screens', baseVars], ['phones', phoneVars]]) {
-  const t = Object.fromEntries(['lead', 'in', 'read', 'turn', 'last', 'out', 'gap', 'clear', 'settle'].map((k) => [k, ms(vars[k])]));
-  if (Object.values(t).some((x) => Number.isNaN(x))) {
-    failures.push(`[intro] ${label}: every timing value must be set (${JSON.stringify(vars)})`);
-    continue;
-  }
-  if (t.read < 550 || t.read > 700) failures.push(`[intro] ${label}: each reading hold runs 550 to 700 ms (found ${t.read})`);
-  if (t.last <= t.read || t.last > 760) failures.push(`[intro] ${label}: the final hold is a little longer than the others (found ${t.last} after ${t.read})`);
-  for (const [k, v] of [['first turn', t.in], ['turn', t.turn]]) if (v < 400 || v > 550) failures.push(`[intro] ${label}: each ${k} runs 400 to 550 ms (found ${v})`);
-  const reveal = t.lead + t.in + 2 * (t.read + t.turn) + t.last + t.gap;
-  const total = reveal + Math.max(t.settle, nameIn.off + nameIn.dur, navIn.off + navIn.dur, infoIn.off + infoIn.dur);
-  if (!(total >= 3200 && total <= 3800)) failures.push(`[intro] ${label}: the whole sequence with the handoff runs about 3.2 to 3.8 seconds (found ${total} ms)`);
-  if (t.out >= t.gap + t.clear) failures.push(`[intro] ${label}: the last phrase dissolves before the ground has cleared`);
-  if (label === 'phones' && total > (() => {
-    const b = Object.fromEntries(['lead', 'in', 'read', 'turn', 'last', 'gap', 'settle'].map((k) => [k, ms(baseVars[k])]));
-    return b.lead + b.in + 2 * (b.read + b.turn) + b.last + b.gap + Math.max(b.settle, nameIn.off + nameIn.dur, navIn.off + navIn.dur, infoIn.off + infoIn.dur);
-  })()) failures.push('[intro] phones: the sequence is no longer than on wide screens');
+const LAYERS = [
+  ['the photograph', /^html\.intro-hold \.hero__photo$/],
+  ['the subject', /^html\.intro-hold \.hero__subject$/],
+  ['the name', /^html\.intro-hold \.hero__name$/],
+  ['the descriptor', /^html\.intro-hold \.hero__descriptor$/],
+  ['the navigation', /^html\.intro-hold \.site-header$/],
+  ['the rule', /^html\.intro-hold \.hero__rule$/],
+  ['the arrow', /^html\.intro-hold \.hero__arrow$/],
+].map(([label, re]) => ({ label, ...handoff(re) }));
+if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.isNaN(l.off) || Number.isNaN(l.dur))) {
+  failures.push(`[intro] every timing value is set, and every layer of the hero is timed from the handoff (${JSON.stringify(holdVars)}; ${LAYERS.filter((l) => Number.isNaN(l.off) || Number.isNaN(l.dur)).map((l) => l.label).join(', ')})`);
+} else {
+  const p1 = T.lead + T.note;
+  const p2 = p1 + T.step;
+  const p3 = p2 + T.step;
+  const reveal = p3 + T.last;
+  const heroEnd = Math.max(...LAYERS.map((l) => l.off + l.dur));
+  const total = reveal + heroEnd;
+  if (!(T.note >= 600 && T.note <= 800)) failures.push(`[intro] the note shows for about 0.7 seconds (found ${T.note} ms)`);
+  for (const [k, v] of [['first', T.step], ['second', T.step], ['last', T.last]]) if (!(v >= 400 && v <= 550)) failures.push(`[intro] the ${k} phrase shows for 0.4 to 0.55 seconds (found ${v} ms)`);
+  if (!(heroEnd >= 600 && heroEnd <= 800)) failures.push(`[intro] the dissolve and the hero's layered entrance take 0.6 to 0.8 seconds (found ${heroEnd} ms)`);
+  if (!(total >= 2400 && total <= 3000)) failures.push(`[intro] the whole sequence runs about 2.4 to 3 seconds (found ${total} ms)`);
+  if (!(T.in >= 120 && T.in <= 240) || !(T.out >= 100 && T.out <= 200) || !(T.beat > 0 && T.beat < T.out + T.in)) failures.push('[intro] each word arrives and leaves quickly, the next a beat after the last starts to go: brisk, never a cut to black');
+  if (!(T.go > 0 && T.go < 200) || !(T.clear >= 300 && T.clear <= 500)) failures.push(`[intro] the marker sets off at once, and the ground dissolves in 0.3 to 0.5 seconds (found ${T.go} and ${T.clear} ms)`);
+  // The brief's order, overlapping: each layer starts after the one before, within the compact entrance.
+  const order = ['the photograph', 'the name', 'the descriptor', 'the navigation', 'the rule', 'the arrow'].map((k) => LAYERS.find((l) => l.label === k));
+  if (order.some((l, i) => i > 0 && !(l.off > order[i - 1].off)) || order.some((l, i) => i > 0 && !(l.off < order[i - 1].off + order[i - 1].dur)) || LAYERS[0].off !== LAYERS[1].off || LAYERS[0].off !== 0) failures.push(`[intro] the hero comes up in layers, in order and overlapping: the photograph (with its subject), the name, the descriptor, the navigation, the rule, the arrow (found ${order.map((l) => `${l.label} +${l.off}`).join(', ')})`);
 }
-const rise = Number((baseVars.rise || '').replace('px', ''));
-if (!(rise >= 12 && rise <= 16)) failures.push(`[intro] the hero rises 12 to 16 px (found ${baseVars.rise})`);
-if (!(nameIn.off < navIn.off && navIn.off < infoIn.off) || infoIn.off > 300) failures.push('[intro] the hero name, then the navigation, then its information fade in with a minimal stagger');
-for (const [k, re] of [['photo', /^html\.intro-hold \.hero__photo\b/], ['subject', /^html\.intro-hold \.hero__subject\b/]]) {
-  if (!CSS_RULES.some((r) => MOTION_OK.test(r.at) && r.sel.split(',').some((x) => re.test(x.trim())) && /hero-reveal/.test(r.body) && /var\(--intro-hero\)/.test(r.body))) failures.push(`[intro] the hero ${k} reveals with the handoff`);
-}
-const keyframes = (name) => (cssText.replace(/\/\*[\s\S]*?\*\//g, '').match(new RegExp(`@keyframes ${name}\\s*\\{((?:[^{}]*\\{[^{}]*\\})*)[^{}]*\\}`)) || [, ''])[1];
-const reveal = keyframes('hero-reveal');
-if (!/scale\(1\.02\)/.test(reveal) || !/blur\(/.test(reveal) || !/translate3d\(0,\s*var\(--intro-rise/.test(reveal)) failures.push('[intro] the hero reveal: a 14 px rise, a 102 percent correction and slight softness');
-// The turns: a rotation about a horizontal axis behind the screen, from and to only (no overshoot), on curves that never leave 0 to 1.
-for (const name of ['intro-turn-in', 'intro-turn-out', 'intro-turn-away']) {
-  const k = keyframes(name);
-  const stops = [...k.matchAll(/(^|\})\s*([^{}]+)\{/g)].map((m) => m[2].trim());
-  if (!/rotateX\(/.test(k) || stops.some((x) => !/^(from|to|0%|100%)$/.test(x))) failures.push(`[intro] ${name} turns about a horizontal axis, from and to only (found ${stops.join(', ') || 'none'})`);
-}
-const drum = rulesFor(/^\.intro__drum\b/).map((r) => r.body).join(';');
-const easings = [...(rulesFor(/^html\.intro \.intro__drum\b/).map((r) => r.body).join(';') + drum).matchAll(/cubic-bezier\(([^)]*)\)/g)].map((m) => m[1].split(',').map(Number));
-if (!easings.length || easings.some(([, y1, , y2]) => y1 < 0 || y1 > 1 || y2 < 0 || y2 > 1)) failures.push('[intro] the turns ease without bounce or overshoot');
-if (!/perspective:/.test(drum) || !/transform-origin:\s*50% 50% calc\(-1 \* var\(--intro-r\)\)/.test(rulesFor(/^\.intro__face\b/).map((r) => r.body).join(';'))) failures.push('[intro] the phrases are faces of one drum: a perspective and an axis behind the screen');
-const weight = Number((drum.match(/font-weight:\s*(\d+)/) || [])[1]);
-if (!(weight < 700) || !/font-family:\s*var\(--font-display\)/.test(drum)) failures.push(`[intro] the phrases use the portfolio's display face, lighter than its headlines (found ${weight})`);
-const maxRem = Number((drum.match(/clamp\([^,]+,[^,]+,\s*([\d.]+)rem\)/) || [])[1]);
-const lineEm = Number((drum.match(/\(100vw - 2 \* var\(--gutter\)\)\s*\/\s*([\d.]+)/) || [])[1]);
-if (!(maxRem <= 3.5) || !(lineEm >= 10.6)) failures.push(`[intro] the phrases are smaller than before and Strategy into execution. keeps to one line (max ${maxRem}rem, line bound ${lineEm}em)`);
-if (!/place-items:\s*center/.test(drum) || !/white-space:\s*nowrap/.test(rulesFor(/^\.intro__face\b/).map((r) => r.body).join(';'))) failures.push('[intro] every phrase is centered, on one line, at one center');
-if (!rulesFor(/^html\.intro-still \.intro__face--3\b/).some((r) => /opacity:\s*1/.test(r.body)) || !CSS_RULES.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /^html\.intro-still/.test(r.sel) && /animation-delay:/.test(r.body))) failures.push('[intro] reduced motion: the final phrase, still, then a timed crossfade');
+// The path: the marker from the left end to the right, arriving at the reveal, on a curve with no overshoot.
+const travel = keyframesOf('intro-travel');
+const travelRule = CSS_RULES.find((r) => r.sel.split(',').some((x) => /^html\.intro \.intro__marker$/.test(bare(x).trim())) && /animation:/.test(r.body));
+const travelVal = travelRule ? (travelRule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
+if (!/(?:from|0%)\s*\{\s*transform:\s*translate(?:X)?\(0(?:px)?\)/.test(travel) || !/to\s*\{\s*transform:\s*translate(?:X)?\(100cqi\)/.test(travel) || !/^intro-travel calc\(var\(--intro-reveal\)\s*-\s*var\(--intro-go\)\)\s+var\(--intro-run\)\s+var\(--intro-go\)/.test(travelVal.trim())) failures.push('[intro] the marker travels the whole path, left to right, and arrives as the last phrase ends');
+if (!introRules(/^\.intro__track$/).some((r) => /container-type:\s*inline-size/.test(r.body))) failures.push('[intro] the path is the measure of the marker\'s run (100cqi)');
+const runEase = (introRules(/^html\.intro \.intro__stage$/).map((r) => r.body).join(';').match(/--intro-run:\s*cubic-bezier\(([^)]*)\)/) || [, ''])[1].split(',').map(Number);
+if (runEase.length !== 4 || runEase[1] < 0 || runEase[1] > 1 || runEase[3] < 0 || runEase[3] > 1) failures.push('[intro] the marker eases without bounce or overshoot');
+const wordIn = keyframesOf('intro-word-in');
+const wordOut = keyframesOf('intro-word-out');
+const stopsOf = (k) => [...k.matchAll(/(^|\})\s*([^{}]+)\{/g)].map((m) => m[2].trim());
+if (!/(?:from|0%)\s*\{[^}]*translate(?:X)?\(-[\d.]+em\)/.test(wordIn) || !/to\s*\{[^}]*translate(?:X)?\([\d.]+em\)/.test(wordOut) || [...stopsOf(wordIn), ...stopsOf(wordOut)].some((x) => !/^(from|to|0%|100%)$/.test(x))) failures.push('[intro] each word arrives from the left and leaves to the right, the way the marker runs, with no overshoot');
+const readout = introRules(/^\.intro__readout$/).map((r) => r.body).join(';');
+const weight = Number((readout.match(/font-weight:\s*(\d+)/) || [])[1]);
+if (!(weight < 700) || !/font-family:\s*var\(--font-display\)/.test(readout) || !/place-items:\s*center/.test(readout) || !/white-space:\s*nowrap/.test(introRules(/^\.intro__readout\s*>\s*p$/).map((r) => r.body).join(';'))) failures.push('[intro] the phrases: the display face, lighter than the headlines, one line each, at one center');
+const noteRule = introRules(/^\.intro__note$/).map((r) => r.body).join(';');
+if (!/font-family:\s*var\(--font-sans\)/.test(noteRule) || !/letter-spacing:\s*\.?\d/.test(noteRule) || /color:\s*(?:red|#f00|var\(--c-signal)/i.test(noteRule)) failures.push('[intro] the note is quiet: small tracked capitals, not a warning');
+// Reduced motion: no travel and no words; the ground clears in a fifth of a second.
+const stillVars = varsOf(rulesFor(/^html\.intro-still$/).filter((r) => !r.at).map((r) => r.body).join(';'));
+if (ms(stillVars.reveal) !== 0 || !(ms(stillVars.clear) <= 250) || !introRules(/^html\.intro-still \.intro__stage$/).some((r) => /display:\s*none/.test(r.body)) || !CSS_RULES.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /^html\.intro-still \.intro__ground$/.test(bare(r.sel)) && /animation-duration:\s*var\(--intro-clear\)/.test(r.body))) failures.push('[intro] reduced motion: near-instant, the ground clearing in a fifth of a second with no travel and no words');
 const introScript = scriptsText.find((t) => t.includes('intro-skip')) || '';
 for (const token of ['wheel', 'touchstart', 'pointerdown', 'keydown', 'scroll']) if (!introScript.includes(token)) failures.push(`[intro] the sequence must end on "${token}"`);
 // Preloaded: the hero photograph's two layers, exactly as its pictures request them, and the two faces of the first screen.
@@ -2346,6 +2451,14 @@ try {
     const pages = ['', 'work/creator-campaigns/', 'work/technical-marketing/', 'work/events-video/', '404.html'];
     for (const viewport of [{ width: 1280, height: 900 }, { width: 375, height: 800 }]) {
       const ctx = await browser.newContext({ viewport });
+      // Every page as it stands: the homepage's opening sequence (decorative and
+      // passing) is held still and scanned on its own below, so the scan never
+      // lands on a word halfway through a fade.
+      await ctx.addInitScript(() => {
+        try {
+          sessionStorage.setItem('jc-intro', '1');
+        } catch (e) {}
+      });
       const page = await ctx.newPage();
       for (const p of pages) {
         await page.goto(PREVIEW + p, { waitUntil: 'networkidle' });
@@ -2356,6 +2469,19 @@ try {
         }
       }
       await ctx.close();
+      // The opening sequence, held at the note and at each phrase.
+      for (const t of [500, 1000, 1480, 1960]) {
+        const ictx = await browser.newContext({ viewport });
+        const ipage = await ictx.newPage();
+        await ipage.goto(PREVIEW, { waitUntil: 'load' });
+        await ipage.evaluate((t) => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t; }), t);
+        const results = await new AxeBuilder({ page: ipage }).include('[data-intro]').withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']).analyze();
+        for (const v of results.violations) {
+          const targets = v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ');
+          failures.push(`[axe:${viewport.width}] / (the opening sequence at ${t} ms) ${v.id} (${v.impact}): ${v.help} -> ${targets}`);
+        }
+        await ictx.close();
+      }
     }
     await browser.close();
     axeRan = true;
@@ -2365,7 +2491,7 @@ try {
 }
 
 // ----------------------------------------------------------------- report
-console.log(`\nChecked ${htmlFiles.length} HTML pages, ${seen.size} internal URLs, ${manifest.assets.length} manifest entries${axeRan ? ', axe scan on 5 pages x 2 viewports' : ''}.`);
+console.log(`\nChecked ${htmlFiles.length} HTML pages, ${seen.size} internal URLs, ${manifest.assets.length} manifest entries${axeRan ? ', axe scan on 5 pages x 2 viewports and the opening sequence at 4 moments x 2' : ''}.`);
 for (const n of notes) console.log('note ', n);
 if (failures.length) {
   for (const f of failures) console.log('FAIL ', f);

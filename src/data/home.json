@@ -1,5 +1,10 @@
 {
   "_readme": "Homepage copy (Version 1.7). Select Work cards are drawn from each case study's frontmatter in src/content/work/.",
+  "intro": {
+    "_note": "The homepage opening sequence (Intro.astro), since the V1.5 brief of October 16, 2026: the viewing note, then the three phrases, exactly as approved; the note is written in capitals as approved. Once per browsing session, never when returning from a case study; see Intro.astro for the timing.",
+    "note": "BEST EXPERIENCED ON DESKTOP",
+    "phrases": ["Product complexity.", "Market clarity.", "Strategy, executed."]
+  },
   "hero": {
     "_note": "Version 1.4 hero. The name is title case and repeats as a moving stream behind the subject; the separator between repeats is an em dash, which is deliberate typography and the one place an em dash is allowed on the site. The descriptor uses exactly the wording, punctuation and capitalization of the footer line and renders uppercase through CSS.",
     "name": "John Cowin",

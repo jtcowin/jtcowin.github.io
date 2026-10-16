@@ -20,20 +20,26 @@
  * generous padding; on narrow ones the media above the words. The media: a
  * muted preview (an approved loop of 8 to 15 seconds; it plays only while it is
  * shown and well in view, never for reduced motion or a data-saving
- * preference, and has its own pause control), and the full film, which "Watch
- * full video with sound" plays in place with its sound and its controls
- * (EvPlayer; one sound at a time, as everywhere on the page). The words: its
- * headline, one line of context, up to three things John did, the outcome and
- * one credit line. Collapsed headers carry only their number, title and a
- * chevron.
+ * preference, and has its own pause control), and, where the chapter has one,
+ * the full film, which "Watch full video with sound" plays in place with its
+ * sound and its controls (EvPlayer; one sound at a time, as everywhere on the
+ * page). Since V1.5 the live presentation keeps only its preview. The words
+ * (V1.5): the headline, the introduction, up to three things John did, the
+ * outcome and the fine-print credit (with a second line naming the
+ * participating teams where there are any). On wide screens they use the
+ * column's full height: the headline near its top, the credit toward its
+ * bottom, the space between the groups growing with the room the chapter has
+ * (within bounds, so nothing drifts apart), the media centered beside them.
+ * Collapsed headers carry only their number, title and a chevron.
  *
  * The production room (V1.4, events.json `setupFinal`) opens on Setup: the
- * behind-the-scenes photograph with its equipment caption beneath. Two compact
- * tabs in its media area, SETUP and FINAL, switch the same stage between it
- * and the finished explainer (its muted preview, its pause control, and Watch
- * full video with sound) through a crossfade; the reader makes the switch, the
- * stage keeps its size, and the two are never side by side. Watch, from Setup,
- * switches to Final and plays the film.
+ * behind-the-scenes photograph. A segmented control just above the stage (V1.5:
+ * two equal options, SETUP and FINAL, the selected one filled in the accent)
+ * switches the same stage between it and the finished explainer (its muted
+ * preview and its pause control) through a crossfade; the reader makes the
+ * switch, the stage keeps its size, and the two are never side by side. Watch
+ * full video with sound shows only under Final; under Setup its line stays
+ * empty, so nothing below moves.
  *
  * Reduced motion: a chapter changes through a short fade, with no height in
  * motion and no scroll pinning, and Setup and Final change at once. Without
@@ -50,9 +56,17 @@ import EvSlot from './EvSlot.astro';
 const { deck, setupFinal } = events;
 const pad = (n: number) => String(n).padStart(2, '0');
 const chapters = deck.chapters.map((ch, i) => {
-  const full = getAsset(ch.full);
-  return { ...ch, num: pad(i + 1), length: full.duration ? clockLabel(full.duration) : '', sf: ch.key === setupFinal.chapter ? setupFinal : null };
+  const full = ch.full ? getAsset(ch.full) : null;
+  return { ...ch, num: pad(i + 1), length: full?.duration ? clockLabel(full.duration) : '', sf: ch.key === setupFinal.chapter ? setupFinal : null };
 });
+// The fine print keeps its names whole (V1.5): in the first credit the name after
+// "by" stays with it; every credit after it, being short, stays on one line (a span
+// that never wraps, so not even at a hyphen); each separator stays with the words
+// before it; each team in a list of participants stays whole.
+const NBSP = '\u00a0';
+const credit = (t: string) =>
+  t.split(' · ').map((part, i) => ({ text: i > 0 ? part : part.replace(/ by ([^,]+)$/, (_, name: string) => ` by${NBSP}${name.replaceAll(' ', NBSP)}`), keep: i > 0 && part.length <= 34 }));
+const teams = (t: string) => t.split(', ').map((item) => item.split(' and ').map((name) => name.replaceAll(' ', NBSP)).join(' and ')).join(', ');
 // The media column: about 58% of the content on wide screens, the whole width on narrow ones.
 const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 ---
@@ -78,7 +92,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                     <div class="evd__media">
                       {ch.sf ? (
                         <div class="evd__sf" data-sf>
-                          <div class="evd__sf-tabs" role="tablist" aria-label={ch.sf.label} data-sf-tabs hidden>
+                          <div class="evd__sf-tabs" role="tablist" aria-label={ch.sf.label} data-sf-tabs>
                             <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-setup" aria-controls="ev-sf-setup" aria-selected="true" data-sf-tab="setup">
                               {ch.sf.tabs.setup}
                             </button>
@@ -87,18 +101,17 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                             </button>
                           </div>
                           <div class="evd__sf-panel is-shown" id="ev-sf-setup" role="tabpanel" aria-labelledby="ev-sf-tab-setup" data-sf-panel="setup">
-                            <figure class="evd__sf-photo">
-                              <EvSlot id={ch.sf.photo} aspect="16:9" sizes={sizes} class="evd__photo" />
-                              <figcaption class="evd__sf-caption">{ch.sf.caption}</figcaption>
-                            </figure>
+                            <EvSlot id={ch.sf.photo} aspect="16:9" sizes={sizes} class="evd__photo" />
                           </div>
                           <div class="evd__sf-panel" id="ev-sf-final" role="tabpanel" aria-labelledby="ev-sf-tab-final" data-sf-panel="final" data-loop-off>
                             <div class="evd__preview" data-deck-preview>
                               <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
                             </div>
-                            <div class="evd__full" data-deck-full>
-                              <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
-                            </div>
+                            {ch.full && (
+                              <div class="evd__full" data-deck-full>
+                                <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
+                              </div>
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -106,29 +119,51 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                           <div class="evd__preview" data-deck-preview>
                             <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
                           </div>
-                          <div class="evd__full" data-deck-full>
-                            <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
-                          </div>
+                          {ch.full && (
+                            <div class="evd__full" data-deck-full>
+                              <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
+                            </div>
+                          )}
                         </>
                       )}
-                      <button type="button" class="evd__watch" data-deck-watch>
-                        <span class="evd__watch-icon" aria-hidden="true">
-                          <Icon name="play" size={12} />
-                        </span>
-                        <span>{deck.watch}</span>
-                        {ch.length && <span class="evd__len">{ch.length}</span>}
-                      </button>
+                      {/* Only where the chapter has a film; in the production room it
+                          waits, out of sight, until FINAL is chosen. */}
+                      {ch.full && (
+                        <button type="button" class:list={['evd__watch', ch.sf && 'is-away']} data-deck-watch>
+                          <span class="evd__watch-icon" aria-hidden="true">
+                            <Icon name="play" size={12} />
+                          </span>
+                          <span>{deck.watch}</span>
+                          {ch.length && <span class="evd__len">{ch.length}</span>}
+                        </button>
+                      )}
                     </div>
+                    {/* The words, with a spacer between each group (empty, decorative):
+                        see "the words" below. */}
                     <div class="evd__text">
                       <h4 class="display evd__title">{ch.headline}</h4>
+                      <span class="evd__gap evd__gap--lead" aria-hidden="true" />
                       <p class="evd__context">{ch.context}</p>
+                      <span class="evd__gap" aria-hidden="true" />
                       <ul class="evd__points">
                         {ch.points.map((p) => (
                           <li>{p}</li>
                         ))}
                       </ul>
+                      <span class="evd__gap" aria-hidden="true" />
                       <p class="evd__outcome">{ch.outcome}</p>
-                      <p class="evd__credit">{ch.credit}</p>
+                      <span class="evd__gap" aria-hidden="true" />
+                      <div class="evd__credits">
+                        <p class="evd__credit">
+                          {credit(ch.credit).map((part, i) => (
+                            <>
+                              {i > 0 && `${NBSP}· `}
+                              {part.keep ? <span class="evd__keep">{part.text}</span> : part.text}
+                            </>
+                          ))}
+                        </p>
+                        {ch.participants && <p class="evd__credit evd__credit--with">{teams(ch.participants)}</p>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -212,17 +247,18 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
       });
     });
 
-    // The production room's Setup and Final: two tabs over one stage. The reader
-    // switches; the panel that leaves stays beneath until the one that arrives has
-    // faded in over it. Leaving Final pauses what plays there, and its preview loop
-    // waits (data-loop-off) until Final shows again.
-    const views = new Map<HTMLElement, (key: string, focus?: boolean) => void>();
+    // The production room's Setup and Final: a segmented control over one stage.
+    // The reader switches; the panel that leaves stays beneath until the one that
+    // arrives has faded in over it. Leaving Final pauses what plays there, and its
+    // preview loop waits (data-loop-off) until Final shows again. Watch full video
+    // with sound belongs to Final: under Setup it steps out of sight (is-away),
+    // its line kept, so nothing below moves.
     for (const sf of Array.from(deck.querySelectorAll<HTMLElement>('[data-sf]'))) {
       const list = sf.querySelector<HTMLElement>('[data-sf-tabs]');
       const tabs = Array.from(sf.querySelectorAll<HTMLButtonElement>('[data-sf-tab]'));
       const panels = Array.from(sf.querySelectorAll<HTMLElement>('[data-sf-panel]'));
+      const watch = sf.closest('[data-deck-ch]')?.querySelector<HTMLElement>('[data-deck-watch]');
       if (!list || !tabs.length) continue;
-      list.hidden = false;
       const select = (key: string, focus = false) => {
         for (const t of tabs) {
           const on = t.dataset.sfTab === key;
@@ -237,9 +273,9 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
           if (!on) pauseAll(p);
           for (const loop of Array.from(p.querySelectorAll('[data-ev-loop]'))) loop.dispatchEvent(new Event('ev:loop-sync'));
         }
+        watch?.classList.toggle('is-away', key !== 'final');
         sf.dataset.view = key;
       };
-      views.set(sf, select);
       tabs.forEach((t, i) => {
         t.addEventListener('click', () => select(t.dataset.sfTab as string));
         t.addEventListener('keydown', (event) => {
@@ -255,14 +291,12 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 
     // Watch full video with sound: the preview steps aside and the full film plays
     // in its place, with sound and its controls (the reader's press allows the
-    // sound). In the production room it first switches the stage to Final.
+    // sound). In the production room it is there only under Final.
     for (const ch of chapters) {
       const watch = ch.querySelector<HTMLButtonElement>('[data-deck-watch]');
       const preview = ch.querySelector<HTMLElement>('[data-deck-preview]');
       const full = ch.querySelector<HTMLElement>('[data-deck-full]');
-      const sf = ch.querySelector<HTMLElement>('[data-sf]');
       watch?.addEventListener('click', () => {
-        if (sf && sf.dataset.view !== 'final') views.get(sf)?.('final');
         preview?.querySelector('video')?.pause();
         if (preview) preview.hidden = true;
         full?.classList.add('is-shown');
@@ -472,91 +506,88 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     display: none;
   }
 
-  /* ---- the production room's Setup and Final (V1.4) ----------------------------------- */
+  /* In the production room, Watch belongs to Final: under Setup it is out of
+     sight and out of reach (visibility), its line kept so nothing below moves, and
+     it fades back with Final. */
+  :global(html.js) .evd__watch.is-away {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      visibility 0s linear 0.2s;
+  }
+
+  :global(html.js) .evd__sf ~ .evd__watch:not(.is-away) {
+    transition:
+      opacity 0.35s ease,
+      visibility 0s linear 0s,
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* ---- the production room's Setup and Final (V1.4; the control since V1.5) ----------- */
   .evd__sf {
     position: relative;
     display: grid;
     min-width: 0;
   }
 
-  /* Without JavaScript: the photograph, then the film. */
+  /* Without JavaScript: the photograph, then the film, and no control. */
   :global(html:not(.js)) .evd__sf {
     gap: 1rem;
   }
 
-  /* Two compact tabs, the selected one filled, on a dark chip: just above the stage
-     where the media is narrow, and over its top left corner (clear of the cameras)
-     where it is wide. */
+  :global(html:not(.js)) .evd__sf-tabs {
+    display: none;
+  }
+
+  /* A clear segmented control, just above the stage at every width: two equal
+     options in one track, the selected one filled in the accent (dark type on it,
+     5.3:1), the other quiet until it is hovered. The whole control is a
+     comfortable target for a finger (2.75rem tall). */
   .evd__sf-tabs {
     justify-self: start;
-    margin-bottom: 0.75rem;
-    display: inline-flex;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px;
+    width: min(100%, 16rem);
+    margin-bottom: 0.85rem;
     padding: 3px;
-    border: 1px solid rgba(237, 240, 239, 0.22);
+    border: 1px solid rgba(237, 240, 239, 0.26);
     border-radius: 999px;
-    background: rgba(13, 15, 16, 0.74);
-    backdrop-filter: blur(4px);
+    background: var(--bg-sunk);
   }
 
   .evd__sf-tab {
-    min-height: 1.875rem;
-    padding: 0.4rem 0.85rem;
+    min-height: 2.25rem;
+    padding: 0.45rem 1rem;
     border: 0;
     border-radius: 999px;
     background: transparent;
-    color: #c3cacb;
-    font: 700 0.6875rem / 1 var(--font-sans);
-    letter-spacing: 0.14em;
+    color: var(--ink-2);
+    font: 700 0.75rem / 1 var(--font-sans);
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     cursor: pointer;
     transition:
-      background-color var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out);
+      background-color 0.2s var(--ease-out),
+      color 0.2s var(--ease-out);
   }
 
   .evd__sf-tab:hover {
-    color: #edf0ef;
+    color: var(--heading);
+    background: color-mix(in srgb, var(--heading) 9%, transparent);
   }
 
   .evd__sf-tab[aria-selected='true'] {
-    background: #edf0ef;
-    color: #0d0f10;
+    background: var(--accent);
+    color: var(--c-ink);
+    cursor: default;
   }
 
   .evd__sf-tab:focus-visible {
-    outline: 2px solid #edf0ef;
+    outline: 2px solid var(--heading);
     outline-offset: 2px;
-  }
-
-  /* A comfortable target for a finger. */
-  @media (pointer: coarse) {
-    .evd__sf-tab {
-      min-height: 2.25rem;
-      padding-inline: 1rem;
-    }
-  }
-
-  @container media (min-width: 34rem) {
-    .evd__sf-tabs {
-      position: absolute;
-      top: 0.75rem;
-      left: 0.75rem;
-      z-index: 3;
-      margin: 0;
-    }
-  }
-
-  .evd__sf-photo {
-    display: grid;
-    gap: 0.75rem;
-    margin: 0;
-  }
-
-  .evd__sf-caption {
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    color: var(--ink-3);
   }
 
   /* With JavaScript the two share one stage (one grid cell, as tall as the taller,
@@ -581,22 +612,32 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
       visibility 0s linear 0s;
   }
 
-  /* The caption, below the stage where the explainer has none, leaves with the
-     photograph rather than after it. */
-  :global(html.js) .evd__sf-caption {
-    transition: opacity 0.25s ease;
-  }
-
-  :global(html.js) .evd__sf-panel:not(.is-shown) .evd__sf-caption {
-    opacity: 0;
-  }
-
-  /* ---- the words ------------------------------------------------------------------------ */
+  /* ---- the words (V1.5) ---------------------------------------------------------------
+     Five groups, each with room around it: the headline, the introduction, the
+     things John did, the outcome, and the fine-print credit. The gaps are spacers
+     of their own: the chapter sizes itself with them at their minimum, and on
+     wide screens, where the words fill the column's height, they grow with the
+     room the chapter has, equally, up to their limits; anything left over then
+     sits evenly above and below, keeping the headline near the top and the credit
+     toward the bottom. On narrow screens they keep their minimum. */
   .evd__text {
-    display: grid;
-    gap: 0.85rem;
-    align-content: start;
+    --gap-lead: 0.9rem;
+    --gap-lead-max: 0.9rem;
+    --gap: 1.35rem;
+    --gap-max: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     min-width: 0;
+  }
+
+  .evd__gap {
+    flex: 0 0 auto;
+    height: var(--gap);
+  }
+
+  .evd__gap--lead {
+    height: var(--gap-lead);
   }
 
   .evd__title {
@@ -618,7 +659,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 
   .evd__points {
     display: grid;
-    gap: 0.45rem;
+    gap: 0.6rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -650,11 +691,27 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     color: var(--heading);
   }
 
+  /* The fine print: the credit line, and the participating teams on a line of
+     their own where a chapter has them. */
+  .evd__credits {
+    display: grid;
+    gap: 0.3rem;
+  }
+
   .evd__credit {
     margin: 0;
     font-size: var(--text-xs);
     line-height: 1.55;
     color: var(--ink-3);
+    text-wrap: pretty;
+  }
+
+  .evd__keep {
+    white-space: nowrap;
+  }
+
+  .evd__credit--with {
+    text-wrap: balance;
   }
 
   /* ---- with JavaScript: one chapter open at a time -------------------------------------- */
@@ -698,18 +755,44 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 
     /* The media 58% of the two columns, the words 42%; the open chapter about 70% of
        the screen's height (its header included), more when its words need it, and
-       never more than its content can fill on very tall screens. */
+       never more than its content can fill on very tall screens. The words fill
+       the column's height (V1.5); the media sits centered beside them. */
     .evd__content {
       grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
-      align-items: center;
-      align-content: center;
+      align-items: stretch;
+      align-content: stretch;
       column-gap: clamp(2rem, 4cqi, 4rem);
       min-height: min(calc(70svh - var(--head-h)), 48rem);
       padding: 0.25rem var(--deck-pad) var(--deck-pad);
     }
 
     .evd__media {
+      align-self: center;
       max-width: 60rem;
+    }
+
+    /* The gaps between the groups: at least a little more than on narrow screens
+       (more on taller screens), growing with the room up to 1.5rem after the
+       headline and 2.75rem between the others; whatever is left is shared above and
+       below. */
+    .evd__text {
+      --gap-lead: clamp(1rem, 2svh, 1.25rem);
+      --gap-lead-max: 1.5rem;
+      --gap: clamp(1.25rem, 2.8svh, 2rem);
+      --gap-max: 2.75rem;
+      justify-content: center;
+    }
+
+    .evd__gap {
+      flex: 1 1 0;
+      height: auto;
+      min-height: var(--gap);
+      max-height: var(--gap-max);
+    }
+
+    .evd__gap--lead {
+      min-height: var(--gap-lead);
+      max-height: var(--gap-lead-max);
     }
 
     .evd__title {
@@ -738,7 +821,9 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 
     :global(html.js) .evd__sf-panel,
     :global(html.js) .evd__sf-panel.is-shown,
-    :global(html.js) .evd__sf-caption {
+    :global(html.js) .evd__watch.is-away,
+    :global(html.js) .evd__sf ~ .evd__watch:not(.is-away),
+    .evd__sf-tab {
       transition: none !important;
     }
   }

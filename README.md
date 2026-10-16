@@ -5,12 +5,13 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Events and Multimedia Production Version 1.4 in review.** Version 2.0, Technical Product
-Marketing Version 1.6 and Events and Multimedia Production Version 1.3 are published. Events Version
-1.4 (the broadcast signal's motion kept inside its tile, the Expanding Production Deck as one
-full-width vertical accordion with larger media, the production room's Setup and Final restored inside
-it, and a restrained program monitor on the hero's reel) is committed locally and not pushed until it
-has been reviewed in the browser.
+**Status: Events and Multimedia Production Version 1.5 in review.** Version 2.0, Technical Product
+Marketing Version 1.6 and Events and Multimedia Production Version 1.4 are published. Version 1.5 (a
+faster, directional opening sequence on the homepage with a layered entrance into the hero, a menu of
+the case studies on Work in the site's navigation, and, on the Events page, the production deck's
+words given room, new approved copy for its three chapters, the live presentation without its full
+film, and a clear SETUP and FINAL control in the production room) is committed locally and not pushed
+until it has been reviewed in the browser.
 Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
@@ -36,13 +37,14 @@ deep charcoal teal into the Contact green, whose last sentence leads on to the n
 Contact's grid rising out of its lower part. Contact and the footer close the page. Two site-wide
 changes came with Version 1: inner pages
 lead their header with a restrained HOME link in place of the name, and the homepage opens, once per
-browsing session, with a short sequence; since Version 1.2 it is three phrases, "Product complexity.",
-"Market clarity." and "Strategy into execution.", turning as the faces of one restrained cylinder and
-handing over to the hero in about 3.8 seconds.
+browsing session, with a short sequence; since Events Version 1.5 it is a brisk, directional loader (a
+small marker travelling the screen from left to right while a viewing note, BEST EXPERIENCED ON
+DESKTOP, and three phrases, "Product complexity.", "Market clarity." and "Strategy, executed.", come
+in quick succession), handing over to the hero in layers, about 2.9 seconds in all.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
-1.0, now at Version 1.4 (see [Events and Multimedia Production, Version
-1.4](#events-and-multimedia-production-version-14)): a hero whose headline and paragraph share one
+1.0, now at Version 1.5 (see [Events and Multimedia Production, Version
+1.5](#events-and-multimedia-production-version-15)): a hero whose headline and paragraph share one
 header row above a full-width cinematic reel of four chapters (01 / LIVE PRESENTATION, 02 / CREATOR
 PODCAST, 03 / TECHNICAL EXPLAINER, 04 / EVENT FILM; the team interview joins as the third once its
 footage is approved), played through in order and crossfading from one to the next, under a restrained
@@ -50,11 +52,11 @@ program monitor (PROGRAM, TC and a sequence timeline); a transition, SECURE. BUI
 AMPLIFY., revealed word by word as the reader scrolls and closed by a broadcast signal; then the
 activation (an original 3D concept rendering whose television and projected wall play their loops), the
 Expanding Production Deck (the live presentation, the production room and the event film in one
-vertical accordion, one chapter open at a time, the production room opening on its Setup photograph),
-and a conclusion that closes on the five stages and leads on to the next case study, Creator Campaigns,
-before Contact. Each deck chapter carries one credit
-line, and every media slot still waiting for its final asset is a placeholder at its final ratio in
-`npm run dev` only.
+vertical accordion, one chapter open at a time, its words using the column's full height, the
+production room switching between its Setup photograph and its Final explainer), and a conclusion that
+closes on the five stages and leads on to the next case study, Creator Campaigns, before Contact. Each
+deck chapter carries its credits in one line of fine print, and every media slot still waiting for its
+final asset is a placeholder at its final ratio in `npm run dev` only.
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -185,7 +187,11 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
 
 ## Editing content
 
-- **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`
+- **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`. The menu on Work (V1.5)
+  lists the case studies itself, from `src/content/work/` in their `order`, numbered and titled as on
+  the homepage (each one's `card.title`); `src/components/Header.astro`.
+- **The homepage's opening sequence** (V1.5): its words are `intro` in `src/data/home.json` (the
+  viewing `note` and the three `phrases`, exactly as approved); its timing is `src/components/Intro.astro`.
 - **Homepage copy** (hero, About, the Select Work title and intro, the reel's pool, the combined
   section's headline, How I Work statement, capability groups and Stack, contact): `src/data/home.json`.
   Each Stack tool is `{ "name", "logo", "scale", "shape" }`: `logo` is an SVG under
@@ -216,9 +222,8 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   be the next in the collection's order, or the build stops). Beside a headline, `accent` names the one phrase
   set in the accent color, and beside a paragraph, `em` names the one phrase set a little heavier; each
   must appear in its text exactly once, or the build stops (`src/lib/tpm-copy.ts`). The page's metadata and its Select Work
-  card still come from the case study's frontmatter; its older MDX body is no longer rendered. The
-  opening sequence's three phrases are in `src/components/Intro.astro`.
-- **Events and Multimedia Production** (Version 1.4): `src/data/events.json` holds every word on the
+  card still come from the case study's frontmatter; its older MDX body is no longer rendered.
+- **Events and Multimedia Production** (Version 1.5): `src/data/events.json` holds every word on the
   page and its media configuration, section by section. `stages`: the five stages (Secure, Build,
   Capture, Cut, Amplify), read by the transition's phrase, the sections' tallies and the conclusion.
   `hero`: the kicker, the headline and its `accent`, the paragraph, the reel's `chapters` in their order
@@ -231,13 +236,16 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   no gap. `transition`: where the phrase breaks on small screens (the signal after AMPLIFY. is part of
   `EvTransition.astro`). `activation`: its headline, paragraph, rendering, screens, caption and kit
   slots. `deck` (V1.3): the words of "Watch full video with sound" (`watch`) and the three `chapters` in
-  order, each with its `key`, `label` (on its rail), `headline`, one line of `context`, up to three
-  `points`, the `outcome`, one `credit` line, its muted `preview` (an approved loop; `previewFit:
-  contain` shows a video wider than 16:9 whole), its `full` film with sound and that film's short name
-  for the player's controls (`fullLabel`). `setupFinal` (V1.4) puts the production room's Setup and
-  Final in its chapter (`chapter`): the setup photograph's asset id, its caption, the finished
-  explainer's asset id, the two tabs' words (`tabs`) and their name for assistive technology (`label`);
-  Final shows that chapter's own preview and film. `conclusion` holds the headline, its accent, the paragraph, the sentence that
+  order, each with its `key`, `label` (on its rail), `headline`, its introduction (`context`), up to
+  three `points`, the `outcome`, the fine-print `credit` (and, where a chapter has them, the
+  `participants` on a line of their own), its muted `preview` (an approved loop; `previewFit: contain`
+  shows a video wider than 16:9 whole), and, where the chapter has one, its `full` film with sound and
+  that film's short name for the player's controls (`fullLabel`); a chapter without `full` (the live
+  presentation, since V1.5) shows its preview alone, with no Watch. `setupFinal` (V1.4, its control
+  since V1.5) puts the production room's Setup and Final in its chapter (`chapter`): the setup
+  photograph's asset id (no caption since V1.5), the finished explainer's asset id, the control's two
+  words (`tabs`) and their name for assistive technology (`label`); Final shows that chapter's own
+  preview and film, and Watch full video with sound only under it. `conclusion` holds the headline, its accent, the paragraph, the sentence that
   leads on (`nextLine`) and the case study it leads to (`next`, which must be the next in the
   collection's order, wrapping around to the first, or the build stops). The activation render's
   geometry, its screens' brightness over time and their luminance in the still are in
@@ -1169,7 +1177,9 @@ public-facing expression." Centered as before; the words are unchanged.
   the site's outline. It is a navigation landmark named "Next case study" for screen readers.
   `TpmConclusion.astro` stops the build if the case study it names is missing or is no longer the next
   in the collection's order. No metrics, services, credits or roles are repeated.
-- **00 The opening sequence** (homepage only): "Welcome." is gone; exactly three phrases, "Product
+- **00 The opening sequence** (homepage only; replaced in Events V1.5 by the directional loader, see
+  [Events and Multimedia Production, Version 1.5](#events-and-multimedia-production-version-15); what
+  follows is the V1.2 sequence, for the record): "Welcome." is gone; exactly three phrases, "Product
   complexity.", "Market clarity." and "Strategy into execution.", centered in the viewport on one
   shared center, in the portfolio's display face (Archivo) at weight 450 and full width rather than the
   headlines' 700, about 44px at 1440 wide (26px on phones), and sized so "Strategy into execution."
@@ -1268,6 +1278,116 @@ public-facing expression." Centered as before; the words are unchanged.
   to 16px rise, 102% and softness, the name, navigation and information in that order, the still
   crossfade for reduced motion, the head decision's guards, the preloads matching the hero's pictures
   and the stylesheet's faces, the dismissal events and the homepage-only placement.
+
+### Events and Multimedia Production, Version 1.5
+
+John's Events and Multimedia Production V1.5 brief (October 16, 2026, on the live site after the V1.4
+deployment): a delta in two parts, the changes approved for this build (the homepage's opening
+sequence and hero entrance, a menu of the case studies on Work, and the production deck's layout,
+copy and controls) and one item deferred (an outcomes band after the deck, to be considered only once
+this version is live; nothing of it is built, and no networking or relationships section is added).
+Everything the brief does not name is as before. No visitor-facing copy uses an em dash.
+
+- **00A The opening sequence: faster and directional** (`Intro.astro`; its words in `home.json`,
+  `intro`). It replaces V1.2's turning cylinder. On the ink ground, a small marker in the light accent
+  (a 7px square) travels a faint hairline drawn from gutter to gutter, from its left end to its right
+  (a sine ease, no overshoot), a short streak behind it that grows with its speed and is gone at rest,
+  while the words come in quick succession at one center: the viewing note, BEST EXPERIENCED ON
+  DESKTOP, small and quiet in the site's tracked capitals (a recommendation, not a warning), for about
+  0.7 seconds; then "Product complexity.", "Market clarity." and "Strategy, executed.", in the display
+  face at weight 450, about half a second each (0.48, 0.48 and 0.5). Each word arrives from the left in
+  180ms and leaves to the right in 130ms, the way the marker runs, the next arriving 100ms after the
+  last starts to go, so the cadence is brisk but never a flicker or a cut to black. The marker arrives
+  as the last phrase ends (2.16 s); the words and the path leave just before, and the ground dissolves
+  (0.4 s). No percentage: the marker is a pace, not a measure. The reference recording (a Sui loader)
+  was used for its pacing and structure only. Timings are custom properties on the document
+  (`--intro-*`), the same on phones, where every word keeps to one line.
+- **00B The layered hero entrance** (`Hero.astro`, `Header.astro`): as the ground dissolves, the hero
+  comes up in layers, overlapping, in the brief's order for the layers this hero has (it has no eyebrow
+  and no buttons of its own): the ambient layer, the photograph with its subject (registered, from 45%
+  brightness and 103% scale to their own over 0.7 s); the name, rising 10px as it fades in (+90ms); the
+  descriptor, the same way (+170ms); the navigation, its actions (+240ms); then the supporting details,
+  the rule drawing from left to right as the marker ran (+300ms) and the arrow settling into its corner
+  (+380ms). The entrance takes 0.74 seconds from the reveal, and the whole sequence about 2.9 seconds;
+  the hero ends exactly where it stands without the sequence.
+- **When it plays**: as before, decided in the head before the first paint, once per browsing session
+  (`sessionStorage`, `jc-intro`): never on a return to the homepage (from a case study, by a link or the
+  back button), never for a visit that began on another page of the site, never for a link to a
+  section; a tab opened in the background waits until it is shown; scrolling, a click, a tap or a key
+  ends it at once over a hero already in place. **Reduced motion**: no travel and no words, the ground
+  clearing straight to the hero in a fifth of a second. Hidden from assistive technology; without
+  JavaScript it never appears.
+- **00C Work: a menu of the case studies** (`Header.astro`, every page). A small chevron on Work, and a
+  compact panel in the header's own colors beneath it: 01 Creator Marketing and Partnerships, 02
+  Technical Product Marketing, 03 Events and Multimedia Production (numbered and titled as on the
+  homepage, drawn from the collection), the one you are on marked (`aria-current`). On a desktop it
+  opens on hover (60ms on the way in) and when the keyboard focus reaches Work, and closes 280ms after
+  the pointer leaves (the gap beneath Work belongs to the panel, so the pointer can travel into it),
+  when the focus leaves, or on Escape (back to Work; Tab then moves on to About); Tab walks through it
+  and the arrow keys, Home and End move within it, with the site's focus ring. On a touch screen the
+  first tap on Work opens it and a second follows the link; a tap elsewhere closes it. Closed, its
+  links are out of reach (`inert`); Work states `aria-expanded` once the script runs. Without
+  JavaScript, hover and focus still open it. In the phone menu the three case studies are listed under
+  Work. It opens with a 160ms fade and a 4px settle (none with reduced motion).
+- **01 The deck's words given room** (all three chapters). On wide screens the words now fill the
+  column's height beside the media (which stays centered): the headline near the top, the fine-print
+  credit toward the bottom, and decorative spacers between the five groups (the headline, the
+  introduction, the things John did, the outcome, the credit). The chapter sizes itself with the
+  spacers at their minimum (at least 1 to 1.25rem after the headline and 1.25 to 2rem between the
+  others, more on taller screens; V1.4 kept 0.85rem between everything), and they grow with the room
+  the chapter has, equally, up to 1.5rem and 2.75rem; anything left over is shared above and below, so
+  nothing drifts apart. On narrow screens they stay at 0.9 and 1.35rem. Paragraph width and line
+  heights are as before; no new rules or line animations. The chapters keep V1.4's size (about 70% of
+  the screen) where their words fit; the event film's longer words make it taller (79% at 1440 by 900,
+  96% at 1280 by 720).
+- **02 Live presentation**: no Watch full video with sound and no full film; the edited sequence stays
+  as its muted preview, with its pause control. New approved headline, introduction, three points and
+  outcome; the credit as before, with the serial comma: "Organized, directed, and captured by John
+  Cowin · Speaker Max McKendry · Deck design Bob van der Meer". (Its film, `ev-room-presentation`,
+  stays in the project, unused, in case it is wanted again.)
+- **03 Production room**: a clear segmented control just above the stage at every width (never laid
+  over it): two equal options, SETUP and FINAL, in one track, the selected one filled in the page's
+  accent with dark type on it (5.3:1), the other quiet until hovered, a strong focus ring, no icons,
+  2.75rem tall; there from the first paint with JavaScript, absent without it. Switching still
+  crossfades the stage (0.35 s; at once with reduced motion). The setup caption is gone. Watch full
+  video with sound shows only under FINAL: under SETUP it is out of sight and out of reach, its line
+  kept so nothing below moves, and it fades in with FINAL. New approved copy; the credit "Concept,
+  questions, direction, capture, and edit briefs by John Cowin · On-camera Max McKendry · Final edit
+  Bob van der Meer", and Bob van der Meer's edit is credited nowhere above it.
+- **04 Event film**: reframed as ecosystem positioning and distribution; the angle of not being a
+  sponsor or not owning the stage is gone, and so is the reach figure (no estimate replaces it). New
+  approved headline, introduction, points and outcome. The credit: "Concept, interviews, coordination,
+  and distribution by John Cowin · Final edit Bob van der Meer", the participating teams on a second
+  fine-print line ("With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz
+  and Talus"). In the fine print, names stay whole (no break inside a name or a team) and lines avoid
+  a lone last word.
+- **Checks** (`verify.mjs`): the opening sequence (its words exactly and in order, no percentage, the
+  marker on its path from end to end and arriving as the last phrase ends, without bounce; the note
+  about 0.7 s, each phrase 0.4 to 0.55 s, the dissolve and the layered entrance 0.6 to 0.8 s, the whole
+  2.4 to 3 s; words arriving from the left and leaving to the right; the hero's layers in order and
+  overlapping; reduced motion near-instant; once per session; dismissal; homepage only), the Work menu
+  (on every page, the three case studies in order with their numbers and titles, the current one marked,
+  `aria-expanded` only from the script, hidden until it opens, hover and focus without JavaScript, the
+  bridge under Work, the opening and closing delays, the keyboard, touch and Escape, no motion for
+  reduced motion, the phone menu), and the deck (every chapter's words as approved, the live
+  presentation's preview only, Watch and the film where a chapter has one, two players on the page;
+  the words filling the column with their spacers and bounded gaps; the control's two equal options, in
+  the accent, above the stage, without icons, from the first paint; no caption; Watch only under Final
+  with its line kept; Bob van der Meer's edit only in the fine print; names kept whole; the event film
+  with no sponsorship angle and no reach figure). The page-wide rule against YouTube now forbids links
+  only, since the approved outcome names the YouTube channel. Each new check was shown to catch what it
+  guards: on a scratch copy of the repository, 68 deliberate breaks, one at a time, each
+  failed the check meant for it.
+- **Verified** in the browser: 94 behavior checks (the sequence frame by frame on its own
+  clock, its words and timing, the marker's run and streak, the dissolve, the hero's layers and its
+  final place, once per session, the return from a case study and by the back button, a visit that
+  began on a case study, reduced motion, dismissal by a key, a phone; the Work menu by hover with its
+  grace, keyboard, Escape and Tab, touch, a click through, the phone menu and the narrowest desktop; the
+  Events page's V1.4 checks that still apply, the live presentation's preview and pause, the words'
+  layout, the control and its states, Watch only under Final with nothing moving, Watch playing the
+  film, the event film's Watch, reduced motion and a phone); no horizontal overflow on any page from
+  320 to 2,560px wide, with the Work menu open; without JavaScript; and with the full check and the
+  accessibility scan.
 
 ### Events and Multimedia Production, Version 1.4
 

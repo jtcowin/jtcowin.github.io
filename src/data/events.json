@@ -1,5 +1,5 @@
 {
-  "_readme": "Events and Multimedia Production, Version 1.4: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3 and V1.4 delta briefs (October 14, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
+  "_readme": "Events and Multimedia Production, Version 1.5: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3, V1.4 and V1.5 delta briefs (October 16, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
   "stages": [
     { "key": "secure", "label": "Secure" },
     { "key": "build", "label": "Build" },
@@ -44,38 +44,36 @@
     "kit": ["ev-kit-banner", "ev-kit-flyer", "ev-kit-merch", "ev-kit-screen", "ev-kit-plan", "ev-kit-credential", "ev-kit-networking"]
   },
   "deck": {
-    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint; V1.4 made it one vertical accordion at every width): the live presentation, the production room and the event film in one stack, every chapter's header always visible and one chapter open at a time (the live presentation to begin with), opened by a click, a tap or the keyboard; nothing advances by itself. An open chapter holds its media and its words side by side on wide screens (the media about 58% of the two columns), stacked on narrow ones: its headline, one line of context, up to three things John did, the outcome, one credit line, and its media, a muted preview (an approved loop of 8 to 15 seconds that plays only while it is shown and in view, with its own pause control) and the full film, which `watch` plays in place with sound and its controls. The production room opens on its setup photograph (setupFinal below).",
+    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint; V1.4 made it one vertical accordion at every width; V1.5 gave its words room and new copy): the live presentation, the production room and the event film in one stack, every chapter's header always visible and one chapter open at a time (the live presentation to begin with), opened by a click, a tap or the keyboard; nothing advances by itself. An open chapter holds its media and its words side by side on wide screens (the media about 58% of the two columns), stacked on narrow ones. Its words: the headline, the introduction, up to three things John did, the outcome, and the fine-print credit (`credit`, with `participants` as a second line where a chapter has them); on wide screens the words use the column's full height, the headline near its top and the credit toward its bottom. Its media: a muted preview (an approved loop of 8 to 15 seconds that plays only while it is shown and in view, with its own pause control) and, where a chapter has `full`, the film itself, which `watch` plays in place with sound and its controls. Since V1.5 the live presentation has no full film, only its preview. The production room opens on its setup photograph (setupFinal below).",
     "watch": "Watch full video with sound",
     "chapters": [
       {
         "key": "live",
         "label": "Live presentation",
-        "headline": "Build the session. Fill the room. Extend its life.",
-        "context": "I organized and ran Bolt Liquidity’s presentation at Sui Summit, ETHDenver, in 2025 and 2026, from the speaking slot to the recording.",
+        "headline": "From live presentation to lasting content.",
+        "context": "I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.",
         "points": [
-          "Booked the slot, helped shape the subject and promoted the session",
-          "Directed the deck and ran the setup and live slides",
-          "Captured it from multiple angles, then published it whole and in clips"
+          "Secured the slot, helped shape the subject, and promoted the session",
+          "Directed the deck, presentation setup, and live slides",
+          "Captured the presentation from multiple angles and repackaged it for continued distribution"
         ],
-        "outcome": "Event-led relationships contribute to ongoing conversations and integrations with key partners.",
-        "credit": "Organized, directed and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer",
+        "outcome": "Event-led relationships contribute to ongoing conversations and integrations with key ecosystem partners.",
+        "credit": "Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer",
         "preview": "ev-max-loop",
-        "previewFit": "contain",
-        "full": "ev-room-presentation",
-        "fullLabel": "Sui Summit presentation"
+        "previewFit": "contain"
       },
       {
         "key": "room",
         "label": "Production room",
-        "headline": "A compact setup. A full content system.",
-        "context": "At ETHDenver 2026 I booked a production room at the venue and built a studio from what was on hand.",
+        "headline": "Build the set. Direct the take. Shape the final cut.",
+        "context": "At ETHDenver, I turned a production room and a minimal kit into a repeatable technical explainer series.",
         "points": [
-          "Set up two cameras, a clip-on mic and the venue’s own light",
-          "Wrote about 20 questions and directed multiple takes",
-          "Chose the strongest takes and wrote the edit direction"
+          "Built a compact setup with two cameras and a clip-on mic",
+          "Wrote 20 interview questions and directed multiple takes",
+          "Selected the strongest moments and shaped the edit direction"
         ],
-        "outcome": "Finished explainers, edited by Bob van der Meer from my takes and direction.",
-        "credit": "Questions, direction, capture and edit briefs by John Cowin · On camera Max McKendry · Final edit Bob van der Meer",
+        "outcome": "One focused production session became a library of finished product explainers for the YouTube channel and social media.",
+        "credit": "Concept, questions, direction, capture, and edit briefs by John Cowin · On-camera Max McKendry · Final edit Bob van der Meer",
         "preview": "ev-slippage-preview",
         "full": "ev-video-slippage-full",
         "fullLabel": "Slippage Explained"
@@ -83,15 +81,16 @@
       {
         "key": "film",
         "label": "Event film",
-        "headline": "If you cannot own the stage, create the moment everyone shares.",
-        "context": "Bolt was not a sponsor at Sui Fest, TOKEN2049 Singapore, so the opportunity had to be made.",
+        "headline": "Capture the event. Connect the ecosystem.",
+        "context": "At Sui Fest, I developed an interview-led event film featuring established teams across the ecosystem and positioned Bolt alongside them as an active participant. I conducted the interviews, coordinated contributors, shaped the edit, and led content distribution.",
         "points": [
-          "Developed the interview concept",
-          "Interviewed established teams on camera, Bolt one voice among many",
-          "Tagged every team, giving each a reason to share it"
+          "Interviewed established ecosystem teams and included Bolt within the same editorial frame",
+          "Built the narrative around a shared event experience rather than a standalone brand feature",
+          "Tagged participating teams and coordinated distribution to extend the film’s reach"
         ],
-        "outcome": "Tens of thousands of impressions and hundreds of likes, shared by the teams themselves.",
-        "credit": "Concept, interviews, coordination and distribution by John Cowin · With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus",
+        "outcome": "Featuring multiple teams turned the film into a shared distribution asset, expanding Bolt’s presence across the ecosystem.",
+        "credit": "Concept, interviews, coordination, and distribution by John Cowin · Final edit Bob van der Meer",
+        "participants": "With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus",
         "preview": "ev-suifest-loop",
         "full": "ev-video-suifest-full",
         "fullLabel": "Sui Fest interviews"
@@ -99,11 +98,10 @@
     ]
   },
   "setupFinal": {
-    "_setupFinal": "V1.4: the production room's Setup and Final, restored inside its chapter of the deck. Two tabs in the media area: Setup, the default, shows the behind-the-scenes photograph with its caption beneath; Final crossfades, within the same stage, to the finished explainer (the chapter's muted preview with its pause control, and Watch full video with sound). The reader makes the switch; nothing changes by itself, the stage keeps its size, and with reduced motion the change is immediate. Never side by side. `label` names the two tabs for assistive technology.",
+    "_setupFinal": "V1.4: the production room's Setup and Final, inside its chapter of the deck; V1.5 made the switch a clear segmented control. Two equal options, SETUP and FINAL, just above the stage, the selected one filled in the page's accent. Setup, the default, shows the behind-the-scenes photograph (since V1.5 without a caption); Final crossfades, within the same stage, to the finished explainer (the chapter's muted preview with its pause control), and only under Final does Watch full video with sound show (its line is kept under Setup, so nothing below moves). The reader makes the switch; nothing changes by itself, the stage keeps its size, and with reduced motion the change is immediate. Never side by side. `label` names the control for assistive technology.",
     "chapter": "room",
     "label": "Setup and final",
     "photo": "ev-image-production-setup",
-    "caption": "Two cameras, two tripods, a clip-on mic, a laptop, and the venue’s existing lighting.",
     "final": "ev-video-slippage-full",
     "tabs": { "setup": "Setup", "final": "Final" }
   },

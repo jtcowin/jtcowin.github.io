@@ -1,26 +1,31 @@
 ---
 /**
- * The homepage opening sequence (Version 1.2): three phrases on the ink
- * ground, "Product complexity.", "Market clarity." and "Strategy into
- * execution.", set as the faces of one restrained vertical cylinder. Each
- * phrase turns forward from below, sharpening and coming to full strength,
- * settles flat and sharp, and holds to be read; then it turns upward and away,
- * fading and softening a little, as the next one arrives. The last phrase
- * holds a little longer, turns gently upward and dissolves; then the ground
- * clears, and the hero beneath it, already loaded, rises a few pixels from
- * slight softness into place while its headline and the navigation fade in.
- * About 3.8 seconds in all, a little less on phones.
+ * The homepage opening sequence (Version 1.5): a brisk, directional loader on
+ * the ink ground. A small marker in the accent travels a faint hairline from
+ * the left of the screen to the right, a short streak behind it as it gathers
+ * speed, while the words come in quick succession at the center: first a
+ * viewing note, set small and quiet ("BEST EXPERIENCED ON DESKTOP"), then three
+ * phrases, "Product complexity.", "Market clarity." and "Strategy, executed."
+ * Each arrives from the left and leaves to the right, the way the marker runs,
+ * the next beginning as the last goes, so the cadence is quick but never a
+ * flicker. When the marker reaches the end of its path the ground dissolves and
+ * the hero comes up in layers (Hero.astro and Header.astro): the photograph,
+ * the name, the descriptor, the navigation, then the rule and the arrow,
+ * overlapping. About 2.9 seconds in all: the note about 0.7, each phrase about
+ * half a second, the dissolve and the hero's layers about three quarters of a
+ * second. No percentage: the marker is a pace, not a measure, and nothing here
+ * claims to count anything.
  *
  * It plays on the homepage only, once per browsing session (the tab's session
  * storage). An inline script in the head decides before the first paint, by
  * adding the `intro` class to the document, so a visitor it skips never sees
- * it: a return to the homepage, a visit that began on another page of the
- * site, and a link to a section all go straight to the page. A tab opened in
- * the background waits to start until it is shown. Nothing waits for it: the
- * hero's photograph loads as usual underneath (and is preloaded, see
- * index.astro), and scrolling, a click, a tap or a key dismisses it at once.
- * With reduced motion it shows the final phrase briefly, still, then
- * crossfades straight to the hero.
+ * it: a return to the homepage (from a case study, say), a visit that began on
+ * another page of the site, and a link to a section all go straight to the
+ * page. A tab opened in the background waits to start until it is shown.
+ * Nothing waits for it: the hero's photograph loads as usual underneath (and is
+ * preloaded, see index.astro), and scrolling, a click, a tap or a key dismisses
+ * it at once. With reduced motion there is no travel and no words: the ground
+ * clears in a fifth of a second, straight to the hero.
  *
  * The timing lives in custom properties on the document (`--intro-*`, below),
  * which the hero (Hero.astro) and the header (Header.astro) read for their
@@ -28,13 +33,22 @@
  * without JavaScript it never appears, and it ends by itself even if the
  * script below never runs.
  */
-const PHRASES = ['Product complexity.', 'Market clarity.', 'Strategy into execution.'];
+import home from '@data/home.json';
+
+const { note, phrases } = home.intro;
 ---
 
 <div class="intro" aria-hidden="true" data-intro>
   <div class="intro__ground"></div>
-  <div class="intro__drum">
-    {PHRASES.map((phrase, i) => <p class={`intro__face intro__face--${i + 1}`}>{phrase}</p>)}
+  <div class="intro__stage">
+    <div class="intro__readout">
+      <p class="intro__note">{note}</p>
+      {phrases.map((phrase, i) => <p class={`intro__phrase intro__phrase--${i + 1}`}>{phrase}</p>)}
+    </div>
+    <div class="intro__track">
+      <span class="intro__lane"><span class="intro__run"><span class="intro__trail"></span></span></span>
+      <span class="intro__marker"></span>
+    </div>
   </div>
 </div>
 
@@ -87,54 +101,38 @@ const PHRASES = ['Product complexity.', 'Market clarity.', 'Strategy into execut
 <style>
   /* ---- the timing --------------------------------------------------------------
      On the document, so the hero and the header can read their part of the
-     handoff. Turns of 400 to 550 ms, reading holds of 550 to 700 ms from the
-     moment a phrase settles, the last hold a little longer. The last phrase
-     starts to leave at --intro-x; the ground starts to clear a beat later, at
-     --intro-reveal, once the phrase has mostly gone, and the hero's entrance
-     (--intro-hero, read by Hero.astro and Header.astro) starts with it. The
-     whole sequence, with the handoff into the hero, takes about 3.8 seconds
-     (3.7 on phones). */
+     handoff. The ground alone for a moment, then the note for about 0.7 s and
+     each phrase for about half a second (the last a touch longer); each word
+     arrives in 180 ms, a beat after the one before it starts to leave (130 ms),
+     so the two barely overlap and none ever cuts to black. The marker travels
+     from just after the start to the moment the last phrase ends,
+     --intro-reveal, where the ground starts to clear and the hero's layers begin
+     (--intro-hero, read by Hero.astro and Header.astro); the last phrase and
+     the path leave just before it, so the ground clears onto nothing. The same
+     on phones. */
   :global(html.intro-hold) {
-    --intro-lead: 40ms; /* the ground alone, before the first phrase turns in */
-    --intro-in: 400ms; /* the first phrase turning into place */
-    --intro-read: 550ms; /* each reading hold, once a phrase has settled */
-    --intro-turn: 440ms; /* each turn from one phrase to the next */
-    --intro-last: 610ms; /* the final phrase's hold, a little longer */
-    --intro-out: 380ms; /* the final phrase turning away */
-    --intro-gap: 110ms; /* from the last phrase leaving to the ground clearing */
-    --intro-clear: 480ms; /* the ground dissolving */
-    --intro-settle: 640ms; /* the hero rising into place */
-    --intro-rise: 14px;
-    --intro-soft: 6px;
+    --intro-lead: 60ms; /* the ground alone, before the note */
+    --intro-in: 180ms; /* a word arriving */
+    --intro-out: 130ms; /* a word leaving */
+    --intro-beat: 100ms; /* from one word starting to leave to the next arriving */
+    --intro-note: 640ms; /* the note's turn */
+    --intro-step: 480ms; /* each of the first two phrases' turns */
+    --intro-last: 500ms; /* the last phrase's turn, up to the reveal */
+    --intro-go: 120ms; /* the marker sets off */
+    --intro-clear: 400ms; /* the ground dissolving */
 
-    /* The two turns, the last phrase leaving, and the hero revealed. */
-    --intro-t1: calc(var(--intro-lead) + var(--intro-in) + var(--intro-read));
-    --intro-t2: calc(var(--intro-t1) + var(--intro-turn) + var(--intro-read));
-    --intro-x: calc(var(--intro-t2) + var(--intro-turn) + var(--intro-last));
-    --intro-reveal: calc(var(--intro-x) + var(--intro-gap));
+    /* The three phrases, and the reveal. */
+    --intro-p1: calc(var(--intro-lead) + var(--intro-note));
+    --intro-p2: calc(var(--intro-p1) + var(--intro-step));
+    --intro-p3: calc(var(--intro-p2) + var(--intro-step));
+    --intro-reveal: calc(var(--intro-p3) + var(--intro-last));
     --intro-hero: var(--intro-reveal);
   }
 
-  /* Phones: a little shorter, every hold and turn still inside its range. */
-  @media (max-width: 47.99rem) {
-    :global(html.intro-hold) {
-      --intro-lead: 40ms;
-      --intro-in: 400ms;
-      --intro-read: 550ms;
-      --intro-turn: 400ms;
-      --intro-last: 570ms;
-      --intro-out: 360ms;
-      --intro-gap: 110ms;
-      --intro-clear: 460ms;
-      --intro-settle: 620ms;
-      --intro-soft: 4px;
-    }
-  }
-
-  /* Reduced motion: the final phrase, still, then a crossfade. */
+  /* Reduced motion: no travel and no words, the ground clearing straight away. */
   :global(html.intro-still) {
-    --intro-reveal: 1100ms;
-    --intro-clear: 450ms;
+    --intro-reveal: 0ms;
+    --intro-clear: 200ms;
   }
 
   /* Dismissed: the overlay fades as it stands (below) and the hero's entrance
@@ -158,11 +156,11 @@ const PHRASES = ['Product complexity.', 'Market clarity.', 'Strategy into execut
     overflow: hidden;
     color: #f2f1ec;
     /* Gone at the end of the timeline even if no script ever runs. */
-    animation: intro-done 1ms linear calc(var(--intro-reveal) + var(--intro-clear)) forwards;
+    animation: intro-done 1ms linear calc(var(--intro-reveal) + 20ms + var(--intro-clear)) forwards;
   }
 
-  /* The ground is its own layer, so the last phrase can dissolve a beat ahead
-     of it. */
+  /* The ground is its own layer, so the words and the marker can leave a beat
+     ahead of it. */
   .intro__ground {
     position: absolute;
     inset: 0;
@@ -170,115 +168,185 @@ const PHRASES = ['Product complexity.', 'Market clarity.', 'Strategy into execut
   }
 
   :global(html.intro) .intro__ground {
-    animation: intro-clear var(--intro-clear) cubic-bezier(0.4, 0, 0.6, 1) var(--intro-reveal) both;
+    animation: intro-clear var(--intro-clear) cubic-bezier(0.4, 0, 0.6, 1) calc(var(--intro-reveal) + 20ms) both;
   }
 
-  /* ---- the cylinder ----------------------------------------------------------------
-     The faces share one place, so every phrase is anchored to the same center
-     of the screen. Each turns about an axis a little behind the screen, which
-     makes them consecutive faces of one drum: the one leaving moves up and
-     away, the one arriving comes up from below. The type is the portfolio's
-     display face, lighter and smaller than its headlines, sized so the longest
-     phrase keeps to one line (it is 10.5em long). Archivo's capitals sit
-     centered in a line box of 1. */
-  .intro__drum {
-    --intro-a: 50deg; /* the angle between two faces */
-    --intro-r: 1.2em; /* the drum's radius: faces meet edge to edge */
-
+  /* ---- the stage: the words at the center, the path beneath them ------------------ */
+  .intro__stage {
     position: relative;
     display: grid;
-    place-items: center;
+    justify-items: center;
+    gap: clamp(1.75rem, 4.5vh, 3rem);
     width: 100%;
     padding-inline: var(--gutter);
-    /* A distant viewpoint, so the turn reads as a drum rather than a spin. */
-    perspective: 22em;
+  }
+
+  /* Every word shares one place, so each is anchored to the same center. The
+     phrases are the portfolio's display face, lighter and smaller than its
+     headlines, sized so each keeps to one line (the longest is about 9em). */
+  .intro__readout {
+    display: grid;
+    place-items: center;
     font-family: var(--font-display);
     font-weight: 450;
     font-stretch: 100%;
-    font-size: min(clamp(1.625rem, 1.15rem + 1.8vw, 3.25rem), calc((100vw - 2 * var(--gutter)) / 10.9));
+    font-size: min(clamp(1.625rem, 1.15rem + 1.8vw, 3.25rem), calc((100vw - 2 * var(--gutter)) / 9.6));
     line-height: 1;
     letter-spacing: 0;
   }
 
-  .intro__face {
+  .intro__readout > p {
     grid-area: 1 / 1;
     margin: 0;
     white-space: nowrap;
     text-align: center;
     opacity: 0;
-    transform-origin: 50% 50% calc(-1 * var(--intro-r));
-    backface-visibility: hidden;
   }
 
-  :global(html.intro) .intro__face {
-    will-change: transform, opacity, filter;
+  /* The note: a viewing recommendation, not a warning. The site's small tracked
+     capitals, quiet. */
+  .intro__note {
+    font-family: var(--font-sans);
+    font-size: clamp(0.6875rem, 0.64rem + 0.2vw, 0.8125rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: var(--c-fog-2);
   }
 
-  /* One smooth curve for the turn, so the two faces move as one body; no
-     bounce and no overshoot. The light (opacity and softness) has its own
-     curves and lands on the same frame: a phrase is flat, sharp and at full
-     strength at the moment its hold begins. */
-  :global(html.intro) .intro__face--1 {
+  /* The path: a hairline from gutter to gutter, a short tick at each end. Its
+     width is the distance the marker runs (100cqi). */
+  .intro__track {
+    position: relative;
+    justify-self: stretch;
+    height: 1px;
+    background: rgba(237, 240, 239, 0.14);
+    container-type: inline-size;
+    opacity: 0;
+  }
+
+  .intro__track::before,
+  .intro__track::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    width: 1px;
+    height: 7px;
+    background: rgba(237, 240, 239, 0.3);
+  }
+
+  .intro__track::before {
+    left: 0;
+  }
+
+  .intro__track::after {
+    right: 0;
+  }
+
+  /* The streak runs inside the path's clip, so it never reaches beyond the
+     start; the marker rides on top of it, unclipped. */
+  .intro__lane {
+    position: absolute;
+    inset: -2px 0;
+    overflow: hidden;
+  }
+
+  .intro__run {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+  }
+
+  .intro__trail {
+    position: absolute;
+    right: 0;
+    top: 1px;
+    width: min(22vw, 16rem);
+    height: 2px;
+    background: linear-gradient(to right, rgba(79, 145, 138, 0), rgba(79, 145, 138, 0.75) 72%, var(--c-aqua-light));
+    transform-origin: 100% 50%;
+    transform: scaleX(0);
+  }
+
+  .intro__marker {
+    position: absolute;
+    top: -3px;
+    left: -3.5px;
+    width: 7px;
+    height: 7px;
+    background: var(--c-aqua-light);
+  }
+
+  /* ---- the motion ---------------------------------------------------------------- */
+  :global(html.intro) .intro__stage {
+    --intro-arrive: cubic-bezier(0.22, 1, 0.36, 1);
+    --intro-leave: cubic-bezier(0.55, 0, 0.75, 0.3);
+    --intro-run: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+
+  /* The path and the marker come up with the ground's first moment, and go as
+     the ground starts to clear. */
+  :global(html.intro) .intro__track {
     animation:
-      intro-turn-in var(--intro-in) var(--intro-ease) var(--intro-lead) both,
-      intro-light-in var(--intro-in) var(--intro-light) var(--intro-lead) both,
-      intro-turn-out var(--intro-turn) var(--intro-ease) var(--intro-t1) forwards,
-      intro-light-out var(--intro-turn) var(--intro-dim) var(--intro-t1) forwards;
+      intro-fade-in 240ms ease-out 0ms both,
+      intro-fade-out 200ms ease-in calc(var(--intro-reveal) - 80ms) forwards;
   }
 
-  :global(html.intro) .intro__face--2 {
+  /* The marker and its streak, from the left end of the path to the right one,
+     easing in and out (a sine curve, no overshoot); the streak grows with the
+     speed and is gone as the marker settles. */
+  :global(html.intro) .intro__run,
+  :global(html.intro) .intro__marker {
+    animation: intro-travel calc(var(--intro-reveal) - var(--intro-go)) var(--intro-run) var(--intro-go) both;
+  }
+
+  :global(html.intro) .intro__trail {
+    animation: intro-streak calc(var(--intro-reveal) - var(--intro-go)) linear var(--intro-go) both;
+  }
+
+  /* The words: each arrives from the left and leaves to the right. */
+  :global(html.intro) .intro__note {
     animation:
-      intro-turn-in var(--intro-turn) var(--intro-ease) var(--intro-t1) both,
-      intro-light-in var(--intro-turn) var(--intro-light) var(--intro-t1) both,
-      intro-turn-out var(--intro-turn) var(--intro-ease) var(--intro-t2) forwards,
-      intro-light-out var(--intro-turn) var(--intro-dim) var(--intro-t2) forwards;
+      intro-word-in var(--intro-in) var(--intro-arrive) var(--intro-lead) both,
+      intro-word-out var(--intro-out) var(--intro-leave) var(--intro-p1) forwards;
   }
 
-  :global(html.intro) .intro__face--3 {
+  :global(html.intro) .intro__phrase--1 {
     animation:
-      intro-turn-in var(--intro-turn) var(--intro-ease) var(--intro-t2) both,
-      intro-light-in var(--intro-turn) var(--intro-light) var(--intro-t2) both,
-      intro-turn-away var(--intro-out) var(--intro-ease) var(--intro-x) forwards,
-      intro-light-out var(--intro-out) var(--intro-dissolve) var(--intro-x) forwards;
+      intro-word-in var(--intro-in) var(--intro-arrive) calc(var(--intro-p1) + var(--intro-beat)) both,
+      intro-word-out var(--intro-out) var(--intro-leave) var(--intro-p2) forwards;
   }
 
-  /* The phrase leaving dims a little ahead of the turn and the one arriving
-     brightens a little behind it, so mid-turn neither competes; the last
-     phrase dissolves early in its turn, before the ground clears. */
-  :global(html.intro) .intro__drum {
-    --intro-ease: cubic-bezier(0.45, 0, 0.2, 1);
-    --intro-light: cubic-bezier(0.45, 0, 0.35, 1);
-    --intro-dim: cubic-bezier(0.25, 0, 0.45, 1);
-    --intro-dissolve: cubic-bezier(0.1, 0, 0.35, 1);
+  :global(html.intro) .intro__phrase--2 {
+    animation:
+      intro-word-in var(--intro-in) var(--intro-arrive) calc(var(--intro-p2) + var(--intro-beat)) both,
+      intro-word-out var(--intro-out) var(--intro-leave) var(--intro-p3) forwards;
   }
 
-  /* Reduced motion: no turns. The final phrase stands alone, then fades with
-     the ground. */
-  :global(html.intro-still) .intro__face {
-    animation: none;
+  :global(html.intro) .intro__phrase--3 {
+    animation:
+      intro-word-in var(--intro-in) var(--intro-arrive) calc(var(--intro-p3) + var(--intro-beat)) both,
+      intro-word-out var(--intro-out) var(--intro-leave) calc(var(--intro-reveal) - 40ms) forwards;
   }
 
-  :global(html.intro-still) .intro__face--3 {
-    opacity: 1;
-  }
-
-  :global(html.intro-still) .intro__drum,
-  :global(html.intro-still) .intro__ground {
-    animation: intro-clear var(--intro-clear) linear var(--intro-reveal) both;
+  /* Reduced motion: no travel and no words; the ground clears at once, in a
+     fifth of a second. */
+  :global(html.intro-still) .intro__stage {
+    display: none;
   }
 
   /* The site's reduced-motion reset ends every animation at once (global.css);
-     this crossfade, which is no motion, keeps its timing. */
+     this short crossfade, which is no motion, keeps its timing. */
   @media (prefers-reduced-motion: reduce) {
     :global(html.intro-still) .intro {
       animation-duration: 1ms !important;
-      animation-delay: calc(var(--intro-reveal) + var(--intro-clear)) !important;
+      animation-delay: calc(var(--intro-reveal) + 20ms + var(--intro-clear)) !important;
     }
 
-    :global(html.intro-still) .intro__drum,
     :global(html.intro-still) .intro__ground {
       animation-duration: var(--intro-clear) !important;
-      animation-delay: var(--intro-reveal) !important;
+      animation-delay: calc(var(--intro-reveal) + 20ms) !important;
     }
 
     :global(html.intro-still.intro-skip) .intro {
@@ -297,53 +365,68 @@ const PHRASES = ['Product complexity.', 'Market clarity.', 'Strategy into execut
     animation-play-state: paused !important;
   }
 
-  @keyframes intro-turn-in {
-    from {
-      transform: rotateX(calc(-1 * var(--intro-a)));
-    }
-    to {
-      transform: none;
-    }
-  }
-
-  @keyframes intro-turn-out {
-    from {
-      transform: none;
-    }
-    to {
-      transform: rotateX(var(--intro-a));
-    }
-  }
-
-  /* The last phrase leaves on a gentler turn. */
-  @keyframes intro-turn-away {
-    from {
-      transform: none;
-    }
-    to {
-      transform: rotateX(calc(var(--intro-a) * 0.6));
-    }
-  }
-
-  @keyframes intro-light-in {
+  @keyframes intro-word-in {
     from {
       opacity: 0;
-      filter: blur(0.06em);
+      transform: translateX(-0.22em);
     }
     to {
       opacity: 1;
-      filter: none;
+      transform: none;
     }
   }
 
-  @keyframes intro-light-out {
+  @keyframes intro-word-out {
     from {
       opacity: 1;
-      filter: none;
+      transform: none;
     }
     to {
       opacity: 0;
-      filter: blur(0.06em);
+      transform: translateX(0.22em);
+    }
+  }
+
+  @keyframes intro-travel {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100cqi);
+    }
+  }
+
+  /* The streak's length follows the marker's speed on the sine curve: nothing
+     at rest, longest in the middle of the run. */
+  @keyframes intro-streak {
+    0% {
+      transform: scaleX(0);
+      animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+    }
+    50% {
+      transform: scaleX(1);
+      animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes intro-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes intro-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
     }
   }
 
