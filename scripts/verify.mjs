@@ -1645,8 +1645,9 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const heroButtons = [...hero.matchAll(/<button\b[^>]*>/g)].map((m) => m[0]);
   if (heroButtons.length !== 1 || !/data-reel-toggle/.test(heroButtons[0] || '') || !/aria-label="[^"]+"/.test(heroButtons[0] || '')) failures.push(`[events] the reel has only its pause control: no next, previous or category buttons (found ${heroButtons.length} buttons)`);
   // The chapters: in events.json's order, those whose video is approved and present, numbered in order; a pending one is absent.
-  const CHAPTERS = [['presentation', 'Live presentation'], ['podcast', 'Creator podcast'], ['team-interview', 'Team interview'], ['explainer', 'Technical explainer'], ['event-film', 'Event film']];
-  if (JSON.stringify((evData.hero?.chapters || []).map((c) => [c.key, c.title])) !== JSON.stringify(CHAPTERS)) failures.push('[events] events.json orders the reel: live presentation, creator podcast, team interview, technical explainer, event film');
+  // V1.6: the technical explainer first, then the Sui Fest footage, the Jungle Talk podcast and the live presentation (the pending team interview after the podcast).
+  const CHAPTERS = [['explainer', 'Technical explainer'], ['event-film', 'Event film'], ['podcast', 'Creator podcast'], ['team-interview', 'Team interview'], ['presentation', 'Live presentation']];
+  if (JSON.stringify((evData.hero?.chapters || []).map((c) => [c.key, c.title])) !== JSON.stringify(CHAPTERS)) failures.push('[events] events.json orders the reel (V1.6): technical explainer, event film, creator podcast, (team interview,) live presentation');
   const chapterReady = (c) => {
     const a = evAsset(c.asset);
     return a.permission === 'approved' && a.type === 'video' && Boolean(a.file) && fs.existsSync(path.join(root, 'public/media', a.file));
@@ -1656,9 +1657,9 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (JSON.stringify(shown) !== JSON.stringify(expected)) failures.push(`[events] the reel shows its ready chapters in order, numbered in order (found ${shown.map((x) => x.join(' ')).join(', ')})`);
   const interview = evAsset('ev-hero-team-interview');
   if (interview.permission !== 'approved') {
-    if (JSON.stringify(shown.map(([, n, t]) => `${n} / ${t}`)) !== JSON.stringify(['01 / Live presentation', '02 / Creator podcast', '03 / Technical explainer', '04 / Event film'])) failures.push('[events] until the team interview arrives the reel runs four chapters: 01 / LIVE PRESENTATION, 02 / CREATOR PODCAST, 03 / TECHNICAL EXPLAINER, 04 / EVENT FILM');
+    if (JSON.stringify(shown.map(([, n, t]) => `${n} / ${t}`)) !== JSON.stringify(['01 / Technical explainer', '02 / Event film', '03 / Creator podcast', '04 / Live presentation'])) failures.push('[events] until the team interview arrives the reel runs four chapters (V1.6): 01 / TECHNICAL EXPLAINER, 02 / EVENT FILM, 03 / CREATOR PODCAST, 04 / LIVE PRESENTATION');
     if (/Team interview|team-interview/i.test(hero) || /Singapore Team|\bTBD\b|coming soon/i.test(evText)) failures.push('[events] no placeholder, disabled chapter or "coming soon" while the team interview is pending');
-  } else if (JSON.stringify(shown.map(([, n, t]) => `${n} / ${t}`)) !== JSON.stringify(['01 / Live presentation', '02 / Creator podcast', '03 / Team interview', '04 / Technical explainer', '05 / Event film'])) failures.push('[events] with the team interview in, the reel runs five chapters, the interview third');
+  } else if (JSON.stringify(shown.map(([, n, t]) => `${n} / ${t}`)) !== JSON.stringify(['01 / Technical explainer', '02 / Event film', '03 / Creator podcast', '04 / Team interview', '05 / Live presentation'])) failures.push('[events] with the team interview in, the reel runs five chapters, the interview after the podcast');
   if (textOf(block(hero, '<span data-reel-label')) !== `${expected[0]?.[1]} / ${expected[0]?.[2]}` || !evRules(/^\.evh__reading,\s*\.evh__tc$/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[events] the label at the top left reads the chapter\'s number and title, in capitals (01 / LIVE PRESENTATION)');
   const NAMES = /Sui Summit|ETHDenver|TOKEN2049|Singapore|Sui Fest|SuiFest|Jungle|Food Talk|Slippage|Max Presentation|McKendry|Bolt|20(?:25|26)|\.mp4|Denver/i;
   const heroWords = textOf(hero.replace(/<p class="lede evh__lede[\s\S]*?<\/p>/, '').replace(/<h1\b[\s\S]*?<\/h1>/, '').replace(/<p class="evh__kicker[\s\S]*?<\/p>/, ''));
@@ -1675,6 +1676,19 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (/Food Talk/i.test(evText)) failures.push('[events] Food Talk appears nowhere on the page');
   const pres = evAsset('ev-hero-presentation');
   if (!/0:00 to 0:04\.2/.test(pres.source || '') || !/6:03\.154 to 6:05\.78/.test(pres.source || '') || !/20:16 to 20:20/.test(pres.source || '') || !/dissolves? of 0\.334 s/.test(pres.source || '')) failures.push('[events] the presentation chapter: the opening, the on-chain pools passage and 20:16 to 20:20, joined by 250 to 400ms dissolves');
+  // V1.6: the Sui Fest chapter is the approved two-cut edit (in on the head of the shot that carries
+  // "And we asked our favorite teams", through the montage shot on screen at 0:11; then from the first
+  // frame of "Like a lot of people" to the last before "a whale, like a"); Jungle Talk two cuts, each
+  // ending on its shot's last frame. Both files are cut to those lengths.
+  const film = evAsset('ev-hero-event-film');
+  const pod = evAsset('ev-hero-podcast');
+  const secOf = (a) => (a.file && fs.existsSync(path.join(root, 'public/media', a.file)) ? mp4Seconds(path.join(root, 'public/media', a.file)) : NaN);
+  if (!/0:02\.711 to 0:11\.386/.test(film.source || '') || !/2:36\.615 to 2:39\.909/.test(film.source || '') || !/And we asked our favorite teams/.test(film.source || '') || !/a whale, like a/.test(film.source || '') || /0:03 to 0:06|0:07\.007/.test(film.source || '') || !(Math.abs(secOf(film) - 11.97) < 0.05) || Math.abs(film.duration - 11.97) > 0.01) failures.push(`[events] the event film chapter is the approved Sui Fest two-cut edit, 11.97 seconds (found ${secOf(film)})`);
+  if (!/0:00 to 0:04\.421/.test(pod.source || '') || !/0:24\.566 to 0:27\.861/.test(pod.source || '') || !/PUSH FOR LONGER DEALS/.test(pod.source || '') || !(Math.abs(secOf(pod) - 7.72) < 0.05) || Math.abs(pod.duration - 7.72) > 0.01) failures.push(`[events] the creator podcast chapter is Jungle Talk's two cuts, 0:00 to 0:04.4 and 0:24.6 to 0:27.9 (found ${secOf(pod)})`);
+  for (const a of [film, pod]) {
+    const f = mp4Facts(path.join(root, 'public/media', a.file || '-'));
+    if (f.top.indexOf('moov') > f.top.indexOf('mdat') || f.handlers.includes('soun') || f.width !== 1600 || f.height !== 900 || !f.avc) failures.push(`[events] ${a.file}: 1600 by 900 H.264, silent, its index first`);
+  }
   const expl = evAsset('ev-hero-explainer');
   if (!/0:15\.18 to 0:24/.test(expl.source || '') || !/One is related to just/.test(expl.source || '') || !/source audio/.test(expl.source || '')) failures.push('[events] the explainer begins on the first frame of "One is related to just", found in the source audio, and keeps its approved end');
   // The cinematic frame (the composition is an implementation trial), its crop per chapter, its crossfade.
@@ -1751,19 +1765,30 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (/<svg\b|<img\b|<video\b|<h2\b|<a\b|<ol\b|<ul\b|<button\b/.test(trBare) || /\d/.test(textOf(tr))) failures.push('[events] the transition has no other icon, lines, nodes, numbers, links or paragraphs: only the phrase and its signal');
   if (!evRules(/^\.evx__phrase$/).some((r) => /text-transform:\s*uppercase/.test(r.body) && /text-align:\s*center/.test(r.body)) || !evRules(/^\.evx__line$/).some((r) => /min-width:\s*48rem|width\s*>=\s*48rem/.test(r.at) && /display:\s*inline/.test(r.body)) || !evRules(/^\.evx__line$/).some((r) => !r.at && /display:\s*block/.test(r.body))) failures.push('[events] one centered uppercase line where it fits; two deliberate lines on a small screen');
   const trRun = Number((evRules(/^\.evx\.is-live$/).map((r) => r.body).join(';').match(/var\(--evx-run,\s*([\d.]+)\)/) || [])[1]);
-  if (!(trRun >= 1.6 && trRun <= 2) || !evRules(/^\.evx\.is-live \.evx__pin$/).some((r) => /position:\s*sticky/.test(r.body))) failures.push(`[events] the phrase holds at the middle of the screen while it is read (the section about 1.6 to 2 screens tall, found ${trRun || 'none'})`);
+  if (!(trRun >= 2.1 && trRun <= 2.4) || !evRules(/^\.evx\.is-live \.evx__pin$/).some((r) => /position:\s*sticky/.test(r.body))) failures.push(`[events] the phrase holds at the middle of the screen while it is read (V1.6: the section about 2.1 to 2.4 screens tall, found ${trRun || 'none'})`);
   if (!evRules(/^\.evx\.is-live \.evx__word$/).some((r) => MOTION_OK.test(r.at) && /opacity:\s*0\b/.test(r.body) && /transition:/.test(r.body)) || evRules(/^\.evx/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/evx__signal|evx__tile|evx__g\b|evx__g--/.test(bare(r.sel)))) failures.push('[events] the words arrive by a short wipe and fade, only with motion allowed; nothing blinks or tunnels');
   const evScriptsAll = pageScripts(evPage);
   const trSource = fs.readFileSync(path.join(root, 'src/components/events/EvTransition.astro'), 'utf8');
   const trConst = (name) => Number((trSource.match(new RegExp(`const ${name} = ([\\d.]+);`)) || [])[1]);
   const travel = trConst('TRAVEL');
   if (!(travel >= 0.6 && travel <= 0.8) || !/p >= i \/ \(words\.length - 1\)/.test(trSource)) failures.push(`[events] the words arrive over about 0.6 to 0.8 of a screen of scrolling, the first at its start and the last at its end (found ${travel || 'none'})`);
-  // After the last word a short hold, then the next section: the phrase is
-  // released (UNPIN) a little after it completes (START less TRAVEL), and the
-  // section is as tall as that (the script sets it; the stylesheet's fallback
-  // repeats it).
-  const hold = trConst('UNPIN') - (travel - trConst('START'));
-  if (!(hold >= 0.1 && hold <= 0.4) || Math.abs(1 + trConst('UNPIN') - trRun) > 0.001) failures.push(`[events] after the last word a short hold (0.1 to 0.4 of a screen, found ${hold.toFixed(2)}), then the next section (the section ${1 + trConst('UNPIN')} screens tall, its fallback ${trRun})`);
+  // V1.6, a longer final beat (the first four words keep their pace): after AMPLIFY.
+  // the signal is shown complete by RESOLVE (a little over its own second at an
+  // ordinary pace), then the finished line holds for HOLD (0.25 to 0.35 of a
+  // screen) before the section lets go; the section is as tall as that (the script
+  // sets it; the stylesheet's fallback repeats it).
+  const resolve = trConst('RESOLVE');
+  const hold = trConst('HOLD');
+  const unpin = travel - trConst('START') + resolve + hold;
+  if (!/const UNPIN = TRAVEL - START \+ RESOLVE \+ HOLD;/.test(trSource) || !(resolve >= 0.3 && resolve <= 0.5) || !(hold >= 0.25 && hold <= 0.35) || Math.abs(1 + unpin - trRun) > 0.001) failures.push(`[events] after AMPLIFY. the signal completes within about 0.3 to 0.5 of a screen and the finished line then holds for 0.25 to 0.35 more before the section lets go (found ${resolve} and ${hold}; the section ${(1 + unpin).toFixed(2)} screens tall, its fallback ${trRun})`);
+  if (!/signal\?\.classList\.toggle\('is-done', p >= 1 \+ RESOLVE \/ TRAVEL\)/.test(trSource)) failures.push('[events] from RESOLVE past AMPLIFY. the signal is shown complete, however fast the reader scrolls (V1.6)');
+  const doneRule = (re) => evRules(re).filter((r) => MOTION_OK.test(r.at)).map((r) => r.body).join(';');
+  const doneTile = doneRule(/^\.evx\.is-live \.evx__signal\.is-done \.evx__tile$/);
+  const donePoint = doneRule(/^\.evx\.is-live \.evx__signal\.is-done \.evx__g--point$/);
+  const doneNear = doneRule(/^\.evx\.is-live \.evx__signal\.is-done \.evx__g--near$/);
+  const doneFar = doneRule(/^\.evx\.is-live \.evx__signal\.is-done \.evx__g--far$/);
+  const doneLift = doneRule(/^\.evx\.is-live \.evx__signal\.is-done \.evx__tile::?after$/);
+  if (![doneTile, donePoint, doneNear, doneFar, doneLift].every((b) => /animation:\s*none/.test(b)) || !/clip-path:\s*inset\(0(?:px)?(?: 0(?:px)?){0,3}\)/.test(doneTile) || !/opacity:\s*1\b/.test(donePoint) || !/stroke-dasharray:\s*7\.66/.test(doneNear) || !/stroke-dasharray:\s*13\.86/.test(doneFar) || !/opacity:\s*0\b/.test(doneLift)) failures.push('[events] complete, the signal is its sequence\'s own last frame, still: the tile whole, the point bright, both pairs of arcs drawn, the lift settled (V1.6)');
 
   // ---- 02 the broadcast signal after AMPLIFY. (V1.3): the approved Option A,
   // Broadcast, in the solid tile treatment. Placed immediately after the word
@@ -1796,7 +1821,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
     const times = [...((body || '').match(/animation:([^;]*)/) || [, ''])[1].matchAll(/(?:^|[\s,])(\d*\.?\d+)(m?s)\b/g)].map((m) => Number(m[1]) / (m[2] === 'ms' ? 1000 : 1));
     return times.length >= 2 ? times[1] : NaN;
   };
-  if (!tileIn || !(delayOf(tileIn.body) >= 0.2)) failures.push('[events] the tile waits a moment after the last word, then wipes in as the words do');
+  if (!tileIn || !(delayOf(tileIn.body) >= 0.05 && delayOf(tileIn.body) < 0.3)) failures.push(`[events] the tile wipes in as the last word is still landing, sooner than V1.4's 0.3s (V1.6, found ${tileIn ? delayOf(tileIn.body) : 'none'}s)`);
   // The ring is gone: nothing leaves the tile, nothing scales, glows or repeats.
   if (/evx__pulse/.test(evPage) || CSS_RULES.some((r) => /evx-pulse/.test(r.at) || /evx__pulse/.test(r.sel)) || evRules(/^\.evx/).some((r) => /box-shadow|drop-shadow|blur\(|infinite/.test(r.body)) || CSS_RULES.some((r) => /@keyframes evx-/.test(r.at) && /scale|transform|filter|box-shadow/.test(r.body))) failures.push('[events] no ring, halo, bloom, scaling or repeat: every movement stays inside the tile');
   // The sequence inside the tile, once it is revealed (times as the minifier writes the shorthand).
@@ -1814,6 +1839,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const seqEnd = Math.max(...[pointT, nearT, farT, liftT].map((t) => t.delay + t.dur));
   const seqOk = [tileT, pointT, nearT, farT, liftT].every((t) => t.dur > 0 && t.delay >= 0 && !t.iter) && seqStart >= tileT.delay + tileT.dur - 0.1 && pointT.delay < nearT.delay && nearT.delay < farT.delay && farT.delay <= liftT.delay && liftT.delay + liftT.dur === seqEnd && seqEnd - seqStart >= 0.45 && seqEnd - seqStart <= 0.6;
   if (!seqOk) failures.push(`[events] once the tile is revealed, in about 450 to 600ms: the point brightens, the inner arcs draw, the outer follow, the tile lifts and settles (found ${(seqEnd - seqStart).toFixed(2)}s from ${seqStart}s)`);
+  if (!(seqEnd <= 1.15)) failures.push(`[events] the signal is complete about a second after AMPLIFY., sooner than before (V1.6, found ${seqEnd}s)`);
   const kf = (name, step) => CSS_RULES.filter((r) => new RegExp(`@keyframes ${name}\\b`).test(r.at) && step.test(r.sel.trim())).map((r) => r.body).join(';');
   const drawsOut = (name) => {
     const from = kf(name, /^(?:0%|from)$/), to = kf(name, /^(?:100%|to)$/);
@@ -1867,8 +1893,13 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // activation elements he plans and coordinates across events; the Sui Summit
   // story lives in the deck's live presentation chapter.
   const act = evSection('eva');
-  const ACT_COPY = 'Before the doors open, I negotiate sponsorships and pricing, coordinate with event hosts, source and price merchandise, and work with design on screen animations and physical assets. I plan how those pieces come together on site and how the activation continues through content and distribution afterward.';
-  if (one(act, /<p class="eva__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== ACT_COPY || evData.activation?.copy !== ACT_COPY) failures.push('[events] the activation carries the V1.3 paragraph: what John does before the doors open, at any event');
+  // V1.6: the approved wider scope of the work, and the headline's second half in the page's teal, the color alone.
+  const ACT_COPY = 'Before the doors open, I shape the strategy and coordinate every part of the activation, from sponsorships, speaking opportunities, and merchandise to event assets, on-site content, and post-event distribution.';
+  if (one(act, /<p class="eva__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== ACT_COPY || evData.activation?.copy !== ACT_COPY) failures.push('[events] the activation carries the V1.6 paragraph: the strategy and every part of the activation, before the doors open');
+  const actTitle = (act.match(/<h2 id="ev-activation-title"[\s\S]*?<\/h2>/) || [''])[0];
+  const actAccent = [...actTitle.matchAll(/<span class="eva__accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
+  const accentRule = evRules(/^\.eva__accent$/).map((r) => r.body).join(';');
+  if (JSON.stringify(actAccent) !== JSON.stringify(['before anyone enters the room.']) || evData.activation?.accent !== 'before anyone enters the room.' || !/^\s*color:\s*var\(--accent-ink\);?\s*$/.test(accentRule) || evRules(/eva__accent/).some((r) => /background|outline|border|box-shadow|animation|transition|text-decoration/.test(r.body))) failures.push('[events] one restrained accent: "before anyone enters the room." in the page\'s teal, the color alone (V1.6)');
   if (/Sui Summit|ETHDenver|TOKEN2049|Sui Fest|SuiFest|\b20(?:25|26)\b|this booth|the booth at/i.test(textOf(norm(act.replace(/<script\b[\s\S]*?<\/script>/g, ''))))) failures.push('[events] the activation names no one event and implies no one booth');
   if (/class="ev-cue\b|Stages?:/.test(act) || evData.activation?.cues) failures.push('[events] the activation has no eyebrow (V1.2 removed its stages, Secure and Build)');
   if (/Phi Labs sponsored/.test(evPage)) failures.push('[events] the sponsorship is attributed to Bolt Liquidity');
@@ -1951,15 +1982,18 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // V1.5: the approved words for each chapter, the live presentation without
   // its full film (its preview only), Bob van der Meer credited for the edit in
   // the fine print only, and the participating teams on a line of their own.
+  // V1.6: the live presentation's new outcome and credit, its preview the hero's
+  // own presentation edit; the event film's preview the hero's Sui Fest edit and
+  // no film with sound; the production room's Final its two-scene loop.
   const DECK = [
     {
       key: 'live', label: 'Live presentation', headline: 'From live presentation to lasting content.',
       context: 'I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.',
       points: ['Secured the slot, helped shape the subject, and promoted the session', 'Directed the deck, presentation setup, and live slides', 'Captured the presentation from multiple angles and repackaged it for continued distribution'],
-      outcome: 'Event-led relationships contribute to ongoing conversations and integrations with key ecosystem partners.',
-      credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer',
+      outcome: 'Event-led introductions and follow-through helped secure three aggregator integrations and opened strategic discussions with ecosystem leadership.',
+      credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer',
       participants: '',
-      preview: 'ev-max-loop', full: null,
+      preview: 'ev-hero-presentation', full: null,
     },
     {
       key: 'room', label: 'Production room', headline: 'Build the set. Direct the take. Shape the final cut.',
@@ -1968,7 +2002,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
       outcome: 'One focused production session became a library of finished product explainers for the YouTube channel and social media.',
       credit: 'Concept, questions, direction, capture, and edit briefs by John Cowin · On-camera Max McKendry · Final edit Bob van der Meer',
       participants: '',
-      preview: 'ev-slippage-preview', full: 'ev-video-slippage-full',
+      preview: 'ev-room-final-loop', full: 'ev-video-slippage-full',
     },
     {
       key: 'film', label: 'Event film', headline: 'Capture the event. Connect the ecosystem.',
@@ -1977,7 +2011,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
       outcome: 'Featuring multiple teams turned the film into a shared distribution asset, expanding Bolt’s presence across the ecosystem.',
       credit: 'Concept, interviews, coordination, and distribution by John Cowin · Final edit Bob van der Meer',
       participants: 'With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus',
-      preview: 'ev-suifest-loop', full: 'ev-video-suifest-full',
+      preview: 'ev-hero-event-film', full: null,
     },
   ];
   if (!/data-surface="dark"/.test((deckSec.match(/<section[^>]*>/) || [''])[0]) || !/<h2 id="ev-deck-title" class="sr-only"[^>]*>[^<]+<\/h2>/.test(deckSec)) failures.push('[events] the deck is on the dark ground of the screens, its section named for assistive technology');
@@ -2000,7 +2034,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
     };
     // (Apostrophes may be typographic.)
     const flat = (t) => (t || '').replace(/[‘’]/g, "'");
-    for (const k of ['headline', 'context', 'outcome', 'credit', 'participants']) if (flat(got[k]) !== flat(want[k])) failures.push(`[events] chapter ${want.key}: its ${k} as the V1.5 brief has it (found "${got[k]}")`);
+    for (const k of ['headline', 'context', 'outcome', 'credit', 'participants']) if (flat(got[k]) !== flat(want[k])) failures.push(`[events] chapter ${want.key}: its ${k} as the V1.5 and V1.6 briefs have it (found "${got[k]}")`);
     if (JSON.stringify(got.points.map(flat)) !== JSON.stringify(want.points.map(flat)) || got.points.length > 3) failures.push(`[events] chapter ${want.key}: up to three things John did, as the V1.5 brief has them`);
     // its media: the preview (a silent loop of 8 to 15 seconds), and, where the
     // chapter has one, the full film with sound and the way to it (V1.5: the
@@ -2011,7 +2045,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
       const full = evAsset(want.full);
       if (!new RegExp(`<div class="evd__full"[^>]*data-deck-full[^>]*>\\s*<figure class="evp[^"]*"[^>]*data-evp[^>]*id="ev-deck-player-${want.key}"`).test(ch.html) || full.permission !== 'approved' || !ch.html.includes(`/media/${full.file}`)) failures.push(`[events] chapter ${want.key}: the full film (${want.full}) waits behind its preview, to play with sound`);
       if (textOf(norm((ch.html.match(/<button\b[^>]*data-deck-watch[^>]*>([\s\S]*?)<\/button>/) || [, ''])[1])).replace(/\s*\d+:\d\d$/, '') !== 'Watch full video with sound') failures.push(`[events] chapter ${want.key}: "Watch full video with sound"`);
-    } else if (/data-deck-full|data-deck-watch|data-evp\b|Watch full video/.test(ch.html)) failures.push(`[events] chapter ${want.key}: no full film and no Watch full video with sound (V1.5)`);
+    } else if (/data-deck-full|data-deck-watch|data-evp\b|Watch full video|Play with sound|Sound on/.test(ch.html)) failures.push(`[events] chapter ${want.key}: no full film, no sound and no Watch full video with sound (V1.5; the event film since V1.6)`);
     if (/\bautoplay\b/.test(ch.html)) failures.push(`[events] chapter ${want.key}: nothing autoplays from the markup`);
   }
   // V1.4: one vertical stack at every width (never side by side), the open
@@ -2029,22 +2063,23 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const wideContent = deckWide(/^\.evd__content$/).map((r) => r.body).join(';');
   const split = (wideContent.match(/grid-template-columns:\s*minmax\(0(?:px)?,\s*(\d+)fr\)\s*minmax\(0(?:px)?,\s*(\d+)fr\)/) || []).slice(1).map(Number);
   const mediaShare = split.length === 2 ? split[0] / (split[0] + split[1]) : 0;
-  const tallVh = Number((wideContent.match(/min-height:\s*min\(\s*calc\(\s*(\d+)svh/) || [])[1]);
-  if (!(mediaShare >= 0.56 && mediaShare <= 0.6) || !(tallVh >= 65 && tallVh <= 75)) failures.push(`[events] wide: the open chapter's media 56 to 60% and its words 40 to 44%, the chapter about 65 to 75% of the screen's height (found ${split.join('/') || 'none'} and ${tallVh || 'none'}svh)`);
-  // V1.5: the words use the column's full height (never one centered cluster),
-  // the headline near the top and the credit toward the bottom: the column
-  // stretches to the chapter, and the groups are parted by spacers that the
-  // chapter sizes at their minimum and that grow with the room, up to a limit,
-  // whatever is left shared above and below; the media centered beside them.
-  if (!/align-items:\s*stretch/.test(wideContent) || /align-items:\s*center/.test(wideContent) || !deckWide(/^\.evd__media$/).some((r) => /align-self:\s*center/.test(r.body))) failures.push('[events] wide: the words fill the column\'s height, the media centered beside them (V1.5)');
+  if (!(mediaShare >= 0.56 && mediaShare <= 0.6)) failures.push(`[events] wide: the open chapter's media 56 to 60% and its words 40 to 44% (found ${split.join('/') || 'none'})`);
+  // V1.6: the words in a natural top-to-bottom rhythm from the media's top line:
+  // no minimum height for the chapter, nothing centered or stretched to the
+  // media's height, the generous spacing V1.5 gave them kept as fixed gaps (up to
+  // 1.5rem after the headline and 2.75rem between the others), and a measured
+  // band between the header and the content.
+  if (!/align-items:\s*start/.test(wideContent) || /align-items:\s*(?:center|stretch)|align-content:\s*stretch|min-height:/.test(wideContent) || !deckWide(/^\.evd__media$/).some((r) => /align-self:\s*start/.test(r.body)) || deckWide(/^\.evd__media$/).some((r) => /align-self:\s*center/.test(r.body))) failures.push('[events] wide: the media and the words start from one top line, nothing centered against the other and no minimum height (V1.6)');
   const textBase = evRules(/^\.evd__text$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const textWide = deckWide(/^\.evd__text$/).map((r) => r.body).join(';');
-  const gapWide = deckWide(/^\.evd__gap$/).map((r) => r.body).join(';');
+  const gapAll = evRules(/^\.evd__gap(?:--lead)?$/).map((r) => r.body).join(';');
   const remIn = (v) => { const m = String(v || '').match(/([\d.]+)rem/); return m ? Number(m[1]) : NaN; };
-  const gapMin = remIn((textWide.match(/--gap:\s*clamp\(([^,]+),/) || [])[1]);
-  const gapMax = remIn((textWide.match(/--gap-max:\s*([^;]+)/) || [])[1]);
-  const leadMin = remIn((textWide.match(/--gap-lead:\s*clamp\(([^,]+),/) || [])[1]);
-  if (!/display:\s*flex/.test(textBase) || !/flex-direction:\s*column/.test(textBase) || !/justify-content:\s*center/.test(textWide) || !/flex:\s*1 1 0/.test(gapWide) || !/min-height:\s*var\(--gap\)/.test(gapWide) || !/max-height:\s*var\(--gap-max\)/.test(gapWide) || !(gapMin >= 1.1) || !(gapMax >= 2 && gapMax <= 3.5) || !(leadMin >= 0.9) || !(remIn((textBase.match(/--gap:\s*([^;]+)/) || [])[1]) >= 1.1)) failures.push(`[events] the words have more room between their groups (V1.5): at least ${'1.1'}rem, growing to 2 to 3.5rem on wide screens (found ${gapMin}, ${gapMax}, ${leadMin})`);
+  const clampOf = (body, name) => (body.match(new RegExp(`--${name}:\\s*clamp\\(([^,]+),\\s*([^,]+),\\s*([^)]+)\\)`)) || []).slice(1).map((x) => x.trim());
+  const [gapLo, gapVh, gapHi] = clampOf(textWide, 'gap');
+  const [leadLo, , leadHi] = clampOf(textWide, 'gap-lead');
+  if (!/display:\s*flex/.test(textBase) || !/flex-direction:\s*column/.test(textBase) || /justify-content:\s*center/.test(textWide) || /flex:\s*1 1 0|flex-grow|max-height:\s*var\(--gap/.test(gapAll) || !/flex:\s*(?:none|0 0 auto)/.test(gapAll) || !(remIn(gapLo) >= 1.25) || remIn(gapHi) !== 2.75 || !/svh/.test(gapVh || '') || !(remIn(leadLo) >= 0.9) || remIn(leadHi) !== 1.5 || !(remIn((textBase.match(/--gap:\s*([^;]+)/) || [])[1]) >= 1.1)) failures.push(`[events] the words keep V1.5's generous spacing as fixed gaps, never stretched (V1.6: up to 1.5rem after the headline and 2.75rem between the others; found ${gapLo}, ${gapHi}, ${leadLo}, ${leadHi})`);
+  const contentTop = (wideContent.match(/padding:\s*clamp\(([\d.]+)rem,\s*([\d.]+)svh,\s*([\d.]+)rem\)/) || []).slice(1).map(Number);
+  if (!(contentTop[0] >= 1 && contentTop[2] <= 2.25 && contentTop[1] >= 2 && contentTop[1] <= 3.5)) failures.push(`[events] a measured band between a chapter's header and its content (V1.6, found ${contentTop.join(', ') || 'none'})`);
   for (const ch of deckChs) {
     const text = block(ch.html, '<div class="evd__text"');
     const order = [...text.matchAll(/class="(display evd__title|evd__context|evd__points|evd__outcome|evd__credits|evd__gap(?: evd__gap--lead)?)"/g)].map((m) => m[1].replace('display ', ''));
@@ -2060,6 +2095,11 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   }
   if (!evRules(/^(?:html\.js )?\.evd__body$/).some((r) => !r.at && /grid-template-rows:\s*0fr/.test(r.body) && /visibility:\s*hidden/.test(r.body)) || !evRules(/^(?:html\.js )?\.evd__ch\.is-open \.evd__body$/).some((r) => !r.at && /grid-template-rows:\s*1fr/.test(r.body))) failures.push('[events] narrow: a vertical accordion, closed chapters hidden from everyone');
   if (evRules(/^\.evd__body$/).some((r) => !r.at && /grid-template-rows:\s*0fr|visibility:\s*hidden/.test(r.body))) failures.push('[events] without JavaScript every chapter is open (the accordion needs the script)');
+  // V1.6: without JavaScript a chapter with a film shows the film alone (its native
+  // controls); one without (the live presentation, the event film) keeps its
+  // preview, standing still on its poster frame, so its media column is never empty.
+  const noJsHidden = CSS_RULES.filter((r) => !r.at && /display:\s*none/.test(r.body)).flatMap((r) => r.sel.split(',').map((x) => bare(x).trim())).filter((s) => /^html:not\(\.js\)/.test(s) && /evd__preview$/.test(s));
+  if (noJsHidden.includes('html:not(.js) .evd__preview') || !noJsHidden.includes('html:not(.js) .evd__frame--sf .evd__preview') || !noJsHidden.includes('html:not(.js) .evd__frame--full .evd__preview') || deckChs.some((c) => /data-deck-full/.test(c.html) && !/<div class="evd__frame evd__frame--(?:sf|full)\b[^"]*"[^>]*data-deck-frame/.test(c.html))) failures.push('[events] without JavaScript a chapter with a film shows the film alone, and one without keeps its preview on its poster (V1.6)');
   const deckReduce = evRules(/evd__ch|evd__body|evd__chev/).filter((r) => /prefers-reduced-motion:\s*reduce/.test(r.at));
   if (!deckReduce.some((r) => /transition:\s*none/.test(r.body)) || !deckReduce.some((r) => /transition:\s*opacity\s+0?\.[1-3]\d*s/.test(r.body)) || !deckReduce.some((r) => /evd__body/.test(bare(r.sel)) && /transition:\s*none/.test(r.body)) || deckReduce.some((r) => /transition:[^;]*(?:grid-template-rows|height|flex-grow|width)/.test(r.body))) failures.push('[events] with reduced motion a chapter changes through a short fade, nothing morphs');
   const deckScript = pageScripts(evPage);
@@ -2067,6 +2107,57 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (!/\[data-ev-deck\]/.test(deckScript) || !/classList\.toggle\(\s*[`'"]is-open[`'"],\s*\w+\s*\)/.test(deckScript) || !/aria-expanded/.test(deckScript) || !/aria-disabled/.test(deckScript) || !/scrollBy/.test(deckScript) || !['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].every((k) => deckScript.includes(k)) || !/ArrowDown:\w+\+1/.test(deckKeys) || !/ArrowUp:\w+-1/.test(deckKeys) || !/Home:0/.test(deckKeys) || !/End:\w+-1/.test(deckKeys) || !/\[data-deck-watch\]/.test(deckScript) || !/\.begin\(\)/.test(deckScript)) failures.push('[events] the deck opens a chapter on a click, a tap or the keyboard (arrows, Home, End), one at a time, and Watch plays the film with sound');
   if (/setInterval|requestIdleCallback/.test(deckScript.slice(deckScript.indexOf('[data-ev-deck]'), deckScript.indexOf('[data-ev-deck]') + 4000))) failures.push('[events] nothing advances the deck by itself');
   if (!evRules(/^\.evd__rail:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body)) || !evRules(/^\.evd__watch:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body))) failures.push('[events] the rails and the watch buttons show a strong focus ring');
+  // V1.6: the hero's production vocabulary in the deck's media, quieter. Each
+  // chapter's frame (the active media) has four corner marks just outside it
+  // and a small timecode at its top right, smaller and fainter than the hero's,
+  // shown only with JavaScript and only once the clip shown has played; the
+  // timecode reads that clip's own playback. No label, tally, scan lines or
+  // controls; the player's own marks give way inside the frame.
+  for (const ch of deckChs) {
+    const frames = [...ch.html.matchAll(/<div class="evd__frame[^"]*"[^>]*data-deck-frame[^>]*>/g)];
+    const frame = frames.length ? block(ch.html, frames[0][0]) : '';
+    const marks = [...frame.matchAll(/<span class="evd__mark evd__mark--(tl|tr|bl|br)"[^>]*aria-hidden="true"[^>]*><\/span>/g)].map((m) => m[1]);
+    const tc = (frame.match(/<span class="evd__tc"[^>]*>[\s\S]*?<\/span>\s*<\/span>/) || [''])[0];
+    if (frames.length !== 1 || JSON.stringify(marks) !== '["tl","tr","bl","br"]' || !/aria-hidden="true"/.test(tc) || !/<span class="evd__tc-key"[^>]*>TC<\/span>\s*<span data-deck-tc-value[^>]*>00:00:00:00<\/span>/.test(tc) || /evh__dot|Program|\bREC\b|scan|evd__(?:label|tally|scan)/i.test(frame.replace(/<video\b[\s\S]*?<\/video>/g, '').replace(/<figure class="evp[\s\S]*?<\/figure>/g, ''))) failures.push(`[events] chapter ${ch.key}: its media frame carries four quiet corner marks and a timecode, and nothing else (V1.6)`);
+    if (/class="evd__text"[\s\S]*evd__mark|class="evd__h"[\s\S]*?evd__mark[\s\S]*?<\/h3>/.test(ch.html)) failures.push(`[events] chapter ${ch.key}: the marks belong to the media alone, not the card or the words`);
+  }
+  const markJs = evRules(/^html\.js \.evd__mark$/).map((r) => r.body).join(';');
+  const markRem = remIn((markJs.match(/width:\s*([^;]+)/) || [])[1]);
+  const markColor = ((markJs.match(/border(?:-color)?:[^;]*?(#[0-9a-f]{8}\b|rgba?\([^)]*\))/i) || [])[1] || '').trim();
+  const deckMarkAlpha = /^#[0-9a-f]{8}$/i.test(markColor) ? parseInt(markColor.slice(7, 9), 16) / 255 : Number((markColor.match(/rgba?\([^)]*[,/]\s*(0?\.\d+)\)/) || [])[1]);
+  const heroMarkRem = remIn((evRules(/^\.evh__crop$/).map((r) => r.body).join(';').match(/width:\s*([^;]+)/) || [])[1]);
+  const tcJs = evRules(/^html\.js \.evd__tc$/).map((r) => r.body).join(';');
+  const tcRem = remIn((tcJs.match(/font:\s*\d+\s+([\d.]+rem)/) || [])[1]);
+  const heroTcRem = remIn((evRules(/^\.evh__reading,\s*\.evh__tc$/).map((r) => r.body).join(';').match(/font-size:\s*([^;]+)/) || [])[1]);
+  if (!evRules(/^\.evd__mark,\s*\.evd__tc$/).some((r) => !r.at && /display:\s*none/.test(r.body)) || !(markRem > 0 && markRem < heroMarkRem) || !(deckMarkAlpha > 0 && deckMarkAlpha <= 0.25) || !(tcRem > 0 && tcRem < heroTcRem) || !/opacity:\s*0\b/.test(tcJs) || !evRules(/^html\.js \.evd__frame\.is-running \.evd__tc$/).some((r) => /opacity:\s*1\b/.test(r.body)) || !evRules(/^html\.js \.evd__frame \.evp__crop$/).some((r) => /display:\s*none/.test(r.body))) failures.push(`[events] the deck's marks and timecode are smaller and quieter than the hero's, only with JavaScript, the timecode once its clip has played (found marks ${markRem}rem at ${deckMarkAlpha}, timecode ${tcRem}rem against ${heroMarkRem} and ${heroTcRem})`);
+  const tcScript = deckScript.includes('data-deck-tc-value') ? deckScript.slice(deckScript.indexOf('data-deck-tc-value') - 200, deckScript.indexOf('data-deck-tc-value') + 1400) : '';
+  if (!tcScript || !/currentTime/.test(tcScript) || !/requestAnimationFrame/.test(tcScript) || !/is-running/.test(tcScript) || /Math\.random|Date\.now|performance\.now/.test(tcScript)) failures.push('[events] the deck\'s timecode reads the clip shown in the frame, frame by frame while it runs, and makes nothing up');
+  // The live presentation and the event film play the hero's own edits (the same files); the presentation in its own wide frame.
+  const liveHtml = deckChs[0]?.html || '';
+  const filmHtml = deckChs[2]?.html || '';
+  if (!liveHtml.includes('/media/ev-hero-presentation.mp4') || !/data-asset="ev-hero-presentation"[^>]*>/.test(liveHtml) || !/class="ev-slot ev-slot--loop[^"]*"[^>]*style="aspect-ratio:\s*2\.157\s*\/\s*1"[^>]*data-asset="ev-hero-presentation"/.test(liveHtml) || !filmHtml.includes('/media/ev-hero-event-film.mp4') || !hero.includes('/media/ev-hero-presentation.mp4') || !hero.includes('/media/ev-hero-event-film.mp4') || /suifest-interview-loop|sui-summit-max-presentation-loop|suifest-interviews\.mp4/.test(deckSec)) failures.push('[events] the live presentation and the event film play the hero\'s own edits, the presentation in its own wide frame (V1.6)');
+  // V1.6: the scroll-assisted deck. It pins below the site's header inside its
+  // runway (the browser's own sticky positioning; a chapter taller than the room
+  // scrolls into view before it holds) on wide screens with motion allowed and
+  // room for a chapter; the reader's scrolling opens the next chapter after each
+  // viewing interval (about six tenths of a screen), back up reverses it, a click
+  // opens any chapter at once; nothing snaps, nothing takes the reader's input,
+  // nothing advances by itself; reduced motion, narrow and short screens keep the
+  // manual accordion.
+  const pinDeck = evRules(/^\.evd\.is-pinned \.evd__deck$/).map((r) => r.body).join(';');
+  if (!/position:\s*sticky/.test(pinDeck) || !/top:\s*var\(--pin-top/.test(pinDeck) || !/margin-top:\s*var\(--deck-lead/.test(pinDeck) || !evRules(/^\.evd__runway$/).some((r) => /display:\s*flow-root/.test(r.body)) || !/<div class="evd__runway"[^>]*data-deck-runway[^>]*>\s*<div class="evd__deck"[^>]*data-ev-deck/.test(deckSec)) failures.push('[events] the deck pins in its runway by the browser\'s own sticky positioning (V1.6)');
+  if (evRules(/evd/).some((r) => /scroll-snap|overscroll-behavior/.test(r.body)) || CSS_RULES.some((r) => /scroll-snap-type/.test(r.body))) failures.push('[events] no scroll snapping');
+  const pinScript = deckScript.includes('[data-deck-runway]') ? deckScript : '';
+  // The deck's own module (the page's other scripts listen to the scroll too).
+  const deckModule = [...evPage.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.join(dist, (m[1].startsWith(SITE_ORIGIN) ? m[1].slice(SITE_ORIGIN.length) : m[1]).replace(BASE, '').replace(/^\/+/, ''))).filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8')).find((js) => js.includes('[data-deck-runway]')) || '';
+  const scrollListeners = [...deckModule.matchAll(/addEventListener\(\s*[`'"]scroll[`'"]\s*,\s*\w+\s*,\s*(\{[^}]*\})\s*\)/g)].map((m) => m[1].replace(/\s+/g, ''));
+  if (!pinScript || !deckModule || !/prefers-reduced-motion: reduce/.test(pinScript) || !/56\s*\*\s*\w+\(\)/.test(pinScript) || !/innerHeight\s*>=\s*\w+/.test(pinScript) || !/innerHeight\s*\*\s*\.?0?\.6\b/.test(deckModule) || !scrollListeners.length || scrollListeners.some((o) => !/^\{passive:(?:!0|true)\}$/.test(o)) || /addEventListener\(\s*[`'"]scroll[`'"](?![^)]*passive:(?:\s*)(?:!0|true))/.test(deckModule) || /addEventListener\(\s*[`'"](?:wheel|touchmove|keydown)[`'"][^)]*passive:\s*(?:!1|false)/.test(pinScript) || /scroll-snap|setInterval/.test(pinScript)) failures.push('[events] the scroll-assisted deck follows the reader\'s own scrolling (passive), pins only on wide screens with motion allowed and room, gives each chapter a viewing interval, and never takes the reader\'s input (V1.6)');
+  // The pin decided by the reduced-motion query itself, the deck's width (56rem)
+  // and the screen's height together, and no wheel or touch listener of any kind
+  // (the deck reads the scroll position, nothing else).
+  const reduceVars = [...deckModule.matchAll(/(\w+)\s*=\s*window\.matchMedia\(\s*[`'"]\(prefers-reduced-motion: reduce\)[`'"]\s*\)/g)].map((m) => m[1]);
+  const pinGate = deckModule.replace(/\s+/g, '').match(/!(\w+)\.matches&&\w+\.clientWidth>=56\*\w+\(\)&&window\.innerHeight>=(\w+)/);
+  if (!pinGate || !reduceVars.includes(pinGate[1]) || /addEventListener\(\s*[`'"](?:wheel|mousewheel|DOMMouseScroll|touchstart|touchmove)[`'"]/.test(deckModule)) failures.push('[events] the deck pins only with motion allowed, on a wide deck and a tall enough screen, and listens to no wheel or touch to do it (V1.6)');
   // V1.4: the production room's Setup and Final, inside its chapter: two compact
   // tabs over one stage; Setup (the photograph and its caption) to begin with,
   // Final (the explainer's preview and its film) a crossfade away; never side
@@ -2081,10 +2172,19 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   const setupPanel = block(sfBlock, '<div class="evd__sf-panel is-shown"');
   const finalPanel = block(sfBlock, '<div class="evd__sf-panel"');
   if (!new RegExp(`data-asset="${evData.setupFinal?.photo}"`).test(setupPanel) || !/<picture\b/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(setupPanel) || !/class="ev-slot[^"]*"[^>]*style="aspect-ratio:\s*16\s*\/\s*9"/.test(finalPanel) || /<figcaption|evd__sf-caption/.test(sfBlock) || /Two cameras, two tripods/.test(evPage) || 'caption' in (evData.setupFinal || {})) failures.push('[events] Setup shows the behind-the-scenes photograph, whole, with no caption (V1.5)');
-  if (!/data-asset="ev-slippage-preview"/.test(finalPanel) || !/data-ev-loop-toggle/.test(finalPanel) || !finalPanel.includes(`/media/${evAsset(evData.setupFinal?.final).file}`) || !/data-loop-off/.test((finalPanel.match(/<div[^>]*>/) || [''])[0])) failures.push('[events] Final holds the finished explainer: its muted preview with its pause control (waiting while Setup shows) and the film behind Watch');
+  if (!/data-asset="ev-room-final-loop"/.test(finalPanel) || !/data-ev-loop-toggle/.test(finalPanel) || !finalPanel.includes(`/media/${evAsset(evData.setupFinal?.final).file}`) || !/data-loop-off/.test((finalPanel.match(/<div[^>]*>/) || [''])[0])) failures.push('[events] Final holds the finished explainer: its muted two-scene loop with its pause control (waiting while Setup shows) and the film behind Watch');
+  // V1.6: the Final loop is only its two scenes, cut from the film's own shots,
+  // with nothing of "When things like slippage occur"; the homepage's preview is
+  // untouched.
+  const finalLoop = evAsset('ev-room-final-loop');
+  const finalSec = mp4Seconds(path.join(root, 'public/media', finalLoop.file || '-'));
+  const finalFacts = mp4Facts(path.join(root, 'public/media', finalLoop.file || '-'));
+  if (finalLoop.permission !== 'approved' || !/1:09\.111 to 1:17\.953/.test(finalLoop.source || '') || !/Bolt solves slippage by providing you a deterministic price/.test(finalLoop.source || '') || !/set execution price/.test(finalLoop.source || '') || !/When things like slippage occur/.test(finalLoop.source || '') || !(Math.abs(finalSec - 8.84) < 0.05) || Math.abs(finalLoop.duration - 8.84) > 0.01 || finalFacts.handlers.includes('soun') || finalFacts.width !== 1600 || finalFacts.top.indexOf('moov') > finalFacts.top.indexOf('mdat') || !fs.existsSync(path.join(root, 'src/assets', finalLoop.poster || '-'))) failures.push(`[events] the Final loop is the two scenes alone, 1:09.111 to 1:17.953 of the film, silent, 1600 wide, with its poster (found ${finalSec}s)`);
+  if (evAsset('ev-slippage-preview').file !== 'bolt-slippage-explainer-preview.mp4' || LOOP_SECONDS['bolt-slippage-explainer-preview.mp4'] !== 9.72) failures.push('[events] the homepage keeps its own slippage preview');
   const sfPanelRule = evRules(/^(?:html\.js )?\.evd__sf-panel$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const sfPanelOn = evRules(/^(?:html\.js )?\.evd__sf-panel\.is-shown$/).filter((r) => !r.at).map((r) => r.body).join(';');
-  if (!/grid-area:\s*2\s*\/\s*1/.test(sfPanelRule) || evRules(/^\.evd__sf$/).some((r) => /grid-template-columns/.test(r.body)) || !/visibility:\s*hidden/.test(sfPanelRule) || !/transition:\s*opacity\s+0?\.[2-5]\d*s/.test(sfPanelOn) || !evRules(/evd__sf-panel/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transition:\s*none/.test(r.body))) failures.push('[events] Setup and Final share one stage (never side by side), cross-fading, and change at once with reduced motion');
+  const sfFrame = block(sfBlock, '<div class="evd__frame evd__frame--sf"');
+  if (!/grid-area:\s*1\s*\/\s*1/.test(sfPanelRule) || (sfFrame.match(/<div class="evd__sf-panel/g) || []).length !== 2 || evRules(/^\.evd__sf$/).some((r) => /grid-template-columns/.test(r.body)) || !/visibility:\s*hidden/.test(sfPanelRule) || !/transition:\s*opacity\s+0?\.[2-5]\d*s/.test(sfPanelOn) || !evRules(/evd__sf-panel/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /transition:\s*none/.test(r.body))) failures.push('[events] Setup and Final share one stage, one framed cell (never side by side), cross-fading, and change at once with reduced motion');
   // V1.5: a clear segmented control with the media: two equal options in one
   // track, just above the stage (never laid over it), the selected one filled
   // in the page's accent with dark type on it, a hover and a strong focus ring,
@@ -2097,7 +2197,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (!/background:\s*var\(--accent\)/.test(sfOn) || !/color:\s*var\(--c-ink\)/.test(sfOn) || !evRules(/^\.evd__sf-tab:hover$/).some((r) => /background/.test(r.body)) || !evRules(/^\.evd__sf-tab:focus-visible$/).some((r) => /outline:\s*2px solid/.test(r.body)) || !evRules(/^\.evd__sf-tab$/).some((r) => /min-height:\s*2\.25rem/.test(r.body))) failures.push('[events] the selected option is filled in the accent, with a hover, a strong focus ring and a comfortable target (V1.5)');
   const roomWatch = (roomHtml.match(/<button\b[^>]*data-deck-watch[^>]*>/) || [''])[0];
   if (!/class="evd__watch is-away"/.test(roomWatch) || !evRules(/^html\.js \.evd__watch\.is-away$/).some((r) => /visibility:\s*hidden/.test(r.body) && /opacity:\s*0/.test(r.body)) || !/classList\.toggle\(\s*[`'"]is-away[`'"],\s*\w+\s*!==\s*[`'"]final[`'"]\s*\)/.test(deckScript) || /views\.get|\(['"]final['"]\)/.test(deckScript.slice(deckScript.indexOf('[data-deck-watch]')))) failures.push('[events] Watch full video with sound shows only under Final, its line kept under Setup (V1.5)');
-  if (deckChs.filter((c) => c.key !== 'room').some((c) => /is-away/.test(c.html))) failures.push('[events] the event film keeps its Watch in view');
+  if (deckChs.filter((c) => c.key !== 'room').some((c) => /is-away|data-deck-watch/.test(c.html)) || (deckSec.match(/data-deck-watch/g) || []).length !== 1) failures.push('[events] only the production room offers a film with sound, and only under Final (V1.6)');
   const sfScript = deckScript.includes('[data-sf]') ? deckScript.slice(deckScript.indexOf('[data-sf]'), deckScript.indexOf('[data-sf]') + 2500) : '';
   if (!sfScript || !/aria-selected/.test(sfScript) || !['ArrowRight', 'ArrowLeft', 'Home', 'End'].every((k) => sfScript.includes(k)) || !/ev:loop-sync/.test(deckScript) || /setTimeout|setInterval|requestIdleCallback/.test(sfScript)) failures.push('[events] the reader switches Setup and Final (a click, a tap or the arrow keys); nothing switches by itself');
   const setupPhoto = evAsset('ev-image-production-setup');
@@ -2107,12 +2207,12 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // second; Bob van der Meer's edit credited there and nowhere above it; titles
   // never invented. Names stay whole in the fine print.
   const deckCredits = deckChs.map((c) => one(c.html, /<p class="evd__credit"[^>]*>([\s\S]*?)<\/p>/));
-  if (!deckCredits[0]?.includes('Speaker Max McKendry') || !deckCredits[0]?.includes('Deck design Bob van der Meer') || !deckCredits[1]?.includes('On-camera Max McKendry') || !deckCredits[1]?.includes('Final edit Bob van der Meer') || !deckCredits[2]?.includes('Final edit Bob van der Meer') || !/With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus/.test(one(deckChs[2]?.html || '', /<p class="evd__credit evd__credit--with"[^>]*>([\s\S]*?)<\/p>/))) failures.push('[events] each chapter credits its collaborators in the fine print: the speaker and on-camera subject, the deck design, the final edit, and the participating teams on a line of their own');
+  if (!deckCredits[0]?.includes('Speaker Max McKendry') || !deckCredits[0]?.includes('Deck design and video edit by Bob van der Meer') || !deckCredits[1]?.includes('On-camera Max McKendry') || !deckCredits[1]?.includes('Final edit Bob van der Meer') || !deckCredits[2]?.includes('Final edit Bob van der Meer') || !/With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus/.test(one(deckChs[2]?.html || '', /<p class="evd__credit evd__credit--with"[^>]*>([\s\S]*?)<\/p>/))) failures.push('[events] each chapter credits its collaborators in the fine print: the speaker and on-camera subject, the deck design, the final edit, and the participating teams on a line of their own');
   for (const c of deckChs) {
     const above = textOf(norm(c.html.replace(/<div class="evd__credits"[\s\S]*?<\/div>/, ' ')));
     if (/Bob van der Meer|edited by/i.test(above)) failures.push(`[events] chapter ${c.key}: Bob van der Meer's credit only in the fine print`);
   }
-  if (!/\u00a0/.test((deckChs[2]?.html.match(/<div class="evd__credits"[\s\S]*?<\/div>/) || [''])[0]) || !evRules(/^\.evd__credit$/).some((r) => /text-wrap:\s*pretty/.test(r.body)) || !evRules(/^\.evd__keep$/).some((r) => /white-space:\s*nowrap/.test(r.body)) || !/<span class="evd__keep"[^>]*>On-camera Max McKendry<\/span>/.test(deckChs[1]?.html || '')) failures.push('[events] the fine print keeps names whole');
+  if (!/\u00a0/.test((deckChs[2]?.html.match(/<div class="evd__credits"[\s\S]*?<\/div>/) || [''])[0]) || !evRules(/^\.evd__credit$/).some((r) => /text-wrap:\s*pretty/.test(r.body)) || !evRules(/^\.evd__keep$/).some((r) => /white-space:\s*nowrap/.test(r.body)) || !/<span class="evd__keep"[^>]*>On-camera Max McKendry<\/span>/.test(deckChs[1]?.html || '') || !/video edit by\u00a0Bob\u00a0van\u00a0der\u00a0Meer/.test(deckChs[0]?.html || '')) failures.push('[events] the fine print keeps names whole (V1.6: every name after "by")');
   // The event film's framing (V1.5): an ecosystem and distribution strategy, no
   // longer the angle of a company that was not a sponsor or did not own the
   // stage, and no rounded or estimated reach.
@@ -2122,7 +2222,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
 
   // ---- media: posters, nothing loaded early, controls where sound matters
   const players = [...evPage.matchAll(/<figure class="evp\b[\s\S]*?<\/figure>/g)].map((m) => m[0]);
-  if (players.length !== 2) failures.push(`[events] the films with sound each have a player: the explainer and the event film, the live presentation's full film gone in V1.5 (found ${players.length})`);
+  if (players.length !== 1) failures.push(`[events] the one film with sound has a player: the production room's explainer (the live presentation's went in V1.5, the event film's in V1.6; found ${players.length})`);
   for (const p of players) {
     const v = (p.match(/<video\b[^>]*>/) || [''])[0];
     if (!/preload="none"/.test(v) || !/\bposter="/.test(v) || !/\bcontrols\b/.test(v) || /\bautoplay\b/.test(v)) failures.push('[events] a player\'s video loads nothing before it is asked, has a poster, and keeps native controls without JavaScript');
@@ -2154,7 +2254,7 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // reduced motion or saving data; the screens mapped onto the render; one
   // sound at a time.
   const evScripts = evScriptsAll;
-  for (const token of ['[data-ev-reel]', '[data-reel-toggle]', 'is-waiting', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-deck]', '[data-deck-rail]', '[data-deck-watch]', 'aria-expanded', 'aria-disabled', '[data-sf]', 'aria-selected', 'ev:loop-sync', 'data-loop-off', '[data-reel-head]', 'ArrowRight', 'ArrowLeft', '[data-ev-transition]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]', '[data-ev-stage]', 'matrix3d', '(min-width: 48rem)', '[data-evp-sound]', 'ResizeObserver']) {
+  for (const token of ['[data-deck-runway]', 'is-pinned', '--deck-lead', '--pin-top', 'is-shifting', '[data-deck-frame]', 'ev:frame-sync', 'is-running', '[data-ev-reel]', '[data-reel-toggle]', 'is-waiting', 'IntersectionObserver', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'NotAllowedError', 'preload', '[data-evp]', 'muted', '[data-ev-deck]', '[data-deck-rail]', '[data-deck-watch]', 'aria-expanded', 'aria-disabled', '[data-sf]', 'aria-selected', 'ev:loop-sync', 'data-loop-off', '[data-reel-head]', 'ArrowRight', 'ArrowLeft', '[data-ev-transition]', '[data-ev-reveal]', '[data-ev-loop]', '[data-ev-loop-toggle]', '[data-ev-stage]', 'matrix3d', '(min-width: 48rem)', '[data-evp-sound]', 'ResizeObserver']) {
     if (!evScripts.includes(token)) failures.push(`[events] the page's script is missing ${token}`);
   }
   if (!/\.pause\(\)/.test(evScripts) || !/addEventListener\(\s*[`"']play[`"']/.test(evScripts) || !/addEventListener\(\s*[`"']volumechange[`"']/.test(evScripts)) failures.push('[events] starting one video with sound, or turning its sound on, pauses every other');
@@ -2235,8 +2335,10 @@ if (!delays.some((d) => d > 0 && d <= 150) || !delays.some((d) => d >= 200 && d 
 // a time at one center, each arriving from the left and leaving to the right;
 // a small marker travelling a hairline from the left end of the screen to the
 // right while they come, arriving as the last phrase ends; no loading
-// percentage. About 2.4 to 3 seconds in all: the note about 0.7, each phrase
-// 0.4 to 0.55, the dissolve and the hero's layered entrance 0.6 to 0.8, the
+// percentage. Events V1.6 retimed it: the note held fully legible for 1.25 to
+// 1.5 seconds, each phrase fully visible for 0.28 to 0.38, overlapping
+// transitions of 0.12 to 0.16 with no blank, about 3 to 3.5 seconds in all with
+// the dissolve and the hero's layered entrance (0.6 to 0.8 in V1.5's brief), the
 // layers in the brief's order (the ambient photograph, the name, the
 // descriptor, the navigation, then the rule and the arrow), overlapping. Once
 // per browsing session, decided before the first paint, never for a return
@@ -2244,6 +2346,7 @@ if (!delays.some((d) => d > 0 && d <= 150) || !delays.some((d) => d >= 200 && d 
 // section; near-instant with reduced motion; dismissed by any intent; hidden
 // from assistive technology; the hero photograph and the faces preloaded.
 const introRules = (re) => CSS_RULES.filter((r) => r.sel.split(',').some((x) => re.test(bare(x).trim())));
+const INTRO_MOMENTS = [];
 const introAt = home.indexOf('<div class="intro"');
 const introHtml = introAt < 0 ? '' : home.slice(introAt, home.indexOf('<section class="hero"', introAt));
 const introNote = textOf((introHtml.match(/<p class="intro__note[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]);
@@ -2266,7 +2369,8 @@ const ms = (v) => {
 };
 const varsOf = (body) => Object.fromEntries([...body.matchAll(/--intro-([a-z0-9]+):\s*([^;]+)/g)].map((m) => [m[1], m[2].trim()]));
 const holdVars = varsOf(rulesFor(/^html\.intro-hold$/).filter((r) => !r.at).map((r) => r.body).join(';'));
-const T = Object.fromEntries(['lead', 'in', 'out', 'beat', 'note', 'step', 'last', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
+// V1.6: the note held fully legible (hold), each phrase fully visible (show), and the turns derived from them.
+const T = Object.fromEntries(['lead', 'in', 'out', 'beat', 'hold', 'show', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
 const handoff = (re) => {
   const rule = CSS_RULES.find((r) => MOTION_OK.test(r.at) && r.sel.split(',').some((x) => re.test(bare(x).trim())) && /animation:/.test(r.body));
   const v = rule ? (rule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
@@ -2286,17 +2390,34 @@ const LAYERS = [
 if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.isNaN(l.off) || Number.isNaN(l.dur))) {
   failures.push(`[intro] every timing value is set, and every layer of the hero is timed from the handoff (${JSON.stringify(holdVars)}; ${LAYERS.filter((l) => Number.isNaN(l.off) || Number.isNaN(l.dur)).map((l) => l.label).join(', ')})`);
 } else {
-  const p1 = T.lead + T.note;
-  const p2 = p1 + T.step;
-  const p3 = p2 + T.step;
-  const reveal = p3 + T.last;
+  // The turns as the stylesheet composes them (each must be the calc below, so the
+  // windows measured here are the ones the browser runs).
+  const calcs = {
+    step: 'calc(var(--intro-beat) + var(--intro-in) + var(--intro-show))',
+    p1: 'calc(var(--intro-lead) + var(--intro-in) + var(--intro-hold))',
+    p2: 'calc(var(--intro-p1) + var(--intro-step))',
+    p3: 'calc(var(--intro-p2) + var(--intro-step))',
+    reveal: 'calc(var(--intro-p3) + var(--intro-step))',
+  };
+  for (const [k, v] of Object.entries(calcs)) if ((holdVars[k] || '').replace(/\s+/g, ' ') !== v) failures.push(`[intro] --intro-${k} is ${v} (found ${holdVars[k]})`);
+  const step = T.beat + T.in + T.show;
+  const p1 = T.lead + T.in + T.hold;
+  const reveal = p1 + 3 * step;
   const heroEnd = Math.max(...LAYERS.map((l) => l.off + l.dur));
   const total = reveal + heroEnd;
-  if (!(T.note >= 600 && T.note <= 800)) failures.push(`[intro] the note shows for about 0.7 seconds (found ${T.note} ms)`);
-  for (const [k, v] of [['first', T.step], ['second', T.step], ['last', T.last]]) if (!(v >= 400 && v <= 550)) failures.push(`[intro] the ${k} phrase shows for 0.4 to 0.55 seconds (found ${v} ms)`);
-  if (!(heroEnd >= 600 && heroEnd <= 800)) failures.push(`[intro] the dissolve and the hero's layered entrance take 0.6 to 0.8 seconds (found ${heroEnd} ms)`);
-  if (!(total >= 2400 && total <= 3000)) failures.push(`[intro] the whole sequence runs about 2.4 to 3 seconds (found ${total} ms)`);
-  if (!(T.in >= 120 && T.in <= 240) || !(T.out >= 100 && T.out <= 200) || !(T.beat > 0 && T.beat < T.out + T.in)) failures.push('[intro] each word arrives and leaves quickly, the next a beat after the last starts to go: brisk, never a cut to black');
+  INTRO_MOMENTS.push(Math.round(T.lead + T.in + T.hold / 2), ...[0, 1, 2].map((k) => Math.round(p1 + k * step + T.beat + T.in + T.show / 2)));
+  // V1.6: the viewing note settles, then holds fully legible for 1.25 to 1.5 seconds;
+  // each phrase is fully visible for 0.28 to 0.38 seconds; every change is a short
+  // transition of 0.12 to 0.16 seconds, the next word starting to arrive before the
+  // last has gone (no blank); about 3 to 3.5 seconds in all, the hero's layers included.
+  if (!(T.hold >= 1250 && T.hold <= 1500)) failures.push(`[intro] the note holds fully legible for 1.25 to 1.5 seconds (found ${T.hold} ms)`);
+  if (!(T.show >= 280 && T.show <= 380)) failures.push(`[intro] each phrase is fully visible for 0.28 to 0.38 seconds (found ${T.show} ms)`);
+  if (!(T.in >= 120 && T.in <= 160) || !(T.out >= 120 && T.out <= 160)) failures.push(`[intro] each word arrives and leaves in 0.12 to 0.16 seconds (found ${T.in} and ${T.out} ms)`);
+  if (!(T.beat >= 0 && T.beat < T.out)) failures.push(`[intro] the next word starts to arrive before the last has gone, so there is never a blank (found a beat of ${T.beat} ms against a ${T.out} ms exit)`);
+  if (!(heroEnd >= 550 && heroEnd <= 800)) failures.push(`[intro] the dissolve and the hero's layered entrance take about 0.6 to 0.8 seconds (found ${heroEnd} ms)`);
+  if (!(total >= 3000 && total <= 3500)) failures.push(`[intro] the whole sequence runs about 3 to 3.5 seconds, the hero's layers included (found ${total} ms)`);
+  const lastOut = (introRules(/^html\.intro \.intro__phrase--3$/).map((r) => r.body).join(';').match(/intro-word-out\s+var\(--intro-out\)\s+var\(--intro-leave\)\s+([^,;]+?)\s+forwards/) || [])[1];
+  if (lastOut !== 'var(--intro-reveal)') failures.push(`[intro] the last phrase holds its full time and leaves as the ground starts to clear (found ${lastOut})`);
   if (!(T.go > 0 && T.go < 200) || !(T.clear >= 300 && T.clear <= 500)) failures.push(`[intro] the marker sets off at once, and the ground dissolves in 0.3 to 0.5 seconds (found ${T.go} and ${T.clear} ms)`);
   // The brief's order, overlapping: each layer starts after the one before, within the compact entrance.
   const order = ['the photograph', 'the name', 'the descriptor', 'the navigation', 'the rule', 'the arrow'].map((k) => LAYERS.find((l) => l.label === k));
@@ -2313,7 +2434,10 @@ if (runEase.length !== 4 || runEase[1] < 0 || runEase[1] > 1 || runEase[3] < 0 |
 const wordIn = keyframesOf('intro-word-in');
 const wordOut = keyframesOf('intro-word-out');
 const stopsOf = (k) => [...k.matchAll(/(^|\})\s*([^{}]+)\{/g)].map((m) => m[2].trim());
-if (!/(?:from|0%)\s*\{[^}]*translate(?:X)?\(-[\d.]+em\)/.test(wordIn) || !/to\s*\{[^}]*translate(?:X)?\([\d.]+em\)/.test(wordOut) || [...stopsOf(wordIn), ...stopsOf(wordOut)].some((x) => !/^(from|to|0%|100%)$/.test(x))) failures.push('[intro] each word arrives from the left and leaves to the right, the way the marker runs, with no overshoot');
+// V1.6: the leaving word may be gone before its drift ends (an opacity-only stop), never overshooting.
+const outStops = [...wordOut.matchAll(/([^{}]+)\{([^}]*)\}/g)].map((m) => [m[1].trim(), m[2]]);
+const midOut = outStops.filter(([x]) => !/^(from|to|0%|100%)$/.test(x));
+if (!/(?:from|0%)\s*\{[^}]*translate(?:X)?\(-[\d.]+em\)/.test(wordIn) || !/to\s*\{[^}]*translate(?:X)?\([\d.]+em\)/.test(wordOut) || stopsOf(wordIn).some((x) => !/^(from|to|0%|100%)$/.test(x)) || midOut.length > 1 || midOut.some(([, b]) => !/^\s*opacity:\s*0;?\s*$/.test(b))) failures.push('[intro] each word arrives from the left and leaves to the right, the way the marker runs, with no overshoot');
 const readout = introRules(/^\.intro__readout$/).map((r) => r.body).join(';');
 const weight = Number((readout.match(/font-weight:\s*(\d+)/) || [])[1]);
 if (!(weight < 700) || !/font-family:\s*var\(--font-display\)/.test(readout) || !/place-items:\s*center/.test(readout) || !/white-space:\s*nowrap/.test(introRules(/^\.intro__readout\s*>\s*p$/).map((r) => r.body).join(';'))) failures.push('[intro] the phrases: the display face, lighter than the headlines, one line each, at one center');
@@ -2469,8 +2593,9 @@ try {
         }
       }
       await ctx.close();
-      // The opening sequence, held at the note and at each phrase.
-      for (const t of [500, 1000, 1480, 1960]) {
+      // The opening sequence, held at the note and at each phrase (the middle of each
+      // one's fully visible time, from the timing above).
+      for (const t of INTRO_MOMENTS.length === 4 ? INTRO_MOMENTS : [800, 1780, 2240, 2700]) {
         const ictx = await browser.newContext({ viewport });
         const ipage = await ictx.newPage();
         await ipage.goto(PREVIEW, { waitUntil: 'load' });

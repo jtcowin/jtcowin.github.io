@@ -44,7 +44,44 @@
  * Reduced motion: a chapter changes through a short fade, with no height in
  * motion and no scroll pinning, and Setup and Final change at once. Without
  * JavaScript all three chapters are open, each film with its native controls,
- * and the production room shows its photograph, then its film.
+ * and the production room shows its photograph, then its film; a chapter with
+ * no film (V1.6: the live presentation and the event film) shows its preview
+ * still, on its poster.
+ *
+ * V1.6. The words keep V1.5's generous spacing but now run in a natural
+ * top-to-bottom rhythm from the same top line as the media: nothing is
+ * stretched to the media's height or centered against it, and the band between
+ * a chapter's header and its content is about a fifth smaller than the space
+ * the centering left above the live presentation's headline. The headers keep
+ * their stable labels (01 LIVE PRESENTATION and so on); the long headline stays
+ * in the words.
+ *
+ * The media carry the hero's production vocabulary, quieter: restrained corner
+ * marks just outside the active frame and a small timecode at its top right
+ * that reads the clip's own playback (it shows once the clip has played and
+ * follows it, paused or running; there is none over the setup photograph).
+ * They belong to the frame that is shown, so a closed chapter has none. The
+ * live presentation's preview is the hero's own presentation edit, in its own
+ * wide frame, and the event film's is the hero's Sui Fest edit; only the
+ * production room has a film with sound, under Final.
+ *
+ * Scroll-assisted (wide screens with motion allowed, tall enough to hold a
+ * chapter): the deck pins just below the site's header and the reader's own
+ * scrolling moves it on. The live presentation is open as the deck arrives;
+ * further scrolling opens the production room, then the event film, each after
+ * a clear viewing interval (about six tenths of a screen of scrolling), and
+ * scrolling back up reverses the sequence. A chapter that does not fit the room
+ * left on screen first moves up with the scroll until its foot is in view, then
+ * holds; the header after it shows below it where there is room, and otherwise
+ * waits below the edge, so the open chapter's own header stays clear of the
+ * site's header (only a chapter taller than the room passes it on the way to its
+ * foot). After the event film's interval the deck lets go and the page carries
+ * on. Nothing snaps, nothing
+ * waits for a video to end, and nothing takes the reader's input: a click, a
+ * tap or the keyboard opens any chapter at once (while the deck is pinned, the
+ * page's position moves with it, unseen, so scrolling carries on from that
+ * chapter). Reduced motion, narrow screens and short ones keep the manual
+ * accordion above.
  */
 import events from '@data/events.json';
 import { getAsset } from '@lib/assets';
@@ -53,19 +90,20 @@ import Icon from '@components/Icon.astro';
 import EvPlayer from './EvPlayer.astro';
 import EvSlot from './EvSlot.astro';
 
-const { deck, setupFinal } = events;
+const { deck, setupFinal, hero } = events;
 const pad = (n: number) => String(n).padStart(2, '0');
 const chapters = deck.chapters.map((ch, i) => {
   const full = ch.full ? getAsset(ch.full) : null;
   return { ...ch, num: pad(i + 1), length: full?.duration ? clockLabel(full.duration) : '', sf: ch.key === setupFinal.chapter ? setupFinal : null };
 });
-// The fine print keeps its names whole (V1.5): in the first credit the name after
-// "by" stays with it; every credit after it, being short, stays on one line (a span
-// that never wraps, so not even at a hyphen); each separator stays with the words
-// before it; each team in a list of participants stays whole.
+// The fine print keeps its names whole (V1.5): in every credit the name after "by"
+// stays with it (V1.6, now that a later credit can carry one too); every short
+// credit after the first stays on one line (a span that never wraps, so not even at
+// a hyphen); each separator stays with the words before it; each team in a list of
+// participants stays whole.
 const NBSP = '\u00a0';
-const credit = (t: string) =>
-  t.split(' · ').map((part, i) => ({ text: i > 0 ? part : part.replace(/ by ([^,]+)$/, (_, name: string) => ` by${NBSP}${name.replaceAll(' ', NBSP)}`), keep: i > 0 && part.length <= 34 }));
+const whole = (part: string) => part.replace(/ by ([^,]+)$/, (_, name: string) => ` by${NBSP}${name.replaceAll(' ', NBSP)}`);
+const credit = (t: string) => t.split(' · ').map((part, i) => ({ text: whole(part), keep: i > 0 && part.length <= 34 }));
 const teams = (t: string) => t.split(', ').map((item) => item.split(' and ').map((name) => name.replaceAll(' ', NBSP)).join(' and ')).join(', ');
 // The media column: about 58% of the content on wide screens, the whole width on narrow ones.
 const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
@@ -74,126 +112,191 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 <section class="evd" id="ev-deck" data-surface="dark" aria-labelledby="ev-deck-title">
   <div class="container">
     <h2 id="ev-deck-title" class="sr-only">{chapters.map((c) => c.label).join(', ')}</h2>
-    <div class="evd__deck" data-ev-deck>
-      <div class="evd__row">
-        {
-          chapters.map((ch, i) => (
-            <article class:list={['evd__ch', i === 0 && 'is-open']} data-deck-ch={ch.key}>
-              <h3 class="evd__h">
-                <button type="button" class="evd__rail" id={`ev-deck-rail-${ch.key}`} aria-expanded={i === 0 ? 'true' : 'false'} aria-controls={`ev-deck-${ch.key}`} data-deck-rail>
-                  <span class="evd__num">{ch.num}</span>{' '}
-                  <span class="evd__label">{ch.label}</span>
-                  <span class="evd__chev" aria-hidden="true" />
-                </button>
-              </h3>
-              <div class="evd__body" id={`ev-deck-${ch.key}`} role="region" aria-labelledby={`ev-deck-rail-${ch.key}`}>
-                <div class="evd__clip">
-                  <div class="evd__content">
-                    <div class="evd__media">
-                      {ch.sf ? (
-                        <div class="evd__sf" data-sf>
-                          <div class="evd__sf-tabs" role="tablist" aria-label={ch.sf.label} data-sf-tabs>
-                            <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-setup" aria-controls="ev-sf-setup" aria-selected="true" data-sf-tab="setup">
-                              {ch.sf.tabs.setup}
-                            </button>
-                            <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-final" aria-controls="ev-sf-final" aria-selected="false" tabindex="-1" data-sf-tab="final">
-                              {ch.sf.tabs.final}
-                            </button>
+    {/* The runway (V1.6): with the scroll-assisted deck it is as tall as the deck and
+        its scrolling, and the deck pins inside it; otherwise it is just the deck. */}
+    <div class="evd__runway" data-deck-runway>
+      <div class="evd__deck" data-ev-deck>
+        <div class="evd__row">
+          {
+            chapters.map((ch, i) => (
+              <article class:list={['evd__ch', i === 0 && 'is-open']} data-deck-ch={ch.key}>
+                <h3 class="evd__h">
+                  <button type="button" class="evd__rail" id={`ev-deck-rail-${ch.key}`} aria-expanded={i === 0 ? 'true' : 'false'} aria-controls={`ev-deck-${ch.key}`} data-deck-rail>
+                    <span class="evd__num">{ch.num}</span>{' '}
+                    <span class="evd__label">{ch.label}</span>
+                    <span class="evd__chev" aria-hidden="true" />
+                  </button>
+                </h3>
+                <div class="evd__body" id={`ev-deck-${ch.key}`} role="region" aria-labelledby={`ev-deck-rail-${ch.key}`}>
+                  <div class="evd__clip">
+                    <div class="evd__content">
+                      <div class="evd__media">
+                        {ch.sf ? (
+                          <div class="evd__sf" data-sf>
+                            <div class="evd__sf-tabs" role="tablist" aria-label={ch.sf.label} data-sf-tabs>
+                              <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-setup" aria-controls="ev-sf-setup" aria-selected="true" data-sf-tab="setup">
+                                {ch.sf.tabs.setup}
+                              </button>
+                              <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-final" aria-controls="ev-sf-final" aria-selected="false" tabindex="-1" data-sf-tab="final">
+                                {ch.sf.tabs.final}
+                              </button>
+                            </div>
+                            {/* The stage: Setup and Final share it, and its frame marks and
+                                timecode belong to whichever is shown. */}
+                            <div class="evd__frame evd__frame--sf" data-deck-frame>
+                              <div class="evd__sf-panel is-shown" id="ev-sf-setup" role="tabpanel" aria-labelledby="ev-sf-tab-setup" data-sf-panel="setup">
+                                <EvSlot id={ch.sf.photo} aspect="16:9" sizes={sizes} class="evd__photo" />
+                              </div>
+                              <div class="evd__sf-panel" id="ev-sf-final" role="tabpanel" aria-labelledby="ev-sf-tab-final" data-sf-panel="final" data-loop-off>
+                                <div class="evd__preview" data-deck-preview>
+                                  <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
+                                </div>
+                                {ch.full && (
+                                  <div class="evd__full" data-deck-full>
+                                    <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
+                                  </div>
+                                )}
+                              </div>
+                              <span class="evd__mark evd__mark--tl" aria-hidden="true" />
+                              <span class="evd__mark evd__mark--tr" aria-hidden="true" />
+                              <span class="evd__mark evd__mark--bl" aria-hidden="true" />
+                              <span class="evd__mark evd__mark--br" aria-hidden="true" />
+                              <span class="evd__tc" aria-hidden="true" data-deck-tc>
+                                <span class="evd__tc-key">{hero.monitor.timecode}</span>
+                                <span data-deck-tc-value>00:00:00:00</span>
+                              </span>
+                            </div>
                           </div>
-                          <div class="evd__sf-panel is-shown" id="ev-sf-setup" role="tabpanel" aria-labelledby="ev-sf-tab-setup" data-sf-panel="setup">
-                            <EvSlot id={ch.sf.photo} aspect="16:9" sizes={sizes} class="evd__photo" />
-                          </div>
-                          <div class="evd__sf-panel" id="ev-sf-final" role="tabpanel" aria-labelledby="ev-sf-tab-final" data-sf-panel="final" data-loop-off>
+                        ) : (
+                          <div class:list={['evd__frame', ch.full && 'evd__frame--full']} data-deck-frame>
                             <div class="evd__preview" data-deck-preview>
-                              <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
+                              {/* `native`: the preview in its own frame (the live presentation's
+                                  wide recording, as the hero shows it); otherwise 16:9. */}
+                              <EvSlot id={ch.preview} aspect={ch.previewFit === 'native' ? undefined : '16:9'} fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
                             </div>
                             {ch.full && (
                               <div class="evd__full" data-deck-full>
                                 <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
                               </div>
                             )}
+                            <span class="evd__mark evd__mark--tl" aria-hidden="true" />
+                            <span class="evd__mark evd__mark--tr" aria-hidden="true" />
+                            <span class="evd__mark evd__mark--bl" aria-hidden="true" />
+                            <span class="evd__mark evd__mark--br" aria-hidden="true" />
+                            <span class="evd__tc" aria-hidden="true" data-deck-tc>
+                              <span class="evd__tc-key">{hero.monitor.timecode}</span>
+                              <span data-deck-tc-value>00:00:00:00</span>
+                            </span>
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div class="evd__preview" data-deck-preview>
-                            <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
-                          </div>
-                          {ch.full && (
-                            <div class="evd__full" data-deck-full>
-                              <EvPlayer id={ch.full} label={ch.fullLabel} aspect="16:9" domId={`ev-deck-player-${ch.key}`} class="evd__player" />
-                            </div>
-                          )}
-                        </>
-                      )}
-                      {/* Only where the chapter has a film; in the production room it
-                          waits, out of sight, until FINAL is chosen. */}
-                      {ch.full && (
-                        <button type="button" class:list={['evd__watch', ch.sf && 'is-away']} data-deck-watch>
-                          <span class="evd__watch-icon" aria-hidden="true">
-                            <Icon name="play" size={12} />
-                          </span>
-                          <span>{deck.watch}</span>
-                          {ch.length && <span class="evd__len">{ch.length}</span>}
-                        </button>
-                      )}
-                    </div>
-                    {/* The words, with a spacer between each group (empty, decorative):
-                        see "the words" below. */}
-                    <div class="evd__text">
-                      <h4 class="display evd__title">{ch.headline}</h4>
-                      <span class="evd__gap evd__gap--lead" aria-hidden="true" />
-                      <p class="evd__context">{ch.context}</p>
-                      <span class="evd__gap" aria-hidden="true" />
-                      <ul class="evd__points">
-                        {ch.points.map((p) => (
-                          <li>{p}</li>
-                        ))}
-                      </ul>
-                      <span class="evd__gap" aria-hidden="true" />
-                      <p class="evd__outcome">{ch.outcome}</p>
-                      <span class="evd__gap" aria-hidden="true" />
-                      <div class="evd__credits">
-                        <p class="evd__credit">
-                          {credit(ch.credit).map((part, i) => (
-                            <>
-                              {i > 0 && `${NBSP}· `}
-                              {part.keep ? <span class="evd__keep">{part.text}</span> : part.text}
-                            </>
+                        )}
+                        {/* Only where the chapter has a film (V1.6: the production room
+                            alone); there it waits, out of sight, until FINAL is chosen. */}
+                        {ch.full && (
+                          <button type="button" class:list={['evd__watch', ch.sf && 'is-away']} data-deck-watch>
+                            <span class="evd__watch-icon" aria-hidden="true">
+                              <Icon name="play" size={12} />
+                            </span>
+                            <span>{deck.watch}</span>
+                            {ch.length && <span class="evd__len">{ch.length}</span>}
+                          </button>
+                        )}
+                      </div>
+                      {/* The words, with a spacer between each group (empty, decorative):
+                          see "the words" below. */}
+                      <div class="evd__text">
+                        <h4 class="display evd__title">{ch.headline}</h4>
+                        <span class="evd__gap evd__gap--lead" aria-hidden="true" />
+                        <p class="evd__context">{ch.context}</p>
+                        <span class="evd__gap" aria-hidden="true" />
+                        <ul class="evd__points">
+                          {ch.points.map((p) => (
+                            <li>{p}</li>
                           ))}
-                        </p>
-                        {ch.participants && <p class="evd__credit evd__credit--with">{teams(ch.participants)}</p>}
+                        </ul>
+                        <span class="evd__gap" aria-hidden="true" />
+                        <p class="evd__outcome">{ch.outcome}</p>
+                        <span class="evd__gap" aria-hidden="true" />
+                        <div class="evd__credits">
+                          <p class="evd__credit">
+                            {credit(ch.credit).map((part, i) => (
+                              <>
+                                {i > 0 && `${NBSP}· `}
+                                {part.keep ? <span class="evd__keep">{part.text}</span> : part.text}
+                              </>
+                            ))}
+                          </p>
+                          {ch.participants && <p class="evd__credit evd__credit--with">{teams(ch.participants)}</p>}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </article>
-          ))
-        }
+              </article>
+            ))
+          }
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <script>
-  import { mountLoops, mountPlayers, players } from '@lib/ev-media';
+  import { mountLoops, mountPlayers, players, timecode } from '@lib/ev-media';
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   const pauseAll = (scope: ParentNode) => {
     for (const v of Array.from(scope.querySelectorAll('video'))) if (!v.paused) v.pause();
   };
 
+  // ---- the frame's timecode (V1.6) -------------------------------------------------------
+  // It reads the clip that is shown in the frame: its own playback, frame by frame
+  // while it runs and held where it stops. It shows once that clip has played; over
+  // the setup photograph, or a clip that has not started, there is none.
+  const mountTimecode = (frame: HTMLElement) => {
+    const out = frame.querySelector<HTMLElement>('[data-deck-tc-value]');
+    const videos = Array.from(frame.querySelectorAll('video'));
+    if (!out || !videos.length) return;
+    const shown = (v: HTMLVideoElement) => !v.closest('[data-sf-panel]:not(.is-shown), [data-deck-preview][hidden], .evd__full:not(.is-shown)');
+    let raf = 0;
+    let last = '';
+    const render = () => {
+      raf = 0;
+      const v = videos.find(shown) ?? null;
+      const running = Boolean(v && (!v.paused || v.currentTime > 0));
+      frame.classList.toggle('is-running', running);
+      if (v) {
+        const t = timecode(v.currentTime);
+        if (t !== last) {
+          out.textContent = t;
+          last = t;
+        }
+        if (!v.paused && !v.ended) raf = requestAnimationFrame(render);
+      }
+    };
+    const kick = () => {
+      if (!raf) raf = requestAnimationFrame(render);
+    };
+    for (const v of videos) for (const type of ['play', 'playing', 'pause', 'seeked', 'timeupdate', 'loadeddata', 'ended']) v.addEventListener(type, kick);
+    frame.addEventListener('ev:frame-sync', kick);
+    kick();
+  };
+
   for (const deck of Array.from(document.querySelectorAll<HTMLElement>('[data-ev-deck]'))) {
     mountPlayers(deck);
     mountLoops(deck);
+    const frames = Array.from(deck.querySelectorAll<HTMLElement>('[data-deck-frame]'));
+    frames.forEach(mountTimecode);
     const chapters = Array.from(deck.querySelectorAll<HTMLElement>('[data-deck-ch]'));
     const rails = chapters.map((ch) => ch.querySelector<HTMLButtonElement>('[data-deck-rail]') as HTMLButtonElement);
+    const section = deck.closest<HTMLElement>('.evd');
+    const runway = deck.closest<HTMLElement>('[data-deck-runway]');
 
     // One chapter open at a time, and always one: the open chapter's header cannot
     // close it into nothing, and says so (aria-disabled). A chapter that closes
     // pauses whatever plays in it (a film keeps its place for the reader's return).
+    let current = 0;
     const open = (index: number) => {
+      current = index;
       chapters.forEach((ch, k) => {
         const on = k === index;
         ch.classList.toggle('is-open', on);
@@ -203,8 +306,9 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
         if (!on) pauseAll(ch);
       });
     };
-    open(chapters.findIndex((ch) => ch.classList.contains('is-open')));
+    open(Math.max(0, chapters.findIndex((ch) => ch.classList.contains('is-open'))));
 
+    // ---- the manual accordion (reduced motion, narrow or short screens) -----------------
     // While the heights change, the header the reader chose moves up as the chapter
     // above it closes, but never under the site's header: if it would, the page
     // follows it. Once the heights have settled, the opened chapter is brought into
@@ -232,9 +336,162 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
       requestAnimationFrame(step);
     };
 
+    // ---- the scroll-assisted deck (V1.6) --------------------------------------------------
+    // On wide screens with motion allowed (and room for a chapter), the deck pins just
+    // below the site's header, inside a runway as long as its scrolling. Measured in
+    // pixels of scrolling since the runway's top reached the pin line (u), each
+    // chapter has its turn: first any reveal (a chapter taller than the room on screen
+    // moves up with the scroll until its foot is in view), then its viewing interval,
+    // when nothing moves; at the end of a turn the next chapter opens. The browser's
+    // own sticky positioning does the moving: for the open chapter the deck starts its
+    // turn at the pin line (a lead above it in the runway equal to where its turn
+    // starts) and sticks once its foot is in view (a pin line raised by what does not
+    // fit). The reader's scrolling is never taken over or snapped: going back up runs
+    // the same turns in reverse, and once the last interval has passed the deck lets go.
+    type Plan = { pin: number; over: number[]; starts: number[]; end: number };
+    let plan: Plan | null = null;
+    let pinned = false;
+    let derived = -1;
+    let raf = 0;
+    let flip = 0;
+    const MIN_H = 640;
+    const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const canPin = () => Boolean(section && runway) && !reduce.matches && deck.clientWidth >= 56 * rem() && window.innerHeight >= MIN_H;
+    const measure = (): Plan => {
+      const row = deck.querySelector<HTMLElement>('.evd__row');
+      const gap = row ? parseFloat(getComputedStyle(row).rowGap) || 0 : 0;
+      // Every header (with its chapter's border) and the gaps between them, plus the
+      // one open chapter's content: the deck's height with each chapter open.
+      const head = chapters.map((ch) => (ch.querySelector<HTMLElement>('.evd__h')?.offsetHeight ?? 0) + (ch.offsetHeight - ch.clientHeight));
+      const heads = head.reduce((sum, h) => sum + h, 0) + gap * (chapters.length - 1);
+      const tall = chapters.map((ch) => heads + (ch.querySelector<HTMLElement>('.evd__content')?.offsetHeight ?? 0));
+      const top = floor() + 16;
+      const room = window.innerHeight - top - 24;
+      // On a tall screen the deck sits in the middle of the room it has, by its tallest
+      // chapter, so it never moves as the chapters change.
+      const pin = Math.round(top + Math.max(0, (room - Math.max(...tall)) / 2));
+      // What is in view while chapter k holds: all of it down to its foot, and the
+      // header after it (the way on) while the chapter's own header can stay clear of
+      // the site's header; on a shorter screen the header after it waits below the
+      // edge instead. Only what does not fit scrolls into view before the chapter
+      // holds (a chapter taller than the room passes its own header under the site's
+      // header on the way to its foot, as any long section does), so a header never
+      // goes under the site's header to show headers further down.
+      const after = (k: number) => head.slice(k + 2).reduce((sum, h) => sum + h + gap, 0);
+      const above = (k: number) => head.slice(0, k).reduce((sum, h) => sum + h + gap, 0);
+      const next = (k: number) => (k < chapters.length - 1 ? head[k + 1] + gap : 0);
+      const over = tall.map((h, k) => {
+        const withNext = Math.max(0, Math.round(h - after(k) - room));
+        if (pin - withNext + above(k) >= floor()) return withNext;
+        return Math.max(0, Math.round(h - after(k) - next(k) - room));
+      });
+      const hold = Math.round(Math.min(640, Math.max(360, window.innerHeight * 0.6)));
+      const starts = [0];
+      over.forEach((o, k) => starts.push(starts[k] + o + hold));
+      const end = starts[chapters.length];
+      // Long enough that the deck lets go exactly at the end of the last interval.
+      const last = chapters.length - 1;
+      if (runway) runway.style.height = `${end + tall[last] - over[last]}px`;
+      return { pin, over, starts, end };
+    };
+    const progress = () => (plan && runway ? plan.pin - runway.getBoundingClientRect().top : 0);
+    const turn = (u: number) => {
+      let k = 0;
+      while (plan && k < chapters.length - 1 && u >= plan.starts[k + 1]) k += 1;
+      return k;
+    };
+    // Where the deck rides for chapter k's turn.
+    const place = (k: number) => {
+      if (!plan) return;
+      deck.style.setProperty('--deck-lead', `${plan.starts[k]}px`);
+      deck.style.setProperty('--pin-top', `${plan.pin - plan.over[k]}px`);
+    };
+    // A change of chapter while pinned moves the deck to its new place; it eases there
+    // (over the same half second as the heights) rather than jumping.
+    const move = (change: () => void) => {
+      // Where the reader sees it now (with any easing still under way), then its new
+      // place without any offset; the difference is eased away.
+      const before = deck.getBoundingClientRect().top;
+      window.clearTimeout(flip);
+      deck.classList.remove('is-shifting');
+      deck.style.removeProperty('--deck-y');
+      change();
+      const dy = before - deck.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) return;
+      deck.style.setProperty('--deck-y', `${Math.round(dy)}px`);
+      void deck.offsetHeight;
+      deck.classList.add('is-shifting');
+      deck.style.setProperty('--deck-y', '0px');
+      flip = window.setTimeout(() => {
+        deck.classList.remove('is-shifting');
+        deck.style.removeProperty('--deck-y');
+      }, 620);
+    };
+    const update = () => {
+      raf = 0;
+      if (!pinned || !plan) return;
+      const k = turn(progress());
+      if (k === derived) return;
+      const first = derived < 0;
+      derived = k;
+      if (first) {
+        if (current !== k) open(k);
+        place(k);
+      } else {
+        move(() => {
+          if (current !== k) open(k);
+          place(k);
+        });
+      }
+    };
+    const queue = () => {
+      if (pinned && !raf) raf = requestAnimationFrame(update);
+    };
+    const setMode = () => {
+      const want = canPin();
+      if (want !== pinned) {
+        pinned = want;
+        section?.classList.toggle('is-pinned', want);
+        derived = -1;
+        if (!want) {
+          plan = null;
+          if (runway) runway.style.height = '';
+          for (const v of ['--deck-y', '--deck-lead', '--pin-top']) deck.style.removeProperty(v);
+          return;
+        }
+      }
+      if (!pinned) return;
+      plan = measure();
+      if (derived >= 0) place(derived);
+      queue();
+    };
+    setMode();
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', setMode, { passive: true });
+    window.addEventListener('pageshow', setMode);
+    reduce.addEventListener?.('change', setMode);
+    document.fonts?.ready.then(setMode).catch(() => {});
+
     rails.forEach((rail, i) => {
       rail.addEventListener('click', () => {
         if (chapters[i].classList.contains('is-open')) return;
+        if (pinned && plan) {
+          // Pinned: the chapter opens at once, and the page's position moves to the
+          // start of its turn (unseen: the deck stays where the reader is looking), so
+          // the reader's scrolling carries on from it. Before or after the pinned
+          // stretch it simply opens.
+          const u = progress();
+          const ready = plan;
+          move(() => {
+            open(i);
+            if (u >= 0 && u <= ready.end) {
+              derived = i;
+              place(i);
+              window.scrollTo({ top: window.scrollY + (ready.starts[i] + 1 - u), behavior: 'instant' });
+            }
+          });
+          return;
+        }
         open(i);
         settle(chapters[i], rail);
       });
@@ -257,6 +514,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
       const list = sf.querySelector<HTMLElement>('[data-sf-tabs]');
       const tabs = Array.from(sf.querySelectorAll<HTMLButtonElement>('[data-sf-tab]'));
       const panels = Array.from(sf.querySelectorAll<HTMLElement>('[data-sf-panel]'));
+      const frame = sf.querySelector<HTMLElement>('[data-deck-frame]');
       const watch = sf.closest('[data-deck-ch]')?.querySelector<HTMLElement>('[data-deck-watch]');
       if (!list || !tabs.length) continue;
       const select = (key: string, focus = false) => {
@@ -275,6 +533,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
         }
         watch?.classList.toggle('is-away', key !== 'final');
         sf.dataset.view = key;
+        frame?.dispatchEvent(new Event('ev:frame-sync'));
       };
       tabs.forEach((t, i) => {
         t.addEventListener('click', () => select(t.dataset.sfTab as string));
@@ -291,7 +550,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 
     // Watch full video with sound: the preview steps aside and the full film plays
     // in its place, with sound and its controls (the reader's press allows the
-    // sound). In the production room it is there only under Final.
+    // sound). Only the production room has one, under Final.
     for (const ch of chapters) {
       const watch = ch.querySelector<HTMLButtonElement>('[data-deck-watch]');
       const preview = ch.querySelector<HTMLElement>('[data-deck-preview]');
@@ -301,6 +560,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
         if (preview) preview.hidden = true;
         full?.classList.add('is-shown');
         watch.hidden = true;
+        ch.querySelector<HTMLElement>('[data-deck-frame]')?.dispatchEvent(new Event('ev:frame-sync'));
         const root = full?.querySelector<HTMLElement>('[data-evp]');
         if (!root) return;
         players.get(root.id)?.begin();
@@ -322,6 +582,26 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
 
   .evd__deck {
     container: deck / inline-size;
+  }
+
+  /* ---- the scroll-assisted deck (V1.6) ------------------------------------------------
+     The runway holds the deck and, when it pins, the length of its scrolling (set by
+     the script); its own formatting context keeps the deck's lead inside it. The
+     deck sticks at its pin line for the open chapter's turn (both set by the script)
+     and eases to a new place when the chapter changes. */
+  .evd__runway {
+    display: flow-root;
+  }
+
+  .evd.is-pinned .evd__deck {
+    position: sticky;
+    top: var(--pin-top, 6.5rem);
+    margin-top: var(--deck-lead, 0px);
+    transform: translate3d(0, var(--deck-y, 0px), 0);
+  }
+
+  .evd.is-pinned .evd__deck.is-shifting {
+    transition: transform 0.55s var(--deck-ease);
   }
 
   /* One stack, at every width. */
@@ -420,10 +700,11 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     overflow: hidden;
   }
 
+  /* A little room above the media (V1.6), so the frame's top marks show. */
   .evd__content {
     display: grid;
     gap: 1.25rem;
-    padding: 0 1.15rem 1.35rem;
+    padding: 0.6rem 1.15rem 1.35rem;
   }
 
   /* ---- the media: the preview, or the full film in its place -------------------------- */
@@ -438,6 +719,108 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
   .evd__media :global(.ev-slot),
   .evd__media :global(.evp__frame) {
     border-radius: var(--radius);
+  }
+
+  /* ---- the frame: the active media and its production marks (V1.6) --------------------
+     The hero's vocabulary, quieter: four corner marks just outside the frame
+     (smaller and fainter than the hero's) and, at its top right, a small timecode
+     reading the clip that is shown. Only with JavaScript, and only on the frame of
+     the open chapter (a closed one is not drawn at all); the player's own corner
+     marks give way to these inside the deck. No label, tally, scan lines or
+     controls are added. */
+  .evd__frame {
+    position: relative;
+    display: grid;
+    min-width: 0;
+  }
+
+  .evd__mark,
+  .evd__tc {
+    display: none;
+  }
+
+  :global(html.js) .evd__mark {
+    position: absolute;
+    z-index: 2;
+    display: block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-color: rgba(237, 240, 239, 0.2);
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+  }
+
+  :global(html.js) .evd__mark--tl {
+    left: -0.5rem;
+    top: -0.5rem;
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+
+  :global(html.js) .evd__mark--tr {
+    right: -0.5rem;
+    top: -0.5rem;
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+
+  :global(html.js) .evd__mark--bl {
+    left: -0.5rem;
+    bottom: -0.5rem;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  :global(html.js) .evd__mark--br {
+    right: -0.5rem;
+    bottom: -0.5rem;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  :global(html.js) .evd__frame :global(.evp__crop) {
+    display: none;
+  }
+
+  /* The timecode: the hero's reading (TC and the clip's own time), a size smaller
+     and quieter, on a faint shade so it holds over any picture. It shows once the
+     clip has played (is-running) and fades with it. */
+  :global(html.js) .evd__tc {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.3em 0.55em;
+    border-radius: 3px;
+    background: rgba(13, 15, 16, 0.55);
+    color: #b9c0c1;
+    font: 600 0.625rem / 1.2 var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .evd__tc-key {
+    color: #8a949c;
+    letter-spacing: 0.12em;
+  }
+
+  :global(html.js) .evd__frame.is-running .evd__tc {
+    opacity: 1;
+  }
+
+  /* The smallest frames: the timecode steps aside (the marks stay). */
+  @container media (max-width: 18rem) {
+    :global(html.js) .evd__tc {
+      display: none;
+    }
   }
 
   .evd__watch {
@@ -496,12 +879,15 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
   }
 
   /* With JavaScript the full film waits behind its preview until it is asked for;
-     without it there is no preview, only the film with its native controls. */
+     without it, where a chapter has a film, there is no preview, only the film with
+     its native controls, and where it has none (V1.6: the live presentation and the
+     event film) the preview stands still on its poster frame. */
   :global(html.js) .evd__full:not(.is-shown) {
     display: none;
   }
 
-  :global(html:not(.js)) .evd__preview,
+  :global(html:not(.js)) .evd__frame--sf .evd__preview,
+  :global(html:not(.js)) .evd__frame--full .evd__preview,
   :global(html:not(.js)) .evd__watch {
     display: none;
   }
@@ -533,7 +919,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
   }
 
   /* Without JavaScript: the photograph, then the film, and no control. */
-  :global(html:not(.js)) .evd__sf {
+  :global(html:not(.js)) .evd__frame--sf {
     gap: 1rem;
   }
 
@@ -594,7 +980,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
      so nothing moves when they change): the panel arriving fades in over the one
      leaving, which stays beneath it until it is covered. */
   :global(html.js) .evd__sf-panel {
-    grid-area: 2 / 1;
+    grid-area: 1 / 1;
     min-width: 0;
     opacity: 0;
     visibility: hidden;
@@ -612,19 +998,15 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
       visibility 0s linear 0s;
   }
 
-  /* ---- the words (V1.5) ---------------------------------------------------------------
+  /* ---- the words (V1.5; V1.6 a natural rhythm) -------------------------------------------
      Five groups, each with room around it: the headline, the introduction, the
      things John did, the outcome, and the fine-print credit. The gaps are spacers
-     of their own: the chapter sizes itself with them at their minimum, and on
-     wide screens, where the words fill the column's height, they grow with the
-     room the chapter has, equally, up to their limits; anything left over then
-     sits evenly above and below, keeping the headline near the top and the credit
-     toward the bottom. On narrow screens they keep their minimum. */
+     of their own, a fixed size each (V1.6: the generous spacing V1.5 gave them,
+     but never stretched to fill the media's height, and nothing centers the words
+     against it): the words simply run from the top. */
   .evd__text {
     --gap-lead: 0.9rem;
-    --gap-lead-max: 0.9rem;
     --gap: 1.35rem;
-    --gap-max: 1.35rem;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -753,46 +1135,28 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
       font-size: 0.8125rem;
     }
 
-    /* The media 58% of the two columns, the words 42%; the open chapter about 70% of
-       the screen's height (its header included), more when its words need it, and
-       never more than its content can fill on very tall screens. The words fill
-       the column's height (V1.5); the media sits centered beside them. */
+    /* The media 58% of the two columns, the words 42%, both from one top line (V1.6:
+       the chapter is as tall as its content, with no minimum and no centering), a
+       measured band below the header (about a fifth less than the space V1.5's
+       centering left above the live presentation's headline). */
     .evd__content {
       grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
-      align-items: stretch;
-      align-content: stretch;
+      align-items: start;
       column-gap: clamp(2rem, 4cqi, 4rem);
-      min-height: min(calc(70svh - var(--head-h)), 48rem);
-      padding: 0.25rem var(--deck-pad) var(--deck-pad);
+      padding: clamp(1.25rem, 2.9svh, 2rem) var(--deck-pad) var(--deck-pad);
     }
 
     .evd__media {
-      align-self: center;
+      align-self: start;
       max-width: 60rem;
     }
 
-    /* The gaps between the groups: at least a little more than on narrow screens
-       (more on taller screens), growing with the room up to 1.5rem after the
-       headline and 2.75rem between the others; whatever is left is shared above and
-       below. */
+    /* The gaps between the groups: the spacing V1.5 gave them on a laptop's screen
+       (1.5rem after the headline, 2.75rem between the others), a little less on
+       shorter screens, fixed. */
     .evd__text {
-      --gap-lead: clamp(1rem, 2svh, 1.25rem);
-      --gap-lead-max: 1.5rem;
-      --gap: clamp(1.25rem, 2.8svh, 2rem);
-      --gap-max: 2.75rem;
-      justify-content: center;
-    }
-
-    .evd__gap {
-      flex: 1 1 0;
-      height: auto;
-      min-height: var(--gap);
-      max-height: var(--gap-max);
-    }
-
-    .evd__gap--lead {
-      min-height: var(--gap-lead);
-      max-height: var(--gap-lead-max);
+      --gap-lead: clamp(1rem, 2.4svh, 1.5rem);
+      --gap: clamp(1.5rem, 4.4svh, 2.75rem);
     }
 
     .evd__title {
@@ -823,6 +1187,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     :global(html.js) .evd__sf-panel.is-shown,
     :global(html.js) .evd__watch.is-away,
     :global(html.js) .evd__sf ~ .evd__watch:not(.is-away),
+    :global(html.js) .evd__tc,
     .evd__sf-tab {
       transition: none !important;
     }

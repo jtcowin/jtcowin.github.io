@@ -1,5 +1,5 @@
 {
-  "_readme": "Events and Multimedia Production, Version 1.5: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3, V1.4 and V1.5 delta briefs (October 16, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising. Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
+  "_readme": "Events and Multimedia Production, Version 1.6: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3, V1.4 and V1.5 delta briefs (October 16, 2026), the V1.6 delta brief (October 17, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising (V1.6's approved outcome for the live presentation, three aggregator integrations and strategic discussions with ecosystem leadership, names no integration and no organization). Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
   "stages": [
     { "key": "secure", "label": "Secure" },
     { "key": "build", "label": "Build" },
@@ -8,17 +8,17 @@
     { "key": "amplify", "label": "Amplify" }
   ],
   "hero": {
-    "_hero": "One editorial reel (V1.2), in place of V1.1's three programs and their control: the chapters below, in this order, each one video cut from the brief's ranges (assets.json has each chapter's ranges and edits), played through once and crossfaded (350ms) into the next, round and round, muted. The label at the top left of the frame reads the chapter's number and title, numbered in order among the chapters whose video is approved and present: the team interview's chapter is pending, so it is left out entirely (no placeholder) and the chapters after it carry the lower numbers until its video is added. `pos` places the crop of the wide cinematic frame on each video (object-position), chosen so the burned-in captions stay whole and clear of the rail, and heads stay in, at both of the frame's proportions (2.2:1, and 2.4:1 on shorter wide screens); `fitNarrow` is how the video fills the 16:9 frame on narrow screens.",
+    "_hero": "One editorial reel (V1.2), in place of V1.1's three programs and their control: the chapters below, in this order (V1.6: the technical explainer first, then the Sui Fest event footage, the Jungle Talk podcast and the live presentation), each one video cut from the brief's ranges (assets.json has each chapter's ranges and edits), played through once and crossfaded (350ms) into the next, round and round, muted. The label at the top left of the frame reads the chapter's number and title, numbered in order among the chapters whose video is approved and present: the team interview's chapter is pending, so it is left out entirely (no placeholder) and the chapters after it carry the lower numbers until its video is added. The deck's live presentation and event film play the same files as their chapters here (V1.6). `pos` places the crop of the wide cinematic frame on each video (object-position), chosen so the burned-in captions stay whole and clear of the rail, and heads stay in, at both of the frame's proportions (2.2:1, and 2.4:1 on shorter wide screens); `fitNarrow` is how the video fills the 16:9 frame on narrow screens.",
     "kicker": "03 / Events and Multimedia Production",
     "headline": "From live experience to lasting momentum.",
     "accent": "lasting momentum.",
     "copy": "I turn live opportunities into complete marketing systems, from sponsorship and on-site production to content, distribution, and the relationships that continue after the room clears.",
     "chapters": [
-      { "key": "presentation", "title": "Live presentation", "asset": "ev-hero-presentation", "pos": "50% 92%", "fitNarrow": "contain" },
-      { "key": "podcast", "title": "Creator podcast", "asset": "ev-hero-podcast", "pos": "50% 75%" },
-      { "key": "team-interview", "title": "Team interview", "asset": "ev-hero-team-interview", "pos": "50% 50%" },
       { "key": "explainer", "title": "Technical explainer", "asset": "ev-hero-explainer", "pos": "50% 62%" },
-      { "key": "event-film", "title": "Event film", "asset": "ev-hero-event-film", "pos": "50% 83%" }
+      { "key": "event-film", "title": "Event film", "asset": "ev-hero-event-film", "pos": "50% 92%" },
+      { "key": "podcast", "title": "Creator podcast", "asset": "ev-hero-podcast", "pos": "50% 86%" },
+      { "key": "team-interview", "title": "Team interview", "asset": "ev-hero-team-interview", "pos": "50% 50%" },
+      { "key": "presentation", "title": "Live presentation", "asset": "ev-hero-presentation", "pos": "50% 92%", "fitNarrow": "contain" }
     ],
     "pause": "Pause the reel",
     "play": "Play the reel",
@@ -30,12 +30,13 @@
     }
   },
   "transition": {
-    "_transition": "Replaces the run of show (V1.1): the five stages as one phrase, revealed word by word over about seven tenths of a screen of scrolling, held, then straight into the activation. On small screens it breaks into two lines after `break` words.",
+    "_transition": "Replaces the run of show (V1.1): the five stages as one phrase, revealed word by word over about seven tenths of a screen of scrolling, held, then straight into the activation. V1.6: the signal after AMPLIFY. begins sooner within AMPLIFY's beat and is complete before the section lets go, then the finished line holds for about three tenths of a screen more; the first four words keep their pace. On small screens it breaks into two lines after `break` words.",
     "break": 3
   },
   "activation": {
     "headline": "The work starts before anyone enters the room.",
-    "copy": "Before the doors open, I negotiate sponsorships and pricing, coordinate with event hosts, source and price merchandise, and work with design on screen animations and physical assets. I plan how those pieces come together on site and how the activation continues through content and distribution afterward.",
+    "accent": "before anyone enters the room.",
+    "copy": "Before the doors open, I shape the strategy and coordinate every part of the activation, from sponsorships, speaking opportunities, and merchandise to event assets, on-site content, and post-event distribution.",
     "_visual": "An original 3D render of the activation (V1.1, replacing the schematic; since V1.3 a concept rendering combining the activation elements John plans and coordinates across events, tied to no one event or booth, as the paragraph and the caption say): an illustrative composite, not a photograph, made for this page in Blender (scripts/render/; the spatial and lighting reference is reference/events-video/booth-render.png, never published). The television and the projected wall play their loops while the frame is in view; reduced motion, a data-saving preference, a small screen or no JavaScript keep the render with both screens on their poster frames.",
     "visual": "ev-activation-render",
     "tv": "ev-activation-tv",
@@ -44,7 +45,7 @@
     "kit": ["ev-kit-banner", "ev-kit-flyer", "ev-kit-merch", "ev-kit-screen", "ev-kit-plan", "ev-kit-credential", "ev-kit-networking"]
   },
   "deck": {
-    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint; V1.4 made it one vertical accordion at every width; V1.5 gave its words room and new copy): the live presentation, the production room and the event film in one stack, every chapter's header always visible and one chapter open at a time (the live presentation to begin with), opened by a click, a tap or the keyboard; nothing advances by itself. An open chapter holds its media and its words side by side on wide screens (the media about 58% of the two columns), stacked on narrow ones. Its words: the headline, the introduction, up to three things John did, the outcome, and the fine-print credit (`credit`, with `participants` as a second line where a chapter has them); on wide screens the words use the column's full height, the headline near its top and the credit toward its bottom. Its media: a muted preview (an approved loop of 8 to 15 seconds that plays only while it is shown and in view, with its own pause control) and, where a chapter has `full`, the film itself, which `watch` plays in place with sound and its controls. Since V1.5 the live presentation has no full film, only its preview. The production room opens on its setup photograph (setupFinal below).",
+    "_deck": "04 The Expanding Production Deck (V1.3, deployed from the V1.2 review checkpoint; V1.4 made it one vertical accordion at every width; V1.5 gave its words room and new copy; V1.6 made it scroll-assisted): the live presentation, the production room and the event film in one stack, every chapter's header always visible with its stable label, and one chapter open at a time, the live presentation to begin with. V1.6, on wide screens with motion allowed: the deck pins below the site's header and the reader's scrolling opens the production room, then the event film, each after a clear viewing interval, and scrolling back up reverses it; a chapter that does not fit first scrolls until its foot is in view, then holds, its own header kept clear of the site's header wherever the room allows (the header after it then waits below the edge); after the event film the deck lets go and the page goes on. Nothing snaps and nothing takes over the reader's input; a click, a tap or the keyboard opens any chapter at once. Reduced motion, narrow screens and screens too short to hold an open chapter keep the manual accordion; without JavaScript every chapter is open, and the live presentation and the event film show their previews still, on their posters. An open chapter holds its media and its words side by side on wide screens (the media about 58% of the two columns), stacked on narrow ones, both from the same top line. Its words: the headline, the introduction, up to three things John did, the outcome, and the fine-print credit (`credit`, with `participants` as a second line where a chapter has them), in a natural top-to-bottom rhythm with generous fixed spacing, never stretched to the media's height. Its media: a muted preview that plays only while it is shown and in view, with its own pause control, framed like the hero (restrained corner marks and a small timecode reading the clip's own playback, both quieter than the hero's); the live presentation and the event film play the hero's own edits of the presentation and of Sui Fest (`previewFit: native` shows the presentation in its own wide frame). Only the production room has a film with sound (`full`, which `watch` plays in place with its controls), and only under Final (setupFinal below).",
     "watch": "Watch full video with sound",
     "chapters": [
       {
@@ -57,10 +58,10 @@
           "Directed the deck, presentation setup, and live slides",
           "Captured the presentation from multiple angles and repackaged it for continued distribution"
         ],
-        "outcome": "Event-led relationships contribute to ongoing conversations and integrations with key ecosystem partners.",
-        "credit": "Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design Bob van der Meer",
-        "preview": "ev-max-loop",
-        "previewFit": "contain"
+        "outcome": "Event-led introductions and follow-through helped secure three aggregator integrations and opened strategic discussions with ecosystem leadership.",
+        "credit": "Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer",
+        "preview": "ev-hero-presentation",
+        "previewFit": "native"
       },
       {
         "key": "room",
@@ -74,7 +75,7 @@
         ],
         "outcome": "One focused production session became a library of finished product explainers for the YouTube channel and social media.",
         "credit": "Concept, questions, direction, capture, and edit briefs by John Cowin · On-camera Max McKendry · Final edit Bob van der Meer",
-        "preview": "ev-slippage-preview",
+        "preview": "ev-room-final-loop",
         "full": "ev-video-slippage-full",
         "fullLabel": "Slippage Explained"
       },
@@ -91,14 +92,12 @@
         "outcome": "Featuring multiple teams turned the film into a shared distribution asset, expanding Bolt’s presence across the ecosystem.",
         "credit": "Concept, interviews, coordination, and distribution by John Cowin · Final edit Bob van der Meer",
         "participants": "With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus",
-        "preview": "ev-suifest-loop",
-        "full": "ev-video-suifest-full",
-        "fullLabel": "Sui Fest interviews"
+        "preview": "ev-hero-event-film"
       }
     ]
   },
   "setupFinal": {
-    "_setupFinal": "V1.4: the production room's Setup and Final, inside its chapter of the deck; V1.5 made the switch a clear segmented control. Two equal options, SETUP and FINAL, just above the stage, the selected one filled in the page's accent. Setup, the default, shows the behind-the-scenes photograph (since V1.5 without a caption); Final crossfades, within the same stage, to the finished explainer (the chapter's muted preview with its pause control), and only under Final does Watch full video with sound show (its line is kept under Setup, so nothing below moves). The reader makes the switch; nothing changes by itself, the stage keeps its size, and with reduced motion the change is immediate. Never side by side. `label` names the control for assistive technology.",
+    "_setupFinal": "V1.4: the production room's Setup and Final, inside its chapter of the deck; V1.5 made the switch a clear segmented control. Two equal options, SETUP and FINAL, just above the stage, the selected one filled in the page's accent. Setup, the default, shows the behind-the-scenes photograph (since V1.5 without a caption); Final crossfades, within the same stage, to the finished explainer (the chapter's muted preview with its pause control; since V1.6 only its two scenes, Bolt solves slippage by providing you a deterministic price and you have a set execution price that will be filled, looping back to the first), and only under Final does Watch full video with sound show (the deck's only film with sound) (its line is kept under Setup, so nothing below moves). The reader makes the switch; nothing changes by itself, the stage keeps its size, and with reduced motion the change is immediate. Never side by side. `label` names the control for assistive technology.",
     "chapter": "room",
     "label": "Setup and final",
     "photo": "ev-image-production-setup",

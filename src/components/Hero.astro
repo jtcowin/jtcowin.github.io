@@ -396,7 +396,9 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
 
   /* ---- the handoff from the opening sequence (Intro.astro, V1.5) --------------
      The ground clears at --intro-hero, set on the document, and the hero comes
-     up in layers, overlapping, all within about three quarters of a second:
+     up in layers, overlapping, all within 0.6 seconds (Events V1.6 tightened it
+     from about three quarters of a second, in the same order, so the whole
+     opening stays near three and a half seconds with the longer note):
        1. the ambient layer, the photograph (both of its layers together, so the
           subject stays registered with the frame behind him), from dim and a
           little large to its own light and size, as the ground dissolves;
@@ -418,24 +420,24 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
 
     :global(html.intro-hold) .hero__photo,
     :global(html.intro-hold) .hero__subject {
-      animation: hero-ambient 700ms var(--ease-out) var(--intro-hero) backwards;
+      animation: hero-ambient 600ms var(--ease-out) var(--intro-hero) backwards;
     }
 
     :global(html.intro-hold) .hero__name {
-      animation: hero-rise-fade 460ms var(--ease-out) calc(var(--intro-hero) + 90ms) backwards;
+      animation: hero-rise-fade 400ms var(--ease-out) calc(var(--intro-hero) + 70ms) backwards;
     }
 
     :global(html.intro-hold) .hero__descriptor {
-      animation: hero-rise-fade 400ms var(--ease-out) calc(var(--intro-hero) + 170ms) backwards;
+      animation: hero-rise-fade 350ms var(--ease-out) calc(var(--intro-hero) + 140ms) backwards;
     }
 
     :global(html.intro-hold) .hero__rule {
       transform-origin: 0 50%;
-      animation: hero-draw 440ms cubic-bezier(0.65, 0, 0.35, 1) calc(var(--intro-hero) + 300ms) backwards;
+      animation: hero-draw 380ms cubic-bezier(0.65, 0, 0.35, 1) calc(var(--intro-hero) + 220ms) backwards;
     }
 
     :global(html.intro-hold) .hero__arrow {
-      animation: hero-point 360ms var(--ease-out) calc(var(--intro-hero) + 380ms) backwards;
+      animation: hero-point 300ms var(--ease-out) calc(var(--intro-hero) + 300ms) backwards;
     }
   }
 

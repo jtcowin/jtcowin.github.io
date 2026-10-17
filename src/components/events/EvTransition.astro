@@ -28,6 +28,16 @@
  * brightens, the inner arcs draw outward from their middles, the outer arcs
  * follow, and the tile lifts very slightly in brightness and settles. No halo,
  * ring, bloom, bounce, overshoot or repeat.
+ *
+ * V1.6, a longer final beat and nothing more: the signal's reveal begins
+ * sooner within AMPLIFY.'s beat (the tile wipes in as the word is still
+ * landing), so it is complete about a second after the word, which at an
+ * ordinary scrolling pace is a little over four tenths of a screen; by that
+ * point it is complete however fast the reader scrolls (if its sequence is
+ * still running there, it is simply shown finished). Then the finished line
+ * holds for three tenths of a screen more (0.6 to 0.9 seconds at an ordinary
+ * pace) before the section lets go. SECURE, BUILD, CAPTURE and CUT keep their
+ * pace; no other motion is added.
  */
 import events from '@data/events.json';
 
@@ -74,11 +84,15 @@ const phrase = words.join(' ');
     const signal = root.querySelector<HTMLElement>('[data-evx-signal]');
     // In shares of the screen's height, by the section's top edge: the first
     // word arrives just before the phrase settles at the middle of the screen
-    // (the top at 0.15), the last 0.7 of a screen later; the phrase holds
-    // until the top is 0.78 above the screen, then the section moves on.
+    // (the top at 0.15), the last 0.7 of a screen later (AMPLIFY., the top at
+    // -0.55). The signal is complete by RESOLVE after it (V1.6) and the finished
+    // line holds for HOLD more, so the phrase holds until the top is 1.27 above
+    // the screen, then the section moves on.
     const START = 0.15;
     const TRAVEL = 0.7;
-    const UNPIN = 0.78;
+    const RESOLVE = 0.42;
+    const HOLD = 0.3;
+    const UNPIN = TRAVEL - START + RESOLVE + HOLD;
     const OUT = 0.35;
     let near = false;
     let raf = 0;
@@ -93,6 +107,9 @@ const phrase = words.join(' ');
         const p = (START - top) / TRAVEL;
         words.forEach((w, i) => w.classList.toggle('is-on', p >= i / (words.length - 1)));
         signal?.classList.toggle('is-on', p >= 1);
+        // V1.6: from RESOLVE past AMPLIFY. the signal is shown complete, so the
+        // hold, and the section letting go, always carry the finished line.
+        signal?.classList.toggle('is-done', p >= 1 + RESOLVE / TRAVEL);
       }
       // Leaving: the phrase fades as it rises out (from 35% of the screen to
       // 5%), while the next section comes up beneath it.
@@ -188,7 +205,7 @@ const phrase = words.join(' ');
   /* Live: the section is as tall as its reading; the phrase holds at the middle
      of the screen while its words arrive. */
   .evx.is-live {
-    height: calc(var(--view-h) * var(--evx-run, 1.78));
+    height: calc(var(--view-h) * var(--evx-run, 2.27));
   }
 
   .evx.is-live .evx__pin {
@@ -270,13 +287,15 @@ const phrase = words.join(' ');
   }
 
   /* Live, with motion allowed: it waits until the last word is in, then the tile
-     wipes in as the words do (with the point at a low glow), and once it is
+     wipes in as the words do (with the point at a low glow; V1.6: from 0.1s, while
+     the word is still landing, where it waited 0.3s before), and once it is
      revealed the sequence plays inside it, once, in a little over half a second:
-     the point brightens (0.70 to 0.86s), the inner arcs draw outward from their
-     middles (0.78 to 1.02s), the outer arcs follow (0.90 to 1.16s), and the tile
-     lifts very slightly in brightness and settles (0.98 to 1.26s). Each arc is
+     the point brightens (0.50 to 0.66s), the inner arcs draw outward from their
+     middles (0.58 to 0.82s), the outer arcs follow (0.70 to 0.96s), and the tile
+     lifts very slightly in brightness and settles (0.78 to 1.06s). Each arc is
      drawn by its dash: from nothing at its middle to its whole length, so it opens
-     out both ways at once. Nothing scales, glows beyond the tile or repeats. With
+     out both ways at once. Nothing scales, glows beyond the tile or repeats. Once
+     the reader is RESOLVE past the word (is-done), it is shown complete, still. With
      reduced motion none of this applies and the signal is simply there, complete. */
   @media (prefers-reduced-motion: no-preference) {
     .evx.is-live .evx__tile {
@@ -293,23 +312,55 @@ const phrase = words.join(' ');
     }
 
     .evx.is-live .evx__signal.is-on .evx__tile {
-      animation: evx-tile 0.45s cubic-bezier(0.2, 0.75, 0.2, 1) 0.3s both;
+      animation: evx-tile 0.45s cubic-bezier(0.2, 0.75, 0.2, 1) 0.1s both;
     }
 
     .evx.is-live .evx__signal.is-on .evx__g--point {
-      animation: evx-point 0.16s ease-out 0.7s both;
+      animation: evx-point 0.16s ease-out 0.5s both;
     }
 
     .evx.is-live .evx__signal.is-on .evx__g--near {
-      animation: evx-near 0.24s cubic-bezier(0.3, 0.6, 0.3, 1) 0.78s both;
+      animation: evx-near 0.24s cubic-bezier(0.3, 0.6, 0.3, 1) 0.58s both;
     }
 
     .evx.is-live .evx__signal.is-on .evx__g--far {
-      animation: evx-far 0.26s cubic-bezier(0.3, 0.6, 0.3, 1) 0.9s both;
+      animation: evx-far 0.26s cubic-bezier(0.3, 0.6, 0.3, 1) 0.7s both;
     }
 
     .evx.is-live .evx__signal.is-on .evx__tile::after {
-      animation: evx-lift 0.28s ease-in-out 0.98s both;
+      animation: evx-lift 0.28s ease-in-out 0.78s both;
+    }
+
+    /* V1.6: complete and still, however fast the reader came (the sequence's own
+       last frame: the tile whole, the point bright, both pairs of arcs drawn, the
+       lift settled). */
+    .evx.is-live .evx__signal.is-done .evx__tile {
+      animation: none;
+      clip-path: inset(0 0 0 0);
+    }
+
+    .evx.is-live .evx__signal.is-done .evx__g--point {
+      animation: none;
+      opacity: 1;
+    }
+
+    .evx.is-live .evx__signal.is-done .evx__g--near {
+      animation: none;
+      opacity: 1;
+      stroke-dasharray: 7.66 8.6;
+      stroke-dashoffset: 0.05;
+    }
+
+    .evx.is-live .evx__signal.is-done .evx__g--far {
+      animation: none;
+      opacity: 1;
+      stroke-dasharray: 13.86 14.8;
+      stroke-dashoffset: 0.05;
+    }
+
+    .evx.is-live .evx__signal.is-done .evx__tile::after {
+      animation: none;
+      opacity: 0;
     }
   }
 

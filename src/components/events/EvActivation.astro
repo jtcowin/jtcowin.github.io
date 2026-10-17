@@ -14,7 +14,9 @@
  * rendering combining the activation elements he plans and coordinates across
  * events (the Sui Summit story lives in the deck's live presentation chapter).
  * It also set the rendering a little narrower on large desktops and a little
- * closer to the copy.
+ * closer to the copy. V1.6: the headline's second half, "before anyone enters
+ * the room.", is set in the surface's accent (the page's teal), the color alone
+ * and nothing else, and the paragraph is the approved wider scope of the work.
  *
  * Its two screens play their loops while the frame is in view. V1.2 calmed
  * the television into the stable branded anchor: one short card (the wireless
@@ -41,10 +43,13 @@ import events from '@data/events.json';
 import stage from '@data/ev-activation.json';
 import { getAsset, isSlotReady, isVisible, resolveAssetFile, resolveImage, SHOW_PLACEHOLDERS } from '@lib/assets';
 import { withBase } from '@lib/paths';
+import { emphasize } from '@lib/tpm-copy';
 import Icon from '@components/Icon.astro';
 import EvSlot from './EvSlot.astro';
 
 const { activation: a } = events;
+// V1.6: one phrase of the headline in the accent (it must appear exactly once).
+const title = emphasize(a.headline, a.accent, 'events activation headline');
 const showKit = a.kit.some((id) => isSlotReady(getAsset(id))) || SHOW_PLACEHOLDERS;
 
 const render = getAsset(a.visual);
@@ -79,7 +84,7 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
     <div class="eva__head">
       <div class="eva__heading">
         <h2 id="ev-activation-title" class="display eva__title" data-ev-reveal>
-          <span class="ev-cut"><span>{a.headline}</span></span>
+          <span class="ev-cut"><span>{title.map(({ text, em }) => (em ? <span class="eva__accent">{text}</span> : text))}</span></span>
         </h2>
       </div>
       <p class="eva__copy">{a.copy}</p>
@@ -174,6 +179,12 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
   .eva__title {
     max-width: 16ch;
     font-size: var(--text-2xl);
+  }
+
+  /* V1.6: the restrained accent, the surface's teal and nothing more (no mark,
+     outline or motion of its own). */
+  .eva__accent {
+    color: var(--accent-ink);
   }
 
   .eva__copy {

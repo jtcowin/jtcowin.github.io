@@ -5,13 +5,14 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Events and Multimedia Production Version 1.5 in review.** Version 2.0, Technical Product
-Marketing Version 1.6 and Events and Multimedia Production Version 1.4 are published. Version 1.5 (a
-faster, directional opening sequence on the homepage with a layered entrance into the hero, a menu of
-the case studies on Work in the site's navigation, and, on the Events page, the production deck's
-words given room, new approved copy for its three chapters, the live presentation without its full
-film, and a clear SETUP and FINAL control in the production room) is committed locally and not pushed
-until it has been reviewed in the browser.
+**Status: Events and Multimedia Production Version 1.6 in review.** Version 2.0, Technical Product
+Marketing Version 1.6 and Events and Multimedia Production Version 1.5 are published. Version 1.6 (the
+homepage's opening sequence retimed so its viewing note is read, and, on the Events page, the hero's
+new order and its new Sui Fest and Jungle Talk cuts, a longer final beat after AMPLIFY., the
+activation's accent and wider paragraph, and the production deck's cards framed with the hero's
+production marks, playing the hero's own edits, with one film with sound, a two-scene Final loop,
+words in a natural rhythm and scroll-assisted progression on wide screens) is committed locally and not
+pushed until it has been reviewed in the browser.
 Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
@@ -39,24 +40,28 @@ changes came with Version 1: inner pages
 lead their header with a restrained HOME link in place of the name, and the homepage opens, once per
 browsing session, with a short sequence; since Events Version 1.5 it is a brisk, directional loader (a
 small marker travelling the screen from left to right while a viewing note, BEST EXPERIENCED ON
-DESKTOP, and three phrases, "Product complexity.", "Market clarity." and "Strategy, executed.", come
-in quick succession), handing over to the hero in layers, about 2.9 seconds in all.
+DESKTOP, held long enough to be read since Version 1.6, and three phrases, "Product complexity.",
+"Market clarity." and "Strategy, executed.", come in quick succession), handing over to the hero in
+layers, about 3.45 seconds in all.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
-1.0, now at Version 1.5 (see [Events and Multimedia Production, Version
-1.5](#events-and-multimedia-production-version-15)): a hero whose headline and paragraph share one
-header row above a full-width cinematic reel of four chapters (01 / LIVE PRESENTATION, 02 / CREATOR
-PODCAST, 03 / TECHNICAL EXPLAINER, 04 / EVENT FILM; the team interview joins as the third once its
+1.0, now at Version 1.6 (see [Events and Multimedia Production, Version
+1.6](#events-and-multimedia-production-version-16)): a hero whose headline and paragraph share one
+header row above a full-width cinematic reel of four chapters (01 / TECHNICAL EXPLAINER, 02 / EVENT
+FILM, 03 / CREATOR PODCAST, 04 / LIVE PRESENTATION; the team interview joins after the podcast once its
 footage is approved), played through in order and crossfading from one to the next, under a restrained
 program monitor (PROGRAM, TC and a sequence timeline); a transition, SECURE. BUILD. CAPTURE. CUT.
-AMPLIFY., revealed word by word as the reader scrolls and closed by a broadcast signal; then the
-activation (an original 3D concept rendering whose television and projected wall play their loops), the
-Expanding Production Deck (the live presentation, the production room and the event film in one
-vertical accordion, one chapter open at a time, its words using the column's full height, the
-production room switching between its Setup photograph and its Final explainer), and a conclusion that
-closes on the five stages and leads on to the next case study, Creator Campaigns, before Contact. Each
-deck chapter carries its credits in one line of fine print, and every media slot still waiting for its
-final asset is a placeholder at its final ratio in `npm run dev` only.
+AMPLIFY., revealed word by word as the reader scrolls and closed by a broadcast signal that holds a
+moment before the section lets go; then the activation (an original 3D concept rendering whose
+television and projected wall play their loops), the Expanding Production Deck (the live presentation,
+the production room and the event film in one vertical accordion, one chapter open at a time, each
+card's media framed with the hero's production marks and a timecode, its words in a natural rhythm
+beside it, the production room switching between its Setup photograph and its Final explainer; on wide
+screens the reader's own scrolling opens the chapters in turn while the deck holds below the site's
+header), and a conclusion that closes on the five stages and leads on to the next case study, Creator
+Campaigns, before Contact. Each deck chapter carries its credits in one line of fine print, and every
+media slot still waiting for its final asset is a placeholder at its final ratio in `npm run dev`
+only.
 
 Version 2.0 puts John's approved video loops on every Select Work tile and gives the trust bar the
 Ambur logo. Case Study 01 leads with the Costa Rica aftermovie (13.6 seconds: two approved ranges
@@ -190,8 +195,10 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
 - **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`. The menu on Work (V1.5)
   lists the case studies itself, from `src/content/work/` in their `order`, numbered and titled as on
   the homepage (each one's `card.title`); `src/components/Header.astro`.
-- **The homepage's opening sequence** (V1.5): its words are `intro` in `src/data/home.json` (the
-  viewing `note` and the three `phrases`, exactly as approved); its timing is `src/components/Intro.astro`.
+- **The homepage's opening sequence** (V1.5, retimed in Events V1.6): its words are `intro` in
+  `src/data/home.json` (the viewing `note` and the three `phrases`, exactly as approved); its timing is
+  `src/components/Intro.astro` (`--intro-hold`, the note fully legible, and `--intro-show`, each phrase
+  fully visible, with the transitions; every turn after them is derived, so changing one moves the rest).
 - **Homepage copy** (hero, About, the Select Work title and intro, the reel's pool, the combined
   section's headline, How I Work statement, capability groups and Stack, contact): `src/data/home.json`.
   Each Stack tool is `{ "name", "logo", "scale", "shape" }`: `logo` is an SVG under
@@ -223,7 +230,7 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   set in the accent color, and beside a paragraph, `em` names the one phrase set a little heavier; each
   must appear in its text exactly once, or the build stops (`src/lib/tpm-copy.ts`). The page's metadata and its Select Work
   card still come from the case study's frontmatter; its older MDX body is no longer rendered.
-- **Events and Multimedia Production** (Version 1.5): `src/data/events.json` holds every word on the
+- **Events and Multimedia Production** (Version 1.6): `src/data/events.json` holds every word on the
   page and its media configuration, section by section. `stages`: the five stages (Secure, Build,
   Capture, Cut, Amplify), read by the transition's phrase, the sections' tallies and the conclusion.
   `hero`: the kicker, the headline and its `accent`, the paragraph, the reel's `chapters` in their order
@@ -238,14 +245,16 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   slots. `deck` (V1.3): the words of "Watch full video with sound" (`watch`) and the three `chapters` in
   order, each with its `key`, `label` (on its rail), `headline`, its introduction (`context`), up to
   three `points`, the `outcome`, the fine-print `credit` (and, where a chapter has them, the
-  `participants` on a line of their own), its muted `preview` (an approved loop; `previewFit: contain`
-  shows a video wider than 16:9 whole), and, where the chapter has one, its `full` film with sound and
-  that film's short name for the player's controls (`fullLabel`); a chapter without `full` (the live
-  presentation, since V1.5) shows its preview alone, with no Watch. `setupFinal` (V1.4, its control
-  since V1.5) puts the production room's Setup and Final in its chapter (`chapter`): the setup
-  photograph's asset id (no caption since V1.5), the finished explainer's asset id, the control's two
-  words (`tabs`) and their name for assistive technology (`label`); Final shows that chapter's own
-  preview and film, and Watch full video with sound only under it. `conclusion` holds the headline, its accent, the paragraph, the sentence that
+  `participants` on a line of their own), its muted `preview` (an approved loop, which may be a hero
+  chapter's own file, as the live presentation's and the event film's are since V1.6; `previewFit:
+  contain` shows a video wider than 16:9 whole in a 16:9 frame, and `native` shows it in its own frame),
+  and, where the chapter has one, its `full` film with sound and that film's short name for the
+  player's controls (`fullLabel`); a chapter without `full` (the live presentation since V1.5, the event
+  film since V1.6) shows its preview alone, with no Watch. `setupFinal` (V1.4, its control since V1.5)
+  puts the production room's Setup and Final in its chapter (`chapter`): the setup photograph's asset
+  id (no caption since V1.5), the finished explainer's asset id, the control's two words (`tabs`) and
+  their name for assistive technology (`label`); Final shows that chapter's own preview (since V1.6 its
+  two-scene loop) and film, and Watch full video with sound only under it. `conclusion` holds the headline, its accent, the paragraph, the sentence that
   leads on (`nextLine`) and the case study it leads to (`next`, which must be the next in the
   collection's order, wrapping around to the first, or the build stops). The activation render's
   geometry, its screens' brightness over time and their luminance in the still are in
@@ -1278,6 +1287,147 @@ public-facing expression." Centered as before; the words are unchanged.
   to 16px rise, 102% and softness, the name, navigation and information in that order, the still
   crossfade for reduced motion, the head decision's guards, the preloads matching the hero's pictures
   and the stylesheet's faces, the dismissal events and the homepage-only placement.
+
+### Events and Multimedia Production, Version 1.6
+
+John's Events and Multimedia Production V1.6 brief (October 17, 2026, a delta against the V1.5 build on
+the live site) in three parts: the homepage's opening sequence (Part I), the Events page's pieces
+(Part II) and the production deck's layout and progression (Part III). Everything the brief does not
+name is as V1.5 left it, and no visitor-facing copy uses an em dash. The brief's written
+specifications are complete on their own; its frame references (screenshots on John's desktop) set
+the hero's cut points.
+
+- **01 The opening sequence's pacing** (`Intro.astro`; `Hero.astro` and `Header.astro` for the
+  handoff). The viewing note is the message that has to be read: it arrives (130ms), settles and holds,
+  fully legible, for 1.3 seconds (V1.5: 0.46 of a 0.64-second turn). The three phrases then come in
+  quick succession, each fully visible for 0.3 seconds (V1.5: about 0.2 of a turn of about half a
+  second), a three-beat impression rather than a read. Every change is one short, overlapping transition: the next word starts to arrive
+  30ms after the last starts to leave, both in 130ms, and the leaving word is gone at about two thirds
+  of its drift, so there is never a blank and never two words read at once. The marker still arrives as
+  the last phrase ends (2.85 s) and the hero's layers, in V1.5's order and overlapping, now take 0.6
+  seconds (the photograph and its subject over 0.6 s; the name from +70ms, the descriptor +140ms, the
+  navigation +200ms, the rule +220ms, the arrow +300ms): the hero is in place at about 3.45 seconds.
+  Every turn is derived from the two windows (`--intro-hold`, `--intro-show`) and the transitions, so
+  changing one moves everything after it. As before: once per browsing session, never on a return from
+  a case study, a visit that began inside the site or a link to a section; near-instant with reduced
+  motion; dismissed by any intent; no percentage.
+- **02 The Amplify hold** (`EvTransition.astro`). The first four words keep their pace. The signal after
+  AMPLIFY. now begins within the word's own beat (the tile from 0.1 s, where it waited 0.3 s) and is
+  complete about a second after it (1.06 s, from 1.26 s), with no new animation; from 0.42 of a screen
+  past the word (`RESOLVE`) it is shown complete and still however fast the reader came, and the
+  finished line then holds for 0.3 of a screen more (`HOLD`, about 0.6 to 0.9 seconds at an ordinary
+  pace) before the section lets go. The section is 2.27 screens tall (1.78 in V1.5); the script sets it
+  from the constants and the stylesheet's fallback repeats it.
+- **03 The concept rendering's words** (`EvActivation.astro`; `events.json`, `activation`). The
+  headline's second half, "before anyone enters the room.", is in the page's teal (`--accent-ink`), the
+  color alone (no weight, underline, mark or motion), named by `accent` like the other headlines' (the
+  build stops unless it appears in the headline once). The new paragraph: "Before the doors open, I
+  shape the strategy and coordinate every part of the activation, from sponsorships, speaking
+  opportunities, and merchandise to event assets, on-site content, and post-event distribution."
+- **04 The production treatment** (`EvDeck.astro`). The hero's vocabulary on each card's active media,
+  quieter: four corner marks just outside the frame (0.7rem, 1px, at 20% opacity; the hero's are 0.9rem) and,
+  at its top right, a small timecode, TC and the clip's own time (hours, minutes, seconds and frames at
+  24 a second, read from the video's current time, frame by frame while it plays and held where it
+  stops; 0.625rem against the hero's 0.6875rem, on a faint shade). It appears once the clip shown has
+  played (there is none over the setup photograph) and steps aside on the smallest frames; a closed
+  card draws none of it, and the player's own corner marks give way to these inside the deck. No
+  PROGRAM, tally, REC, scan lines, status lights or controls are added. Only with JavaScript.
+- **05 Live presentation**: its preview is the hero's own Max Presentation edit (the same file,
+  `ev-hero-presentation.mp4`), shown in the recording's own 2.157:1 frame (`previewFit: native`), muted,
+  playing while its card is open and in view, looping, with its pause control; no full film and no
+  sound. The outcome: "Event-led introductions and follow-through helped secure three aggregator
+  integrations and opened strategic discussions with ecosystem leadership." (it names no integration
+  and no organization). The credit: "Organized, directed, and captured by John Cowin · Speaker Max
+  McKendry · Deck design and video edit by Bob van der Meer". (The V1.5 preview, `ev-max-loop`, stays on
+  the homepage's Select Work card.)
+- **06 One film with sound**: only the production room's finished explainer, under FINAL, has a film
+  with sound (Watch full video with sound and its player); the event film's is gone (its file,
+  `suifest-interviews.mp4`, stays in the project, unused, as the presentation's has since V1.5). FINAL's
+  muted preview is now its two scenes alone (`ev-room-final-loop`, `bolt-slippage-final-loop.mp4`, 8.84
+  s): 1:09.111 to 1:17.953 of the film, from the first frame of "Bolt solves slippage by providing you
+  a deterministic price" to the last frame of "you have a set execution price that will be filled" (the
+  brief's second scene, "What this means is that you have a set execution price that you will be
+  filled."), each line's type complete, cut on the film's own shot boundaries and looping back
+  to the first scene with a plain cut. Nothing of the shot before ("When things like slippage occur",
+  whose last frame is at 1:09.069) is in it. 1600 by 900, silent, its poster at 1:13.41. The homepage
+  keeps its own slippage preview.
+- **07 Event film**: its card plays the hero's Sui Fest edit (the same file, `ev-hero-event-film.mp4`),
+  muted, playing while its card is open and in view, looping, with its pause control; no Watch and no
+  sound.
+- **08 The hero's order and new cuts** (`events.json`, `hero.chapters`; `assets.json`): 01 / TECHNICAL
+  EXPLAINER, 02 / EVENT FILM, 03 / CREATOR PODCAST, 04 / LIVE PRESENTATION (the team interview, still
+  pending, joins after the podcast). The Sui Fest chapter is the brief's two cuts
+  (`ev-hero-event-film.mp4`, 11.97 s): 0:02.711 to 0:11.386, in on the head of the shot that carries "And
+  we asked our favorite teams", through the montage to the end of the shot on screen at 0:11; then
+  2:36.615 to 2:39.909, from the first frame of "Like a lot of people" to the last before "a whale, like
+  a". One editorial call: the first cut comes in on the head of that shot rather than on John's 0:04
+  reference frame (0:03.670, inside it), because from there the line would be on screen for a third of a
+  second before dissolving under the reel's 350ms crossfade. The Jungle Talk chapter is two cuts
+  (`ev-hero-podcast.mp4`, 7.72 s): 0:00 to 0:04.421 and 0:24.566 to 0:27.861 ("PUSH FOR LONGER DEALS"),
+  each ending on its shot's last frame. Both are 1600 by 900, silent, H.264 with the index first. Their
+  crops moved (`pos` 50% 92% and 50% 86%) so the burned-in captions stay whole and clear of the rail at
+  both of the frame's proportions.
+- **09 The cards' headers and rhythm**: the labels are stable (01 LIVE PRESENTATION, 02 PRODUCTION
+  ROOM, 03 EVENT FILM, whatever the state). On wide screens an open card's media and words start from
+  one top line, with no minimum height and nothing centered or stretched to the media's height; the
+  words run top to bottom with fixed gaps (up to 1.5rem after the headline and 2.75rem between the
+  others, a little less on shorter screens; 0.9 and 1.35rem on narrow ones). The band between a card's
+  header and its content is a fifth smaller: at 1728 by 1000, 55px from the header's foot to the live
+  presentation's headline where V1.5's centering left 71 (22.5% less), the media starting on the same
+  line. On narrow screens the media keeps a little room above it for its marks.
+- **10 The scroll-assisted deck**: on wide screens with motion allowed (the deck at least 56rem wide,
+  the window at least 640px tall), the deck pins just below the site's header inside a runway as long as
+  its scrolling. The live presentation is open as it arrives; the reader's own scrolling opens the
+  production room, then the event film, each after a viewing interval of six tenths of the window's
+  height (360 to 640px of scrolling); scrolling back up runs the same turns in reverse; after the event
+  film's interval the deck lets go and the page goes on. A chapter that does not fit the room on screen
+  first moves up with the scroll until its foot is in view, then holds; the header after the open
+  chapter shows below it where there is room, and on shorter windows waits below the edge so the open
+  chapter's own header stays clear of the site's header (only a chapter taller than the room passes its
+  header under the site's header on the way to its foot, as any long section does). A change of chapter
+  eases the deck to its new place (0.55 s) rather than jumping. A click, a tap or the keyboard opens any
+  chapter at once; while the deck is pinned, the page moves, unseen (the deck stays where the reader is
+  looking), to the start of that chapter's turn, so scrolling carries on from it. Nothing snaps, the
+  deck's scroll listener is passive and it handles no wheel or touch, nothing advances by itself and no
+  video has to finish. Reduced motion, narrow screens and short windows keep V1.5's manual accordion.
+  Without JavaScript every chapter is open; the live presentation and the event film show their
+  previews still, on their posters (V1.5 left the live presentation's media column empty), and the
+  production room its photograph, then its film with native controls.
+- **Checks** (`verify.mjs`): the opening sequence (the note held fully legible for 1.25 to 1.5 s, each
+  phrase fully visible for 0.28 to 0.38 s, transitions of 0.12 to 0.16 s with the next word arriving
+  before the last has gone, every turn derived from them, the hero's layers 0.6 to 0.8 s and in order,
+  3 to 3.5 s in all, the last phrase leaving at the reveal, a leaving word gone early only by its
+  opacity and never overshooting); the Amplify hold (the section 2.1 to 2.4 screens and its fallback
+  equal to the script's, RESOLVE and HOLD in range, the signal complete and still from RESOLVE, its
+  complete frame, the tile in before 0.3 s, the sequence over by 1.15 s); the activation's paragraph and
+  its one accent, the color alone; the hero's order, its four chapters until the interview arrives, the
+  Sui Fest and Jungle Talk cuts, lengths and files; the deck (the live presentation's outcome and
+  credit; its preview and the event film's the hero's own files, the presentation in its own frame;
+  the Final loop's range, the shot it leaves out, its length, silence, size, index and poster, and the
+  homepage's preview untouched; Watch and a player only in the production room; names whole after
+  every "by"; each card's frame with four marks, a timecode and nothing else, smaller and fainter than
+  the hero's, only with JavaScript, the timecode only once its clip has played and read from the clip's
+  own time, the player's marks giving way; one top line, no minimum height or centering, fixed gaps
+  within bounds, the band below the header; the pinned deck sticky in its flow-root runway, no snapping,
+  a passive scroll listener of its own and no wheel or touch listener, the pin gated by the
+  reduced-motion query, the deck's width and the window's height together, the six-tenths interval,
+  nothing on a timer; without JavaScript, previews hidden only where a film replaces them). Each new
+  check was shown to catch what it guards: on a scratch copy of the repository, 86 deliberate
+  breaks, one at a time (V1.6's and a sample of earlier ones), each failed the check meant for it. That
+  run also found two checks that could not fail (the leaving word's stops, read past one keyframe, and
+  a scroll listener check that another script on the page could satisfy); both now read what they
+  guard.
+- **Verified** in the browser (Chromium, the videos as VP9 twins since it has no H.264): 114 behavior
+  checks (38 on the homepage: the sequence frame by frame on its own clock, its windows and overlaps,
+  never blank, the marker, the dissolve, the layers and the total, once per session, reduced motion,
+  dismissal; 76 on the Events page: the reel's order, cuts and labels, the Amplify hold, the accent, the
+  deck's marks and a timecode that follows its clip, the cards' media and Watch, the rhythm and the
+  band, and the pinned deck's entry, turns, intervals, reverse, clicks, release and its manual accordion
+  for reduced motion, narrow and short windows); every page from 320 to 2,560px wide with no horizontal
+  overflow and the Work menu open; at every wide size the deck pinned where it should be, its turns in
+  order with their intervals, the open chapter's foot in view and its header clear of the site's header
+  except where the chapter is taller than the room; without JavaScript at 1440 by 900 and 390 by 844;
+  `astro check`; and the full check with the accessibility scan.
 
 ### Events and Multimedia Production, Version 1.5
 
