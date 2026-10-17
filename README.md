@@ -5,14 +5,13 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Events and Multimedia Production Version 1.6 in review.** Version 2.0, Technical Product
-Marketing Version 1.6 and Events and Multimedia Production Version 1.5 are published. Version 1.6 (the
-homepage's opening sequence retimed so its viewing note is read, and, on the Events page, the hero's
-new order and its new Sui Fest and Jungle Talk cuts, a longer final beat after AMPLIFY., the
-activation's accent and wider paragraph, and the production deck's cards framed with the hero's
-production marks, playing the hero's own edits, with one film with sound, a two-scene Final loop,
-words in a natural rhythm and scroll-assisted progression on wide screens) is committed locally and not
-pushed until it has been reviewed in the browser.
+**Status: Creator Marketing and Partnerships Version 1.0 in review.** Version 2.0, Technical Product
+Marketing Version 1.6 and Events and Multimedia Production Version 1.6 are published. Creator Marketing
+and Partnerships Version 1.0 (the first case study's own page, from its layered coastal hero through
+the creator network, the campaign atlas, the Trezor dare, the selected-content montage, the program
+ownership and the credits to its conclusion, and, site-wide, the homepage loader reduced to its viewing
+note and the Events deck's video centered in its card) is committed locally and not pushed until it has
+been reviewed in the browser.
 Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
@@ -40,9 +39,24 @@ changes came with Version 1: inner pages
 lead their header with a restrained HOME link in place of the name, and the homepage opens, once per
 browsing session, with a short sequence; since Events Version 1.5 it is a brisk, directional loader (a
 small marker travelling the screen from left to right while a viewing note, BEST EXPERIENCED ON
-DESKTOP, held long enough to be read since Version 1.6, and three phrases, "Product complexity.",
-"Market clarity." and "Strategy, executed.", come in quick succession), handing over to the hero in
-layers, about 3.45 seconds in all.
+DESKTOP, is held long enough to be read), handing over to the hero in layers. Since Creator Marketing
+and Partnerships Version 1.0 the note is its only line (the three phrases are gone, with nothing in
+their place) and the whole sequence takes about 2.9 seconds (Events V1.6: 3.45).
+
+Creator Marketing and Partnerships, the first case study, has its own page since its Version 1.0 (see
+[Creator Marketing and Partnerships, Version 1.0](#creator-marketing-and-partnerships-version-10)),
+in a visual language of its own: open air and daylight, destination atmospheres, a curved path, a
+waterline and closing credits. A full-screen hero layers one coastal scene in depth (the sky, the
+headline set in it, a white villa whose roofline and palm cross the headline, and two palm fronds
+nearest, each moving at its own rate as the page scrolls; illustrative stock photography, credited as
+such); the program context follows, then the eight creators John worked with travelling slowly round a
+curved path (their names, confirmed affiliations and destinations at its center on hover, focus or a
+tap); a campaign atlas that holds still on wide screens while Costa Rica, Singapore and Mykonos take the
+stage in turn, each with its own silent loop, two stills, its figures and its co-sponsors; the Trezor
+dare, its film first and with sound, then Trezor's feedback and the credits; one silent montage of the
+formats the program made; the program ownership across a waterline; closing credits that name everyone
+who made the work; and a conclusion that leads on to Technical Product Marketing before Contact. Three
+creator testimonials, the Trezor brief and its exact results are placeholders in `npm run dev` only.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
 1.0, now at Version 1.6 (see [Events and Multimedia Production, Version
@@ -59,7 +73,8 @@ card's media framed with the hero's production marks and a timecode, its words i
 beside it, the production room switching between its Setup photograph and its Final explainer; on wide
 screens the reader's own scrolling opens the chapters in turn while the deck holds below the site's
 header), and a conclusion that closes on the five stages and leads on to the next case study, Creator
-Campaigns, before Contact. Each deck chapter carries its credits in one line of fine print, and every
+Marketing and Partnerships, before Contact. Since Creator Marketing V1.0 the live presentation's and the
+event film's video sits in the vertical center of its open card on wide screens. Each deck chapter carries its credits in one line of fine print, and every
 media slot still waiting for its final asset is a placeholder at its final ratio in `npm run dev`
 only.
 
@@ -131,7 +146,7 @@ introduced the full-viewport photograph and the photographic favicon.
 | Route | Source |
 | --- | --- |
 | `/` | `src/pages/index.astro` + `src/data/home.json` |
-| `/work/creator-campaigns/` | `src/content/work/creator-campaigns.mdx` |
+| `/work/creator-campaigns/` | `src/pages/work/creator-campaigns.astro` + `src/data/creator.json` (metadata and the Select Work card from `src/content/work/creator-campaigns.mdx`) |
 | `/work/technical-marketing/` | `src/pages/work/technical-marketing.astro` + `src/data/tpm.json` (metadata and the Select Work card from `src/content/work/technical-marketing.mdx`) |
 | `/work/events-video/` | `src/pages/work/events-video.astro` + `src/data/events.json` (metadata and the Select Work card from `src/content/work/events-video.mdx`) |
 | `/resume/John-Cowin-Resume.pdf` | `public/resume/John-Cowin-Resume.pdf` |
@@ -195,10 +210,11 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
 - **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`. The menu on Work (V1.5)
   lists the case studies itself, from `src/content/work/` in their `order`, numbered and titled as on
   the homepage (each one's `card.title`); `src/components/Header.astro`.
-- **The homepage's opening sequence** (V1.5, retimed in Events V1.6): its words are `intro` in
-  `src/data/home.json` (the viewing `note` and the three `phrases`, exactly as approved); its timing is
-  `src/components/Intro.astro` (`--intro-hold`, the note fully legible, and `--intro-show`, each phrase
-  fully visible, with the transitions; every turn after them is derived, so changing one moves the rest).
+- **The homepage's opening sequence** (V1.5, retimed in Events V1.6, the note alone since Creator
+  Marketing V1.0): its words are `intro.note` in `src/data/home.json` (the viewing note, exactly as
+  approved); its timing is `src/components/Intro.astro` (`--intro-hold`, the note fully legible, with
+  the beat before it and its transitions; the reveal and every turn after it are derived, so changing
+  one moves the rest).
 - **Homepage copy** (hero, About, the Select Work title and intro, the reel's pool, the combined
   section's headline, How I Work statement, capability groups and Stack, contact): `src/data/home.json`.
   Each Stack tool is `{ "name", "logo", "scale", "shape" }`: `logo` is an SVG under
@@ -261,6 +277,28 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   `src/data/ev-activation.json`, written by `scripts/render/activation-composite.py`. The page's
   metadata and its Select Work card still come from the case study's frontmatter; its older MDX body is
   no longer rendered.
+- **Creator Marketing and Partnerships** (Version 1.0): `src/data/creator.json` holds every word on the
+  page and its media configuration, section by section. `hero`: the label, the headline, the paragraph,
+  the photography credit and its four layers (`layers`: `sky`, `estate`, `frondLeft`, `frondRight`,
+  asset ids). `context`: the kicker, the headline and its `accent`, the paragraph. `network`: the
+  kicker, headline, `sub` and `hint`, and exactly eight `creators` (each with its `id`, `name`, profile
+  picture `asset`, confirmed `affiliations`, an optional `category`, shown once John confirms one, and
+  its `destinations` by key); the build stops on any other number. `voices`: up to three creator
+  testimonials (`asset`, an `assets.json` testimonial, and `side`, left or right). `atlas`: the kicker
+  and title, the fact labels and the three `destinations` in order (`key`, `index`, `name`, `type`,
+  `coords`, `copy`, `creators` and `pieces`, the exact figures, `sponsors` as logo ids or `null` until
+  confirmed, the `loop` and two `fragments`). `trezor`: the kicker, title and deck, the `film`, the
+  `brief` (assignment, objective and approach, each `text` `null` until John supplies it), the
+  `metrics` (`assets.json` metric entries), the `feedback` (the approved testimonial) and the
+  collaboration `credits` (`names` `null` until confirmed). `montage`: the kicker, headline and copy,
+  the `reel`, the `formats` (key and label) and the `cuts` (the reel time in seconds where each excerpt
+  takes over, its format and its place). `ownership`: the kicker, the headline as its two sentences
+  (`above` and `below` the waterline), the line of copy and the nine `areas`. `credits`: the rows
+  (`role` and `names`, `null` until confirmed) and the closing `note`. `conclusion`: the headline, its
+  `accent`, the paragraph, `nextLine` and `next` (the next case study in order, or the build stops).
+  Motion is `src/lib/cm-motion.ts`; the players and silent loops are `src/lib/ev-media.ts`'s. The
+  page's metadata and its Select Work card still come from the case study's frontmatter; its older MDX
+  body is no longer rendered.
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -321,6 +359,15 @@ To replace a placeholder with a real asset:
     an exact figure or a named integration on the page only from such an approved entry. What is still
     pending is listed in [Events and Multimedia Production, Version
     1.0](#events-and-multimedia-production-version-10).
+
+11. **Creator slots** (`cm-` entries): the three creator testimonials (`cm-testimonial-1` to `-3`: set
+    `quote` and `attribution`, then `permission: approved`; the section appears, between the network
+    and the atlas, as soon as one is approved, and never shows Trezor's feedback), the Trezor results
+    (`cm-trezor-metric-1` to `-3`: an exact, verified `value` and its `metricLabel`, then
+    `permission: approved`; `verify.mjs` allows only an exact figure), the Trezor brief (`trezor.brief`
+    in `creator.json`: each `text`), the collaboration and closing credits (`names` in `creator.json`),
+    a creator's `category`, and Mykonos's co-sponsors (`sponsors`, logo ids from `logos.json`). Each is
+    a labeled placeholder in `npm run dev` and absent from a production build until it is filled.
 
 Set `permission` to `private-only` on anything that must never render even if a file is present.
 The build will crop real media to the entry's aspect ratio with `object-fit: cover`.
@@ -449,9 +496,15 @@ stream and the approved footer credit), a location-level impressions
 figure, a published count of active workflows, or "community strategy" (John did not lead a community
 function in this B2B role, so the portfolio does not imply one). (Since Version 1.6 the homepage states
 no formal title; the only formal title for the Phi Labs role is still "Social Media Manager", on the
-resume.) It also confirms the approved creator-page claims and the approved contact, trust-bar and
-footer lines, and it fails if a `.DS_Store` file ships in `dist/` or is tracked by git, or if any file
-in `dist/` is larger than 25 MB (the full-length explainer video never belongs on the site).
+resume.) "Head of" is allowed in one exact place, a creator's confirmed affiliation on the Creator
+Marketing and Partnerships network ("Head of Ecosystem at Abstract"). It also confirms the approved
+contact, trust-bar and footer lines, and it fails if a `.DS_Store` file ships in `dist/` or is tracked
+by git, or if any file in `dist/` is larger than 25 MB (the full-length explainer video never belongs on
+the site). The creator page's own guardrails (no follower counts, rankings or qualifiers on the
+creators, no testimonial on a card, no vague metric, nothing that implies John edited, shot or designed
+the work, the hero's stock photography never presented as the trips, square and landscape media only)
+are listed with the page (see [Creator Marketing and Partnerships, Version
+1.0](#creator-marketing-and-partnerships-version-10)).
 
 The Version 1.7 checks: the homepage order (hero, About, Select Work, the reel, the combined section,
 Contact) and its four surfaces; "Select Work" and its intro; three cards in the approved order, each
@@ -764,6 +817,180 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Creator Marketing and Partnerships, Version 1.0
+
+John's Creator Marketing and Partnerships V1.0 brief (October 17, 2026): Part I adjusts two published
+pieces (the Events deck and the homepage's opening sequence), and the rest gives the first case study
+its own page, sections 05 to 14. The page keeps the portfolio's type, palette, navigation, buttons and
+Contact, and speaks its own visual language (open air and daylight, destination atmospheres, a curved
+path, a waterline, closing credits), with nothing from the Technical Product Marketing systems or the
+Events production monitor. No visitor-facing copy uses an em dash. The shared-layout page it replaces
+(its "My role" line, its aggregate impressions, account benchmark and methodology note) is retired;
+the MDX body stays in the repository, unrendered, and the Select Work card is unchanged.
+
+**Part I**
+
+- **01 The deck's video, centered** (`EvDeck.astro`). On wide screens the open Live Presentation and
+  Event Film cards set their video, with its corner marks and timecode, in the vertical center of the
+  card (`evd__media--centered`: `align-self: center`, and a top margin of the deck's padding less the
+  band above the content, so the room above the frame matches the room below it; measured at 1440 by
+  900, 131 and 131 pixels, 164 and 164). The words keep their top line, the Production Room keeps its
+  Setup and Final on that line, and narrow screens are unchanged.
+- **02 The loader, the note alone** (`Intro.astro`, `home.json`). "Product complexity.", "Market
+  clarity." and "Strategy, executed." are gone, with nothing in their place. The marker, its path and
+  BEST EXPERIENCED ON DESKTOP stay: after a 40ms beat the note arrives (130ms) and holds, fully
+  legible, for 2.1 seconds; at 2.27 s (V1.6: 2.85 s) the marker reaches the end of its path, the note
+  leaves, the ground starts to clear and the hero's layers begin, in place at about 2.9 seconds (V1.6:
+  3.45). The same on phones, where the note matters most. As before: once per browsing session, never on
+  a return from a case study, a visit that began inside the site or a link to a section; near-instant
+  with reduced motion; dismissed by any intent.
+
+**The page** (`src/pages/work/creator-campaigns.astro`; words and media configuration in
+`src/data/creator.json`; components in `src/components/creator/`; motion in `src/lib/cm-motion.ts`,
+with the players and silent loops of `src/lib/ev-media.ts`). The page pulls up under the header row, so
+the header's links float over the hero's sky.
+
+- **05 Hero** (`CmHero.astro`). One full-screen landscape scene, layered in depth: the sky, the
+  headline set in it, a white villa in front (its roofline and a palm cross the headline's last line)
+  and two palm fronds nearest, each a transparent layer on one 3200 by 2019 canvas. As the page scrolls
+  each moves at its own rate (the sky 0.46, the headline 0.3, the villa 0.16 of the hero's height over a
+  screen, the fronds against the scroll), written once a frame from one passive listener; nothing follows
+  the cursor. The layers settle in as the page opens, then the sky breathes very slowly and the fronds
+  sway a little, all only with motion allowed; with reduced motion the scene simply rests. Phones keep
+  the depth, with smaller fronds behind the words. The label reads "01 / Creator Marketing and
+  Partnerships", the headline "Bringing creator campaigns to life around the world." (the brief's V1
+  headline), then the approved paragraph. The photography is illustrative stock, never presented as the
+  trips: a small credit on the hero reads "Illustrative photography: Rosemary Media and Abbie Bernet,
+  Unsplash", and the credits say "illustrative, not from the trips".
+- **06 The program context** (`CmContext.astro`). "The program": "The trip was the setting. The
+  program connected everything around it." (the second sentence in the accent) and one paragraph of
+  what John ran around each trip, from finding the creators to distribution and reporting. On wide
+  screens a thin route draws from the paragraph down into the network's path.
+- **07 The creator network** (`CmNetwork.astro`). Exactly the eight creators John confirmed, each with
+  their square profile picture (from his PFPs folder, never a profile screenshot), travelling one way,
+  slowly (a turn in 80 seconds), round an ellipse seen from slightly above: the nearest card largest and
+  on top, the farthest smaller and fainter, each with a small tilt. The heading sits at the center of the
+  ring ("Creator network", "The creators who made it travel.", "Eight creators across 17
+  participations in Costa Rica, Singapore, and Mykonos."). Hovering, keyboard focus or a tap puts that
+  creator's name, confirmed affiliations and destinations (colored chips: Costa Rica green, Singapore
+  gold, Mykonos blue) at the center and eases the ring to a stop; a tap holds them (stated with
+  `aria-pressed`) until tapped again, and Escape lets go. It also rests off screen, in a hidden tab and
+  with reduced motion. There is nothing to drag and no control to reverse it. On phones, and without
+  JavaScript (four across on wider screens), the eight are a plain list with everything visible. No
+  card carries a testimonial, a follower count or a ranking, and the affiliations are stated plainly.
+- **08 Testimonials** (`CmVoices.astro`). Up to three short creator testimonials, one at a time as the
+  page scrolls (lower left, lower right, lower left again into the atlas), set in the open with their
+  attribution, never on the cards and never Trezor's. All three are placeholders, so a production build
+  leaves the section out and the network leads straight into the atlas.
+- **09 The campaign atlas** (`CmAtlas.astro`). One dark stage, titled "Campaign atlas", with an index of
+  the three destinations. Each has its own atmosphere, its number, type and coordinates, its name set
+  large, one line of copy, its figures (creators and content pieces: Costa Rica 6 and 34, Singapore 7 and
+  29, Mykonos 4 and 17; the creators as the network's roster counts them), its co-sponsors' logos
+  (Trezor and Bitrefill; Rayls Labs; Mykonos's are still to be confirmed), one silent loop with a
+  dissolve at its reset (5.5, 5.7 and 5.3 seconds) and two stills. At 960 by 600 pixels and more, with
+  motion allowed, the stage holds still through a runway of 3.4 screens while the destinations take it
+  in turn (the words rise, the stills slide in, only the one on view plays its loop), and the index marks
+  progress and jumps to a destination. Otherwise, and without JavaScript, the three read one after
+  another, each loop playing only while it is well in view.
+- **10 The Trezor dare** (`CmTrezor.astro`, `CmFilm.astro`). "Featured campaign", "The Trezor dare" and
+  one line of context; then the film first: the whole 44-second ad with its sound, from "Play with
+  sound" with its length to a bar of play, seek, time and sound (a 720p file for phones). The
+  assignment, objective, approach and exact results follow it once John supplies them; then Trezor's
+  approved feedback, attributed only to "Trezor campaign feedback"; then the collaboration credits, John's
+  part first (program strategy and sponsor coordination).
+- **11 Selected content** (`CmMontage.astro`). "One program, many formats.": one silent 18-second
+  montage from across the three trips (smaller than the Trezor film), with the seven formats listed
+  beside it and the one on screen marked as it plays, from the reel's own clock (`cuts` in
+  `creator.json`), with its place.
+- **12 Program ownership** (`CmOwnership.astro`). "The experience was visible." in the open air, a slow
+  wave line, then "The system behind it was not." in deep water, one line of copy, and the nine areas
+  John ran as one typographic field, larger and nearer at the top, smaller and fainter deeper down,
+  separated by small rings (not a grid, a timeline or a checklist). The wave drifts and a faint light
+  moves across the water only with motion allowed.
+- **13 Credits** (`CmCredits.astro`). "Many hands, one program.": closing credits on the deep ink, roles
+  to the left of a center line and names to the right (stacked on phones): John for the program
+  strategy and management and for the creative direction and production coordination; the eight
+  creators; the co-sponsors; the brand; Bolt Liquidity's design, editing, and legal teams; the hero's
+  photographers. The closing note says who performed, published, built and edited the work, and that
+  John's part was the strategy, the program management, and the direction and coordination of
+  production. Nothing implies he edited, shot or designed it. The editing and filming rows wait for
+  names.
+- **14 Conclusion** (`CmConclusion.astro`). "Every trip paid off twice." and one paragraph, then the way
+  on to Technical Product Marketing ("Next, see how I turn technical complexity into a clear market
+  narrative."), on a ground that runs from the credits' ink to the Contact green, with Contact's grid
+  rising out of it.
+
+**Media and excerpts.** Every medium on the page is square or landscape. The video masters stay
+outside the repository; each manifest entry records its sources.
+
+| Placement | Source file | Start | End | What |
+| --- | --- | --- | --- | --- |
+| Atlas, Costa Rica loop (`cm-costa-rica-loop.mp4`, 5.48 s) | Shiv Costa Rica Vlog.mp4 | 0:09.88 | 0:11.88 | the villa pool from the drone |
+| | Shiv Costa Rica Vlog.mp4 | 0:23.02 | 0:23.86 | the pool and palms |
+| | Costa Rica Aftermovie.mp4 | 1:16.32 | 1:17.00 | the golden-hour beach |
+| | Costa Rica Aftermovie.mp4 | 1:17.04 | 1:18.64 | the group at the water's edge (the original cut kept) |
+| | Ashley Costa Rica Vlog.mp4 | 0:53.25 | 0:54.45 | running into the surf (retimed to 25 fps) |
+| | Shiv Costa Rica Vlog.mp4 | 0:17.14 | 0:18.10 | palms against the sunset |
+| Atlas, Singapore loop (`cm-singapore-loop.mp4`, 5.67 s) | Mykonos Aftermovie.mp4 | 2:24.55 | 2:28.62 | Marina Bay Sands from the air (the film's look ahead to Singapore) |
+| | Singapore Spending Spree.mp4 | 0:18.00 | 0:19.95 | ION Orchard |
+| | Singapore Spending Spree.mp4 | 1:20.60 | 1:21.34 | the high tea room above the city |
+| Atlas, Mykonos loop (`cm-mykonos-loop.mp4`, 5.34 s) | Mykonos Aftermovie.mp4 | 1:54.15 | 1:54.98 | the catamaran from above |
+| | Mykonos Aftermovie.mp4 | 1:59.98 | 2:00.90 | swimmers in the bay |
+| | Mykonos Aftermovie.mp4 | 1:55.96 | 1:57.25 | a jump from a paddleboard |
+| | Mykonos Aftermovie.mp4 | 0:58.96 | 1:01.16 | the infinity pool at sunset |
+| | Mykonos Aftermovie.mp4 | 1:01.20 | 1:02.95 | dinner on the terrace |
+| Atlas, Costa Rica stills | Costa Rica Aftermovie.mp4; Ashley Costa Rica Vlog.mp4 | 0:49.20; 0:45.30 | (frames) | the villa and pool; a group photo at lunch |
+| Atlas, Singapore stills | Bolt Bus Trailer.mp4; Singapore Spending Spree.mp4 | 0:17.00; 1:23.70 | (frames) | inside the party bus; the high tea |
+| Atlas, Mykonos stills | Mykonos Aftermovie.mp4 | 1:57.40; 1:13.10 | (frames) | the catamaran from the water; the terrace at dusk |
+| Trezor film (`cm-trezor-dare-ad.mp4`, with sound) | Trezor Dare Ad.mp4 | 0:00 | 0:44.18 | the whole ad (poster at 0:00.20) |
+| Montage (`cm-montage.mp4`, 17.92 s, silent) | Costa Rica Aftermovie.mp4 | 0:06.80 | 0:09.40 | destination film: the coastline from the air |
+| | Shiv Costa Rica Vlog.mp4 | 0:19.12 | 0:20.60 | lifestyle: a run and jump into the pool |
+| | Bitrefill Pool Ad.mp4 | 0:16.90 | 0:19.30 | sponsor integration: the gift-card overlay |
+| | Costa Rica Aftermovie.mp4 | 1:40.30 | 1:41.12 | behind the scenes: the crew with a gimbal |
+| | Costa Rica Aftermovie.mp4 | 1:18.72 | 1:20.46 | social clip: filming the sunset on a phone |
+| | Bolt Bus Trailer.mp4 | 0:00.52 | 0:04.54 | game show: the creators introduced |
+| | Singapore Slippage Ad.mp4 | 0:00.40 | 0:01.95 | creator ad: its title |
+| | Singapore Slippage Ad.mp4 | 0:04.20 | 0:05.40 | creator ad: the high tea |
+| | Mykonos Aftermovie.mp4 | 1:17.86 | 1:18.52 | behind the scenes: a camera on set |
+| | Mykonos Aftermovie.mp4 | 1:26.78 | 1:27.58 | lifestyle: the night out |
+| | Mykonos Aftermovie.mp4 | 1:27.62 | 1:28.58 | lifestyle: the night out |
+| | Mykonos Aftermovie.mp4 | 1:57.60 | 1:59.94 | destination: under the water |
+
+The loops are 1600 by 900, the montage 1280 by 720 (960 by 540 for phones) and the Trezor film 1920 by
+1080 (1280 by 720 for phones), all H.264 with the index first; only the Trezor film has sound. No
+moment is used twice between the atlas and the montage, and none comes from the Trezor films outside
+their own section. The hero is illustrative Unsplash stock (Rosemary Media's white modern villa and
+Abbie Bernet's palm leaves, each separated into its layers), and the eight profile pictures are John's
+(`Creator Marketing/PFPs`).
+
+**Still to come** (labeled placeholders in `npm run dev` only, absent from a production build): the
+three creator testimonials, the Trezor assignment, objective, approach and exact results, the creators,
+production and editing names on the Trezor credits, the editing and the filming and production partners
+in the closing credits, the creators' categories and Mykonos's co-sponsors (see [Replacing
+placeholders](#replacing-placeholders), item 11).
+
+**The checks** (`verify.mjs`, "Creator Marketing and Partnerships"): the page's own structure (no
+shared hero, "My role" line or another page's components) and order; every heading and paragraph word
+for word; the hero's layers in depth with their rates, decorative and loaded first, falling back to
+WebP, each under 700 KB, credited as illustrative stock, and still for reduced motion; exactly the
+eight creators with their confirmed affiliations and destinations (17 participations), square pictures,
+named buttons, no testimonial, figure, ranking or qualifier, a slow one-way ring that rests for hover,
+focus, a selection, off screen, a hidden tab and reduced motion, with nothing to drag, and the list for
+phones and for no JavaScript; at most three testimonials, absent until approved; the atlas's three
+destinations with their figures, co-sponsors, silent 5 to 10 second loops and landscape stills, pinned
+only at 960 by 600 and more with motion allowed, through the reader's own scrolling; the Trezor film
+first, with sound, its files, the brief and results only as confirmed and only exact, the approved
+feedback and its attribution, and the credits; the montage's files, cut list and formats; the
+ownership's headline and nine areas; credits that never put John's name to editing, filming,
+photography or design; the conclusion's way on; square and landscape media only, each excerpt on
+record; no placeholder in a build; nothing hidden without the script that shows it, and every
+animation only with motion allowed. Part I's checks sit with the Events deck and the loader. A mutation
+run broke each of these promises in turn (68 mutations, from the loader and the deck through every
+section of the page to a sample of earlier checks) and every one was caught, and a browser pass
+confirmed the behavior: the loader's timing on desktop and phone, the deck's centered video, the hero's
+parallax, the ring's motion and its rests, the pinned atlas and its loops, the montage's marks, the
+Trezor film's sound, reduced motion, phones and no JavaScript.
 
 ### Technical Product Marketing, Version 1.6
 
@@ -2246,9 +2473,10 @@ and at the end cuts to black and turns into the Contact green.
 ### Case-study roles
 
 - Since its Version 1 redesign Technical Product Marketing states John's part in its own hero copy and
-  scope line, without a "My role:" line, and since its Version 1.0 Events and Multimedia Production
-  states it in the credits beneath each piece of work, also without one; the creator campaigns case
-  study keeps its line.
+  scope line, without a "My role:" line; since its Version 1.0 Events and Multimedia Production states
+  it in the credits beneath each piece of work, also without one; and since its Version 1.0 Creator
+  Marketing and Partnerships states it in its program context, its ownership section and its closing
+  credits. No page carries the line any longer; the description below is kept for its history.
 - Each case study states John's part in one compact line under its intro: "My role:" in bold, then the
   responsibilities that apply to that project, from the `role` field in its frontmatter. The lines name
   the strategy, the briefs, the review and approval, and the distribution or publishing, the ways John
@@ -2272,15 +2500,17 @@ src/
   content.config.ts     Case-study collection schema
   content/work/*.mdx    Case studies
   data/                 site.json, home.json, logos.json, assets.json, tpm.json (Technical Product Marketing),
-                        events.json (Events and Multimedia Production)
+                        events.json (Events and Multimedia Production), creator.json (Creator
+                        Marketing and Partnerships)
   assets/               images by page and section; reel/ (the 24 reel stills), stack/ (the 18 logos)
   lib/                  paths.ts (base-path helpers), assets.ts (manifest resolution),
                         tpm-motion.ts (the Technical Product Marketing page's stages,
                         walkthroughs and film), tpm-copy.ts (its emphasis), tpm-iso.ts (the
                         hero's isometric system: its drawing engine, scene and timeline),
                         ev-media.ts (the Events page's reel, players, loops and
-                        reveals), ev-stage.ts (its activation render's playing screens),
-                        ev-copy.ts (its time labels)
+                        reveals, shared with the creator page), ev-stage.ts (its activation
+                        render's playing screens), ev-copy.ts (its time labels), cm-motion.ts
+                        (the creator page's hero, network, atlas, montage and reveals)
   styles/global.css     Tokens, typography, buttons, motion
   layouts/              BaseLayout (metadata, header, footer), CaseStudyLayout
   components/           Intro (the homepage opening sequence), Hero, About, LogoBar, WorkPanels
@@ -2292,9 +2522,13 @@ src/
   components/events/    EvHero, EvTransition, EvActivation, EvDeck (the Expanding Production
                         Deck, with the production room's Setup and Final), EvConclusion,
                         EvPlayer (a video with sound), EvSlot (a media slot)
-  components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, …
-  pages/                index, work/technical-marketing, work/events-video, work/[slug] (the
-                        creator campaigns case study), 404, robots.txt, site.webmanifest
+  components/creator/   CmHero, CmContext, CmNetwork, CmVoices, CmAtlas, CmTrezor, CmFilm (a
+                        film with sound), CmMontage, CmOwnership, CmCredits, CmConclusion
+  components/casestudy/ Section, Stats, MediaGrid, Gallery, Activation, Creators, … (the shared
+                        case-study layout, which no page uses at present)
+  pages/                index, work/creator-campaigns, work/technical-marketing,
+                        work/events-video, work/[slug] (the shared layout, for a future case
+                        study), 404, robots.txt, site.webmanifest
 ```
 
 ## Third-party notices

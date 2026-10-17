@@ -54,7 +54,10 @@
  * a chapter's header and its content is about a fifth smaller than the space
  * the centering left above the live presentation's headline. The headers keep
  * their stable labels (01 LIVE PRESENTATION and so on); the long headline stays
- * in the words.
+ * in the words. Since the Creator Marketing V1.0 brief (Part I), the live
+ * presentation's and the event film's video sits in the vertical center of the
+ * open card, with balanced room above and below; the words still start at the
+ * top, and the production room keeps its Setup and Final on the top line.
  *
  * The media carry the hero's production vocabulary, quieter: restrained corner
  * marks just outside the active frame and a small timecode at its top right
@@ -130,7 +133,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                 <div class="evd__body" id={`ev-deck-${ch.key}`} role="region" aria-labelledby={`ev-deck-rail-${ch.key}`}>
                   <div class="evd__clip">
                     <div class="evd__content">
-                      <div class="evd__media">
+                      <div class:list={['evd__media', !ch.sf && 'evd__media--centered']}>
                         {ch.sf ? (
                           <div class="evd__sf" data-sf>
                             <div class="evd__sf-tabs" role="tablist" aria-label={ch.sf.label} data-sf-tabs>
@@ -1149,6 +1152,17 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     .evd__media {
       align-self: start;
       max-width: 60rem;
+    }
+
+    /* The live presentation and the event film (Creator Marketing V1.0 brief, Part
+       I): their video, with its corner marks, sits in the vertical center of the
+       open card, as much room above it (from the header's foot) as below it (to the
+       card's edge): the margin evens out the band above the content and the padding
+       below it. Their words still run from the top; the production room's Setup and
+       Final keep the top line. */
+    .evd__media--centered {
+      align-self: center;
+      margin-top: calc(var(--deck-pad) - clamp(1.25rem, 2.9svh, 2rem));
     }
 
     /* The gaps between the groups: the spacing V1.5 gave them on a laptop's screen

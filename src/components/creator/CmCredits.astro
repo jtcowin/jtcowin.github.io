@@ -1,0 +1,144 @@
+---
+/**
+ * 13 Credits (Creator Marketing and Partnerships, V1.0): one system for
+ * everyone who made the work, set like a film's closing credits on the deep
+ * ground the waterline leads into: the role on one side of a center line, the
+ * names on the other (stacked on phones). John's rows name the strategy, the
+ * program management, the creative direction and the production
+ * coordination; editing, filming and design are credited to the people who
+ * did them, and nothing here implies John edited, shot or designed the work.
+ * The closing note says so plainly. Rows without names yet (editing, filming
+ * and production partners) are V1 placeholders, development only.
+ */
+import creator from '@data/creator.json';
+import { SHOW_PLACEHOLDERS } from '@lib/assets';
+
+const { credits: c } = creator;
+const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
+---
+
+<section class="cmc" data-surface="dark" aria-labelledby="cm-credits-title">
+  <div class="container cmc__inner">
+    <p class="cmc__kicker">{c.kicker}</p>
+    <h2 id="cm-credits-title" class="display cmc__title">{c.title}</h2>
+    <dl class="cmc__roll">
+      {
+        rows.map((r) => (
+          <div class:list={['cmc__row', !r.names && 'cmc__row--pending']} data-cm-reveal>
+            <dt>{r.role}</dt>
+            <dd>{r.names ?? 'Placeholder · names to confirm'}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="cmc__note">{c.note}</p>
+  </div>
+</section>
+
+<style>
+  .cmc {
+    padding-block: calc(var(--section-y) * 0.7) var(--section-y);
+    background: #0d0f10;
+    --heading: var(--c-bone);
+    --ink: var(--c-bone);
+    --ink-2: var(--c-fog-2);
+    --ink-3: #9aa6a8;
+  }
+
+  .cmc__inner {
+    display: grid;
+    justify-items: center;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    text-align: center;
+  }
+
+  .cmc__kicker {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-aqua-light);
+  }
+
+  .cmc__title {
+    margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+    font-size: clamp(2.1rem, 1.3rem + 2.4vw, 3.5rem);
+    line-height: 1;
+  }
+
+  .cmc__roll {
+    display: grid;
+    gap: clamp(1.1rem, 2vw, 1.5rem);
+    width: 100%;
+    max-width: 60rem;
+    margin: 0;
+  }
+
+  .cmc__row {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .cmc__row dt {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cmc__row dd {
+    margin: 0;
+    font-size: clamp(1.0625rem, 0.95rem + 0.4vw, 1.3rem);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--c-bone);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 48rem) {
+    /* The center line: roles to its left, names to its right. */
+    .cmc__row {
+      grid-template-columns: 1fr 1fr;
+      column-gap: 2.5rem;
+      align-items: baseline;
+    }
+
+    .cmc__row dt {
+      text-align: right;
+    }
+
+    .cmc__row dd {
+      text-align: left;
+    }
+  }
+
+  .cmc__note {
+    max-width: 44rem;
+    margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* Authoring only: never in a production build. */
+  .cmc__row--pending dd {
+    color: var(--ink-3);
+    font-style: italic;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .cmc__row:not(.is-in) {
+      opacity: 0;
+      transform: translate3d(0, 0.9rem, 0);
+    }
+
+    :global(html.js) .cmc__row {
+      transition:
+        opacity 0.9s ease,
+        transform 1s cubic-bezier(0.2, 0.75, 0.2, 1);
+    }
+  }
+</style>

@@ -1,0 +1,155 @@
+---
+/**
+ * 06 Program context (Creator Marketing and Partnerships, V1.0): John's
+ * working headline (its second sentence in the accent), one concise paragraph
+ * that names his responsibilities in prose (creator sourcing and the
+ * relationships, sponsors, the campaign strategy, the trip and its
+ * production, briefing and approvals, the shoot on location, distribution and
+ * reporting), and one restrained visual bridge: a single drawn route that
+ * leaves the paragraph and leads down into the creator network's path. No
+ * services grid and no list of roles. The route draws itself once as it comes
+ * into view; with reduced motion it is simply there.
+ */
+import creator from '@data/creator.json';
+import { emphasize } from '@lib/tpm-copy';
+
+const { context: c } = creator;
+const sentences = c.headline.split(/(?<=[.!?])\s+/);
+const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'creator context headline') : [{ text: line, em: false }]));
+---
+
+<section class="cmx" data-surface="light" aria-labelledby="cm-context-title">
+  <div class="container cmx__inner">
+    <p class="cmx__kicker">{c.kicker}</p>
+    <h2 id="cm-context-title" class="display cmx__title" data-cm-reveal>
+      {
+        lines.map((line, i) => [
+          i ? ' ' : '',
+          <span class="cm-cut" style={`--k: ${i}`}>
+            <span>{line.map(({ text, em }) => (em ? <span class="cmx__accent">{text}</span> : text))}</span>
+          </span>,
+        ])
+      }
+    </h2>
+    <p class="cmx__copy" data-cm-reveal>{c.copy}</p>
+  </div>
+  <svg class="cmx__route" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true" data-cm-reveal>
+    <path class="cmx__path" d="M 640 0 C 640 170, 500 130, 500 300" pathLength="1" />
+  </svg>
+</section>
+
+<style>
+  .cmx {
+    position: relative;
+    padding-block: calc(var(--section-y) * 0.9) clamp(2.5rem, 6vw, 4rem);
+    background: var(--bg);
+  }
+
+  .cmx__inner {
+    display: grid;
+    gap: clamp(1.25rem, 0.9rem + 1.2vw, 2rem);
+  }
+
+  .cmx__kicker {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-teal);
+  }
+
+  .cmx__title {
+    max-width: 20ch;
+    margin: 0;
+    font-size: clamp(2.35rem, 1.2rem + 3.6vw, 5rem);
+    line-height: 0.98;
+  }
+
+  .cmx__title :global(.cm-cut) {
+    display: block;
+  }
+
+  .cmx__accent {
+    color: var(--c-teal);
+  }
+
+  .cmx__copy {
+    max-width: 44rem;
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.55;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 64rem) {
+    .cmx__inner {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      column-gap: clamp(3rem, 6vw, 7rem);
+      align-items: end;
+    }
+
+    .cmx__kicker {
+      grid-column: 1 / -1;
+    }
+
+    .cmx__copy {
+      padding-bottom: 0.4rem;
+    }
+  }
+
+  /* ---- the route: from the paragraph down into the network's path --------------- */
+  .cmx__route {
+    display: none;
+    width: 100%;
+    height: clamp(5rem, 12vw, 11rem);
+    margin-top: clamp(1.5rem, 3vw, 3rem);
+    overflow: visible;
+  }
+
+  /* The route leads into the network's ring, which only wider screens show,
+     and only with JavaScript (without it the network is a list). */
+  @media (min-width: 48rem) {
+    :global(html.js) .cmx {
+      padding-bottom: 0;
+    }
+
+    /* It ends at the section's foot, at the center, where the network's line takes it on. */
+    :global(html.js) .cmx__route {
+      display: block;
+    }
+  }
+
+  .cmx__path {
+    fill: none;
+    stroke: var(--c-aqua);
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.7;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .cmx__route:not(.is-in) .cmx__path {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+    }
+
+    :global(html.js) .cmx__route .cmx__path {
+      stroke-dasharray: 1;
+      transition: stroke-dashoffset 1.8s cubic-bezier(0.45, 0, 0.2, 1) 0.2s;
+    }
+
+    :global(html.js) .cmx__copy:not(.is-in) {
+      opacity: 0;
+      transform: translate3d(0, 0.75rem, 0);
+    }
+
+    :global(html.js) .cmx__copy {
+      transition:
+        opacity 0.8s ease 0.2s,
+        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.2s;
+    }
+  }
+</style>

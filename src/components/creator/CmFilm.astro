@@ -1,0 +1,266 @@
+---
+/**
+ * A film with sound on the Creator Marketing and Partnerships page (V1.0):
+ * the poster and one call to play with sound and the film's length; nothing
+ * but the poster loads until the reader asks (only the file's index is read
+ * once it is near the screen). Once playing: pause or play, a seek bar that
+ * answers to arrow keys, the time, and mute or unmute, on one bar along the
+ * foot of the frame that steps back while the pointer is away. Starting it
+ * pauses any other sound on the page, and it pauses when it leaves the screen.
+ * Phones get the lighter encode. Without JavaScript the native controls
+ * remain. Behavior: src/lib/ev-media.ts (Player), shared with the Events page;
+ * the look is this page's own (no crop marks or monitor readings).
+ */
+import { getImage } from 'astro:assets';
+import { getAsset, isVisible, resolveImage } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import { clockLabel } from '@lib/ev-copy';
+import Icon from '@components/Icon.astro';
+
+interface Props {
+  id: string;
+  /** Short name read with each control ("Pause: The Trezor dare"). */
+  label: string;
+  domId?: string;
+}
+
+const { id, label, domId } = Astro.props;
+const entry = getAsset(id);
+if (!(isVisible(entry) && entry.type === 'video' && entry.file)) throw new Error(`[creator] the film "${id}" needs an approved file`);
+const still = resolveImage(entry);
+const poster = still ? await getImage({ src: still, width: Math.min(1600, still.width), format: 'webp', quality: 82 }) : null;
+const src = withBase(`/media/${entry.file}`);
+const small = entry.fileSmall ? withBase(`/media/${entry.fileSmall}`) : null;
+const length = entry.duration ? clockLabel(entry.duration) : '';
+---
+
+<figure class="cmf" data-evp id={domId} data-label={label} data-state="idle">
+  <div class="cmf__frame">
+    <video class="cmf__video" controls preload="none" playsinline poster={poster?.src} aria-label={entry.alt}>
+      {small && <source src={small} type="video/mp4" media="(max-width: 47.99rem)" />}
+      <source src={src} type="video/mp4" />
+    </video>
+    <div class="cmf__surface" data-evp-surface aria-hidden="true"></div>
+    <button type="button" class="cmf__start" data-evp-start hidden>
+      <span class="cmf__start-icon">
+        <Icon name="play" size={18} />
+      </span>
+      <span class="cmf__start-text">
+        <span class="cmf__start-label">Play with sound</span>
+        {length && <span class="cmf__len">{length}</span>}
+      </span>
+    </button>
+    <div class="cmf__bar" role="group" aria-label={`Video controls: ${label}`} data-evp-bar hidden>
+      <button type="button" class="cmf__btn" data-evp-play aria-label={`Pause: ${label}`}>
+        <span class="cmf__ico cmf__ico--pause"><Icon name="pause" size={14} /></span>
+        <span class="cmf__ico cmf__ico--play"><Icon name="play" size={14} /></span>
+        <span class="cmf__ico cmf__ico--replay"><Icon name="replay" size={16} /></span>
+      </button>
+      <input class="cmf__seek" type="range" min="0" max={Math.max(1, Math.floor(entry.duration ?? 60))} step="1" value="0" aria-label={`Seek: ${label}`} data-evp-seek />
+      <span class="cmf__time" data-evp-time aria-hidden="true">0:00 / {length || '0:00'}</span>
+      <button type="button" class="cmf__btn" data-evp-mute aria-label={`Mute: ${label}`}>
+        <span class="cmf__ico cmf__ico--sound"><Icon name="sound" size={17} /></span>
+        <span class="cmf__ico cmf__ico--muted"><Icon name="muted" size={17} /></span>
+      </button>
+    </div>
+  </div>
+</figure>
+
+<style>
+  .cmf {
+    position: relative;
+    margin: 0;
+  }
+
+  .cmf__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #050607;
+    box-shadow: 0 40px 80px -40px rgba(13, 15, 16, 0.55);
+  }
+
+  .cmf__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #050607;
+  }
+
+  .cmf__surface {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: none;
+    cursor: pointer;
+  }
+
+  .cmf:global(.is-enhanced) .cmf__surface {
+    display: block;
+  }
+
+  /* ---- the call to play: centered, generous ------------------------------------ */
+  .cmf__start {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.6rem 1.4rem 0.6rem 0.6rem;
+    translate: -50% -50%;
+    border-radius: 999px;
+    background: rgba(251, 250, 247, 0.94);
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    box-shadow:
+      0 0 0 1px rgba(13, 15, 16, 0.08),
+      0 18px 40px -16px rgba(0, 0, 0, 0.6);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .cmf:global(.is-enhanced) .cmf__start:not([hidden]) {
+    display: inline-flex;
+  }
+
+  .cmf__start:hover {
+    background: #ffffff;
+    transform: scale(1.02);
+  }
+
+  .cmf__start:focus-visible {
+    outline: 3px solid var(--c-bone);
+    outline-offset: 3px;
+  }
+
+  .cmf__start-icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--c-teal);
+    color: var(--c-bone);
+  }
+
+  .cmf__start-icon :global(svg) {
+    margin-left: 3px;
+  }
+
+  .cmf__start-text {
+    display: grid;
+    gap: 0.1rem;
+    text-align: left;
+  }
+
+  .cmf__start-label {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .cmf__len {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-steel-deep);
+  }
+
+  /* ---- the bar: play, seek, time, sound ----------------------------------------- */
+  .cmf__bar {
+    position: absolute;
+    left: clamp(0.5rem, 2%, 1rem);
+    right: clamp(0.5rem, 2%, 1rem);
+    bottom: clamp(0.5rem, 2.5%, 1rem);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(13, 15, 16, 0.66);
+    color: #f2f1ec;
+    backdrop-filter: blur(6px);
+    transition: opacity 0.3s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cmf[data-state='playing'] .cmf__frame:not(:hover):not(:focus-within) .cmf__bar {
+      opacity: 0;
+      transition: opacity 0.6s ease 1.2s;
+    }
+  }
+
+  .cmf__btn {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    color: inherit;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .cmf__btn:hover {
+    background: rgba(237, 240, 239, 0.14);
+  }
+
+  .cmf__btn:focus-visible,
+  .cmf__seek:focus-visible {
+    outline: 2px solid var(--c-aqua-light);
+    outline-offset: 1px;
+  }
+
+  .cmf__ico {
+    display: none;
+  }
+
+  [data-evp-play][data-state='playing'] .cmf__ico--pause,
+  [data-evp-play]:is([data-state='paused'], [data-state='idle']) .cmf__ico--play,
+  [data-evp-play][data-state='ended'] .cmf__ico--replay,
+  [data-evp-mute][data-muted='false'] .cmf__ico--sound,
+  [data-evp-mute][data-muted='true'] .cmf__ico--muted {
+    display: grid;
+  }
+
+  .cmf__seek {
+    flex: 1 1 auto;
+    min-width: 3rem;
+    height: 2.25rem;
+    margin: 0;
+    background: transparent;
+    accent-color: var(--c-aqua-light);
+    cursor: pointer;
+  }
+
+  .cmf__time {
+    flex: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #d5d9d4;
+  }
+
+  @media (max-width: 30rem) {
+    .cmf__time {
+      display: none;
+    }
+
+    .cmf__start {
+      gap: 0.7rem;
+      padding-right: 1.1rem;
+    }
+
+    .cmf__start-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+</style>

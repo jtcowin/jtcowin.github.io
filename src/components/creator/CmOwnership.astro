@@ -1,0 +1,227 @@
+---
+/**
+ * 12 Program ownership (Creator Marketing and Partnerships, V1.0): John's
+ * working headline across a waterline. Its first sentence sits in the open air
+ * ("The experience was visible."); a slow wave line divides the section; the
+ * second sentence ("The system behind it was not.") sits below it in deep
+ * water, with one line of copy and the areas he ran set as a single
+ * typographic field, larger and nearer at the top, smaller and fainter deeper
+ * down, separated by small rings. Not a grid, a timeline or a checklist. The
+ * water deepens into the credits that follow. The wave drifts and a faint
+ * light moves across the water; with reduced motion both are still.
+ */
+import creator from '@data/creator.json';
+
+const { ownership: o } = creator;
+if (`${o.above} ${o.below}` !== o.headline) throw new Error('[creator] the ownership headline must be its two sentences, above and below the waterline');
+// Depth: the first areas nearest the surface, larger and stronger; the last deeper.
+const sizes = ['l', 'l', 'm', 'l', 'm', 'm', 's', 'm', 's'];
+---
+
+<section class="cmo" data-surface="light" aria-labelledby="cm-own-title">
+  <div class="cmo__water" data-surface="dark" aria-hidden="true">
+    <span class="cmo__wave"></span>
+    <span class="cmo__light"></span>
+  </div>
+
+  <p class="cmo__kicker">{o.kicker}</p>
+  <h2 id="cm-own-title" class="display cmo__title">
+    <span class="cmo__above">{o.above}</span>
+    <span class="cmo__below">{o.below}</span>
+  </h2>
+  <p class="cmo__copy">{o.copy}</p>
+  <ul class="cmo__areas" aria-label="What I ran behind the scenes" data-cm-reveal>
+    {
+      o.areas.map((a, i) => {
+        // The ring rides on the last word, so it never wraps onto a line of its own.
+        const words = a.split(' ');
+        const last = words.pop();
+        return (
+          <li class={`cmo__area cmo__area--${sizes[i % sizes.length]}`} style={`--k: ${i}`}>
+            {words.length > 0 && `${words.join(' ')} `}
+            <span class="cmo__last">{last}</span>
+          </li>
+        );
+      })
+    }
+  </ul>
+</section>
+
+<style>
+  .cmo {
+    --water-top: #1b4b4f;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: [full-start] minmax(var(--gutter), 1fr) [content-start] minmax(0, calc(var(--container) - 2 * var(--gutter))) [content-end] minmax(var(--gutter), 1fr) [full-end];
+    grid-template-rows: auto [above] auto [water] auto auto auto;
+    padding-top: var(--section-y);
+    background: var(--bg);
+    overflow: clip;
+  }
+
+  .cmo > :not(.cmo__water) {
+    grid-column: content;
+  }
+
+  /* ---- the water, from the waterline down ----------------------------------------- */
+  .cmo__water {
+    grid-column: full;
+    grid-row: water / -1;
+    position: relative;
+    z-index: -1;
+    background: linear-gradient(to bottom, var(--water-top) 0%, #123638 38%, #0e2629 72%, #0d0f10 100%);
+  }
+
+  /* One period of the wave line (720 by 40), repeated across the width. */
+  .cmo__wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% - 1px);
+    height: clamp(1rem, 2.4vw, 2.25rem);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C 120 6 240 6 360 20 S 600 34 720 20 V 40 H 0 Z' fill='%231b4b4f'/%3E%3C/svg%3E") 0 0 / 720px 100% repeat-x;
+  }
+
+  .cmo__light {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 30% 22% at 20% 18%, rgba(159, 201, 195, 0.16), rgba(159, 201, 195, 0) 70%),
+      radial-gradient(ellipse 26% 18% at 74% 30%, rgba(159, 201, 195, 0.12), rgba(159, 201, 195, 0) 70%);
+    pointer-events: none;
+  }
+
+  /* ---- the words ------------------------------------------------------------------- */
+  .cmo__kicker {
+    grid-row: 1;
+    margin: 0 0 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-teal);
+  }
+
+  .cmo__title {
+    grid-row: above / span 2;
+    display: grid;
+    grid-template-rows: subgrid;
+    margin: 0;
+    font-size: clamp(2.4rem, 1.2rem + 4.2vw, 6rem);
+    line-height: 0.96;
+  }
+
+  .cmo__above {
+    display: block;
+    padding-bottom: clamp(2.5rem, 5vw, 4.5rem);
+    color: var(--c-ink);
+  }
+
+  .cmo__below {
+    display: block;
+    padding-top: clamp(2.75rem, 5.5vw, 5rem);
+    color: var(--c-bone);
+  }
+
+  .cmo__copy {
+    grid-row: 4;
+    max-width: 36rem;
+    margin: 1.4rem 0 0;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: #c9d6d3;
+  }
+
+  .cmo__areas {
+    grid-row: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.9rem 0;
+    margin: clamp(3rem, 6vw, 5rem) 0 0;
+    padding: 0 0 calc(var(--section-y) * 1.1);
+    list-style: none;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    line-height: 1.05;
+  }
+
+  .cmo__area {
+    color: var(--c-bone);
+  }
+
+  /* A small ring between areas, like a rising bubble; it rides on an area's last
+     word, so on a narrow screen it stays beside the words rather than at the edge
+     or on a line of its own. */
+  .cmo__last {
+    white-space: nowrap;
+  }
+
+  .cmo__area:not(:last-child) .cmo__last::after {
+    content: '';
+    display: inline-block;
+    width: 0.32em;
+    height: 0.32em;
+    margin-inline: 0.55em;
+    vertical-align: middle;
+    border: 1.5px solid rgba(159, 201, 195, 0.7);
+    border-radius: 50%;
+  }
+
+  .cmo__area--l {
+    font-size: clamp(1.9rem, 1.2rem + 2.4vw, 3.4rem);
+  }
+
+  .cmo__area--m {
+    font-size: clamp(1.45rem, 1rem + 1.5vw, 2.4rem);
+    color: rgba(243, 239, 232, 0.82);
+  }
+
+  .cmo__area--s {
+    font-size: clamp(1.2rem, 0.9rem + 1vw, 1.8rem);
+    color: rgba(243, 239, 232, 0.64);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cmo__wave {
+      animation: cmo-drift 18s linear infinite;
+    }
+
+    .cmo__light {
+      animation: cmo-light 14s ease-in-out infinite alternate;
+    }
+
+    :global(html.js) .cmo__areas:not(.is-in) .cmo__area {
+      opacity: 0;
+      transform: translate3d(0, 1.25rem, 0);
+    }
+
+    :global(html.js) .cmo__areas .cmo__area {
+      transition:
+        opacity 0.9s ease calc(var(--k) * 0.08s),
+        transform 1s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k) * 0.08s);
+    }
+  }
+
+  @keyframes cmo-drift {
+    from {
+      background-position-x: 0;
+    }
+    to {
+      background-position-x: -720px;
+    }
+  }
+
+  @keyframes cmo-light {
+    from {
+      transform: translate3d(-4%, 0, 0);
+      opacity: 0.7;
+    }
+    to {
+      transform: translate3d(5%, 2%, 0);
+      opacity: 1;
+    }
+  }
+</style>

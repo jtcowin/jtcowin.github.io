@@ -1,23 +1,19 @@
 ---
 /**
- * The homepage opening sequence (Version 1.5, retimed in Events V1.6): a brisk, directional loader on
- * the ink ground. A small marker in the accent travels a faint hairline from
+ * The homepage opening sequence (Version 1.5, retimed in Events V1.6, and since
+ * the Creator Marketing V1.0 brief the note alone): a brisk, directional loader
+ * on the ink ground. A small marker in the accent travels a faint hairline from
  * the left of the screen to the right, a short streak behind it as it gathers
- * speed, while the words come in quick succession at the center: first a
- * viewing note, set small and quiet ("BEST EXPERIENCED ON DESKTOP"), then three
- * phrases, "Product complexity.", "Market clarity." and "Strategy, executed."
- * Each arrives from the left and leaves to the right, the way the marker runs,
- * the next arriving as the last leaves (the two overlap, so there is never a
- * blank between them), so the cadence is quick but never a flicker. V1.6: the
- * note is the message that has to be read, so it settles and then holds, fully
- * legible, for 1.3 seconds before anything replaces it; the three phrases then
- * follow in quick succession, each fully visible for 0.3 seconds, a three-beat
- * impression rather than a read. When the marker reaches the end of its path
- * the ground dissolves and the hero comes up in layers (Hero.astro and
- * Header.astro): the photograph, the name, the descriptor, the navigation,
- * then the rule and the arrow, overlapping, in 0.6 seconds. About 3.45 seconds
- * in all. No percentage: the marker is a pace, not a measure, and nothing here
- * claims to count anything.
+ * speed, while one quiet viewing note, set small at the center ("BEST
+ * EXPERIENCED ON DESKTOP"), arrives from the left and holds, fully legible, for
+ * 2.1 seconds: long enough to read comfortably, with nothing replacing it (the
+ * three phrases V1.5 added are gone). When the marker reaches the end of its
+ * path the note and the path leave, the ground dissolves and the hero comes up
+ * in layers (Hero.astro and Header.astro): the photograph, the name, the
+ * descriptor, the navigation, then the rule and the arrow, overlapping, in 0.6
+ * seconds. About 2.9 seconds in all, a little quicker than V1.6's 3.45. No
+ * percentage: the marker is a pace, not a measure, and nothing here claims to
+ * count anything.
  *
  * It plays on the homepage only, once per browsing session (the tab's session
  * storage). An inline script in the head decides before the first paint, by
@@ -38,7 +34,7 @@
  */
 import home from '@data/home.json';
 
-const { note, phrases } = home.intro;
+const { note } = home.intro;
 ---
 
 <div class="intro" aria-hidden="true" data-intro>
@@ -46,7 +42,6 @@ const { note, phrases } = home.intro;
   <div class="intro__stage">
     <div class="intro__readout">
       <p class="intro__note">{note}</p>
-      {phrases.map((phrase, i) => <p class={`intro__phrase intro__phrase--${i + 1}`}>{phrase}</p>)}
     </div>
     <div class="intro__track">
       <span class="intro__lane"><span class="intro__run"><span class="intro__trail"></span></span></span>
@@ -104,33 +99,24 @@ const { note, phrases } = home.intro;
 <style>
   /* ---- the timing --------------------------------------------------------------
      On the document, so the hero and the header can read their part of the
-     handoff. V1.6: the ground alone for a moment; the note arrives (130 ms),
-     settles and holds, fully legible, for 1.3 s; then the three phrases, each
-     fully visible for 0.3 s. Every change is a short overlapping transition:
-     the next word starts to arrive 30 ms after the one before it starts to
-     leave, and both take 130 ms, so there is never a blank and never a cut to
-     black. The marker travels from just after the start to the moment the last
-     phrase ends, --intro-reveal (2.85 s), where the ground starts to clear and
-     the hero's layers begin (--intro-hero, read by Hero.astro and
-     Header.astro; they take 0.6 s, so the hero is in place at about 3.45 s); the
-     last phrase and the path leave with it, so the ground clears onto nothing.
-     The same on phones. */
+     handoff. The ground alone for a moment; the note arrives (130 ms), settles
+     and holds, fully legible, for 2.1 s while the marker travels from just after
+     the start to the end of its path, arriving as the hold ends: --intro-reveal
+     (2.27 s, where V1.6's run ended at 2.85 s), where the note and the path
+     leave, the ground starts to clear and the hero's layers begin (--intro-hero,
+     read by Hero.astro and Header.astro; they take 0.6 s, so the hero is in
+     place at about 2.9 s), so the ground clears onto nothing. The same on
+     phones, where the note matters most. */
   :global(html.intro-hold) {
     --intro-lead: 40ms; /* the ground alone, before the note */
-    --intro-in: 130ms; /* a word arriving */
-    --intro-out: 130ms; /* a word leaving */
-    --intro-beat: 30ms; /* from one word starting to leave to the next starting to arrive */
-    --intro-hold: 1300ms; /* the note, fully legible */
-    --intro-show: 300ms; /* each phrase, fully visible */
+    --intro-in: 130ms; /* the note arriving */
+    --intro-out: 130ms; /* the note leaving, as the ground starts to clear */
+    --intro-hold: 2100ms; /* the note, fully legible */
     --intro-go: 120ms; /* the marker sets off */
     --intro-clear: 400ms; /* the ground dissolving */
 
-    /* Each phrase's turn, the three phrases, and the reveal. */
-    --intro-step: calc(var(--intro-beat) + var(--intro-in) + var(--intro-show));
-    --intro-p1: calc(var(--intro-lead) + var(--intro-in) + var(--intro-hold));
-    --intro-p2: calc(var(--intro-p1) + var(--intro-step));
-    --intro-p3: calc(var(--intro-p2) + var(--intro-step));
-    --intro-reveal: calc(var(--intro-p3) + var(--intro-step));
+    /* The reveal: the note read, the marker at the end of its path. */
+    --intro-reveal: calc(var(--intro-lead) + var(--intro-in) + var(--intro-hold));
     --intro-hero: var(--intro-reveal);
   }
 
@@ -176,7 +162,7 @@ const { note, phrases } = home.intro;
     animation: intro-clear var(--intro-clear) cubic-bezier(0.4, 0, 0.6, 1) calc(var(--intro-reveal) + 20ms) both;
   }
 
-  /* ---- the stage: the words at the center, the path beneath them ------------------ */
+  /* ---- the stage: the note at the center, the path beneath it --------------------- */
   .intro__stage {
     position: relative;
     display: grid;
@@ -186,18 +172,11 @@ const { note, phrases } = home.intro;
     padding-inline: var(--gutter);
   }
 
-  /* Every word shares one place, so each is anchored to the same center. The
-     phrases are the portfolio's display face, lighter and smaller than its
-     headlines, sized so each keeps to one line (the longest is about 9em). */
+  /* The note's place: one line at the center of the screen. */
   .intro__readout {
     display: grid;
     place-items: center;
-    font-family: var(--font-display);
-    font-weight: 450;
-    font-stretch: 100%;
-    font-size: min(clamp(1.625rem, 1.15rem + 1.8vw, 3.25rem), calc((100vw - 2 * var(--gutter)) / 9.6));
     line-height: 1;
-    letter-spacing: 0;
   }
 
   .intro__readout > p {
@@ -284,8 +263,7 @@ const { note, phrases } = home.intro;
   }
 
   /* ---- the motion ---------------------------------------------------------------- */
-  /* The word leaving fades promptly as it moves on (V1.6), so the one arriving
-     over it reads cleanly through the short overlap. */
+  /* The note leaving fades promptly as it moves on (V1.6). */
   :global(html.intro) .intro__stage {
     --intro-arrive: cubic-bezier(0.22, 1, 0.36, 1);
     --intro-leave: cubic-bezier(0.3, 0.3, 0.6, 1);
@@ -312,32 +290,15 @@ const { note, phrases } = home.intro;
     animation: intro-streak calc(var(--intro-reveal) - var(--intro-go)) linear var(--intro-go) both;
   }
 
-  /* The words: each arrives from the left and leaves to the right. */
+  /* The note arrives from the left and, once it has been read, leaves to the
+     right, the way the marker runs, as the ground starts to clear. */
   :global(html.intro) .intro__note {
     animation:
       intro-word-in var(--intro-in) var(--intro-arrive) var(--intro-lead) both,
-      intro-word-out var(--intro-out) var(--intro-leave) var(--intro-p1) forwards;
-  }
-
-  :global(html.intro) .intro__phrase--1 {
-    animation:
-      intro-word-in var(--intro-in) var(--intro-arrive) calc(var(--intro-p1) + var(--intro-beat)) both,
-      intro-word-out var(--intro-out) var(--intro-leave) var(--intro-p2) forwards;
-  }
-
-  :global(html.intro) .intro__phrase--2 {
-    animation:
-      intro-word-in var(--intro-in) var(--intro-arrive) calc(var(--intro-p2) + var(--intro-beat)) both,
-      intro-word-out var(--intro-out) var(--intro-leave) var(--intro-p3) forwards;
-  }
-
-  :global(html.intro) .intro__phrase--3 {
-    animation:
-      intro-word-in var(--intro-in) var(--intro-arrive) calc(var(--intro-p3) + var(--intro-beat)) both,
       intro-word-out var(--intro-out) var(--intro-leave) var(--intro-reveal) forwards;
   }
 
-  /* Reduced motion: no travel and no words; the ground clears at once, in a
+  /* Reduced motion: no travel and no note; the ground clears at once, in a
      fifth of a second. */
   :global(html.intro-still) .intro__stage {
     display: none;
@@ -383,8 +344,7 @@ const { note, phrases } = home.intro;
     }
   }
 
-  /* V1.6: the word leaving is gone a little before its drift ends, so the one
-     arriving over it never shares the place with more than a trace of it. */
+  /* V1.6: the note leaving is gone a little before its drift ends. */
   @keyframes intro-word-out {
     from {
       opacity: 1;

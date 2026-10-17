@@ -1,0 +1,419 @@
+---
+/**
+ * 05 Hero (Creator Marketing and Partnerships, V1.0): one full-screen
+ * landscape composition in layers, after the coastal-estate reference (and
+ * used only here, never again for the destinations). From the back: the sky;
+ * the headline, large, set in the sky; the villa, its roofline and the tall
+ * palm crossing the headline's last line; two palm fronds at the lower
+ * corners, nearest of all; a soft ground fade at the foot, where the label,
+ * the approved paragraph and the photo credit sit.
+ *
+ * Motion: as the page scrolls, each layer moves at its own rate (the sky
+ * slowest, then the headline, the villa, the fronds fastest), so the villa
+ * rises over the headline as it leaves; slowly and on their own, the sky
+ * breathes and the fronds sway a little. Nothing follows the cursor. On
+ * arrival the layers settle into place once. Reduced motion holds every layer
+ * still in its resting state (the layered composition stays); without
+ * JavaScript the hero is the same still composition.
+ *
+ * The photographs are illustrative stock (Unsplash, credited here and in the
+ * credits) and are never presented as footage from the trips. The headline is
+ * John's V1 placeholder; the paragraph is his approved copy (creator.json).
+ */
+import { Picture } from 'astro:assets';
+import creator from '@data/creator.json';
+import { getAsset, resolveImage } from '@lib/assets';
+
+const { hero } = creator;
+const img = (id: string) => {
+  const entry = getAsset(id);
+  const image = resolveImage(entry);
+  if (!image || entry.permission !== 'approved') throw new Error(`[creator] the hero layer "${id}" needs an approved file (assets.json)`);
+  return image;
+};
+const sky = img(hero.layers.sky);
+const estate = img(hero.layers.estate);
+const frondL = img(hero.layers.frondLeft);
+const frondR = img(hero.layers.frondRight);
+const wide = [640, 960, 1280, 1600, 2048, 2560, 3200];
+// The scene is as wide as the screen, or as wide as the hero is tall times its ratio when that is wider (portrait screens).
+const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
+---
+
+<section class="cmh" data-surface="image" aria-labelledby="cm-title" data-cm-hero>
+  <div class="cmh__stage" aria-hidden="true">
+    <div class="cmh__plane cmh__plane--sky" style="--rate: 0.46">
+      <div class="cmh__canvas cmh__canvas--sky">
+        <Picture src={sky} alt="" widths={wide} sizes={sceneSizes} formats={['avif', 'webp']} loading="eager" decoding="async" class="cmh__img" />
+      </div>
+    </div>
+  </div>
+
+  <h1 id="cm-title" class="display cmh__title" style="--rate: 0.3"><span class="cmh__title-in">{hero.headline}</span></h1>
+
+  <div class="cmh__stage cmh__stage--front" aria-hidden="true">
+    <div class="cmh__plane cmh__plane--estate" style="--rate: 0.16">
+      <div class="cmh__canvas cmh__canvas--estate">
+        <Picture src={estate} alt="" widths={wide} sizes={sceneSizes} formats={['avif', 'webp']} fallbackFormat="webp" loading="eager" fetchpriority="high" decoding="async" class="cmh__img" />
+      </div>
+    </div>
+    <div class="cmh__plane cmh__plane--frond cmh__plane--left" style="--rate: -0.1">
+      <div class="cmh__frond cmh__frond--left">
+        <Picture src={frondL} alt="" widths={[480, 800, 1200, 1400]} sizes="(min-width: 48rem) 27vw, 52vw" formats={['avif', 'webp']} fallbackFormat="webp" loading="eager" decoding="async" class="cmh__img" />
+      </div>
+    </div>
+    <div class="cmh__plane cmh__plane--frond cmh__plane--right" style="--rate: -0.14">
+      <div class="cmh__frond cmh__frond--right">
+        <Picture src={frondR} alt="" widths={[480, 800, 1200, 1765]} sizes="(min-width: 48rem) 28vw, 43vw" formats={['avif', 'webp']} fallbackFormat="webp" loading="eager" decoding="async" class="cmh__img" />
+      </div>
+    </div>
+  </div>
+
+  <div class="cmh__fade" aria-hidden="true"></div>
+
+  <div class="container cmh__foot">
+    <p class="cmh__label">{hero.label}</p>
+    <p class="cmh__copy">{hero.copy}</p>
+  </div>
+  <p class="cmh__credit">{hero.credit}</p>
+</section>
+
+<style>
+  .cmh {
+    /* The hero's height, and the scene's: as wide as the screen, or wider on
+       portrait screens (the canvas keeps its 3200 by 2019 ratio, anchored at
+       its foot, so the villa's roofline always sits at the same share of it). */
+    --hero-h: max(36rem, 100vh);
+    --ratio: 1.5849;
+    --scene-w: max(100vw, calc(var(--hero-h) * var(--ratio)));
+    --scene-h: calc(var(--scene-w) / var(--ratio));
+    /* The roofline, from the canvas foot (0.509 of the canvas height), and the
+       headline's size: the roof covers the lower part of its last line. */
+    --roof: calc(var(--scene-h) * 0.509);
+    --title-size: clamp(2.9rem, 0.9rem + 6.3vw, 9.75rem);
+    /* How far the headline's last line box sits above the roofline (a share of
+       the type size): the gable and the tall palm cross that line, the flat
+       roofs only graze it. */
+    --title-lift: 0.03;
+    --p: 0;
+
+    position: relative;
+    isolation: isolate;
+    height: var(--hero-h);
+    overflow: clip;
+    /* The sky before its photograph arrives, and above it as the layers move. */
+    background: linear-gradient(to bottom, #2b5b89 0%, #3874aa 22%, #4e87bc 34%, #6598c5 46%, #79a2c0 58%, #8aa8bf 100%);
+    color: var(--c-ink);
+  }
+
+  @supports (height: 1svh) {
+    .cmh {
+      --hero-h: max(36rem, 100svh);
+    }
+  }
+
+  /* ---- the layers ------------------------------------------------------------ */
+  .cmh__stage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .cmh__stage--front {
+    z-index: 2;
+  }
+
+  /* Each plane moves with the scroll at its own rate (--rate, a share of the
+     distance scrolled through the hero, --p from 0 to 1, set by the script). */
+  .cmh__plane {
+    position: absolute;
+    inset: 0;
+    transform: translate3d(0, calc(var(--p) * var(--rate) * var(--hero-h)), 0);
+    will-change: transform;
+  }
+
+  .cmh__canvas {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: var(--scene-w);
+    aspect-ratio: 3200 / 2019;
+    translate: -50% 0;
+  }
+
+  .cmh__canvas :global(picture),
+  .cmh__frond :global(picture),
+  .cmh__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .cmh__canvas :global(.cmh__img) {
+    object-fit: cover;
+  }
+
+  /* The fronds: the nearest layer, at the lower corners. */
+  .cmh__frond {
+    position: absolute;
+    bottom: -2%;
+  }
+
+  .cmh__frond--left {
+    left: -2vw;
+    width: clamp(15rem, 27vw, 42rem);
+    aspect-ratio: 1400 / 1044;
+    transform-origin: 10% 100%;
+  }
+
+  /* A square canvas with the frond at its right edge (1765 by 1765, the frond
+     1400 wide): sized so the frond itself spans clamp(11rem, 22vw, 34rem). */
+  .cmh__frond--right {
+    right: -1vw;
+    width: clamp(13.87rem, 27.74vw, 42.86rem);
+    aspect-ratio: 1;
+    transform-origin: 96% 100%;
+  }
+
+  /* ---- the headline, in the sky, behind the villa ---------------------------- */
+  .cmh__title {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: calc(var(--roof) + var(--title-lift) * var(--title-size));
+    width: min(calc(100% - 2 * var(--gutter)), 10.6em);
+    margin: 0;
+    translate: -50% 0;
+    transform: translate3d(0, calc(var(--p) * var(--rate) * var(--hero-h)), 0);
+    font-size: var(--title-size);
+    line-height: 0.9;
+    letter-spacing: -0.015em;
+    text-align: center;
+    color: #fbfaf7;
+    text-shadow: 0 0.02em 0.5em rgba(14, 44, 78, 0.22);
+    opacity: calc(1 - var(--p) * 1.35);
+  }
+
+  .cmh__title-in {
+    display: block;
+  }
+
+  /* ---- the ground: a soft fade into the page, and the words over it ---------- */
+  .cmh__fade {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 3;
+    height: clamp(15rem, 41%, 27rem);
+    background:
+      radial-gradient(ellipse 66% 100% at 50% 100%, var(--c-bone) 0%, var(--c-bone) 42%, rgba(243, 239, 232, 0.86) 62%, rgba(243, 239, 232, 0) 100%),
+      linear-gradient(to bottom, rgba(243, 239, 232, 0) 0%, rgba(243, 239, 232, 0) 38%, rgba(243, 239, 232, 0.78) 72%, var(--c-bone) 100%);
+    pointer-events: none;
+  }
+
+  .cmh__foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: clamp(2.25rem, 7vh, 4.5rem);
+    z-index: 4;
+    display: grid;
+    justify-items: center;
+    gap: 0.9rem;
+    text-align: center;
+  }
+
+  .cmh__label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-teal);
+  }
+
+  .cmh__copy {
+    max-width: 47rem;
+    margin: 0;
+    font-size: clamp(1.0625rem, 0.95rem + 0.45vw, 1.375rem);
+    line-height: 1.5;
+    color: var(--c-ink-2);
+    text-wrap: pretty;
+  }
+
+  .cmh__credit {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 0.85rem;
+    z-index: 4;
+    margin: 0;
+    font-size: 0.6875rem;
+    letter-spacing: 0.01em;
+    color: var(--c-steel-deep);
+  }
+
+  /* ---- arrival, and the slow drift ------------------------------------------- */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .cmh__canvas--sky {
+      animation:
+        cmh-settle-sky 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+        cmh-breathe 26s ease-in-out 1.6s infinite alternate;
+    }
+
+    :global(html.js) .cmh__canvas--estate {
+      animation: cmh-settle-estate 1.4s cubic-bezier(0.2, 0.75, 0.2, 1) 0.1s both;
+    }
+
+    :global(html.js) .cmh__title-in {
+      animation: cmh-settle-title 1.2s cubic-bezier(0.2, 0.75, 0.2, 1) 0.25s both;
+    }
+
+    :global(html.js) .cmh__frond--left {
+      animation:
+        cmh-settle-left 1.5s cubic-bezier(0.2, 0.75, 0.2, 1) 0.2s both,
+        cmh-sway-left 9s ease-in-out 1.7s infinite alternate;
+    }
+
+    :global(html.js) .cmh__frond--right {
+      animation:
+        cmh-settle-right 1.5s cubic-bezier(0.2, 0.75, 0.2, 1) 0.3s both,
+        cmh-sway-right 11s ease-in-out 1.8s infinite alternate;
+    }
+
+    :global(html.js) .cmh__foot {
+      animation: cmh-settle-foot 1s cubic-bezier(0.2, 0.75, 0.2, 1) 0.55s both;
+    }
+  }
+
+  @keyframes cmh-settle-sky {
+    from {
+      scale: 1.06;
+    }
+    to {
+      scale: 1;
+    }
+  }
+
+  @keyframes cmh-breathe {
+    from {
+      scale: 1;
+    }
+    to {
+      scale: 1.035;
+    }
+  }
+
+  @keyframes cmh-settle-estate {
+    from {
+      transform: translate3d(0, 4%, 0);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes cmh-settle-title {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 0.35em, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes cmh-settle-left {
+    from {
+      transform: translate3d(-12%, 10%, 0) rotate(-4deg);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes cmh-settle-right {
+    from {
+      transform: translate3d(9.5%, 10%, 0) rotate(4deg);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes cmh-sway-left {
+    from {
+      rotate: -0.6deg;
+    }
+    to {
+      rotate: 1.1deg;
+    }
+  }
+
+  @keyframes cmh-sway-right {
+    from {
+      rotate: 0.8deg;
+    }
+    to {
+      rotate: -1deg;
+    }
+  }
+
+  @keyframes cmh-settle-foot {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 1rem, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ---- narrow screens: the same depth, smaller fronds kept behind the words -- */
+  @media (max-width: 47.99rem) {
+    .cmh {
+      --title-size: clamp(2.6rem, 1.2rem + 6.2vw, 3.6rem);
+      --title-lift: 0.32;
+    }
+
+    .cmh__title {
+      width: calc(100% - 2 * var(--gutter));
+      line-height: 0.94;
+    }
+
+    .cmh__stage--front .cmh__plane--frond {
+      z-index: -1;
+    }
+
+    .cmh__frond--left {
+      width: 52vw;
+      left: -10vw;
+    }
+
+    .cmh__frond--right {
+      width: 42.86vw;
+      right: -6vw;
+    }
+
+    .cmh__fade {
+      height: clamp(18rem, 50%, 27rem);
+      background: linear-gradient(to bottom, rgba(243, 239, 232, 0) 0%, rgba(243, 239, 232, 0.84) 30%, var(--c-bone) 52%);
+    }
+
+    .cmh__copy {
+      font-size: 1.0625rem;
+    }
+
+    .cmh__foot {
+      bottom: 2.6rem;
+      justify-items: start;
+      text-align: left;
+    }
+
+    .cmh__credit {
+      left: var(--gutter);
+      right: auto;
+    }
+  }
+</style>

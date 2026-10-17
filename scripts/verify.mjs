@@ -112,29 +112,25 @@ const forbidden = [
 // else, or in a reworded credit, still fails.
 const STREAM = /<span class="stream"[\s\S]*?<\/span>\s*<\/h1>/g;
 const FOOTER_CREDIT = /(<p class="site-footer__meta[^"]*"[^>]*>)© \d{4} John Cowin — Built end to end\.(<\/p>)/g;
+// One confirmed title is a creator's own, from John's roster for the Creator
+// Marketing and Partnerships network (Version 1.0), not one invented for him:
+// Raj, "Head of Ecosystem at Abstract". It is excised only in that exact form,
+// as one of a creator's affiliations, so "Head of" anywhere else still fails.
+const CONFIRMED_TITLE = /(<li\b[^>]*>)Head of Ecosystem at Abstract(<\/li>)/g;
 
 for (const f of htmlFiles) {
   const raw = fs.readFileSync(f, 'utf8');
-  const html = raw.replace(STREAM, '').replace(FOOTER_CREDIT, '$1$2');
+  const html = raw.replace(STREAM, '').replace(FOOTER_CREDIT, '$1$2').replace(CONFIRMED_TITLE, '$1$2');
   for (const { re, why } of forbidden) {
     const m = html.match(re);
     if (m) failures.push(`[guardrail] ${path.relative(dist, f)} contains "${m[0]}" (${why})`);
   }
 }
-// Required claims phrasing on the creator page.
+// The creator page. Creator Marketing and Partnerships V1.0 gave it its own
+// page and retired the shared layout's figures (the aggregate impressions,
+// the account benchmark and its methodology note) with it; the page's words
+// are checked in its own section below.
 const creator = fs.readFileSync(path.join(dist, 'work/creator-campaigns/index.html'), 'utf8');
-if (!/Eight unique creators across 17 participations/.test(creator)) {
-  failures.push('[claim] creator page must state "Eight unique creators across 17 participations"');
-}
-if (!/Approximately 1\.25 million impressions/.test(creator)) {
-  failures.push('[claim] creator page must use the 1.25 million aggregate impressions figure');
-}
-if (!/8\.7 times the account/i.test(creator)) {
-  failures.push('[claim] creator page must use the approved 8.7x impressions benchmark');
-}
-if (!/directional performance benchmarks, not Trezor-owned analytics/i.test(creator)) {
-  failures.push('[claim] creator page must carry the comparison methodology note');
-}
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 // v1.5: the standalone metrics strip is gone; v1.7 moves the figures to the
 // case-study pages (see Select Work below).
@@ -825,33 +821,12 @@ else {
   }
 }
 
-// Case-study roles (v1.9): each case study states John's part in one compact
-// line under its intro, "My role: ...", naming how he set the strategy and
-// briefed, shaped, approved and distributed work made with designers, editors
-// and creators, without implying he was the hands-on designer. The label
-// appears once per page.
-// (Technical Product Marketing left the shared case-study layout in its
-// Version 1 redesign and Events and Multimedia Production in its Version 1.0;
-// each states John's part in its own copy, the latter with credits under each
-// piece of work, checked below.)
-for (const slug of ['creator-campaigns']) {
-  const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
-  const roles = [...page.matchAll(/<p class="cs-hero__role[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
-  if (roles.length !== 1) {
-    failures.push(`[claim] ${slug}: the hero must carry one "My role" line (found ${roles.length})`);
-    continue;
-  }
-  const label = textOf((roles[0].match(/^\s*<strong\b[^>]*>([\s\S]*?)<\/strong>/) || [, ''])[1]);
-  const role = textOf(roles[0].replace(/^\s*<strong\b[^>]*>[\s\S]*?<\/strong>/, ''));
-  if (label !== 'My role:') failures.push(`[claim] ${slug}: the role line must open with a bold "My role:" (found "${label}")`);
-  if (!role || role.split(' ').length > 22 || !role.endsWith('.')) failures.push(`[claim] ${slug}: the role line must be one compact list of responsibilities (${role.split(' ').length} words)`);
-  for (const [re, what] of [[/strateg/i, 'strategy'], [/brief/i, 'briefing'], [/approv/i, 'approval'], [/distribut|publish/i, 'distribution or publishing']]) {
-    if (!re.test(role)) failures.push(`[claim] ${slug}: the role line must name ${what}`);
-  }
-  if (/graphic design|\bdesigned\b|\bdesigner\b|illustrat|\banimat/i.test(role)) failures.push(`[claim] ${slug}: the role line must not imply John was the hands-on designer`);
-  if (page.indexOf('cs-hero__intro') < 0 || page.indexOf('cs-hero__role') < page.indexOf('cs-hero__intro')) failures.push(`[claim] ${slug}: the role line must follow the intro`);
-  if ((textOf(page.replace(/<script\b[\s\S]*?<\/script>/g, '')).match(/My role/g) || []).length !== 1) failures.push(`[claim] ${slug}: "My role" must appear once on the page`);
-}
+// Case-study roles (v1.9) were one compact "My role" line under each case
+// study's intro, in the shared case-study layout. All three case studies have
+// since left that layout (Technical Product Marketing in its Version 1,
+// Events and Multimedia Production in its Version 1.0, Creator Marketing and
+// Partnerships in its Version 1.0), and each states John's part in its own
+// copy and credits, checked with each page below.
 
 // ------------------------------------------------ Technical Product Marketing
 // Version 1.5 (John's TPM V1.1 to V1.4 briefs, the V1.2 delta and the
@@ -2070,6 +2045,16 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   // 1.5rem after the headline and 2.75rem between the others), and a measured
   // band between the header and the content.
   if (!/align-items:\s*start/.test(wideContent) || /align-items:\s*(?:center|stretch)|align-content:\s*stretch|min-height:/.test(wideContent) || !deckWide(/^\.evd__media$/).some((r) => /align-self:\s*start/.test(r.body)) || deckWide(/^\.evd__media$/).some((r) => /align-self:\s*center/.test(r.body))) failures.push('[events] wide: the media and the words start from one top line, nothing centered against the other and no minimum height (V1.6)');
+  // Creator Marketing V1.0, Part I: on wide screens the live presentation's and the
+  // event film's video (with its corner marks and timecode, which ride on its frame)
+  // sits in the vertical center of the open card, the band above the content evened
+  // out by a margin so there is as much room above the frame as below it; the words
+  // keep the top line, and the production room keeps its Setup and Final up top.
+  const mediaDivs = [...evPage.matchAll(/<div class="evd__media[^"]*"[^>]*>/g)].map((m) => m[0]);
+  const centeredMedia = mediaDivs.filter((t) => /\bevd__media--centered\b/.test(t)).length;
+  const roomMedia = (evPage.match(/<div class="(evd__media[^"]*)"[^>]*>\s*<div class="evd__sf\b/) || [, ''])[1];
+  const centeredWide = deckWide(/^\.evd__media--centered$/).map((r) => r.body).join(';');
+  if (mediaDivs.length !== 3 || centeredMedia !== 2 || !roomMedia || /evd__media--centered/.test(roomMedia) || !/align-self:\s*center/.test(centeredWide) || !/margin-top:\s*calc\(var\(--deck-pad\)\s*-\s*clamp\(/.test(centeredWide) || evRules(/^\.evd__media--centered$/).some((r) => !/@container/.test(r.at))) failures.push(`[events] Part I: the live presentation's and the event film's video in the vertical center of the open card on wide screens, the production room's media on the top line (found ${centeredMedia} centered of ${mediaDivs.length})`);
   const textBase = evRules(/^\.evd__text$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const textWide = deckWide(/^\.evd__text$/).map((r) => r.body).join(';');
   const gapAll = evRules(/^\.evd__gap(?:--lead)?$/).map((r) => r.body).join(';');
@@ -2261,6 +2246,470 @@ if (!/<footer class="site-footer" data-surface="brand"[\s>]/.test(tpmPage)) fail
   if (!/addEventListener\(\s*[`"']ended[`"']/.test(evScripts)) failures.push('[events] at the end of a chapter the reel moves on to the next');
 }
 
+// ------------------------------------- Creator Marketing and Partnerships
+// Version 1.0 (John's Creator Marketing and Partnerships V1.0 brief, October
+// 2026; its Part I, the Events deck and the homepage loader, is checked with
+// those pages above): the first case study, on its own page, in a visual
+// language of its own (open air and daylight, destination atmospheres, a
+// curved path, a waterline, closing credits). 05 Hero, one layered coastal
+// composition (illustrative stock photography, credited as such and never
+// presented as the trips); 06 the program context; 07 the creator network,
+// exactly the eight confirmed creators on a curved path in depth; 08 at most
+// three creator testimonials, absent until approved; 09 the campaign atlas,
+// one stage and three destinations; 10 the Trezor campaign, the film first;
+// 11 the selected-content montage; 12 the program ownership; 13 the credits;
+// 14 the conclusion, with the way on to the next case study, then Contact.
+// Square and landscape media only; no follower counts, rankings, testimonials
+// or qualifiers on the creators; no vague metrics; nothing implies John
+// edited, shot or designed the work; unresolved placeholders never reach a
+// production build. Copy is checked word for word against the brief and the
+// approved page.
+{
+  const cmPage = creator;
+  const cmData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/creator.json'), 'utf8'));
+  const cmAssets = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets || [];
+  const cmAsset = (id) => cmAssets.find((x) => x.id === id) || {};
+  const cmNoCode = cmPage.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, '');
+  const cmText = textOf(norm(cmNoCode));
+  const cmBlock = (html, start, from = 0) => {
+    // the element that opens at `start`, with its nested elements of the same tag
+    const at0 = html.indexOf(start, from);
+    if (at0 < 0) return '';
+    const tag = (start.match(/^<(\w+)/) || [])[1];
+    const re = new RegExp(`<${tag}\\b|<\\/${tag}>`, 'g');
+    re.lastIndex = at0;
+    let depth = 0;
+    for (let m; (m = re.exec(html)); ) {
+      depth += m[0].startsWith('</') ? -1 : 1;
+      if (depth === 0) return html.slice(at0, m.index + m[0].length);
+    }
+    return html.slice(at0);
+  };
+  const cmBlocks = (html, start) => {
+    const out = [];
+    for (let i = html.indexOf(start); i >= 0; i = html.indexOf(start, i + start.length)) out.push(cmBlock(html, start, i));
+    return out;
+  };
+  const cmSec = (cls) => cmBlock(cmNoCode, `<section class="${cls}"`);
+  const cmOne = (html, re) => textOf(norm(((html || '').match(re) || [, ''])[1] || ''));
+  const cmRules = (re) => CSS_RULES.filter((r) => r.sel.split(',').some((x) => re.test(bare(x).trim())));
+  const cmScripts = pageScripts(cmPage);
+  const cmSource = fs.readFileSync(path.join(root, 'src/lib/cm-motion.ts'), 'utf8');
+  const fnOf = (name) => {
+    const i = cmSource.indexOf(`export function ${name}(`);
+    const j = i < 0 ? -1 : cmSource.indexOf('export function ', i + 10);
+    return i < 0 ? '' : cmSource.slice(i, j < 0 ? undefined : j);
+  };
+  const openTag = (html) => (html.match(/^<[^>]+>/) || [''])[0];
+  const fileOf = (src) => path.join(dist, decodeURIComponent(src.split('?')[0]).replace(BASE, '').replace(/^\/+/, ''));
+  const webpSize = (file) => {
+    const b = fs.readFileSync(file);
+    if (b.toString('latin1', 0, 4) !== 'RIFF' || b.toString('latin1', 8, 12) !== 'WEBP') return null;
+    const chunk = b.toString('latin1', 12, 16);
+    if (chunk === 'VP8X') return { width: 1 + b.readUIntLE(24, 3), height: 1 + b.readUIntLE(27, 3) };
+    if (chunk === 'VP8 ') return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+    if (chunk === 'VP8L') {
+      const bits = b.readUInt32LE(21);
+      return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+    }
+    return null;
+  };
+  const sizeOf = (file) => (/\.webp$/i.test(file) ? webpSize(file) : imageSize(file));
+  const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const isEmptyAlt = (img) => /\salt(?:="")?(?=[\s>/])/.test(img) && !/\salt="[^"]+"/.test(img);
+  const PLACES = { 'costa-rica': 'Costa Rica', singapore: 'Singapore', mykonos: 'Mykonos' };
+
+  // ---- the page: its own structure, no shared hero, no other page's components
+  if (/class="cs-hero[\s"_]/.test(cmPage) || /My role/.test(cmText)) failures.push('[creator] the page has its own hero and no "My role" line: John\'s part is stated in the program context, the ownership section and the credits');
+  const classTokens = [...cmNoCode.matchAll(/\sclass="([^"]*)"/g)].flatMap((m) => m[1].split(/\s+/)).filter(Boolean);
+  const borrowed = [...new Set(classTokens.filter((t) => /^(?:tpm[-_]|ev[a-z]?(?:__|--|$)|ev-|cs-)/.test(t)))];
+  if (borrowed.length) failures.push(`[creator] the page shares no Technical Product Marketing, Events or shared case-study component: its own visual language (found ${borrowed.join(', ')})`);
+  if ((cmPage.match(/<h1\b/g) || []).length !== 1) failures.push('[creator] the page has one h1, the hero headline');
+  if (!/<title>[^<]*Creator Marketing and Partnerships[^<]*<\/title>/.test(cmPage)) failures.push('[creator] the page is titled Creator Marketing and Partnerships');
+  const voicesAt = cmPage.indexOf('<section class="cmv"');
+  const cmOrder = [['hero', '<section class="cmh"'], ['context', '<section class="cmx"'], ['network', '<section class="cmn"'], ['atlas', '<section class="cma"'], ['trezor', '<section class="cmz"'], ['montage', '<section class="cmm"'], ['ownership', '<section class="cmo"'], ['credits', '<section class="cmc"'], ['conclusion', '<section class="cme"'], ['contact', 'id="contact"']].map(([n, s]) => [n, cmPage.indexOf(s)]);
+  if (cmOrder.some(([, i]) => i < 0) || cmOrder.some(([, i], k) => k && i < cmOrder[k - 1][1])) failures.push(`[creator] the page runs hero, program context, creator network, (testimonials,) campaign atlas, Trezor, montage, ownership, credits, conclusion, Contact (${cmOrder.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
+  if (voicesAt >= 0 && !(voicesAt > cmOrder[2][1] && voicesAt < cmOrder[3][1])) failures.push('[creator] the testimonials sit between the creator network and the campaign atlas');
+  // Every section names itself.
+  for (const s of cmBlocks(cmNoCode, '<section class="cm')) {
+    const tag = openTag(s);
+    const by = (tag.match(/aria-labelledby="([^"]+)"/) || [])[1];
+    if (!(by ? new RegExp(`\\sid="${by}"`).test(s) || (by === 'cm-title' && /id="cm-title"/.test(s)) : /aria-label="[^"]+"/.test(tag))) failures.push(`[creator] ${tag.slice(0, 40)}...: every section is named by its heading or a label`);
+  }
+
+  // ---- 05 Hero: the approved words over one layered composition
+  const CM = {
+    label: '01 / Creator Marketing and Partnerships',
+    headline: 'Bringing creator campaigns to life around the world.',
+    copy: 'I developed and managed creator programs that brought brands, talent, and memorable settings together across Costa Rica, Singapore, and Mykonos, connecting partnership strategy with production, distribution, and measurable campaign outcomes.',
+    credit: 'Illustrative photography: Rosemary Media and Abbie Bernet, Unsplash',
+  };
+  const hero = cmSec('cmh');
+  if (!/data-surface="image"/.test(openTag(hero)) || !/data-cm-hero/.test(openTag(hero))) failures.push('[creator] the hero is an image surface the header reads, marked for its motion');
+  if (cmOne(hero, /<p class="cmh__label"[^>]*>([\s\S]*?)<\/p>/) !== CM.label) failures.push(`[creator] the hero label reads "${CM.label}"`);
+  if (cmOne(hero, /<h1 id="cm-title"[^>]*>([\s\S]*?)<\/h1>/) !== CM.headline) failures.push(`[creator] the headline reads "${CM.headline}"`);
+  if (cmOne(hero, /<p class="cmh__copy"[^>]*>([\s\S]*?)<\/p>/) !== CM.copy) failures.push('[creator] the hero carries the approved supporting copy');
+  if (cmData.hero?.headline !== CM.headline || cmData.hero?.copy !== CM.copy || cmData.hero?.label !== CM.label) failures.push('[creator] creator.json keeps the approved hero words');
+  // The layers in depth: the sky (slowest), the headline, the estate, the fronds (nearest, against the scroll).
+  const layerAt = ['cmh__plane--sky', '<h1 id="cm-title"', 'cmh__plane--estate', 'cmh__plane--left', 'cmh__plane--right', 'cmh__fade', 'cmh__foot', 'cmh__credit'].map((n) => hero.indexOf(n));
+  if (layerAt.some((i) => i < 0) || layerAt.some((i, k) => k && i < layerAt[k - 1])) failures.push('[creator] the hero layers run sky, headline, estate, fronds, then the fade and the words over it');
+  const rateOf = (cls) => Number((hero.match(new RegExp(`class="cmh__(?:plane|title)[^"]*${cls}[^"]*"[^>]*style="--rate: (-?[\\d.]+)"`)) || [])[1]);
+  const rates = { sky: rateOf('cmh__plane--sky'), title: Number((hero.match(/<h1 id="cm-title"[^>]*style="--rate: (-?[\d.]+)"/) || [])[1]), estate: rateOf('cmh__plane--estate'), left: rateOf('cmh__plane--left'), right: rateOf('cmh__plane--right') };
+  if (!(rates.sky > rates.title && rates.title > rates.estate && rates.estate > 0 && rates.left < 0 && rates.right < 0)) failures.push(`[creator] the layers move at their own depths: the sky slowest, then the headline and the estate, the fronds nearest (found ${JSON.stringify(rates)})`);
+  if ((hero.match(/<div class="cmh__stage[^"]*"[^>]*aria-hidden="true"/g) || []).length !== 2) failures.push('[creator] the hero\'s picture layers are hidden from assistive technology; the headline and words carry it');
+  const heroImgs = [...hero.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+  if (heroImgs.length !== 4 || heroImgs.some((im) => !isEmptyAlt(im) || !/loading="eager"/.test(im))) failures.push(`[creator] the hero's four layers are decorative and load at once (found ${heroImgs.length})`);
+  if (!heroImgs.some((im) => /cm-hero-estate/.test(im) && /fetchpriority="high"/.test(im))) failures.push('[creator] the estate, the hero\'s largest layer, is fetched first');
+  if (/\.png\b/.test(hero)) failures.push('[creator] the transparent layers fall back to WebP, never to a heavy PNG');
+  for (const src of new Set([...hero.matchAll(/(?:src|srcset)="([^"]+)"/g)].flatMap((m) => m[1].split(',').map((x) => x.trim().split(/\s+/)[0])))) {
+    const f = fileOf(src);
+    if (fs.existsSync(f) && fs.statSync(f).size > 700 * 1024) failures.push(`[creator] hero layer ${path.basename(f)} is ${(fs.statSync(f).size / 1024).toFixed(0)} KB; keep each under 700 KB`);
+  }
+  // Illustrative stock, credited as such: never presented as the trips.
+  if (cmOne(hero, /<p class="cmh__credit"[^>]*>([\s\S]*?)<\/p>/) !== CM.credit) failures.push(`[creator] the hero credits its illustrative photography: "${CM.credit}"`);
+  for (const id of Object.values(cmData.hero?.layers || {})) {
+    const a = cmAsset(id);
+    if (a.permission !== 'approved' || !/Unsplash/.test(a.credit || '') || !/^Illustrative stock/.test(a.source || '') || !/unsplash\.com\/photos\//.test(a.source || '')) failures.push(`[creator] ${id}: a hero layer is approved illustrative Unsplash stock, credited, with its source photograph`);
+  }
+  if (!/^Illustrative/.test(cmAsset(cmData.hero?.layers?.estate).alt || '')) failures.push('[creator] the estate\'s description calls it illustrative');
+  // The parallax and the entrance are enhancements: the script writes nothing for reduced motion; the CSS animates only with motion allowed.
+  const heroSrc = fnOf('mountHero');
+  if (!/hero\.style\.setProperty\('--p', String\(q\)\)/.test(heroSrc) || !/if \(reduced\(\)\) \{\s*if \(last !== 0\) hero\.style\.setProperty\('--p', '0'\)/.test(heroSrc) || !/window\.addEventListener\('scroll', schedule, \{ passive: true \}\)/.test(heroSrc) || /preventDefault|'wheel'|mousemove|pointermove/.test(heroSrc)) failures.push('[creator] the hero follows the scroll through one passive listener, follows nothing else (not the cursor), and rests for reduced motion');
+  if (!cmRules(/^\.cmh__plane$/).some((r) => /var\(--p\)/.test(r.body) && /var\(--rate\)/.test(r.body))) failures.push('[creator] each hero layer turns the scroll into its own movement (--p times its --rate)');
+  if (cmRules(/(?:^|\s)\.cmh/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body) && !MOTION_OK.test(r.at))) failures.push('[creator] the hero animates only with motion allowed');
+
+  // ---- 06 The program context
+  const ctx = cmSec('cmx');
+  const CTX = {
+    kicker: 'The program',
+    headline: 'The trip was the setting. The program connected everything around it.',
+    accent: 'The program connected everything around it.',
+    copy: "For Bolt Liquidity, each trip put creators, sponsors, and a production plan in one place for a few days. Around it, I ran the program: finding the creators and keeping those relationships, coordinating sponsors, setting the campaign strategy, planning the trip and its production, briefing and approving the work, running the shoot on location, and carrying it through distribution and reporting.",
+  };
+  if (cmOne(ctx, /<p class="cmx__kicker"[^>]*>([\s\S]*?)<\/p>/) !== CTX.kicker) failures.push(`[creator] the program context is introduced as "${CTX.kicker}"`);
+  if (spaced(norm((ctx.match(/<h2 id="cm-context-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1])) !== CTX.headline || cmOne(ctx, /<span class="cmx__accent"[^>]*>([\s\S]*?)<\/span>/) !== CTX.accent) failures.push(`[creator] the program context reads "${CTX.headline}", its second sentence in the accent`);
+  if (cmOne(ctx, /<p class="cmx__copy"[^>]*>([\s\S]*?)<\/p>/) !== CTX.copy) failures.push('[creator] the program context carries the approved copy');
+
+  // ---- 07 The creator network: exactly John's eight, as he confirmed them
+  const ROSTER = [
+    ['eva', 'Eva', ['Rainbet', 'Kick and Twitch streamer'], ['costa-rica', 'singapore']],
+    ['the-blonde-broker', 'The Blonde Broker', ['VP of Financial Services at Corgi', 'Host of The Market Runup', 'Not Your Average Bros'], ['costa-rica']],
+    ['ashley', 'Ashley', ['Founder of Daily X News', 'Rainbet partner', 'AVAX Team 1 collaborator', 'Not Your Average Bros'], ['costa-rica', 'singapore']],
+    ['shiv', 'Shiv', ['Pudgy Penguins advisor', 'Bing Bong host'], ['costa-rica', 'singapore', 'mykonos']],
+    ['raj', 'Raj', ['Head of Ecosystem at Abstract'], ['costa-rica', 'singapore', 'mykonos']],
+    ['arcanic', 'Arcanic', ['Versus FNF team', 'Pump.fun partner'], ['costa-rica', 'singapore']],
+    ['caleb', 'Caleb', ['Sport.fun'], ['singapore', 'mykonos']],
+    ['simon', 'Simon', ['Growth contributor at Pump.fun'], ['singapore', 'mykonos']],
+  ];
+  const perPlace = Object.fromEntries(Object.keys(PLACES).map((k) => [k, ROSTER.filter((r) => r[3].includes(k)).length]));
+  const participations = ROSTER.reduce((n, r) => n + r[3].length, 0);
+  const jsonRoster = (cmData.network?.creators || []).map((c) => [c.id, c.name, c.affiliations, c.destinations]);
+  if (JSON.stringify(jsonRoster) !== JSON.stringify(ROSTER)) failures.push('[creator] creator.json lists exactly the eight confirmed creators, with their confirmed affiliations and destinations, in order');
+  const net = cmSec('cmn');
+  if (!/data-surface="light"/.test(openTag(net)) || !/data-cm-network/.test(openTag(net))) failures.push('[creator] the network is on the light ground, marked for its motion');
+  const NET = { kicker: 'Creator network', headline: 'The creators who made it travel.', sub: `Eight creators across ${participations} participations in Costa Rica, Singapore, and Mykonos.`, hint: 'Select a creator for details.' };
+  if (cmOne(net, /<p class="cmn__kicker"[^>]*>([\s\S]*?)<\/p>/) !== NET.kicker || cmOne(net, /<h2 id="cm-network-title"[^>]*>([\s\S]*?)<\/h2>/) !== NET.headline || cmOne(net, /<p class="cmn__hint"[^>]*>([\s\S]*?)<\/p>/) !== NET.hint) failures.push(`[creator] the network reads "${NET.kicker}", "${NET.headline}", "${NET.hint}"`);
+  if (cmOne(net, /<p class="cmn__sub"[^>]*>([\s\S]*?)<\/p>/) !== NET.sub || participations !== 17) failures.push(`[creator] the network states "${NET.sub}" (17 participations: six in Costa Rica, seven in Singapore, four in Mykonos)`);
+  if (JSON.stringify(perPlace) !== JSON.stringify({ 'costa-rica': 6, singapore: 7, mykonos: 4 })) failures.push(`[creator] the roster travels six to Costa Rica, seven to Singapore and four to Mykonos (found ${JSON.stringify(perPlace)})`);
+  if (!/<div class="cmn__detail"[^>]*data-cmn-detail[^>]*aria-hidden="true"/.test(net)) failures.push('[creator] the center\'s detail copy is visual only; each card names its own details');
+  const items = cmBlocks(net, '<li class="cmn__item"');
+  if (items.length !== 8) failures.push(`[creator] the network shows exactly eight creators (found ${items.length})`);
+  items.forEach((it, i) => {
+    const [id, name, affs, dests] = ROSTER[i] || [];
+    const btn = (it.match(/<button\b[^>]*>[\s\S]*?<\/button>/) || [''])[0];
+    const info = cmBlock(it, '<div class="cmn__info"');
+    if (!new RegExp(`<button type="button" class="cmn__card"[^>]*data-cmn-card[^>]*aria-pressed="false"[^>]*aria-describedby="cmn-${id}"`).test(btn) || cmOne(btn, /<span class="cmn__name"[^>]*>([\s\S]*?)<\/span>/) !== name) failures.push(`[creator] card ${i + 1} is a button named "${name}", unpressed, described by its details`);
+    const img = (btn.match(/<img\b[^>]*>/) || [''])[0];
+    const w = Number((img.match(/\swidth="(\d+)"/) || [])[1]);
+    const h = Number((img.match(/\sheight="(\d+)"/) || [])[1]);
+    if (!img || !isEmptyAlt(img) || !(w > 0 && w === h) || !/loading="lazy"/.test(img)) failures.push(`[creator] ${name}: a square profile picture, decorative beside the name, loaded when near`);
+    if (!new RegExp(`id="cmn-${id}"`).test(info) || cmOne(info, /<p class="cmn__info-name"[^>]*>([\s\S]*?)<\/p>/) !== name) failures.push(`[creator] ${name}: the details carry the name`);
+    const gotAffs = [...((info.match(/<ul class="cmn__aff"[^>]*>([\s\S]*?)<\/ul>/) || [, ''])[1]).matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(norm(m[1])));
+    if (JSON.stringify(gotAffs) !== JSON.stringify(affs)) failures.push(`[creator] ${name}: the confirmed affiliations, stated plainly (found ${gotAffs.join('; ')})`);
+    const chips = [...info.matchAll(/<span class="cmn__chip"[^>]*data-place="([\w-]+)"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => [m[1], textOf(m[2])]);
+    if (JSON.stringify(chips) !== JSON.stringify((dests || []).map((k) => [k, PLACES[k]])) || cmOne(info, /<span class="cmn__dest-label"[^>]*>([\s\S]*?)<\/span>/) !== 'Traveled to') failures.push(`[creator] ${name}: "Traveled to" and the destinations, in order (found ${chips.map((c) => c[1]).join(', ')})`);
+    // A category shows only once John confirms one, plainly, under the affiliations.
+    const cat = (cmData.network?.creators || [])[i]?.category || '';
+    if (cmOne(info, /<p class="cmn__cat"[^>]*>([\s\S]*?)<\/p>/) !== cat) failures.push(`[creator] ${name}: a category only as John confirms it`);
+    // Nothing on a card is a testimonial, a figure, a ranking or a placeholder.
+    const t = textOf(norm(it));
+    if (/<blockquote|<q\b|<figure/.test(it) || /[“”"]/.test(t) || /\bsaid\b|\bsays\b/i.test(t)) failures.push(`[creator] ${name}: no testimonial on a creator card`);
+    if (/\d[\d,.]*\s*[KkMm]?\+?\s*(?:followers?|subscribers?|fans|views|impressions)|#\d|\branked\b|\btop \d/i.test(t) || /\d{2,}/.test(t)) failures.push(`[creator] ${name}: no follower counts, figures or rankings on a creator card`);
+    const a = cmAsset(`cm-creator-${id}`);
+    const f = a.file && path.join(root, 'src/assets', a.file);
+    const sz = f && fs.existsSync(f) ? sizeOf(f) : null;
+    if (a.permission !== 'approved' || a.type !== 'image' || a.aspect !== '1:1' || !sz || sz.width !== sz.height || !/Creator Marketing\/PFPs\//.test(a.source || '')) failures.push(`[creator] ${name}: an approved square profile picture from John's PFPs folder (never a profile screenshot)`);
+  });
+  // The qualifiers the brief rules out, anywhere on the page: the affiliations are confirmed.
+  const qualifier = cmText.match(/user[- ]reported|self[- ]described|self[- ]reported|\binferred\b|\bapparent(?:ly)?\b|\bunverified\b|\breportedly\b|\ballegedly\b|claims? to be|said to be/i);
+  if (qualifier) failures.push(`[creator] the affiliations are John's confirmed ones, stated plainly: no "${qualifier[0]}"`);
+  if (/\bfollowers?\b|\bsubscribers?\b/i.test(cmText)) failures.push('[creator] no follower or subscriber counts on the page');
+  // The motion: one way, about 80 seconds a turn, easing to a stop for hover, focus, a selection, off screen, a hidden tab and reduced motion; Escape lets go.
+  const turn = Number((cmSource.match(/const TURN_SECONDS = (\d+);/) || [])[1]);
+  if (!(turn >= 60 && turn <= 120)) failures.push(`[creator] the ring turns slowly, once in 60 to 120 seconds (found ${turn || 'none'})`);
+  for (const [re, what] of [
+    [/const moving = \(\) => ringMq\.matches && !reduced\(\) && inView && !document\.hidden && !active\(\);/, 'it moves only on a wider screen, with motion allowed, in view, in a visible tab and while no creator is shown'],
+    [/window\.matchMedia\('\(min-width: 48rem\)'\)/, 'the ring is for wider screens'],
+    [/pointerType === 'touch'\) return;/, 'a touch is not a hover'],
+    [/if \(!card\.matches\(':focus-visible'\)\) return;/, 'keyboard focus shows a creator'],
+    [/setAttribute\('aria-pressed', String\(other === pinned\)\)/, 'selecting a creator holds them, and says so (aria-pressed)'],
+    [/if \(e\.key !== 'Escape' \|\| !pinned\) return;/, 'Escape lets go of a held creator'],
+    [/addEventListener\('visibilitychange', run\)/, 'a hidden tab stops it'],
+    [/new IntersectionObserver\(\(\[entry\]\) => \{\s*inView = entry\.isIntersecting;\s*run\(\);/, 'off screen stops it'],
+  ]) {
+    if (!re.test(fnOf('mountNetwork'))) failures.push(`[creator] the network: ${what}`);
+  }
+  if (/pointerdown|pointermove|dragstart|touchmove|wheel|preventDefault/.test(fnOf('mountNetwork'))) failures.push('[creator] there is nothing to drag or spin in the network');
+  // The ring is an enhancement: narrow screens and pages without JavaScript read the eight as a list with everything visible.
+  const ringRules = cmRules(/\.cmn__item$/).filter((r) => /var\(--rx\)/.test(r.body));
+  if (!ringRules.length || ringRules.some((r) => !/html\.js/.test(r.sel) || !/min-width:\s*48rem|width\s*>=\s*48rem/.test(r.at))) failures.push('[creator] the ring needs a wider screen and JavaScript');
+  if (!cmRules(/^\.cmn__ring$/).some((r) => !r.at && /display:\s*grid/.test(r.body) && /repeat\(2/.test(r.body)) || !cmRules(/html:not\(\.js\) \.cmn__ring$/).some((r) => /repeat\(4/.test(r.body))) failures.push('[creator] without the ring the eight read as a list: two across on phones, four across on wider screens without JavaScript');
+  if (cmRules(/\.cmn__info$/).some((r) => /display:\s*none/.test(r.body))) failures.push('[creator] each creator\'s details stay in the page for assistive technology');
+  if (cmRules(/\.cmn__name$/).some((r) => /display:\s*none/.test(r.body))) failures.push('[creator] each card keeps its name for assistive technology at every width');
+
+  // ---- 08 Testimonials: at most three, each approved, never placeholders in a build
+  const voiceItems = cmData.voices?.items || [];
+  if (voiceItems.length > 3) failures.push(`[creator] at most three creator testimonials (found ${voiceItems.length})`);
+  if (voiceItems.some((it) => it.asset === cmData.trezor?.feedback)) failures.push('[creator] the testimonials are the creators\' own; Trezor\'s feedback stays with its campaign');
+  const readyVoices = voiceItems.map((it) => cmAsset(it.asset)).filter((a) => a.permission === 'approved' && a.type === 'testimonial' && a.quote);
+  const voices = cmSec('cmv');
+  if (!readyVoices.length) {
+    if (voices) failures.push('[creator] until a creator testimonial is approved, the build leaves the testimonial section out');
+  } else {
+    const figs = cmBlocks(voices, '<figure class="cmv__quote');
+    if (figs.length !== readyVoices.length || figs.some((f, k) => cmOne(f, /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/) !== norm(readyVoices[k].quote).trim() || !/<figcaption/.test(f))) failures.push('[creator] each approved creator testimonial shows its own words and attribution');
+  }
+
+  // ---- 09 The campaign atlas: one stage, three destinations
+  const ATLAS = [
+    { key: 'costa-rica', num: '01', type: 'Creator retreat', coords: '10.4° N, 85.8° W', copy: 'A creator house on the Pacific coast. Pool days and golden-hour beaches set the scene, and sponsor integrations were built into what the creators were already filming.', pieces: '34', sponsors: ['Trezor', 'Bitrefill'] },
+    { key: 'singapore', num: '02', type: 'Conference activation', coords: '1.3° N, 103.8° E', copy: "A crypto game show on a moving party bus, high tea on the 56th floor, and a shopping spree through the city's luxury malls, run as a conference activation.", pieces: '29', sponsors: ['Rayls Labs'] },
+    { key: 'mykonos', num: '03', type: 'Creator retreat', coords: '37.4° N, 25.3° E', copy: 'A villa above the Aegean, a day on a catamaran, and long dinners into the evening, with four creators turning each moment into content.', pieces: '17', sponsors: [] },
+  ];
+  const atlas = cmSec('cma');
+  if (!/data-surface="dark"/.test(openTag(atlas)) || !/data-cm-atlas/.test(openTag(atlas)) || cmOne(atlas, /<h2 id="cm-atlas-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Campaign atlas') failures.push('[creator] the atlas is one dark stage, titled "Campaign atlas"');
+  const goes = [...atlas.matchAll(/<a href="#cm-place-([\w-]+)" class="cma__go" data-cma-go="(\d)"([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => [m[1], m[2], /aria-current="true"/.test(m[3]), textOf(m[4])]);
+  // (none is marked current in the page: on the pinned stage the script marks the one on view)
+  if (!/<nav class="cma__index" aria-label="Destinations"/.test(atlas) || JSON.stringify(goes) !== JSON.stringify(ATLAS.map((d, i) => [d.key, String(i), false, `${d.num}${PLACES[d.key]}`]))) failures.push(`[creator] the atlas index names the three destinations in order, none marked current until the stage is pinned (found ${goes.map((g) => `${g[3]}${g[2] ? ' (current)' : ''}`).join(', ')})`);
+  const chapters = cmBlocks(atlas, '<article class="cma__chapter"');
+  if (chapters.length !== 3) failures.push(`[creator] the atlas holds three destinations (found ${chapters.length})`);
+  const dataDest = cmData.atlas?.destinations || [];
+  ATLAS.forEach((d, i) => {
+    const ch = chapters[i] || '';
+    const name = PLACES[d.key];
+    const src = dataDest[i] || {};
+    if (!new RegExp(`^<article class="cma__chapter" id="cm-place-${d.key}" data-cma-chapter="${i}" data-place="${d.key}" data-state="${i === 0 ? 'active' : 'after'}" aria-labelledby="cm-place-${d.key}-name"`).test(ch)) failures.push(`[creator] destination ${d.num} is ${name}, in order, named by its heading`);
+    const meta = [...((ch.match(/<p class="cma__meta"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]).matchAll(/<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
+    if (JSON.stringify(meta) !== JSON.stringify([d.num, d.type, d.coords])) failures.push(`[creator] ${name}: ${d.num}, ${d.type}, ${d.coords} (found ${meta.join(', ')})`);
+    if (cmOne(ch, /<h3 id="cm-place-[\w-]+-name"[^>]*>([\s\S]*?)<\/h3>/) !== name || cmOne(ch, /<p class="cma__copy"[^>]*>([\s\S]*?)<\/p>/) !== norm(d.copy)) failures.push(`[creator] ${name}: the destination's name and approved copy`);
+    const facts = [...ch.matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(m[1]), m[2]]);
+    const want = [['Creators', String(perPlace[d.key])], ['Content pieces', d.pieces]];
+    if (JSON.stringify(facts.slice(0, 2).map(([k, v]) => [k, textOf(v)])) !== JSON.stringify(want) || String(src.creators) !== want[0][1] || String(src.pieces) !== d.pieces) failures.push(`[creator] ${name}: ${want.map((w) => `${w[0]} ${w[1]}`).join(', ')}, exact figures, the creators as the roster counts them`);
+    const sponsorRow = facts.find(([k]) => k === 'Co-sponsors');
+    const logos = sponsorRow ? [...sponsorRow[1].matchAll(/<img\b[^>]*alt="([^"]+)"/g)].map((m) => m[1]) : [];
+    if (JSON.stringify(logos) !== JSON.stringify(d.sponsors)) failures.push(`[creator] ${name}: the co-sponsors ${d.sponsors.join(' and ') || '(none confirmed: no row)'} (found ${logos.join(', ') || 'none'})`);
+    // The loop: silent, inline, on its poster, loading nothing early, with its own pause control.
+    const main = cmBlock(ch, '<div class="cma__main"');
+    const v = (main.match(/<video\b[^>]*>/) || [''])[0];
+    if (!new RegExp(`data-ev-loop[^>]*data-label="${name} loop"`).test(openTag(main)) || !/\bmuted\b/.test(v) || !/\bloop\b/.test(v) || !/\bplaysinline\b/.test(v) || !/preload="none"/.test(v) || !/\bposter="/.test(v) || /\b(?:autoplay|controls)\b/.test(v) || !/aria-label="[^"]{40,}"/.test(v) || !new RegExp(`<source src="${BASE}/media/cm-${d.key}-loop\\.mp4" type="video/mp4"`).test(main) || !new RegExp(`<button type="button" class="cma__toggle" data-ev-loop-toggle aria-label="Play: ${name} loop" hidden`).test(main)) failures.push(`[creator] ${name}: one silent loop, muted, looped, inline, on its poster, described, loading nothing early, with its own pause control`);
+    const loopAsset = cmAsset(src.loop);
+    const lf = path.join(root, 'public/media', loopAsset.file || `cm-${d.key}-loop.mp4`);
+    if (fs.existsSync(lf)) {
+      const fx = mp4Facts(lf);
+      const sec = mp4Seconds(lf);
+      const mb = fs.statSync(lf).size / 1048576;
+      if (!fx.avc || fx.handlers.includes('soun') || fx.top.indexOf('moov') > fx.top.indexOf('mdat') || !(fx.width > fx.height) || Math.abs(fx.width / fx.height - 16 / 9) > 0.01 || !(sec >= 5 && sec <= 10) || Math.abs(sec - (loopAsset.duration || 0)) > 0.05 || mb > 4) failures.push(`[creator] ${name}: the loop is silent H.264, index first, landscape 16:9, 5 to 10 seconds, under 4 MB (found ${fx.width}x${fx.height}, ${sec.toFixed(2)} s, ${mb.toFixed(2)} MB${fx.handlers.includes('soun') ? ', with sound' : ''})`);
+    } else failures.push(`[creator] ${name}: public/media/${path.basename(lf)} is missing`);
+    // Two landscape fragments, described, loaded when near.
+    const frags = cmBlocks(ch, '<figure class="cma__frag');
+    const fragImgs = frags.map((f) => (f.match(/<img\b[^>]*>/) || [''])[0]);
+    if (frags.length !== 2 || fragImgs.some((im) => !/\salt="[^"]{12,}"/.test(im) || !/loading="lazy"/.test(im) || !(Number((im.match(/\swidth="(\d+)"/) || [])[1]) > Number((im.match(/\sheight="(\d+)"/) || [])[1])))) failures.push(`[creator] ${name}: two landscape fragments beside the loop, each described, loaded when near`);
+  });
+  // The stage pins only on wide, tall enough screens with motion allowed; otherwise (and without JavaScript) the three read in turn.
+  const atlasSrc = fnOf('mountAtlas');
+  if (!/const canPin = \(\) => !reduced\(\) && window\.innerWidth >= 960 && window\.innerHeight >= 600;/.test(atlasSrc)) failures.push('[creator] the atlas pins only at 960 by 600 pixels and more, with motion allowed');
+  if (!/window\.addEventListener\('scroll', schedule, \{ passive: true \}\)/.test(atlasSrc) || /'wheel'|touchmove|scroll-snap/.test(atlasSrc) || /scroll-snap/.test(cmRules(/\.cma/).map((r) => r.body).join(';'))) failures.push('[creator] the pinned stage follows the reader\'s own scrolling: one passive listener, no wheel hijack, no snapping');
+  for (const token of ['[data-cma-runway]', '[data-cma-chapter]', '[data-cma-go]', "toggle('is-pinned', pinned)", '--chapter-progress', "setAttribute('data-loop-off', '')", "new Event('ev:loop-sync')"]) {
+    if (!atlasSrc.includes(token)) failures.push(`[creator] the atlas's script is missing ${token}`);
+  }
+  const hiding = cmRules(/\.cma__(?:chapter|frag|meta|copy|facts)\b/).filter((r) => /opacity:\s*0(?![.\d])|visibility:\s*hidden/.test(r.body));
+  if (!hiding.length || hiding.some((r) => !/\.cma\.is-pinned/.test(bare(r.sel)))) failures.push('[creator] a destination is set aside only on the pinned stage; unpinned, all three read in turn');
+  if (!cmRules(/^\.cma\.is-pinned \.cma__runway$/).some((r) => /height:\s*calc\(var\(--view-h\)\s*\*\s*3\.\d+\)/.test(r.body))) failures.push('[creator] the pinned stage has a runway of a little over a screen per destination');
+
+  // ---- 10 The Trezor campaign: the film first
+  const tz = cmSec('cmz');
+  const TZ = {
+    kicker: 'Featured campaign',
+    title: 'The Trezor dare',
+    deck: 'A creator-led sponsor integration for Trezor, filmed at the creator house in Costa Rica.',
+    quote: 'Overall, the campaign felt very aligned with what we were hoping to achieve. What stood out most was the level of care and creativity, the production quality, the attention to detail, and how involved everyone was in understanding our goals.',
+    by: 'Trezor campaign feedback',
+  };
+  if (!/data-surface="light-return"/.test(openTag(tz)) || cmOne(tz, /<p class="cmz__kicker"[^>]*>([\s\S]*?)<\/p>/) !== TZ.kicker || cmOne(tz, /<h2 id="cm-trezor-title"[^>]*>([\s\S]*?)<\/h2>/) !== TZ.title || cmOne(tz, /<p class="cmz__deck"[^>]*>([\s\S]*?)<\/p>/) !== TZ.deck) failures.push(`[creator] the Trezor section reads "${TZ.kicker}", "${TZ.title}" and its deck, on the returning light ground`);
+  const tzAt = ['data-evp', 'cmz__brief', 'cmz__results', 'cmz__quote', 'cmz__credits'].map((n) => [n, tz.indexOf(n)]).filter(([, i]) => i >= 0);
+  if (tzAt[0]?.[0] !== 'data-evp' || tzAt.some(([, i], k) => k && i < tzAt[k - 1][1]) || !tzAt.some(([n]) => n === 'cmz__quote') || !tzAt.some(([n]) => n === 'cmz__credits')) failures.push(`[creator] the Trezor section runs the film first, then the assignment, the results, the feedback and the credits (found ${tzAt.map((x) => x[0]).join(', ')})`);
+  const film = cmBlock(tz, '<figure class="cmf"');
+  const fv = (film.match(/<video\b[^>]*>/) || [''])[0];
+  const filmAsset = cmAsset(cmData.trezor?.film);
+  const filmLen = clock(filmAsset.duration || 0);
+  if (!/data-evp id="cm-trezor-film" data-label="The Trezor dare"/.test(film) || !/\bcontrols\b/.test(fv) || /\b(?:autoplay|muted|loop)\b/.test(fv) || !/preload="none"/.test(fv) || !/\bplaysinline\b/.test(fv) || !/\bposter="/.test(fv) || !/aria-label="The Trezor dare: [^"]{40,}"/.test(fv)) failures.push('[creator] the Trezor film is a player with sound: its own controls until the script takes over, nothing loaded early, on its poster, described');
+  const sources = [...film.matchAll(/<source src="([^"]+)" type="video\/mp4"([^>]*)>/g)].map((m) => [m[1], (m[2].match(/media="([^"]+)"/) || [])[1] || '']);
+  if (JSON.stringify(sources) !== JSON.stringify([[`${BASE}/media/${filmAsset.fileSmall}`, '(max-width: 47.99rem)'], [`${BASE}/media/${filmAsset.file}`, '']])) failures.push(`[creator] the Trezor film offers phones a smaller file first, then the full one (found ${sources.map((x) => x.join(' ')).join(', ')})`);
+  if (cmOne(film, /<span class="cmf__start-label"[^>]*>([\s\S]*?)<\/span>/) !== 'Play with sound' || cmOne(film, /<span class="cmf__len"[^>]*>([\s\S]*?)<\/span>/) !== filmLen || !new RegExp(`<input class="cmf__seek" type="range" min="0" max="${Math.floor(filmAsset.duration || 0)}"`).test(film) || !/role="group" aria-label="Video controls: The Trezor dare"/.test(film) || !/data-evp-play aria-label="[^"]+"/.test(film) || !/data-evp-mute aria-label="[^"]+"/.test(film)) failures.push(`[creator] the Trezor film starts from "Play with sound" with its length (${filmLen}), then a labeled bar: play, seek, time and sound`);
+  for (const [file, h, maxMb] of [[filmAsset.file, 1080, 20], [filmAsset.fileSmall, 720, 10.5]]) {
+    const ff = path.join(root, 'public/media', file || 'missing');
+    if (!file || !fs.existsSync(ff)) {
+      failures.push(`[creator] the Trezor film file ${file} is missing`);
+      continue;
+    }
+    const fx = mp4Facts(ff);
+    const mb = fs.statSync(ff).size / 1048576;
+    if (!fx.avc || !fx.handlers.includes('soun') || fx.top.indexOf('moov') > fx.top.indexOf('mdat') || fx.height !== h || Math.abs(fx.width / fx.height - 16 / 9) > 0.01 || Math.abs(mp4Seconds(ff) - filmAsset.duration) > 0.1 || mb > maxMb) failures.push(`[creator] ${file}: H.264 with its sound, index first, landscape 16:9 at ${h} lines, ${filmAsset.duration} seconds, under ${maxMb} MB (found ${fx.width}x${fx.height}, ${mb.toFixed(1)} MB)`);
+  }
+  // The assignment and the results appear only once John confirms them, results only as exact figures.
+  const brief = cmBlock(tz, '<dl class="cmz__brief"');
+  const briefItems = (cmData.trezor?.brief || []).filter((b) => b.text);
+  const shownBrief = [...brief.matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(m[1]), textOf(norm(m[2]))]);
+  if (JSON.stringify(shownBrief) !== JSON.stringify(briefItems.map((b) => [b.label, norm(b.text)]))) failures.push('[creator] the Trezor assignment, objective and approach show only as John confirms them');
+  const metricIds = cmData.trezor?.metrics || [];
+  const readyMetrics = metricIds.map((id) => cmAsset(id)).filter((a) => a.permission === 'approved' && a.type === 'metric' && a.value);
+  const shownMetrics = cmBlocks(tz, '<li class="cmz__metric');
+  if (shownMetrics.length !== readyMetrics.length || shownMetrics.some((m, k) => cmOne(m, /<strong class="cmz__value"[^>]*>([\s\S]*?)<\/strong>/) !== readyMetrics[k].value || !/\d/.test(readyMetrics[k].value))) failures.push('[creator] the Trezor results show only approved, exact figures');
+  if (!readyMetrics.length && /cmz__results/.test(tz)) failures.push('[creator] until a result is confirmed, the Trezor section has no results block');
+  const vague = cmText.match(/\b(?:significant(?:ly)?|massive(?:ly)?|huge|viral|skyrocket\w*|explosive|record[- ]breaking|incredible|exceptional|tons of|countless|thousands of|millions of|dramatic(?:ally)?|outstanding results|impressive results)\b/i);
+  if (vague) failures.push(`[creator] no vague metrics or superlatives: "${vague[0]}"`);
+  if (cmOne(tz, /<figure class="cmz__quote"[^>]*>\s*<blockquote[^>]*>([\s\S]*?)<\/blockquote>/) !== norm(TZ.quote) || cmOne(tz, /<figure class="cmz__quote"[\s\S]*?<figcaption[^>]*>([\s\S]*?)<\/figcaption>/) !== TZ.by) failures.push(`[creator] the Trezor section carries the approved feedback, attributed only to "${TZ.by}"`);
+  const fb = cmAsset(cmData.trezor?.feedback);
+  if (fb.permission !== 'approved' || fb.type !== 'testimonial' || norm(fb.quote || '').trim() !== norm(TZ.quote)) failures.push('[creator] the Trezor feedback is the approved testimonial, word for word');
+  const tzCredits = [...cmBlock(tz, '<div class="cmz__credits"').matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
+  const wantTz = (cmData.trezor?.credits || []).filter((c) => c.names).map((c) => [c.role, c.names]);
+  if (cmOne(tz, /<div class="cmz__credits"[^>]*>\s*<p class="cmz__label"[^>]*>([\s\S]*?)<\/p>/) !== 'Collaboration' || JSON.stringify(tzCredits) !== JSON.stringify(wantTz) || JSON.stringify(tzCredits[0]) !== JSON.stringify(['Program strategy and sponsor coordination', 'John Cowin'])) failures.push(`[creator] the Trezor collaboration credits only confirmed names, John's part first (found ${tzCredits.map((c) => c.join(': ')).join('; ')})`);
+
+  // ---- 11 The selected-content montage
+  const mm = cmSec('cmm');
+  const MM = { kicker: 'Selected content', headline: 'One program, many formats.', copy: 'A short cut from across the three trips, from destination films and creator ads to the game show, sponsor integrations, social clips, and the crew at work behind them.' };
+  const FORMATS = [['destination', 'Destination films'], ['ad', 'Creator ads'], ['gameshow', 'Game show'], ['lifestyle', 'Lifestyle'], ['sponsor', 'Sponsor integrations'], ['social', 'Social clips'], ['bts', 'Behind the scenes']];
+  if (cmOne(mm, /<p class="cmm__kicker"[^>]*>([\s\S]*?)<\/p>/) !== MM.kicker || cmOne(mm, /<h2 id="cm-montage-title"[^>]*>([\s\S]*?)<\/h2>/) !== MM.headline || cmOne(mm, /<p class="cmm__copy"[^>]*>([\s\S]*?)<\/p>/) !== MM.copy) failures.push(`[creator] the montage reads "${MM.kicker}", "${MM.headline}" and its approved copy`);
+  const formats = [...mm.matchAll(/<li class="cmm__format" data-format="([\w-]+)"([^>]*)>([\s\S]*?)<\/li>/g)].map((m) => [m[1], textOf(m[3]), /\sdata-on\b/.test(m[2])]);
+  let cuts = [];
+  try {
+    cuts = JSON.parse(decode((openTag(mm).match(/data-cuts="([^"]+)"/) || [, '[]'])[1]));
+  } catch {
+    failures.push('[creator] the montage carries its cut list');
+  }
+  const reelAsset = cmAsset(cmData.montage?.reel);
+  if (JSON.stringify(formats.map(([k, l]) => [k, l])) !== JSON.stringify(FORMATS) || !/aria-label="Formats in the montage"/.test(mm)) failures.push(`[creator] the montage lists its formats: ${FORMATS.map((f) => f[1]).join(', ')}`);
+  if (formats.filter((f) => f[2]).length !== 1 || !formats.find((f) => f[2] && f[0] === cuts[0]?.format)) failures.push('[creator] one format is marked at a time, the first cut\'s to begin with');
+  if (JSON.stringify(cuts) !== JSON.stringify(cmData.montage?.cuts || []) || !cuts.length || cuts[0].at !== 0 || cuts.some((c, k) => (k && c.at <= cuts[k - 1].at) || c.at >= (reelAsset.duration || 0) || !FORMATS.some(([f]) => f === c.format) || !Object.values(PLACES).includes(c.place)) || FORMATS.some(([f]) => !cuts.some((c) => c.format === f))) failures.push('[creator] the montage\'s cuts run in order from 0 within the reel, each a listed format at one of the three destinations, every format shown');
+  const mv = (mm.match(/<video\b[^>]*>/) || [''])[0];
+  const mSources = [...mm.matchAll(/<source src="([^"]+)" type="video\/mp4"([^>]*)>/g)].map((m) => [m[1], (m[2].match(/media="([^"]+)"/) || [])[1] || '']);
+  if (!/data-ev-loop data-label="Selected content"/.test(mm) || !/\bmuted\b/.test(mv) || !/\bloop\b/.test(mv) || !/\bplaysinline\b/.test(mv) || !/preload="none"/.test(mv) || !/\bposter="/.test(mv) || /\b(?:autoplay|controls)\b/.test(mv) || !/aria-label="A short silent montage[^"]+"/.test(mv) || !/data-cmm-video/.test(mv) || JSON.stringify(mSources) !== JSON.stringify([[`${BASE}/media/${reelAsset.fileSmall}`, '(max-width: 47.99rem)'], [`${BASE}/media/${reelAsset.file}`, '']]) || !/<button type="button" class="cmm__toggle" data-ev-loop-toggle aria-label="Play: Selected content" hidden/.test(mm)) failures.push('[creator] the montage is one silent loop, muted, inline, on its poster, described, loading nothing early, a smaller file for phones, with its own pause control');
+  if (!/<figcaption class="cmm__now" aria-hidden="true"[^>]*>\s*<span class="cmm__now-format" data-cmm-format/.test(mm)) failures.push('[creator] the reel shows the format on screen (visual only; the list names them all)');
+  for (const [file, h, maxMb] of [[reelAsset.file, 720, 6.5], [reelAsset.fileSmall, 540, 3.6]]) {
+    const ff = path.join(root, 'public/media', file || 'missing');
+    if (!file || !fs.existsSync(ff)) {
+      failures.push(`[creator] the montage file ${file} is missing`);
+      continue;
+    }
+    const fx = mp4Facts(ff);
+    const sec = mp4Seconds(ff);
+    const mb = fs.statSync(ff).size / 1048576;
+    if (!fx.avc || fx.handlers.includes('soun') || fx.top.indexOf('moov') > fx.top.indexOf('mdat') || fx.height !== h || Math.abs(fx.width / fx.height - 16 / 9) > 0.01 || !(sec >= 15 && sec <= 30) || Math.abs(sec - reelAsset.duration) > 0.05 || mb > maxMb) failures.push(`[creator] ${file}: silent H.264, index first, landscape 16:9 at ${h} lines, 15 to 30 seconds, under ${maxMb} MB (found ${fx.width}x${fx.height}, ${sec.toFixed(2)} s, ${mb.toFixed(2)} MB)`);
+  }
+  for (const token of ['[data-cmm-video]', '[data-cmm-format]', '[data-cmm-place]', "addEventListener('timeupdate', mark)", "toggleAttribute('data-on'"]) {
+    if (!fnOf('mountMontage').includes(token)) failures.push(`[creator] the montage's script is missing ${token}`);
+  }
+
+  // ---- 12 The program ownership: one headline across a waterline, then the areas as one field
+  const ow = cmSec('cmo');
+  const OW = { kicker: 'Program ownership', above: 'The experience was visible.', below: 'The system behind it was not.', copy: 'Beneath every post sat the work I ran, from the first creator conversation to the final partner report.' };
+  const AREAS = ['Sourcing and relationships', 'Sponsorship and partner coordination', 'Logistics and trip planning', 'Creative direction', 'Production coordination', 'Review and approvals', 'Distribution', 'Reporting', 'Ongoing partner communication'];
+  if (cmOne(ow, /<p class="cmo__kicker"[^>]*>([\s\S]*?)<\/p>/) !== OW.kicker || cmOne(ow, /<span class="cmo__above"[^>]*>([\s\S]*?)<\/span>/) !== OW.above || cmOne(ow, /<span class="cmo__below"[^>]*>([\s\S]*?)<\/span>/) !== OW.below || spaced(norm((ow.match(/<h2 id="cm-own-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1])) !== `${OW.above} ${OW.below}`) failures.push(`[creator] the ownership headline reads "${OW.above} ${OW.below}", one sentence each side of the waterline`);
+  if (cmOne(ow, /<p class="cmo__copy"[^>]*>([\s\S]*?)<\/p>/) !== OW.copy) failures.push('[creator] the ownership section carries its approved line');
+  const areas = [...((ow.match(/<ul class="cmo__areas"[^>]*>([\s\S]*?)<\/ul>/) || [, ''])[1]).matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]));
+  if (JSON.stringify(areas) !== JSON.stringify(AREAS) || /<ol\b|<svg\b|<input\b/.test(ow)) failures.push(`[creator] the ownership areas are the nine John ran, in order, as one typographic field: not a numbered timeline or a checklist (found ${areas.join(', ')})`);
+  if (!/<div class="cmo__water" data-surface="dark" aria-hidden="true"/.test(ow) || !cmRules(/^\.cmo__areas$/).some((r) => /display:\s*flex/.test(r.body) && /flex-wrap:\s*wrap/.test(r.body))) failures.push('[creator] the areas run as one wrapping field in the deep water below the waterline');
+  if (cmRules(/(?:^|\s)\.cmo/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body) && !MOTION_OK.test(r.at)) || !/background-position-x/.test(keyframesOf('cmo-drift'))) failures.push('[creator] the waterline drifts only with motion allowed');
+
+  // ---- 13 The credits: everyone who made the work, John's part named for what it was
+  const cr = cmSec('cmc');
+  const CREDIT_NOTE = 'Creators performed and published the campaign content, and internal designers and editors completed final builds and edits where applicable. My part was the strategy, the program management, and the direction and coordination of production.';
+  const rows = [...cr.matchAll(/<div class="cmc__row[^"]*"[^>]*>\s*<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
+  const wantRows = (cmData.credits?.rows || []).filter((r) => r.names).map((r) => [r.role, norm(r.names)]);
+  const names = ROSTER.map((r) => r[1]);
+  const sponsors = [...new Set(ATLAS.flatMap((d) => d.sponsors))];
+  const listOf = (xs) => (xs.length > 2 ? `${xs.slice(0, -1).join(', ')}, and ${xs[xs.length - 1]}` : xs.join(' and '));
+  if (cmOne(cr, /<p class="cmc__kicker"[^>]*>([\s\S]*?)<\/p>/) !== 'Credits' || cmOne(cr, /<h2 id="cm-credits-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Many hands, one program.') failures.push('[creator] the credits read "Credits", "Many hands, one program."');
+  if (JSON.stringify(rows) !== JSON.stringify(wantRows)) failures.push(`[creator] the credits list each confirmed row, and nothing pending (found ${rows.map((r) => r[0]).join(', ')})`);
+  const rowOf = (role) => (rows.find((r) => r[0] === role) || [])[1];
+  if (rowOf('Program strategy and management') !== 'John Cowin' || rowOf('Creative direction and production coordination') !== 'John Cowin') failures.push('[creator] John is credited with the program strategy and management, and the creative direction and production coordination');
+  if (rowOf('Creators') !== listOf(names) || rowOf('Co-sponsors') !== listOf(sponsors) || rowOf('Brand') !== 'Bolt Liquidity') failures.push(`[creator] the credits name the eight creators (${listOf(names)}), the co-sponsors (${listOf(sponsors)}) and the brand`);
+  if (rowOf('Hero photography') !== 'Rosemary Media and Abbie Bernet, Unsplash (illustrative, not from the trips)') failures.push('[creator] the credits name the hero photographers and say plainly that the hero is illustrative, not from the trips');
+  for (const [role, who] of rows) {
+    if (/John Cowin/.test(who) && /edit|film|shoot|shot|camera|cinematograph|photograph|design|animat|illustrat/i.test(role)) failures.push(`[creator] the credits never put John's name to editing, filming, photography or design ("${role}")`);
+  }
+  if (cmOne(cr, /<p class="cmc__note"[^>]*>([\s\S]*?)<\/p>/) !== CREDIT_NOTE) failures.push('[creator] the credits close on the approved note about who made what');
+  const handsOn = cmText.match(/\bI (?:edited|shot|filmed|designed|animated|photographed|cut the|built the (?:edit|cut|design))\b|\b(?:edited|shot|filmed|designed|photographed) by John\b/i);
+  if (handsOn) failures.push(`[creator] nothing implies John edited, shot or designed the work ("${handsOn[0]}")`);
+
+  // ---- 14 The conclusion, then the way on and Contact
+  const ce = cmSec('cme');
+  const CE = { headline: 'Every trip paid off twice.', accent: 'paid off twice.', copy: 'Because sourcing, sponsorship, production, and distribution ran as one connected program, each trip delivered a wave of content right away, then left relationships with creators and partners that kept creating value long after.', next: 'Next, see how I turn technical complexity into a clear market narrative.' };
+  if (cmOne(ce, /<h2 id="cm-conclusion-title"[^>]*>([\s\S]*?)<\/h2>/) !== CE.headline || cmOne(ce, /<span class="cme__accent"[^>]*>([\s\S]*?)<\/span>/) !== CE.accent || cmOne(ce, /<p class="cme__copy"[^>]*>([\s\S]*?)<\/p>/) !== CE.copy) failures.push(`[creator] the conclusion reads "${CE.headline}" and its approved copy`);
+  const orderOf = (slug) => Number((fs.readFileSync(path.join(root, `src/content/work/${slug}.mdx`), 'utf8').match(/^order:\s*(\d+)/m) || [])[1]);
+  const slugs = fs.readdirSync(path.join(root, 'src/content/work')).filter((f) => f.endsWith('.mdx')).map((f) => f.replace(/\.mdx$/, '')).sort((a, b) => orderOf(a) - orderOf(b));
+  const nextSlug = slugs[(slugs.indexOf('creator-campaigns') + 1) % slugs.length];
+  const ceLinks = [...ce.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)];
+  if (ceLinks.length !== 1 || ceLinks[0][1] !== `${BASE}/work/${nextSlug}/` || nextSlug !== 'technical-marketing' || cmData.conclusion?.next !== nextSlug || cmOne(ceLinks[0][2], /<span class="next-case__line"[^>]*>([\s\S]*?)<\/span>/) !== CE.next) failures.push(`[creator] the conclusion's one link leads to the next case study in order, Technical Product Marketing: "${CE.next}"`);
+  if (!/<div class="chapter" data-surface="brand"[^>]*>\s*<section id="contact" class="[^"]*\bcontact--frame\b/.test(cmPage) || !/<footer class="site-footer" data-surface="brand"[\s>]/.test(cmPage)) failures.push('[creator] the page closes with the full Contact frame and the footer on the brand surface');
+
+  // ---- every medium on the page is square or landscape (the global media rule), and its excerpt is on record
+  for (const a of cmAssets.filter((x) => /^cm-/.test(x.id))) {
+    const [aw, ah] = String(a.aspect || '').split(':').map(Number);
+    if (['image', 'video'].includes(a.type) && !(aw >= ah)) failures.push(`[creator] ${a.id}: square or landscape only (aspect ${a.aspect})`);
+    const filesOf = [a.type === 'image' && a.file && path.join(root, 'src/assets', a.file), a.poster && path.join(root, 'src/assets', a.poster)].filter(Boolean);
+    for (const f of filesOf) {
+      const sz = fs.existsSync(f) ? sizeOf(f) : null;
+      if (!sz || sz.width < sz.height) failures.push(`[creator] ${a.id}: ${path.basename(f)} is square or landscape (found ${sz ? `${sz.width}x${sz.height}` : 'unreadable'})`);
+    }
+    for (const file of [a.type === 'video' && a.file, a.fileSmall].filter(Boolean)) {
+      const ff = path.join(root, 'public/media', file);
+      if (!fs.existsSync(ff)) {
+        failures.push(`[creator] ${a.id}: public/media/${file} is missing`);
+        continue;
+      }
+      const fx = mp4Facts(ff);
+      if (!(fx.width >= fx.height) || !fx.width) failures.push(`[creator] ${a.id}: ${file} is square or landscape (found ${fx.width}x${fx.height})`);
+    }
+    if (a.type === 'video' && (!/\.mp4/i.test(a.source || '') || !/\d:\d\d(?:\.\d+)?/.test(a.source || ''))) failures.push(`[creator] ${a.id}: the manifest records the source files and time ranges of its excerpts`);
+  }
+  const article = cmBlock(cmNoCode, '<article class="cm"');
+  for (const img of article.matchAll(/<img\b[^>]*>/g)) {
+    const w = Number((img[0].match(/\swidth="(\d+)"/) || [])[1]);
+    const h = Number((img[0].match(/\sheight="(\d+)"/) || [])[1]);
+    if (!(w >= h) && !/\.svg/.test(img[0])) failures.push(`[creator] an image on the page is portrait (${w}x${h}); square or landscape only`);
+  }
+  // ---- performance: only the hero loads at once; every video waits
+  const eager = [...article.matchAll(/<img\b[^>]*>/g)].filter((m) => !/loading="lazy"/.test(m[0]));
+  if (eager.length !== 4 || eager.some((m) => article.indexOf(m[0]) > article.indexOf('<section class="cmx"'))) failures.push(`[creator] only the hero's four layers load at once; every other image waits until near (found ${eager.length} eager)`);
+  if ([...article.matchAll(/<video\b[^>]*>/g)].some((m) => !/preload="none"/.test(m[0]) || /\bautoplay\b/.test(m[0]))) failures.push('[creator] no video loads or plays before the script decides');
+  // ---- no placeholders in a production build
+  const ph = cmText.match(/Placeholder|names to confirm|an exact, verified figure|goes here|to be confirmed|\bTBD\b|lorem ipsum/i);
+  if (ph || /class="[^"]*(?:--pending|__pending)\b|data-pending\b/.test(cmNoCode)) failures.push(`[creator] unresolved placeholders stay out of a production build (found "${ph ? ph[0] : 'a pending class'}")`);
+  // ---- reduced motion and no JavaScript: every animation waits for motion to be allowed; nothing is hidden unless the script will show it
+  if (cmRules(/(?:^|\s)\.cm[a-z]?(?:__|\b)/).some((r) => /(?:^|;)\s*animation:/.test(r.body) && !/animation:\s*none/.test(r.body) && !MOTION_OK.test(r.at))) failures.push('[creator] every animation on the page waits for motion to be allowed');
+  const hidden = cmRules(/(?:^|\s)\.cm[a-z]?(?:__|\b)|\.cm-cut/).filter((r) => /opacity:\s*0(?![.\d])/.test(r.body));
+  const scriptGated = (r) => /html\.js|\.is-pinned|\[data-active\]|\[data-state=playing\]|:hover|:focus/.test(bare(r.sel)) || /hover:\s*hover/.test(r.at);
+  const ungated = hidden.filter((r) => !scriptGated(r));
+  if (ungated.length) failures.push(`[creator] nothing is hidden without the script that shows it (found ${ungated.map((r) => bare(r.sel)).join(', ')})`);
+  if (hidden.some((r) => /html\.js/.test(r.sel) && /:not\(\.is-in\)/.test(r.sel) && !MOTION_OK.test(r.at))) failures.push('[creator] a reveal waits for motion to be allowed; with reduced motion everything is simply there');
+  if (!/if \(!\('IntersectionObserver' in window\) \|\| reduced\(\)\) \{\s*for \(const el of els\) el\.classList\.add\('is-in'\);/.test(fnOf('mountReveals')) || !/const reduceMq = window\.matchMedia\('\(prefers-reduced-motion: reduce\)'\);/.test(cmSource)) failures.push('[creator] with reduced motion (or no IntersectionObserver) everything is simply there');
+  // The page runs it all: the hero, the network, the atlas, the montage and the reveals, with the shared players and loops.
+  for (const token of ['[data-cm-hero]', '[data-cm-network]', '[data-cm-atlas]', '[data-cm-montage]', '[data-cm-reveal]', '[data-ev-loop]', '[data-evp]']) {
+    if (!cmScripts.includes(token)) failures.push(`[creator] the page's script is missing ${token}`);
+  }
+}
+
 // HOME (TPM V1, global): every page but the homepage leads its header with a
 // restrained HOME link to the homepage in place of the name.
 for (const f of htmlFiles) {
@@ -2330,34 +2779,41 @@ for (const token of ['pointerenter', 'pointerleave', 'pointerType', 'focusin', '
 if (!delays.some((d) => d > 0 && d <= 150) || !delays.some((d) => d >= 200 && d <= 500)) failures.push(`[nav] the Work menu opens after a moment on hover and closes after a short delay when the pointer leaves (found ${delays.join(', ') || 'none'})`);
 
 // The opening sequence (V1.5, homepage only): a brisk, directional loader on
-// the ink ground. The viewing note, exactly BEST EXPERIENCED ON DESKTOP, then
-// exactly Product complexity. / Market clarity. / Strategy, executed., one at
-// a time at one center, each arriving from the left and leaving to the right;
-// a small marker travelling a hairline from the left end of the screen to the
-// right while they come, arriving as the last phrase ends; no loading
-// percentage. Events V1.6 retimed it: the note held fully legible for 1.25 to
-// 1.5 seconds, each phrase fully visible for 0.28 to 0.38, overlapping
-// transitions of 0.12 to 0.16 with no blank, about 3 to 3.5 seconds in all with
-// the dissolve and the hero's layered entrance (0.6 to 0.8 in V1.5's brief), the
-// layers in the brief's order (the ambient photograph, the name, the
-// descriptor, the navigation, then the rule and the arrow), overlapping. Once
+// the ink ground. Since the Creator Marketing V1.0 brief (Part I) it carries one
+// line of words, the viewing note, exactly BEST EXPERIENCED ON DESKTOP, arriving
+// from the left and leaving to the right at one center (the three phrases
+// Product complexity. / Market clarity. / Strategy, executed. are gone, with no
+// replacement); a small marker travelling a hairline from the left end of the
+// screen to the right meanwhile, arriving as the note's hold ends; no loading
+// percentage. The note holds fully legible for 1.8 to 2.4 seconds (V1.6's 1.3
+// was too brief once it stood alone), arriving and leaving in 0.12 to 0.16,
+// and the whole loader with the dissolve and the hero's layered entrance (0.6
+// to 0.8 in V1.5's brief) takes about 2.6 to 3.2 seconds, a little quicker than
+// V1.6's 3.45; the layers in the brief's order (the ambient photograph, the
+// name, the descriptor, the navigation, then the rule and the arrow),
+// overlapping. The same on phones. Once
 // per browsing session, decided before the first paint, never for a return
 // from a case study, a visit that began inside the site or a link to a
 // section; near-instant with reduced motion; dismissed by any intent; hidden
 // from assistive technology; the hero photograph and the faces preloaded.
 const introRules = (re) => CSS_RULES.filter((r) => r.sel.split(',').some((x) => re.test(bare(x).trim())));
+const introHeadOf = (html) => [...((html.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0]).matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('jc-intro')) || '';
 const INTRO_MOMENTS = [];
 const introAt = home.indexOf('<div class="intro"');
 const introHtml = introAt < 0 ? '' : home.slice(introAt, home.indexOf('<section class="hero"', introAt));
 const introNote = textOf((introHtml.match(/<p class="intro__note[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]);
 const introPhrases = [...introHtml.matchAll(/<p class="intro__phrase[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(m[1]));
 if (introNote !== 'BEST EXPERIENCED ON DESKTOP') failures.push(`[intro] the viewing note is exactly BEST EXPERIENCED ON DESKTOP (found "${introNote}")`);
-if (introPhrases.join(' | ') !== 'Product complexity. | Market clarity. | Strategy, executed.') failures.push(`[intro] the opening sequence must be Product complexity. / Market clarity. / Strategy, executed. (found ${introPhrases.join(' / ') || 'none'})`);
-if (introHtml.indexOf('intro__note') > introHtml.indexOf('intro__phrase')) failures.push('[intro] the note comes before the phrases');
+// Creator Marketing V1.0, Part I: the three phrases are gone, with nothing in their place.
+if (introPhrases.length || /intro__phrase|Product complexity\.|Market clarity\.|Strategy, executed\./.test(home)) failures.push(`[intro] the loader carries only the viewing note: Product complexity., Market clarity. and Strategy, executed. are gone, with no replacement (found ${introPhrases.join(' / ') || 'a phrase rule'})`);
+if ((introHtml.match(/<p\b/g) || []).length !== 1) failures.push('[intro] one line of words in the loader: the viewing note');
 if (/\d\s*%|percent|loading/i.test(textOf(introHtml))) failures.push('[intro] no loading percentage (the marker is a pace, not a measure)');
 if (/Strategy into execution\.|Welcome\./.test(introHtml) || /intro__face|intro__drum/.test(home)) failures.push('[intro] the V1.2 drum and its phrases are gone');
 if (!/<div class="intro"[^>]*aria-hidden="true"/.test(home)) failures.push('[intro] the opening sequence is decorative: aria-hidden');
 if (!/class="intro__track"[\s\S]*class="intro__marker"/.test(introHtml)) failures.push('[intro] a small marker on a path');
+// Creator Marketing V1.0, Part I: the note shows on phones too. No width decides
+// whether the sequence runs, and no narrow-screen rule hides the note.
+if (/innerWidth|matchMedia\(['"`]\((?:max|min)-width/.test(introHeadOf(home)) || introRules(/\.intro(?:__[\w-]+)?(?![\w-])/).some((r) => /(?:max|min)-width|width\s*[<>]/.test(r.at) && /display:\s*none|visibility:\s*hidden|opacity:\s*0(?![.\d])/.test(r.body))) failures.push('[intro] the note shows at every width, phones included');
 const headHome = (home.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
 const introHead = [...headHome.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('jc-intro')) || '';
 for (const token of ['prefers-reduced-motion: reduce', 'sessionStorage', 'jc-intro', "classList.add('intro', 'intro-hold')", 'intro-still', 'document.referrer', 'location.hash', 'visibilityState', 'intro-wait']) if (!introHead.includes(token)) failures.push(`[intro] the head decision is missing "${token}"`);
@@ -2369,8 +2825,8 @@ const ms = (v) => {
 };
 const varsOf = (body) => Object.fromEntries([...body.matchAll(/--intro-([a-z0-9]+):\s*([^;]+)/g)].map((m) => [m[1], m[2].trim()]));
 const holdVars = varsOf(rulesFor(/^html\.intro-hold$/).filter((r) => !r.at).map((r) => r.body).join(';'));
-// V1.6: the note held fully legible (hold), each phrase fully visible (show), and the turns derived from them.
-const T = Object.fromEntries(['lead', 'in', 'out', 'beat', 'hold', 'show', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
+// Creator Marketing V1.0, Part I: the note held fully legible (hold), then the reveal; no phrases.
+const T = Object.fromEntries(['lead', 'in', 'out', 'hold', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
 const handoff = (re) => {
   const rule = CSS_RULES.find((r) => MOTION_OK.test(r.at) && r.sel.split(',').some((x) => re.test(bare(x).trim())) && /animation:/.test(r.body));
   const v = rule ? (rule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
@@ -2390,34 +2846,25 @@ const LAYERS = [
 if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.isNaN(l.off) || Number.isNaN(l.dur))) {
   failures.push(`[intro] every timing value is set, and every layer of the hero is timed from the handoff (${JSON.stringify(holdVars)}; ${LAYERS.filter((l) => Number.isNaN(l.off) || Number.isNaN(l.dur)).map((l) => l.label).join(', ')})`);
 } else {
-  // The turns as the stylesheet composes them (each must be the calc below, so the
-  // windows measured here are the ones the browser runs).
-  const calcs = {
-    step: 'calc(var(--intro-beat) + var(--intro-in) + var(--intro-show))',
-    p1: 'calc(var(--intro-lead) + var(--intro-in) + var(--intro-hold))',
-    p2: 'calc(var(--intro-p1) + var(--intro-step))',
-    p3: 'calc(var(--intro-p2) + var(--intro-step))',
-    reveal: 'calc(var(--intro-p3) + var(--intro-step))',
-  };
-  for (const [k, v] of Object.entries(calcs)) if ((holdVars[k] || '').replace(/\s+/g, ' ') !== v) failures.push(`[intro] --intro-${k} is ${v} (found ${holdVars[k]})`);
-  const step = T.beat + T.in + T.show;
-  const p1 = T.lead + T.in + T.hold;
-  const reveal = p1 + 3 * step;
+  // The reveal as the stylesheet composes it (it must be this calc, so the window
+  // measured here is the one the browser runs), and the hero's handoff at it.
+  if ((holdVars.reveal || '').replace(/\s+/g, ' ') !== 'calc(var(--intro-lead) + var(--intro-in) + var(--intro-hold))') failures.push(`[intro] --intro-reveal is the note's arrival plus its hold (found ${holdVars.reveal})`);
+  if ((holdVars.hero || '').trim() !== 'var(--intro-reveal)') failures.push(`[intro] the hero's layers begin at the reveal (found ${holdVars.hero})`);
+  for (const k of ['beat', 'show', 'step', 'p1', 'p2', 'p3']) if (holdVars[k]) failures.push(`[intro] --intro-${k} belonged to the retired phrases`);
+  const reveal = T.lead + T.in + T.hold;
   const heroEnd = Math.max(...LAYERS.map((l) => l.off + l.dur));
   const total = reveal + heroEnd;
-  INTRO_MOMENTS.push(Math.round(T.lead + T.in + T.hold / 2), ...[0, 1, 2].map((k) => Math.round(p1 + k * step + T.beat + T.in + T.show / 2)));
-  // V1.6: the viewing note settles, then holds fully legible for 1.25 to 1.5 seconds;
-  // each phrase is fully visible for 0.28 to 0.38 seconds; every change is a short
-  // transition of 0.12 to 0.16 seconds, the next word starting to arrive before the
-  // last has gone (no blank); about 3 to 3.5 seconds in all, the hero's layers included.
-  if (!(T.hold >= 1250 && T.hold <= 1500)) failures.push(`[intro] the note holds fully legible for 1.25 to 1.5 seconds (found ${T.hold} ms)`);
-  if (!(T.show >= 280 && T.show <= 380)) failures.push(`[intro] each phrase is fully visible for 0.28 to 0.38 seconds (found ${T.show} ms)`);
-  if (!(T.in >= 120 && T.in <= 160) || !(T.out >= 120 && T.out <= 160)) failures.push(`[intro] each word arrives and leaves in 0.12 to 0.16 seconds (found ${T.in} and ${T.out} ms)`);
-  if (!(T.beat >= 0 && T.beat < T.out)) failures.push(`[intro] the next word starts to arrive before the last has gone, so there is never a blank (found a beat of ${T.beat} ms against a ${T.out} ms exit)`);
+  INTRO_MOMENTS.push(Math.round(T.lead + T.in + T.hold * 0.25), Math.round(T.lead + T.in + T.hold * 0.75));
+  // Part I: the viewing note settles, then holds fully legible long enough to read
+  // comfortably (1.8 to 2.4 seconds); it arrives and leaves in 0.12 to 0.16 seconds;
+  // the whole loader, the hero's layers included, finishes a little sooner than
+  // V1.6's 3.45 seconds (about 2.6 to 3.2).
+  if (!(T.hold >= 1800 && T.hold <= 2400)) failures.push(`[intro] the note holds fully legible for 1.8 to 2.4 seconds (found ${T.hold} ms)`);
+  if (!(T.in >= 120 && T.in <= 160) || !(T.out >= 120 && T.out <= 160)) failures.push(`[intro] the note arrives and leaves in 0.12 to 0.16 seconds (found ${T.in} and ${T.out} ms)`);
   if (!(heroEnd >= 550 && heroEnd <= 800)) failures.push(`[intro] the dissolve and the hero's layered entrance take about 0.6 to 0.8 seconds (found ${heroEnd} ms)`);
-  if (!(total >= 3000 && total <= 3500)) failures.push(`[intro] the whole sequence runs about 3 to 3.5 seconds, the hero's layers included (found ${total} ms)`);
-  const lastOut = (introRules(/^html\.intro \.intro__phrase--3$/).map((r) => r.body).join(';').match(/intro-word-out\s+var\(--intro-out\)\s+var\(--intro-leave\)\s+([^,;]+?)\s+forwards/) || [])[1];
-  if (lastOut !== 'var(--intro-reveal)') failures.push(`[intro] the last phrase holds its full time and leaves as the ground starts to clear (found ${lastOut})`);
+  if (!(total >= 2600 && total <= 3200)) failures.push(`[intro] the whole sequence runs about 2.6 to 3.2 seconds, the hero's layers included, a little quicker than V1.6's 3.45 (found ${total} ms)`);
+  const noteOut = (introRules(/^html\.intro \.intro__note$/).map((r) => r.body).join(';').match(/intro-word-out\s+var\(--intro-out\)\s+var\(--intro-leave\)\s+([^,;]+?)\s+forwards/) || [])[1];
+  if (noteOut !== 'var(--intro-reveal)') failures.push(`[intro] the note holds its full time and leaves as the ground starts to clear (found ${noteOut})`);
   if (!(T.go > 0 && T.go < 200) || !(T.clear >= 300 && T.clear <= 500)) failures.push(`[intro] the marker sets off at once, and the ground dissolves in 0.3 to 0.5 seconds (found ${T.go} and ${T.clear} ms)`);
   // The brief's order, overlapping: each layer starts after the one before, within the compact entrance.
   const order = ['the photograph', 'the name', 'the descriptor', 'the navigation', 'the rule', 'the arrow'].map((k) => LAYERS.find((l) => l.label === k));
@@ -2439,8 +2886,7 @@ const outStops = [...wordOut.matchAll(/([^{}]+)\{([^}]*)\}/g)].map((m) => [m[1].
 const midOut = outStops.filter(([x]) => !/^(from|to|0%|100%)$/.test(x));
 if (!/(?:from|0%)\s*\{[^}]*translate(?:X)?\(-[\d.]+em\)/.test(wordIn) || !/to\s*\{[^}]*translate(?:X)?\([\d.]+em\)/.test(wordOut) || stopsOf(wordIn).some((x) => !/^(from|to|0%|100%)$/.test(x)) || midOut.length > 1 || midOut.some(([, b]) => !/^\s*opacity:\s*0;?\s*$/.test(b))) failures.push('[intro] each word arrives from the left and leaves to the right, the way the marker runs, with no overshoot');
 const readout = introRules(/^\.intro__readout$/).map((r) => r.body).join(';');
-const weight = Number((readout.match(/font-weight:\s*(\d+)/) || [])[1]);
-if (!(weight < 700) || !/font-family:\s*var\(--font-display\)/.test(readout) || !/place-items:\s*center/.test(readout) || !/white-space:\s*nowrap/.test(introRules(/^\.intro__readout\s*>\s*p$/).map((r) => r.body).join(';'))) failures.push('[intro] the phrases: the display face, lighter than the headlines, one line each, at one center');
+if (!/place-items:\s*center/.test(readout) || !/white-space:\s*nowrap/.test(introRules(/^\.intro__readout\s*>\s*p$/).map((r) => r.body).join(';'))) failures.push('[intro] the note: one line at one center');
 const noteRule = introRules(/^\.intro__note$/).map((r) => r.body).join(';');
 if (!/font-family:\s*var\(--font-sans\)/.test(noteRule) || !/letter-spacing:\s*\.?\d/.test(noteRule) || /color:\s*(?:red|#f00|var\(--c-signal)/i.test(noteRule)) failures.push('[intro] the note is quiet: small tracked capitals, not a warning');
 // Reduced motion: no travel and no words; the ground clears in a fifth of a second.
@@ -2528,6 +2974,12 @@ for (const m of fs.readFileSync(path.join(root, 'src/data/events.json'), 'utf8')
   if (ids.has(m[1])) idRefs.add(m[1]);
   else failures.push(`[manifest] events.json names "${m[1]}", which is not in assets.json`);
 }
+// Ids named by the creator page's data (its hero layers, creators, loops,
+// fragments, film, montage, testimonials and metrics).
+for (const m of fs.readFileSync(path.join(root, 'src/data/creator.json'), 'utf8').matchAll(/"((?:cm|cc)-[a-z0-9-]+)"/g)) {
+  if (ids.has(m[1])) idRefs.add(m[1]);
+  else failures.push(`[manifest] creator.json names "${m[1]}", which is not in assets.json`);
+}
 const unused = [...ids].filter((id) => !idRefs.has(id));
 if (unused.length) notes.push(`[manifest] unreferenced asset ids (fine, but tidy up if unneeded): ${unused.join(', ')}`);
 
@@ -2593,9 +3045,9 @@ try {
         }
       }
       await ctx.close();
-      // The opening sequence, held at the note and at each phrase (the middle of each
-      // one's fully visible time, from the timing above).
-      for (const t of INTRO_MOMENTS.length === 4 ? INTRO_MOMENTS : [800, 1780, 2240, 2700]) {
+      // The opening sequence, held at the note, early and late in its fully legible
+      // time (from the timing above).
+      for (const t of INTRO_MOMENTS.length === 2 ? INTRO_MOMENTS : [700, 1750]) {
         const ictx = await browser.newContext({ viewport });
         const ipage = await ictx.newPage();
         await ipage.goto(PREVIEW, { waitUntil: 'load' });
@@ -2616,7 +3068,7 @@ try {
 }
 
 // ----------------------------------------------------------------- report
-console.log(`\nChecked ${htmlFiles.length} HTML pages, ${seen.size} internal URLs, ${manifest.assets.length} manifest entries${axeRan ? ', axe scan on 5 pages x 2 viewports and the opening sequence at 4 moments x 2' : ''}.`);
+console.log(`\nChecked ${htmlFiles.length} HTML pages, ${seen.size} internal URLs, ${manifest.assets.length} manifest entries${axeRan ? ', axe scan on 5 pages x 2 viewports and the opening sequence at 2 moments x 2' : ''}.`);
 for (const n of notes) console.log('note ', n);
 if (failures.length) {
   for (const f of failures) console.log('FAIL ', f);

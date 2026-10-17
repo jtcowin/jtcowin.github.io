@@ -1,0 +1,329 @@
+---
+/**
+ * 10 The Trezor campaign (Creator Marketing and Partnerships, V1.0): led by
+ * the final video (Trezor Dare Ad.mp4, with sound, on request), then, in this
+ * order and revealed as the reader scrolls: the assignment, the objective, the
+ * approach, the exact metrics, Trezor's feedback (one concise attributed
+ * quote, the approved one, kept apart from the creator testimonials) and the
+ * collaboration credits. Assignment, objective, approach, metrics and the
+ * creator, production and editing credits are V1 placeholders: labeled in
+ * `npm run dev`, absent from a production build until John supplies them, and
+ * a metric only ever states an exact, verified figure.
+ */
+import creator from '@data/creator.json';
+import { getAsset, isVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
+import CmFilm from './CmFilm.astro';
+
+const { trezor: t } = creator;
+const brief = t.brief.filter((b) => b.text || SHOW_PLACEHOLDERS);
+const metrics = t.metrics.map((id) => getAsset(id)).map((e) => ({ e, ready: isVisible(e) && e.type === 'metric' && Boolean(e.value) }));
+const shownMetrics = metrics.filter((m) => m.ready || SHOW_PLACEHOLDERS);
+const feedback = getAsset(t.feedback);
+const quoteReady = isVisible(feedback) && feedback.type === 'testimonial' && Boolean(feedback.quote);
+const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
+---
+
+<section class="cmz" data-surface="light-return" aria-labelledby="cm-trezor-title">
+  <div class="container cmz__inner">
+    <header class="cmz__head">
+      <p class="cmz__kicker">{t.kicker}</p>
+      <h2 id="cm-trezor-title" class="display cmz__title">{t.title}</h2>
+      <p class="cmz__deck">{t.deck}</p>
+    </header>
+
+    <div class="cmz__film">
+      <CmFilm id={t.film} label={t.filmLabel} domId="cm-trezor-film" />
+    </div>
+
+    {
+      brief.length > 0 && (
+        <dl class="cmz__brief">
+          {brief.map((b, i) => (
+            <div class:list={['cmz__brief-item', !b.text && 'cmz__pending']} data-cm-reveal style={`--k: ${i}`}>
+              <dt>{b.label}</dt>
+              <dd>{b.text ?? `Placeholder · ${b.label}: two or three sentences from John.`}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+
+    {
+      shownMetrics.length > 0 && (
+        <div class="cmz__results" data-cm-reveal>
+          <p class="cmz__label">{t.metricsLabel}</p>
+          <ul class="cmz__metrics">
+            {shownMetrics.map(({ e, ready }) =>
+              ready ? (
+                <li class="cmz__metric" data-asset={e.id}>
+                  <strong class="cmz__value">{e.value}</strong>
+                  {e.metricLabel && <span class="cmz__metric-label">{e.metricLabel}</span>}
+                </li>
+              ) : (
+                <li class="cmz__metric cmz__pending" data-asset={e.id} data-pending>
+                  <strong class="cmz__value">Placeholder</strong>
+                  <span class="cmz__metric-label">{e.label}: an exact, verified figure</span>
+                </li>
+              ),
+            )}
+          </ul>
+        </div>
+      )
+    }
+
+    {
+      quoteReady && (
+        <figure class="cmz__quote" data-cm-reveal>
+          <blockquote>
+            <p>{feedback.quote}</p>
+          </blockquote>
+          {feedback.attribution && <figcaption>{feedback.attribution}</figcaption>}
+        </figure>
+      )
+    }
+
+    {
+      credits.length > 0 && (
+        <div class="cmz__credits" data-cm-reveal>
+          <p class="cmz__label">{t.creditsLabel}</p>
+          <dl>
+            {credits.map((c) => (
+              <div class:list={[!c.names && 'cmz__pending']}>
+                <dt>{c.role}</dt>
+                <dd>{c.names ?? 'Placeholder · names to confirm'}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .cmz {
+    padding-block: var(--section-y) calc(var(--section-y) * 0.85);
+    background: var(--bg);
+  }
+
+  .cmz__inner {
+    display: grid;
+    gap: clamp(2.25rem, 4vw, 3.75rem);
+  }
+
+  .cmz__head {
+    display: grid;
+    gap: 0.9rem;
+    max-width: 54rem;
+  }
+
+  .cmz__kicker,
+  .cmz__label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-teal);
+  }
+
+  .cmz__title {
+    margin: 0;
+    font-size: clamp(2.6rem, 1.3rem + 4vw, 5.5rem);
+    line-height: 0.95;
+  }
+
+  .cmz__deck {
+    max-width: 40rem;
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  /* ---- the brief: assignment, objective, approach --------------------------------- */
+  .cmz__brief {
+    display: grid;
+    gap: 1.75rem;
+    margin: 0;
+  }
+
+  .cmz__brief-item {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .cmz__brief-item dt {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cmz__brief-item dd {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  @media (min-width: 56rem) {
+    .cmz__brief {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: clamp(1.5rem, 3vw, 3rem);
+    }
+  }
+
+  /* ---- results ------------------------------------------------------------------- */
+  .cmz__results {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .cmz__metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1.25rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cmz__metric {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .cmz__value {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(2.25rem, 1.5rem + 2.2vw, 3.5rem);
+    line-height: 1;
+    color: var(--heading);
+  }
+
+  .cmz__metric-label {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  /* ---- Trezor's feedback ------------------------------------------------------------ */
+  .cmz__quote {
+    display: grid;
+    gap: 1.1rem;
+    max-width: 62rem;
+    margin: clamp(0.5rem, 2vw, 1.5rem) 0;
+  }
+
+  .cmz__quote blockquote {
+    margin: 0;
+  }
+
+  .cmz__quote p {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(1.6rem, 1.05rem + 1.7vw, 2.75rem);
+    line-height: 1.12;
+    color: var(--heading);
+    text-wrap: pretty;
+  }
+
+  .cmz__quote p::before {
+    content: '“';
+  }
+
+  .cmz__quote p::after {
+    content: '”';
+  }
+
+  .cmz__quote figcaption {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+  }
+
+  .cmz__quote figcaption::before {
+    content: '';
+    display: inline-block;
+    width: 1.5rem;
+    height: 1px;
+    margin-right: 0.6rem;
+    vertical-align: middle;
+    background: currentColor;
+  }
+
+  /* ---- collaboration -------------------------------------------------------------- */
+  .cmz__credits {
+    display: grid;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .cmz__credits dl {
+    display: grid;
+    gap: 0.6rem 2.5rem;
+    margin: 0;
+  }
+
+  .cmz__credits dl > div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .cmz__credits dt {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .cmz__credits dd {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  @media (min-width: 48rem) {
+    .cmz__credits dl {
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    }
+  }
+
+  /* Authoring only: never in a production build. */
+  .cmz__pending {
+    padding: 0.75rem 0.9rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--line) 45%, transparent) 10px 11px);
+  }
+
+  .cmz__pending :is(dd, .cmz__value, .cmz__metric-label) {
+    color: var(--ink-3);
+  }
+
+  .cmz__pending .cmz__value {
+    font-size: 1.25rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .cmz [data-cm-reveal]:not(.is-in) {
+      opacity: 0;
+      transform: translate3d(0, 1.5rem, 0);
+    }
+
+    :global(html.js) .cmz [data-cm-reveal] {
+      transition:
+        opacity 0.9s ease calc(var(--k, 0) * 0.12s),
+        transform 1s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k, 0) * 0.12s);
+    }
+  }
+</style>

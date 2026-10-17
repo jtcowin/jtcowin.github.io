@@ -4,11 +4,12 @@ import CaseStudyLayout from '@layouts/CaseStudyLayout.astro';
 
 export async function getStaticPaths() {
   // Technical Product Marketing (technical-marketing.astro, since Version 1 of
-  // its redesign) and Events and Multimedia Production (events-video.astro,
-  // since its Version 1.0) have their own pages; the other case studies share
-  // this layout. (getStaticPaths runs in its own scope, so the list lives
-  // inside it.)
-  const ownPages = new Set(['technical-marketing', 'events-video']);
+  // its redesign), Events and Multimedia Production (events-video.astro, since
+  // its Version 1.0) and Creator Marketing and Partnerships
+  // (creator-campaigns.astro, since its Version 1.0) have their own pages; any
+  // other case study shares this layout. (getStaticPaths runs in its own
+  // scope, so the list lives inside it.)
+  const ownPages = new Set(['technical-marketing', 'events-video', 'creator-campaigns']);
   const entries = await getCollection('work');
   return entries.filter((entry) => !ownPages.has(entry.id)).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }

@@ -1,0 +1,104 @@
+---
+/**
+ * 14 The conclusion (Creator Marketing and Partnerships, V1.0): one short
+ * idea, that a connected program produced content right away and value that
+ * lasted (the headline's last words in the accent), then, set apart, the way on
+ * to the next case study in order (NextCase: Technical Product Marketing),
+ * then the shared Contact section. The ground carries on from the credits'
+ * deep ink and turns, as it goes, to exactly the Contact green, as on the
+ * other case studies, and Contact's grid rises out of its lower part
+ * (creator-campaigns.astro gives Contact its lead). The build stops if the
+ * next case study named in creator.json is missing or out of order.
+ */
+import { getCollection } from 'astro:content';
+import creator from '@data/creator.json';
+import { emphasize } from '@lib/tpm-copy';
+import { withBase } from '@lib/paths';
+import NextCase from '@components/NextCase.astro';
+
+const { conclusion: c } = creator;
+const title = emphasize(c.headline, c.accent, 'creator conclusion headline');
+const all = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+const idx = all.findIndex((e) => e.id === 'creator-campaigns');
+const following = idx >= 0 && all.length > 1 ? all[(idx + 1) % all.length] : null;
+const next = all.find((e) => e.id === c.next);
+if (!next) throw new Error(`[creator] the conclusion's way on leads to "${c.next}", which is not a case study`);
+if (following && following.id !== next.id) {
+  throw new Error(`[creator] the conclusion's way on leads to "${next.id}", but the next case study in order is "${following.id}"; update conclusion.next and conclusion.nextLine in creator.json together`);
+}
+---
+
+<section class="cme" data-surface="dark" aria-labelledby="cm-conclusion-title">
+  <div class="container cme__inner">
+    <h2 id="cm-conclusion-title" class="display cme__title" data-cm-reveal>
+      <span class="cm-cut">
+        <span>{title.map(({ text, em }) => (em ? <span class="cme__accent">{text}</span> : text))}</span>
+      </span>
+    </h2>
+    <p class="cme__copy">{c.copy}</p>
+    <div class="cme__next">
+      <NextCase href={withBase(`/work/${next.id}/`)} line={c.nextLine} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .cme {
+    --bg: #141e1f;
+    --heading: var(--c-bone);
+    --ink: var(--c-bone);
+    --ink-2: var(--c-bone-2);
+    --ink-3: #c7cecf;
+    --accent: #aad5cf;
+    --accent-ink: #aad5cf;
+    --line-strong: rgba(243, 239, 232, 0.34);
+    --focus: var(--c-aqua-light);
+    position: relative;
+    display: grid;
+    padding-block: calc(var(--section-y) * 0.9) calc(var(--section-y) * 1.4);
+    background: linear-gradient(to bottom, #0d0f10 0%, #0d1011 10%, #0e1213 20%, #101516 30%, #12191a 40%, #141e1f 50%, #162425 60%, #182b2c 70%, #1a3334 80%, #1d3b3c 90%, #1f4546 100%);
+  }
+
+  .cme__inner {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: clamp(2rem, 1.4rem + 1.6vw, 3.25rem);
+    text-align: center;
+  }
+
+  .cme__title {
+    margin: 0;
+    font-size: clamp(2.5rem, 1.2rem + 3.8vw, 5.25rem);
+  }
+
+  .cme__title :global(.cm-cut) {
+    display: block;
+  }
+
+  .cme__accent {
+    color: var(--accent-ink);
+  }
+
+  .cme__copy {
+    max-width: 46rem;
+    margin: 0;
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .cme__next {
+    width: 100%;
+    max-width: 46rem;
+    margin-top: clamp(1rem, 0.2rem + 2.4vw, 2.5rem);
+  }
+
+  @media (min-width: 60rem) {
+    .cme {
+      min-height: 100svh;
+      padding-block: calc(var(--header-row) + clamp(2rem, 6vh, 4rem)) clamp(5rem, 14vh, 9rem);
+    }
+  }
+</style>

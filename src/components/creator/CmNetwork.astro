@@ -1,0 +1,525 @@
+---
+/**
+ * 07 Creator network (Creator Marketing and Partnerships, V1.0): exactly the
+ * eight creators John confirmed, their square profile pictures (never a
+ * profile screenshot) traveling one way, slowly, around a curved path in depth:
+ * an ellipse seen from slightly above, the nearest card largest and on top,
+ * the farthest smaller and fainter, each with a small tilt of its own (the
+ * reference recording's depth on the custom-spaces curve). There is nothing to
+ * drag and no control to reverse it. The section's heading sits at the center
+ * of the ring; hovering, focusing or selecting a creator puts their name,
+ * affiliations and destinations there instead (selecting holds them), and the
+ * ring eases to a stop meanwhile. Nothing on a card is a testimonial, a
+ * follower count or a ranking, and the affiliations are John's confirmed ones,
+ * stated plainly.
+ *
+ * Every card's details are in the page for assistive technology (each card
+ * names its details), and narrow screens show the eight as a plain list with
+ * everything visible, so nothing depends on hover. The ring is an
+ * enhancement: without JavaScript wider screens show the same list, four
+ * across. Reduced motion holds the ring still (the arrangement below); the
+ * category label is a V1 placeholder (development only) until John confirms
+ * one. Motion: src/lib/cm-motion.ts (mountNetwork).
+ */
+import { Image } from 'astro:assets';
+import creator from '@data/creator.json';
+import { getAsset, resolveImage, SHOW_PLACEHOLDERS } from '@lib/assets';
+
+const { network: n, atlas } = creator;
+if (n.creators.length !== 8) throw new Error(`[creator] the network shows exactly eight creators (found ${n.creators.length})`);
+const places = Object.fromEntries(atlas.destinations.map((d) => [d.key, d.name]));
+const N = n.creators.length;
+// The still arrangement (reduced motion, and the first frame): evenly round the ellipse, the first card nearest.
+const cards = n.creators.map((c, i) => {
+  const entry = getAsset(c.asset);
+  const image = resolveImage(entry);
+  if (!image || entry.permission !== 'approved') throw new Error(`[creator] ${c.name}'s profile picture needs an approved file (${c.asset})`);
+  const a = (i / N) * Math.PI * 2;
+  const depth = (1 + Math.cos(a)) / 2;
+  return {
+    ...c,
+    image,
+    x: (Math.sin(a) * 50).toFixed(2),
+    y: (Math.cos(a) * 50).toFixed(2),
+    s: (0.6 + 0.4 * depth).toFixed(3),
+    o: (0.55 + 0.45 * depth).toFixed(3),
+    z: Math.round(depth * 100),
+    tilt: [-5, 4, -3, 6, -6, 3, -4, 5][i % 8],
+    dest: c.destinations.map((k) => places[k] ?? k),
+  };
+});
+---
+
+<section class="cmn" data-surface="light" aria-labelledby="cm-network-title" data-cm-network>
+  <div class="cmn__stage" data-cmn-stage>
+    <span class="cmn__lead" aria-hidden="true"></span>
+    <svg class="cmn__orbit" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <ellipse class="cmn__ellipse" cx="50" cy="50" rx="50" ry="50" />
+    </svg>
+
+    <div class="cmn__center">
+      <div class="cmn__intro" data-cmn-intro>
+        <p class="cmn__kicker">{n.kicker}</p>
+        <h2 id="cm-network-title" class="display cmn__title">{n.headline}</h2>
+        <p class="cmn__sub">{n.sub}</p>
+        <p class="cmn__hint">{n.hint}</p>
+      </div>
+      <div class="cmn__detail" data-cmn-detail aria-hidden="true"></div>
+    </div>
+
+    <ul class="cmn__ring" data-cmn-ring>
+      {
+        cards.map((c, i) => (
+          <li class="cmn__item" data-cmn-item data-i={i} style={`--x: ${c.x}; --y: ${c.y}; --s: ${c.s}; --o: ${c.o}; --z: ${c.z}; --tilt: ${c.tilt}deg`}>
+            <button type="button" class="cmn__card" data-cmn-card aria-pressed="false" aria-describedby={`cmn-${c.id}`}>
+              <span class="cmn__photo">
+                <Image src={c.image} alt="" width={240} height={240} widths={[160, 240, 400]} sizes="(min-width: 48rem) 11rem, 40vw" loading="lazy" decoding="async" class="cmn__img" />
+              </span>
+              <span class="cmn__name">{c.name}</span>
+            </button>
+            <div class="cmn__info" id={`cmn-${c.id}`} data-cmn-info>
+              <p class="cmn__info-name">{c.name}</p>
+              <ul class="cmn__aff">
+                {c.affiliations.map((a) => (
+                  <li>{a}</li>
+                ))}
+              </ul>
+              {c.category ? <p class="cmn__cat">{c.category}</p> : SHOW_PLACEHOLDERS && <p class="cmn__cat cmn__cat--pending">Placeholder · Category</p>}
+              <p class="cmn__dest">
+                <span class="cmn__dest-label">Traveled to</span>
+                {c.destinations.map((k, j) => (
+                  <span class="cmn__chip" data-place={k}>
+                    {c.dest[j]}
+                  </span>
+                ))}
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .cmn {
+    position: relative;
+    padding-block: 0 clamp(3rem, 6vw, 6rem);
+    background: var(--bg);
+    /* Destination colors, used again in the atlas. */
+    --place-costa-rica: #2f7a62;
+    --place-singapore: #b8862b;
+    --place-mykonos: #2c6fae;
+  }
+
+  /* ---- narrow screens: a plain list, everything visible --------------------------- */
+  .cmn__stage {
+    position: relative;
+  }
+
+  .cmn__orbit,
+  .cmn__lead {
+    display: none;
+  }
+
+  .cmn__center {
+    padding-inline: var(--gutter);
+    margin-bottom: 2rem;
+  }
+
+  .cmn__detail {
+    display: none;
+  }
+
+  .cmn__kicker {
+    margin: 0 0 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-teal);
+  }
+
+  .cmn__title {
+    margin: 0;
+    font-size: clamp(2.1rem, 1.2rem + 2.6vw, 3.9rem);
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+
+  .cmn__sub {
+    max-width: 30rem;
+    margin: 0.9rem 0 0;
+    font-size: var(--text-md);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .cmn__hint {
+    display: none;
+    margin: 0.9rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+
+  .cmn__ring {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem 1rem;
+    margin: 0;
+    padding: 0 var(--gutter);
+    list-style: none;
+  }
+
+  .cmn__item {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+  }
+
+  .cmn__card {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+    width: 100%;
+    padding: 0;
+    text-align: left;
+    cursor: default;
+  }
+
+  .cmn__photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--bg-sunk);
+    box-shadow:
+      0 0 0 4px #fbfaf7,
+      0 14px 30px -14px rgba(13, 15, 16, 0.45);
+  }
+
+  .cmn__photo :global(.cmn__img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* On narrow screens the name shows in the details beside the photo; here it
+     still names the button for assistive technology. */
+  .cmn__name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .cmn__info-name {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: 1.35rem;
+    line-height: 1.05;
+    color: var(--heading);
+  }
+
+  .cmn__aff {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--ink-2);
+  }
+
+  .cmn__cat {
+    margin: 0.4rem 0 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cmn__cat--pending {
+    display: inline-block;
+    padding: 0.2rem 0.45rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: 4px;
+  }
+
+  .cmn__dest {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.55rem 0 0;
+  }
+
+  .cmn__dest-label {
+    width: 100%;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cmn__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.6rem 0.25rem 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .cmn__chip::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--chip, var(--c-teal));
+  }
+
+  .cmn__chip[data-place='costa-rica'] {
+    --chip: var(--place-costa-rica);
+  }
+
+  .cmn__chip[data-place='singapore'] {
+    --chip: var(--place-singapore);
+  }
+
+  .cmn__chip[data-place='mykonos'] {
+    --chip: var(--place-mykonos);
+  }
+
+  /* ---- wider screens with JavaScript: the ring (without it, the list below, in four columns) -- */
+  @media (min-width: 48rem) {
+    :global(html.js) .cmn {
+      padding-block: 0 clamp(2rem, 4vw, 4rem);
+    }
+
+    :global(html.js) .cmn__stage {
+      --card: clamp(6.25rem, 4rem + 6.4vw, 10.75rem);
+      --rx: min(43vw, 40rem);
+      --ry: clamp(10rem, 27vh, 17rem);
+      height: clamp(38rem, calc(2 * var(--ry) + var(--card) * 1.9), 60rem);
+      margin-inline: auto;
+      max-width: var(--container);
+    }
+
+    /* The path itself, faint, and the route from the program context arriving at its far point. */
+    :global(html.js) .cmn__orbit {
+      position: absolute;
+      left: calc(50% - var(--rx));
+      top: calc(50% - var(--ry));
+      display: block;
+      width: calc(2 * var(--rx));
+      height: calc(2 * var(--ry));
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    :global(html.js) .cmn__ellipse {
+      fill: none;
+      stroke: var(--c-aqua);
+      stroke-width: 1.25;
+      vector-effect: non-scaling-stroke;
+      opacity: 0.55;
+    }
+
+    /* The route from the program context, from the section's top edge to the path's far point. */
+    :global(html.js) .cmn__lead {
+      position: absolute;
+      left: calc(50% - 0.625px);
+      top: 0;
+      display: block;
+      width: 1.25px;
+      height: calc(50% - var(--ry));
+      background: var(--c-aqua);
+      opacity: 0.7;
+    }
+
+    :global(html.js) .cmn__center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 50;
+      width: min(34rem, calc(1.15 * var(--rx)));
+      margin: 0;
+      padding: 0;
+      translate: -50% -50%;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    :global(html.js) .cmn__intro,
+    :global(html.js) .cmn__detail {
+      transition:
+        opacity 0.35s ease,
+        transform 0.45s cubic-bezier(0.2, 0.75, 0.2, 1);
+    }
+
+    :global(html.js) .cmn__sub {
+      margin-inline: auto;
+    }
+
+    :global(html.js) .cmn__hint {
+      display: block;
+    }
+
+    :global(html.js) .cmn__detail {
+      position: absolute;
+      inset: 50% 0 auto;
+      display: grid;
+      justify-items: center;
+      translate: 0 -50%;
+      opacity: 0;
+      transform: translate3d(0, 0.6rem, 0);
+    }
+
+    :global(html.js) .cmn[data-active] .cmn__intro {
+      opacity: 0;
+      transform: translate3d(0, -0.6rem, 0);
+    }
+
+    :global(html.js) .cmn[data-active] .cmn__detail {
+      opacity: 1;
+      transform: none;
+    }
+
+    :global(html.js) .cmn__detail :global(.cmn__info-name) {
+      font-size: clamp(2.2rem, 1.4rem + 2.4vw, 3.6rem);
+      line-height: 0.95;
+    }
+
+    :global(html.js) .cmn__detail :global(.cmn__aff) {
+      justify-items: center;
+      margin-top: 0.8rem;
+      font-size: var(--text-md);
+    }
+
+    :global(html.js) .cmn__detail :global(.cmn__dest) {
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    :global(html.js) .cmn__detail :global(.cmn__dest-label) {
+      text-align: center;
+    }
+
+    :global(html.js) .cmn__ring {
+      position: absolute;
+      inset: 0;
+      display: block;
+      padding: 0;
+    }
+
+    /* Each card's place on the path: --x and --y run from -50 to 50 (shares of
+       the ellipse's half-axes), --s is its scale, --o its strength, --z its
+       depth order; the script moves them, and they hold this arrangement
+       while it rests (reduced motion). */
+    :global(html.js) .cmn__item {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: var(--z);
+      display: block;
+      width: var(--card);
+      margin: calc(var(--card) / -2) 0 0 calc(var(--card) / -2);
+      transform: translate3d(calc(var(--x) / 50 * var(--rx)), calc(var(--y) / 50 * var(--ry)), 0) scale(var(--s)) rotate(var(--tilt));
+      opacity: var(--o);
+      will-change: transform;
+    }
+
+    :global(html.js) .cmn__card {
+      position: relative;
+      display: block;
+      cursor: pointer;
+      border-radius: 12px;
+    }
+
+    :global(html.js) .cmn__photo {
+      transition:
+        box-shadow 0.3s ease,
+        transform 0.35s cubic-bezier(0.2, 0.75, 0.2, 1);
+    }
+
+    :global(html.js) .cmn__card:hover .cmn__photo,
+    :global(html.js) .cmn__card:focus-visible .cmn__photo,
+    :global(html.js) .cmn__card[aria-pressed='true'] .cmn__photo {
+      transform: scale(1.06);
+      box-shadow:
+        0 0 0 4px #fbfaf7,
+        0 0 0 6px var(--c-teal),
+        0 18px 36px -14px rgba(13, 15, 16, 0.5);
+    }
+
+    :global(html.js) .cmn__card:focus-visible {
+      outline: none;
+    }
+
+    /* The name, under the card, only while it is the one shown. */
+    :global(html.js) .cmn__name {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 0.7rem);
+      display: block;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      translate: -50% 0;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      white-space: nowrap;
+      color: var(--ink);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    :global(html.js) .cmn__card:hover .cmn__name,
+    :global(html.js) .cmn__card:focus-visible .cmn__name,
+    :global(html.js) .cmn__card[aria-pressed='true'] .cmn__name {
+      opacity: 1;
+    }
+
+    /* Read by assistive technology from the card; shown at the center by the script. */
+    :global(html.js) .cmn__info {
+      position: absolute !important;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  /* ---- wider screens without JavaScript: the list, four across, everything visible -- */
+  @media (min-width: 48rem) {
+    :global(html:not(.js)) .cmn__center {
+      max-width: var(--container);
+      margin-inline: auto;
+    }
+
+    :global(html:not(.js)) .cmn__ring {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2.5rem 1.5rem;
+      max-width: var(--container);
+      margin-inline: auto;
+    }
+  }
+</style>

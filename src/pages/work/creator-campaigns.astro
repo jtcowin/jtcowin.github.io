@@ -1,0 +1,108 @@
+---
+/**
+ * Creator Marketing and Partnerships, Version 1.0.
+ *
+ * The first selected-work case study, built around the programs John ran in
+ * Costa Rica, Singapore and Mykonos: 05 the hero (one layered landscape
+ * composition), 06 the program context, 07 the creator network (eight
+ * creators on a curved path in depth), 08 the testimonial transition (V1
+ * placeholders, absent from a production build until approved), 09 the
+ * campaign atlas (one stage, three destinations), 10 the Trezor campaign,
+ * 11 the selected-content montage, 12 the program ownership, 13 the credits
+ * and 14 the conclusion, with the way on to the next case study, then
+ * Contact and the footer. (Section numbers follow the V1.0 brief, whose
+ * Part I, 01 to 04, adjusts the Events page and the homepage loader.)
+ *
+ * It keeps the portfolio's type, palette, navigation, buttons and Contact,
+ * and speaks its own visual language: open air and daylight, destination
+ * atmospheres, a curved path, a waterline, closing credits. Nothing from the
+ * Technical Product Marketing systems or the Events production monitor.
+ *
+ * Words and media configuration: src/data/creator.json; media: assets.json
+ * (a pending slot is a labeled placeholder in `npm run dev` only); client
+ * behavior: src/lib/cm-motion.ts, with the players and silent loops of
+ * src/lib/ev-media.ts. Metadata and the Select Work card still come from the
+ * case study's frontmatter (src/content/work/creator-campaigns.mdx); its
+ * older MDX body is not rendered.
+ *
+ * The page pulls itself up under the header row, so its opening screen is the
+ * whole viewport and the header's links float over the sky.
+ */
+import { getEntry } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Contact from '@components/Contact.astro';
+import CmHero from '@components/creator/CmHero.astro';
+import CmContext from '@components/creator/CmContext.astro';
+import CmNetwork from '@components/creator/CmNetwork.astro';
+import CmVoices from '@components/creator/CmVoices.astro';
+import CmAtlas from '@components/creator/CmAtlas.astro';
+import CmTrezor from '@components/creator/CmTrezor.astro';
+import CmMontage from '@components/creator/CmMontage.astro';
+import CmOwnership from '@components/creator/CmOwnership.astro';
+import CmCredits from '@components/creator/CmCredits.astro';
+import CmConclusion from '@components/creator/CmConclusion.astro';
+
+const entry = await getEntry('work', 'creator-campaigns');
+if (!entry) throw new Error('[creator-campaigns] the case study entry is missing');
+const d = entry.data;
+---
+
+<BaseLayout title={d.title} description={d.description} path="/work/creator-campaigns/" ogAsset={d.ogAsset} ogType="article" footerSurface="brand">
+  <article class="cm" aria-labelledby="cm-title">
+    <CmHero />
+    <CmContext />
+    <CmNetwork />
+    <CmVoices />
+    <CmAtlas />
+    <CmTrezor />
+    <CmMontage />
+    <CmOwnership />
+    <CmCredits />
+    <CmConclusion />
+  </article>
+
+  {/* The conclusion's ground turns into Contact's green, and Contact's grid rises out of it. */}
+  <div class="chapter" data-surface="brand">
+    <Contact lead="clamp(10rem, 40svh, 26rem)" />
+  </div>
+</BaseLayout>
+
+<script>
+  import { mountLoops, mountPlayers } from '@lib/ev-media';
+  import { mountHero, mountNetwork, mountAtlas, mountMontage, mountReveals } from '@lib/cm-motion';
+  mountHero();
+  mountNetwork();
+  mountAtlas();
+  mountPlayers();
+  mountLoops();
+  mountMontage();
+  mountReveals();
+</script>
+
+<style>
+  .cm {
+    margin-top: calc(-1 * var(--header-row));
+  }
+
+  /* ---- the page's cut: a headline rises into place from behind its own edge, once ---- */
+  :global(.cm .cm-cut) {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+
+  :global(.cm .cm-cut > span) {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js .cm [data-cm-reveal]:not(.is-in) .cm-cut > span) {
+      transform: translate3d(0, 105%, 0);
+    }
+
+    :global(html.js .cm [data-cm-reveal] .cm-cut > span) {
+      transition: transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k, 0) * 0.12s);
+    }
+  }
+</style>

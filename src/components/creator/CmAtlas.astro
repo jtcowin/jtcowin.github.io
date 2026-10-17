@@ -1,0 +1,628 @@
+---
+/**
+ * 09 Campaign atlas (Creator Marketing and Partnerships, V1.0): one stage for
+ * the three destinations, Costa Rica, Singapore and Mykonos. On wide screens
+ * tall enough to hold it, with motion allowed, the stage holds still while
+ * the reader scrolls through three states (src/lib/cm-motion.ts, mountAtlas):
+ * the destination's color atmosphere, its large name, the chapter index
+ * marking where the reader is, its primary loop (5 to 10 seconds, silent,
+ * landscape, reset with a dissolve), two fragments from the trip, a few lines
+ * of copy and its facts (creators, content pieces, co-sponsors). The index
+ * jumps to any destination. Everywhere else (narrow or short screens, reduced
+ * motion, no JavaScript) the three read one after another, each in its own
+ * atmosphere. Not a stacked gallery: one main loop and two fragments each,
+ * all landscape, all at their own ratio.
+ *
+ * Copy, counts and co-sponsors: creator.json (the Mykonos co-sponsors are a V1
+ * placeholder, development only); media: assets.json. The loops play only
+ * while their destination is the one shown and well in view, never for
+ * reduced motion or a data-saving preference, each with its own pause
+ * control (ev-media.ts, mountLoops).
+ */
+import { getImage, Picture, Image } from 'astro:assets';
+import creator from '@data/creator.json';
+import { getAsset, getLogo, resolveImage, resolveLogoImage, isSlotReady, SHOW_PLACEHOLDERS } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from '@components/Icon.astro';
+
+const { atlas } = creator;
+const chapters = await Promise.all(
+  atlas.destinations.map(async (d) => {
+    const loop = getAsset(d.loop);
+    if (!isSlotReady(loop)) throw new Error(`[creator] the ${d.name} loop needs an approved file (${d.loop})`);
+    const still = resolveImage(loop);
+    const poster = still ? await getImage({ src: still, width: Math.min(1600, still.width), format: 'webp', quality: 80 }) : null;
+    const frags = d.fragments.map((id) => {
+      const e = getAsset(id);
+      const image = resolveImage(e);
+      if (!image || e.permission !== 'approved') throw new Error(`[creator] the ${d.name} fragment "${id}" needs an approved file`);
+      return { id, image, alt: e.alt };
+    });
+    const sponsors = (d.sponsors ?? []).map((id) => {
+      const logo = getLogo(id);
+      return { name: logo.name, image: resolveLogoImage(logo) };
+    });
+    return { ...d, loop, poster: poster?.src, src: withBase(`/media/${loop.file}`), frags, sponsorList: sponsors };
+  }),
+);
+const L = atlas.factLabels;
+---
+
+<section class="cma" data-surface="dark" aria-labelledby="cm-atlas-title" data-cm-atlas>
+  <div class="cma__runway" data-cma-runway>
+    <div class="cma__stage" data-cma-stage>
+      <div class="cma__bar container">
+        <h2 id="cm-atlas-title" class="cma__kicker">{atlas.kicker}</h2>
+        <nav class="cma__index" aria-label="Destinations">
+          <ol>
+            {
+              chapters.map((c, i) => (
+                <li>
+                  <a href={`#cm-place-${c.key}`} class="cma__go" data-cma-go={i}>
+                    <span class="cma__go-num">{c.index}</span>
+                    <span class="cma__go-name">{c.name}</span>
+                    <span class="cma__go-line" aria-hidden="true">
+                      <span class="cma__go-fill" />
+                    </span>
+                  </a>
+                </li>
+              ))
+            }
+          </ol>
+        </nav>
+      </div>
+
+      {
+        chapters.map((c, i) => (
+          <article class="cma__chapter" id={`cm-place-${c.key}`} data-cma-chapter={i} data-place={c.key} data-state={i === 0 ? 'active' : 'after'} aria-labelledby={`cm-place-${c.key}-name`}>
+            <div class="cma__air" aria-hidden="true" />
+            <div class="container cma__frame">
+              <div class="cma__words">
+                <p class="cma__meta">
+                  <span>{c.index}</span>
+                  <span>{c.kind}</span>
+                  <span class="cma__coords">{c.coords}</span>
+                </p>
+                <h3 id={`cm-place-${c.key}-name`} class="display cma__name">
+                  <span class="cma__name-in">{c.name}</span>
+                </h3>
+                <p class="cma__copy">{c.copy}</p>
+                <dl class="cma__facts">
+                  <div>
+                    <dt>{L.creators}</dt>
+                    <dd>{c.creators}</dd>
+                  </div>
+                  <div>
+                    <dt>{L.pieces}</dt>
+                    <dd>{c.pieces}</dd>
+                  </div>
+                  {c.sponsorList.length > 0 ? (
+                    <div class="cma__sponsors">
+                      <dt>{L.sponsors}</dt>
+                      <dd>
+                        {c.sponsorList.map((s) =>
+                          s.image ? <Image src={s.image} alt={s.name} height={20} class="cma__logo" loading="lazy" /> : <span class="cma__logo-word">{s.name}</span>,
+                        )}
+                      </dd>
+                    </div>
+                  ) : (
+                    SHOW_PLACEHOLDERS && (
+                      <div class="cma__sponsors cma__pending">
+                        <dt>{L.sponsors}</dt>
+                        <dd>Placeholder · Sponsor identifiers</dd>
+                      </div>
+                    )
+                  )}
+                </dl>
+              </div>
+
+              <div class="cma__media">
+                <div class="cma__main" data-ev-loop data-label={`${c.name} loop`}>
+                  <video class="cma__video" muted loop playsinline preload="none" poster={c.poster} aria-label={c.loop.alt}>
+                    <source src={c.src} type="video/mp4" />
+                  </video>
+                  <button type="button" class="cma__toggle" data-ev-loop-toggle aria-label={`Play: ${c.name} loop`} hidden>
+                    <span class="cma__ico cma__ico--play">
+                      <Icon name="play" size={12} />
+                    </span>
+                    <span class="cma__ico cma__ico--pause">
+                      <Icon name="pause" size={12} />
+                    </span>
+                  </button>
+                </div>
+                {c.frags.map((f, j) => (
+                  <figure class:list={['cma__frag', j === 0 ? 'cma__frag--a' : 'cma__frag--b']}>
+                    <Picture src={f.image} alt={f.alt} widths={[400, 640, 960]} sizes="(min-width: 60rem) 18vw, 44vw" formats={['avif', 'webp']} loading="lazy" decoding="async" class="cma__frag-img" />
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .cma {
+    --view-h: 100vh;
+    position: relative;
+    background: #0b2f29;
+    color: var(--c-bone);
+    --heading: var(--c-bone);
+    --ink: var(--c-bone);
+    --ink-2: #dfe3dd;
+    --ink-3: #b9c4c1;
+    --line: rgba(243, 239, 232, 0.18);
+    --line-strong: rgba(243, 239, 232, 0.38);
+    --focus: var(--c-bone);
+  }
+
+  @supports (height: 1svh) {
+    .cma {
+      --view-h: 100svh;
+    }
+  }
+
+  /* ---- the bar: the section's label and the destination index ---------------- */
+  .cma__bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    padding-top: clamp(3.5rem, 8vw, 6rem);
+  }
+
+  .cma__kicker {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cma__index ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cma__go {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    padding-block: 0.35rem 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .cma__go-num {
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cma__go:hover,
+  .cma__go[aria-current='true'] {
+    color: var(--c-bone);
+  }
+
+  .cma__go-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: rgba(243, 239, 232, 0.16);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .cma__go-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--c-bone);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--fill, 0));
+  }
+
+  .cma__go[aria-current='true'] .cma__go-fill {
+    --fill: var(--chapter-progress, 1);
+  }
+
+  /* ---- a destination: atmosphere, words and media ----------------------------- */
+  .cma__chapter {
+    position: relative;
+    isolation: isolate;
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(4rem, 9vw, 7rem);
+  }
+
+  .cma__air {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--air);
+  }
+
+  .cma__chapter[data-place='costa-rica'] {
+    --air:
+      radial-gradient(ellipse 60% 70% at 85% 12%, rgba(236, 188, 112, 0.36), rgba(236, 188, 112, 0) 70%),
+      radial-gradient(ellipse 70% 60% at 10% 100%, rgba(52, 160, 140, 0.32), rgba(52, 160, 140, 0) 70%),
+      linear-gradient(160deg, #0b2f29 0%, #12483f 48%, #1a6357 100%);
+  }
+
+  .cma__chapter[data-place='singapore'] {
+    --air:
+      radial-gradient(ellipse 55% 65% at 15% 20%, rgba(214, 165, 74, 0.32), rgba(214, 165, 74, 0) 70%),
+      radial-gradient(ellipse 70% 60% at 90% 100%, rgba(84, 110, 180, 0.3), rgba(84, 110, 180, 0) 70%),
+      linear-gradient(165deg, #080f1c 0%, #111d33 52%, #1a2a47 100%);
+  }
+
+  .cma__chapter[data-place='mykonos'] {
+    --air:
+      radial-gradient(ellipse 60% 70% at 80% 8%, rgba(243, 239, 232, 0.26), rgba(243, 239, 232, 0) 70%),
+      radial-gradient(ellipse 70% 60% at 5% 95%, rgba(70, 160, 220, 0.3), rgba(70, 160, 220, 0) 70%),
+      linear-gradient(170deg, #082a47 0%, #114673 50%, #1c5f96 100%);
+  }
+
+  .cma__frame {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .cma__words {
+    display: grid;
+    align-content: start;
+    gap: 1.1rem;
+  }
+
+  .cma__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cma__coords {
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cma__name {
+    margin: 0;
+    font-size: clamp(3.4rem, 1.4rem + 6.4vw, 8.75rem);
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    color: var(--c-bone);
+  }
+
+  .cma__name-in {
+    display: block;
+  }
+
+  .cma__copy {
+    max-width: 30rem;
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .cma__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    margin: 0.4rem 0 0;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .cma__facts > div {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .cma__facts dt {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cma__facts dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: 1.75rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-bone);
+  }
+
+  .cma__sponsors dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.1rem;
+    min-height: 1.75rem;
+  }
+
+  .cma__sponsors :global(.cma__logo) {
+    height: 18px;
+    width: auto;
+    opacity: 0.92;
+  }
+
+  .cma__logo-word {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+
+  /* Authoring only: never in a production build. */
+  .cma__pending dd {
+    padding: 0.3rem 0.55rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: 4px;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+  }
+
+  /* ---- media: the loop, and two fragments set against it ------------------------ */
+  .cma__media {
+    position: relative;
+    padding-block: 0 1.5rem;
+  }
+
+  .cma__main {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #050607;
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.65);
+  }
+
+  .cma__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cma__toggle {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid rgba(243, 239, 232, 0.4);
+    border-radius: 50%;
+    background: rgba(8, 15, 20, 0.55);
+    color: var(--c-bone);
+    backdrop-filter: blur(4px);
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .cma__toggle:hover {
+    background: rgba(8, 15, 20, 0.8);
+  }
+
+  .cma__toggle:focus-visible {
+    outline: 2px solid var(--c-bone);
+    outline-offset: 2px;
+  }
+
+  .cma__ico {
+    display: grid;
+    place-items: center;
+  }
+
+  .cma__ico--pause,
+  .cma__toggle[data-state='playing'] .cma__ico--play {
+    display: none;
+  }
+
+  .cma__toggle[data-state='playing'] .cma__ico--pause {
+    display: grid;
+  }
+
+  .cma__main[data-failed] .cma__toggle {
+    display: none;
+  }
+
+  .cma__frag {
+    margin: 0;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    background: #050607;
+    box-shadow:
+      0 0 0 3px rgba(243, 239, 232, 0.9),
+      0 22px 40px -18px rgba(0, 0, 0, 0.7);
+  }
+
+  .cma__frag :global(picture),
+  .cma__frag :global(.cma__frag-img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .cma__frag :global(.cma__frag-img) {
+    object-fit: cover;
+  }
+
+  /* Narrow screens: the fragments as a pair beneath the loop. */
+  .cma__media {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .cma__main {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 60rem) {
+    .cma__frame {
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      align-items: center;
+      column-gap: clamp(2.5rem, 5vw, 6rem);
+    }
+
+    .cma__media {
+      display: block;
+      padding: clamp(2.5rem, 5vh, 3.5rem) 0;
+    }
+
+    .cma__frag {
+      position: absolute;
+      width: 34%;
+    }
+
+    .cma__frag--a {
+      top: 0;
+      left: -7%;
+    }
+
+    .cma__frag--b {
+      right: -3%;
+      bottom: 0;
+      width: 30%;
+    }
+  }
+
+  /* ---- held still on the screen while the reader scrolls (set by the script) ---- */
+  .cma.is-pinned .cma__runway {
+    height: calc(var(--view-h) * 3.4);
+  }
+
+  .cma.is-pinned .cma__stage {
+    position: sticky;
+    top: 0;
+    height: var(--view-h);
+    overflow: hidden;
+  }
+
+  .cma.is-pinned .cma__bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding-top: calc(var(--header-row) + clamp(0.75rem, 2.4vh, 1.75rem));
+  }
+
+  .cma.is-pinned .cma__chapter {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    padding-block: calc(var(--header-row) + 4.5rem) clamp(1.5rem, 4vh, 3rem);
+    transition:
+      opacity 0.8s ease,
+      visibility 0s linear 0.8s;
+  }
+
+  .cma.is-pinned .cma__chapter:not([data-state='active']) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='active'] {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.8s ease,
+      visibility 0s linear 0s;
+  }
+
+  .cma.is-pinned .cma__name-in,
+  .cma.is-pinned .cma__meta,
+  .cma.is-pinned .cma__copy,
+  .cma.is-pinned .cma__facts,
+  .cma.is-pinned .cma__main,
+  .cma.is-pinned .cma__frag {
+    transition:
+      transform 1s cubic-bezier(0.2, 0.75, 0.2, 1),
+      opacity 0.8s ease;
+  }
+
+  .cma.is-pinned .cma__name {
+    overflow: hidden;
+    padding-bottom: 0.06em;
+    margin-bottom: -0.06em;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='after'] .cma__name-in {
+    transform: translate3d(0, 105%, 0);
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='before'] .cma__name-in {
+    transform: translate3d(0, -105%, 0);
+  }
+
+  .cma.is-pinned .cma__chapter:not([data-state='active']) :is(.cma__meta, .cma__copy, .cma__facts) {
+    opacity: 0;
+    transform: translate3d(0, 1rem, 0);
+  }
+
+  .cma.is-pinned .cma__chapter:not([data-state='active']) .cma__main {
+    transform: scale(1.04);
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='after'] .cma__frag--a {
+    transform: translate3d(-2.5rem, 1.5rem, 0);
+    opacity: 0;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='after'] .cma__frag--b {
+    transform: translate3d(2.5rem, 1.5rem, 0);
+    opacity: 0;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='before'] .cma__frag {
+    transform: translate3d(0, -1.5rem, 0);
+    opacity: 0;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='active'] :is(.cma__meta, .cma__copy, .cma__facts) {
+    transition-delay: 0.25s;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='active'] .cma__frag--a {
+    transition-delay: 0.3s;
+  }
+
+  .cma.is-pinned .cma__chapter[data-state='active'] .cma__frag--b {
+    transition-delay: 0.42s;
+  }
+</style>
