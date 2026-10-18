@@ -177,9 +177,10 @@ const aboutHtml = aboutStart < 0 ? '' : home.slice(aboutStart, aboutEnd);
 const flow = (aboutHtml.match(/<div class="flow"[\s\S]*?<hr class="about__rule"/) || [''])[0];
 if (!flow) failures.push('[claim] the About narrative (flow, then the lower rule) was not found');
 const paragraphHtml = [...flow.matchAll(/<p class="flow__p[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
+// (Full Site Iteration V1: the first two paragraphs as John decided them; the third is unchanged.)
 const approvedParagraphs = [
-  'I came to DeFi in 2021 after a decade of building audiences and running the business behind a globally distributed music project, securing sponsorships, media appearances, and major bookings.',
-  'In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching more than 200,000 people. As the company evolved, my role expanded into positioning, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
+  'I came to DeFi in 2021 after a decade of building audiences and running the business behind a globally distributed music project, securing sponsorships, media appearances, and major bookings along the way.',
+  'In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching more than 200,000 people. As the company evolved, my role expanded into positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
   'Today, I turn product complexity into market narratives people understand and connect with.',
 ];
 if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present three paragraphs (found ${paragraphHtml.length})`);
@@ -236,6 +237,8 @@ const retiredAbout = [
   'community strategy',
   'technical storytelling',
   'understand and act on',
+  // retired in Full Site Iteration V1
+  'expanded into positioning, technical',
 ];
 for (const retired of retiredAbout) {
   if (aboutHtml.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
@@ -325,16 +328,23 @@ const DESKTOP = /min-width:\s*60rem|width\s*>=\s*60rem/;
 const TALL = /min-height:\s*[\d.]+rem|height\s*>=\s*[\d.]+rem/;
 const MOTION_OK = /prefers-reduced-motion:\s*no-preference/;
 
-// Select Work (v1.7): the approved title and intro, then three cards in one
-// template: number and category, a short title, a one-sentence subline, one
-// dominant panel and two supporting panels, and one case-study link. Metrics
-// live on the case-study pages; no card shows a figure (Creator Marketing V1.2
-// retired the creator card's impressions stand-in).
+// Select Work (v1.7; Full Site Iteration V1): the approved title and intro, the
+// intro's one emphasis on "strategy through execution" (slightly heavier, in the
+// surrounding color), then three cards in one template: number and category, a
+// short title, a one-sentence subline (never emphasized), one landscape video at
+// the card's full media width, and one case-study link. Metrics live on the
+// case-study pages; no card shows a figure (Creator Marketing V1.2 retired the
+// creator card's impressions stand-in).
 const sectionAt = (i) => (i < 0 ? '' : home.slice(i, home.indexOf('</section>', i)));
 const workHtml = sectionAt(at('id="work"'));
 if (!/<h2 id="work-heading"[^>]*>Select Work<\/h2>/.test(workHtml)) failures.push('[claim] the work section must be titled "Select Work"');
-if (!workHtml.includes('The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship.')) {
+const workLede = (workHtml.match(/<p class="lede"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
+if (textOf(workLede) !== 'The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship.') {
   failures.push('[claim] Select Work must use the approved intro');
+}
+const ledeMarks = [...workLede.matchAll(/<strong class="em-key"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1]));
+if (ledeMarks.join(' | ') !== 'strategy through execution' || (workLede.match(/<strong\b/g) || []).length !== 1 || /<(?:b|em|mark|u)[\s>]/.test(workLede)) {
+  failures.push(`[claim] the Select Work intro emphasizes "strategy through execution" and nothing else (found ${ledeMarks.join(' | ') || 'none'})`);
 }
 const cardsHtml = [...workHtml.matchAll(/<article class="card"[\s\S]*?<\/article>/g)].map((m) => m[0]);
 // (Creator Marketing V1.2: the creator card no longer claims the logistics; drafted for John's confirmation.)
@@ -358,9 +368,12 @@ approvedCards.forEach(([title, sub, href], i) => {
   if (links.length !== 1 || links[0] !== `${BASE}/${href}`) failures.push(`[claim] card ${i + 1} must carry exactly one link, to /${href} (found ${links.join(', ') || 'none'})`);
   if (!/View case study/.test(c)) failures.push(`[claim] card ${i + 1} must carry the case-study link label`);
   if (!/<span class="card__num"[^>]*>0\d<\/span>/.test(c) || !/<span class="card__label"[^>]*>[^<]+<\/span>/.test(c)) failures.push(`[claim] card ${i + 1} must carry its number and category`);
-  if ((c.match(/class="card__panel card__panel--main[\s"]/g) || []).length !== 1 || (c.match(/class="card__panel card__panel--side[\s"]/g) || []).length !== 2) {
-    failures.push(`[claim] card ${i + 1} must have one dominant panel and two supporting panels`);
+  const mediaCount = (c.match(/<div class="card__media"/g) || []).length;
+  const videoCount = (c.match(/<video\b/g) || []).length;
+  if (mediaCount !== 1 || videoCount !== 1 || /card__panel|data-card-secondary/.test(c)) {
+    failures.push(`[claim] card ${i + 1} must hold one video at its full media width and no supporting panels (found ${mediaCount} media areas, ${videoCount} videos)`);
   }
+  if (/<(?:strong|b|em|mark|u)[\s>]/.test((c.match(/<p class="card__subline"[\s\S]*?<\/p>/) || [''])[0])) failures.push(`[claim] card ${i + 1}: its subline carries no emphasis`);
   // The Sui Fest stand-in names its event and year (TOKEN2049 Singapore 2025),
   // which are not metrics; its wording is checked with the card media below.
   const visible = textOf(c.replace(/<span class="card__num"[\s\S]*?<\/span>/, '').replace(/<p class="fb__event"[\s\S]*?<\/p>/g, ''));
@@ -369,15 +382,15 @@ approvedCards.forEach(([title, sub, href], i) => {
   if (figures.length) failures.push(`[claim] card ${i + 1} must leave its metrics to the case-study page (found ${figures.join(', ')})`);
   if (/impressions|1\.25M|fb--metric/.test(c)) failures.push(`[claim] card ${i + 1} carries no impressions stand-in (retired in Creator Marketing V1.2)`);
 });
-// Every card video (Version 2.0): muted, inline, looping, nothing loaded until
-// needed, no player controls or autoplay in the HTML (the script decides what
-// plays), an accessible name, and its own labeled play and pause control. Each
-// is either its card's primary (data-card-video) or a secondary tile
-// (data-card-secondary), and each sits in a frame on its poster: a lazy,
-// responsive picture of the loop at the loop's own crop, decorative since the
-// video carries the description, used instead of the poster attribute (which
+// Every card video (Version 2.0; Full Site Iteration V1, one per card): muted,
+// inline, looping, nothing loaded until needed, no player controls or autoplay
+// in the HTML (the script decides what plays), an accessible name, and its own
+// labeled play and pause control. Each is its card's one video
+// (data-card-video), and each sits in a frame on its poster: a lazy, responsive
+// picture of the loop at the loop's own crop, decorative since the video
+// carries the description, used instead of the poster attribute (which
 // browsers fetch at once). The video stays invisible until it plays, so the
-// poster holds the tile without JavaScript and when a video cannot load.
+// poster holds the frame without JavaScript and when a video cannot load.
 const workVideos = workHtml.match(/<video\b[^>]*>/g) || [];
 for (const video of workVideos) {
   for (const attr of ['muted', 'loop', 'playsinline', 'preload="none"', 'aria-label="']) {
@@ -385,7 +398,7 @@ for (const video of workVideos) {
   }
   if (/\b(?:controls|autoplay)\b/.test(video)) failures.push('[claim] a card video must not show player controls or autoplay from the HTML');
   if (/\bposter=/.test(video)) failures.push('[claim] a card video takes its poster from the lazy picture beneath it, never the eagerly fetched poster attribute');
-  if (/\bdata-card-video\b/.test(video) === /\bdata-card-secondary\b/.test(video)) failures.push("[claim] each card video must be either its card's primary (data-card-video) or a secondary tile (data-card-secondary)");
+  if (!/\bdata-card-video\b/.test(video) || /\bdata-card-secondary\b/.test(video)) failures.push("[claim] each card video must be its card's one video (data-card-video)");
 }
 const workToggles = workHtml.match(/<button\b[^>]*\bdata-card-toggle\b[^>]*>/g) || [];
 if (workToggles.length !== workVideos.length || workToggles.some((t) => !/aria-label="(?:Play|Pause) video: [^"]+"/.test(t))) {
@@ -405,46 +418,38 @@ if (
 if (!rulesFor(/^\.card__video(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => /opacity:\s*0\b/.test(r.body)) || !rulesFor(/^\.card__video(?:\[data-astro-cid-[\w-]+\])?\[data-shown\]/).some((r) => /opacity:\s*1\b/.test(r.body))) {
   failures.push('[claim] a card video must stay invisible over its poster until it plays (opacity 0, then 1 once shown)');
 }
-const playback = scriptsText.join('\n');
-for (const token of ['data-shown', 'source:last-of-type', 'requestVideoFrameCallback', 'visibilitychange', 'prefers-reduced-motion: reduce', '(hover: hover) and (pointer: fine)']) {
-  if (!playback.includes(token)) failures.push(`[claim] the card playback script is missing "${token}" (poster, failure, frame, tab, motion or pointer guard)`);
+const playback = scriptsText.find((t) => t.includes('data-card-video') && t.includes('data-card-toggle')) || '';
+for (const token of ['data-shown', 'source:last-of-type', 'requestVideoFrameCallback', 'visibilitychange', 'prefers-reduced-motion: reduce', 'prefers-reduced-data: reduce', 'saveData', 'IntersectionObserver']) {
+  if (!playback.includes(token)) failures.push(`[claim] the card playback script is missing "${token}" (poster, failure, frame, tab, motion, data or loading guard)`);
 }
-// Select Work media (Version 2.0): every tile is a video on John's approved
-// loops. Case Study 01: the Costa Rica aftermovie primary, then the Trezor
-// paper airplane and the Bolt Bus trailer. Case Study 02: the hero animation
-// loop, the unchanged website hero motion, and the architecture diagram loop,
-// contained whole on its own plate like the still it replaced. Case Study 03:
-// the unchanged slippage preview, then the Sui Fest interview and the opening
-// of the Sui Summit presentation (cropped to keep the slide's title whole).
-// The typographic stand-ins remain only as a fallback and render nowhere.
-const panelsOf = (c) => (c.match(/<div class="card__media"[\s\S]*/) || [''])[0].split(/(?=<div class="card__panel )/).slice(1);
+// Full Site Iteration V1 retired hover-play with the supporting panels: nothing on a card plays on hover.
+if (/pointerenter|mouseenter|mouseover|\(hover: hover\)/.test(playback)) failures.push('[claim] the cards play nothing on hover (hover-play was retired with the supporting panels)');
+// Select Work media (Full Site Iteration V1): one video per card, at the card's
+// full media width, in one frame and treatment: the creator montage, the
+// Technical Product Marketing hero animation alone, and the events montage. No
+// supporting panel, contained plate, typographic stand-in or hover-play remains.
+// The frame is 16:9 on phones and tablets; on desktop it is the whole of the card
+// below its head, and every head keeps room for a two-line subline, so the
+// three frames share one size and one aspect ratio at any width.
 const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
-const CARD_MEDIA = [
-  ['creator-costa-rica-aftermovie-loop.mp4', 'creator-trezor-paper-airplane-loop.mp4', 'creator-bolt-bus-trailer-loop.mp4'],
-  ['bolt-hero-animation-loop.mp4', 'bolt-website-hero-motion.mp4', 'bolt-architecture-diagram-loop.mp4'],
-  ['bolt-slippage-explainer-preview.mp4', 'suifest-interview-loop.mp4', 'sui-summit-max-presentation-loop.mp4'],
-];
-cardsHtml.map(panelsOf).forEach((panels, i) => {
-  CARD_MEDIA[i].forEach((name, n) => {
-    const panel = panels[n] || '';
-    const role = n === 0 ? 'data-card-video' : 'data-card-secondary';
-    if (!new RegExp(`\\b${role}\\b`).test(panel) || !sourcesOf(panel).includes(name)) {
-      failures.push(`[claim] card ${i + 1}, ${n === 0 ? 'its primary' : `secondary ${n}`}, must play ${name}`);
-    }
-  });
+const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage.mp4'];
+cardsHtml.forEach((c, i) => {
+  const v = (c.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
+  if (!/\bdata-card-video\b/.test(v) || sourcesOf(v).join() !== CARD_MEDIA[i]) failures.push(`[claim] card ${i + 1} must play ${CARD_MEDIA[i]} (found ${sourcesOf(v).join(', ') || 'none'})`);
+  if (/object-position/.test(c)) failures.push(`[claim] card ${i + 1} keeps the frame centered (no per-card focus is set)`);
 });
-if (/class="fb[ "]/.test(cardsHtml.join(''))) failures.push('[claim] no typographic stand-in may render on the Select Work cards once their videos are approved');
-const [, cs2 = [], cs3 = []] = cardsHtml.map(panelsOf);
-if (!/^<div class="card__panel card__panel--side card__panel--contain" style="--plate: #[0-9a-f]{6}; --ratio: 1\.16\d\d"/.test(cs2[2] || '') || /object-position/.test(cs2[2] || '')) {
-  failures.push('[claim] the architecture loop must be contained whole on its plate, at its own aspect ratio, like the still it replaced');
-}
-if (!rulesFor(/\.card__panel--contain\b.*>\s*\.card__frame\b/).some((r) => /var\(--ratio/.test(r.body) && /var\(--room\)/.test(r.body))) failures.push('[claim] a contained video frame must take its loop\'s aspect ratio and the plate\'s room');
-if (!/object-position: 30% 50%/.test(posterImgOf(cs3[2] || '')) || !/<video\b[^>]*object-position: 30% 50%/.test(cs3[2] || '')) failures.push('[claim] the Sui Summit tile must keep the slide\'s title in view (30% 50%) on its poster and its loop alike');
+if (/class="fb[ "]/.test(cardsHtml.join(''))) failures.push('[claim] no typographic stand-in may render on the Select Work cards');
+if (!rulesFor(/^\.card__media(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => !r.at && /aspect-ratio:\s*16\s*\/\s*9/.test(r.body))) failures.push('[claim] every card video frame is 16:9 on phones and tablets');
+if (!rulesFor(/^\.card__media(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => DESKTOP.test(r.at) && /aspect-ratio:\s*auto/.test(r.body))) failures.push('[claim] on desktop every card video fills the card below its head');
+if (!rulesFor(/^\.card__subline(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*3em/.test(r.body))) failures.push('[claim] on desktop every card head keeps room for a two-line subline, so the three frames share one size');
+if (rulesFor(/\.card__panel/).length) failures.push('[claim] the supporting-panel styles were retired with the panels');
 // The card videos are web derivatives made for the homepage, never the
 // original masters (which stay outside the repository): silent (no audio
 // track), H.264 in MP4 with the index first so they start at once, each at its
-// approved length, a primary under 4 MB and a secondary under 2 MB, and each
-// poster at its loop's aspect ratio, so poster and loop share one crop.
+// approved length, each card's one video under 5 MB (Full Site Iteration V1:
+// one video per card, so the cards together weigh less than the nine of
+// Version 2.0), and each poster at its loop's aspect ratio, so poster and loop
+// share one crop.
 const mp4Seconds = (file) => {
   const buf = fs.readFileSync(file);
   const i = buf.indexOf('mvhd');
@@ -493,20 +498,13 @@ const imageSize = (file) => {
 // Seconds per loop, as cut from the approved ranges (see each manifest entry's
 // source note for the frames trimmed from an edge, and why).
 const LOOP_SECONDS = {
-  'creator-costa-rica-aftermovie-loop.mp4': 13.56,
-  'creator-trezor-paper-airplane-loop.mp4': 12.01,
-  'creator-bolt-bus-trailer-loop.mp4': 10.93,
+  'home-creator-montage.mp4': 15.52,
   'bolt-hero-animation-loop.mp4': 11.68,
-  'bolt-website-hero-motion.mp4': 13.5,
-  'bolt-architecture-diagram-loop.mp4': 11.0,
-  'bolt-slippage-explainer-preview.mp4': 9.72,
-  'suifest-interview-loop.mp4': 12.01,
-  'sui-summit-max-presentation-loop.mp4': 11.01,
+  'home-events-montage.mp4': 9.84,
 };
 const cardManifest = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets;
 cardsHtml.forEach((c, i) => {
   for (const video of c.match(/<video\b[\s\S]*?<\/video>/g) || []) {
-    const primary = /\bdata-card-video\b/.test(video);
     for (const name of sourcesOf(video).filter((n) => n.endsWith('.mp4'))) {
       const file = path.join(root, 'public/media', name);
       if (!fs.existsSync(file)) {
@@ -514,7 +512,7 @@ cardsHtml.forEach((c, i) => {
         continue;
       }
       const mb = fs.statSync(file).size / 1048576;
-      if (mb > (primary ? 4 : 2)) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(2)} MB; a ${primary ? 'primary stays under 4' : 'secondary stays under 2'} MB`);
+      if (mb > 5) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(2)} MB; a card's one video stays under 5 MB`);
       const sec = mp4Seconds(file);
       const want = LOOP_SECONDS[name];
       if (!want) failures.push(`[asset] card ${i + 1}: ${name} is not one of the approved loops`);
@@ -535,6 +533,16 @@ cardsHtml.forEach((c, i) => {
 });
 for (const retired of ['bolt-hero-animation-preview.mp4']) {
   if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was retired in Version 2.0 and must not ship`);
+}
+// Full Site Iteration V1 retired the cards' supporting panels and their earlier primaries, files and posters alike.
+for (const retired of ['creator-costa-rica-aftermovie-loop.mp4', 'creator-trezor-paper-airplane-loop.mp4', 'creator-bolt-bus-trailer-loop.mp4', 'bolt-architecture-diagram-loop.mp4', 'bolt-slippage-explainer-preview.mp4', 'suifest-interview-loop.mp4', 'sui-summit-max-presentation-loop.mp4']) {
+  if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was retired in Full Site Iteration V1 and must not ship`);
+}
+for (const retired of ['creator-campaigns/creator-costa-rica-aftermovie-poster.jpg', 'creator-campaigns/creator-trezor-paper-airplane-poster.jpg', 'creator-campaigns/creator-bolt-bus-trailer-poster.jpg', 'technical-marketing/bolt-architecture-diagram-poster.jpg', 'events-video/bolt-slippage-explainer-poster.jpg', 'events-video/suifest-interview-poster.jpg', 'events-video/sui-summit-max-presentation-poster.jpg']) {
+  if (fs.existsSync(path.join(root, 'src/assets', retired))) failures.push(`[hygiene] src/assets/${retired} was retired in Full Site Iteration V1`);
+}
+for (const id of ['cc-costa-rica-loop', 'cc-trezor-loop', 'cc-bolt-bus-loop', 'tm-architecture-loop', 'ev-slippage-preview', 'ev-suifest-loop', 'ev-max-loop']) {
+  if (cardManifest.some((a) => a.id === id)) failures.push(`[hygiene] the manifest entry ${id} was retired in Full Site Iteration V1`);
 }
 // Select Work (v1.9): on tall desktop screens the title and intro stay pinned
 // beneath the header while the cards park under them, and both release
@@ -688,11 +696,67 @@ if (toolRows.some((r) => /justify-content:\s*(?:space-|stretch)/.test(r.body)) |
 }
 // The capability rows answer the pointer and the keyboard alike.
 const capRows = prHtml.match(/<li class="cap"[^>]*>/g) || [];
-if (capRows.length !== 4 || capRows.some((t) => !/tabindex="0"/.test(t))) failures.push('[claim] the four capability rows must be reachable by keyboard');
-for (const m of prHtml.matchAll(/--tilt:\s*(-?[\d.]+)deg/g)) if (Math.abs(+m[1]) > 2) failures.push(`[claim] a capability icon tilts ${m[1]} degrees (2 at most)`);
+if (capRows.length !== 4 || capRows.some((t) => !/tabindex="0"/.test(t) || !/\bdata-cap\b/.test(t))) failures.push('[claim] the four capability rows must be reachable by keyboard');
+// Full Site Iteration V1: a capability's icon makes one full turn (360 degrees, about half a second, easing out)
+// when a fine pointer arrives on its row, with a very small lift and scale; it never loops while the pointer
+// stays, and it resets without turning backwards (the class that turns it comes off when the turn ends). Keyboard
+// focus shows the completed state with no motion; reduced motion keeps the color change alone. The old resting
+// tilt is gone, and nothing about the turn moves the layout.
+if (/--tilt/.test(prHtml) || rulesFor(/\.cap\b/).some((r) => /--tilt/.test(r.body))) failures.push('[claim] the capability icons\' resting tilt was retired in Full Site Iteration V1');
+const turnFrames = CSS_RULES.filter((r) => /@keyframes cap-turn\b/.test(r.at));
+if (!turnFrames.some((r) => /^(?:from|0%)$/.test(r.sel) && /rotate:\s*0(?:deg)?\b/.test(r.body)) || !turnFrames.some((r) => /^(?:to|100%)$/.test(r.sel) && /rotate:\s*360deg/.test(r.body))) {
+  failures.push('[claim] the capability icon turns exactly once around (0 to 360 degrees)');
+}
+const turning = rulesFor(/\.cap__icon(?:\[data-astro-cid-[\w-]+\])?\.is-turning\b/);
+// (The minifier may reorder the shorthand and write 560ms as .56s.)
+const turnDecl = turning.map((r) => (r.body.match(/animation:\s*([^;]+)/) || [])[1]).find((v) => v && /\bcap-turn\b/.test(v)) || '';
+const turnDur = turnDecl.match(/(?:^|\s)(\d*\.?\d+)(ms|s)\b/);
+const turnMs = turnDur ? Math.round(+turnDur[1] * (turnDur[2] === 's' ? 1000 : 1)) : NaN;
+const turnCurve = (turnDecl.match(/cubic-bezier\(([^)]*)\)/) || [, ''])[1].split(',').map(Number);
+const easesOut = /\bease-out\b/.test(turnDecl) || (turnCurve.length === 4 && turnCurve[1] > turnCurve[0] && turnCurve[3] >= turnCurve[2]);
+if (!(turnMs >= 450 && turnMs <= 650) || !easesOut || turning.some((r) => !MOTION_OK.test(r.at)) || /infinite|alternate|reverse|(?:^|\s)[2-9](?:\s|$)/.test(turnDecl)) {
+  failures.push(`[claim] the turn runs once, 450 to 650 ms with an ease-out, and only without reduced motion (found "${turnDecl || 'none'}")`);
+}
+const lifted = rulesFor(/\.cap(?:\[data-astro-cid-[\w-]+\])?:(?:hover|focus-visible) \.cap__icon/);
+const liftOk = (r) => /translate:\s*0\s+-[12]px/.test(r.body) && /scale:\s*1\.0[1-5]\b/.test(r.body);
+if (!lifted.some((r) => /:focus-visible/.test(r.sel) && liftOk(r)) || !lifted.some((r) => /:hover/.test(r.sel) && /hover:\s*hover/.test(r.at) && /pointer:\s*fine/.test(r.at) && liftOk(r))) {
+  failures.push('[claim] hover (a fine pointer) and keyboard focus show the completed state: a lift of a pixel or two and a scale of 1.05 at most');
+}
+if (lifted.some((r) => /rotate|animation/.test(r.body))) failures.push('[claim] keyboard focus never turns the icon (the turn belongs to the pointer\'s arrival)');
+if (!rulesFor(/\.cap__icon/).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /translate:\s*none/.test(r.body) && /scale:\s*none/.test(r.body))) failures.push('[claim] with reduced motion the capability icon only changes color');
+const capScript = scriptsText.find((t) => t.includes('data-cap') && t.includes('is-turning')) || '';
+for (const token of ['pointerenter', 'animationend', 'animationcancel', '(hover: hover) and (pointer: fine)', '(prefers-reduced-motion: reduce)', 'touch']) {
+  if (!capScript.includes(token)) failures.push(`[claim] the capability icon's turn is missing "${token}" (arrival, reset, pointer or motion guard)`);
+}
+if (/mouseover|setInterval|\.reverse\(|playbackRate/.test(capScript)) failures.push('[claim] the capability icon turns once on arrival, never repeating while the pointer stays or turning backwards to reset');
 if (/certificat/i.test(prHtml)) failures.push('[claim] the Stack has no certificate column');
-const prStatement = textOf((prHtml.match(/<p class="practice__statement"[\s\S]*?<\/p>/) || [''])[0]);
+const prStatementHtml = (prHtml.match(/<p class="practice__statement"[\s\S]*?<\/p>/) || [''])[0];
+const prStatement = textOf(prStatementHtml);
 if (!prStatement || prStatement.split(' ').length > 60) failures.push(`[claim] the How I Work statement must be short (${prStatement.split(' ').length} words)`);
+// Full Site Iteration V1: the statement as John decided it, its one emphasis on "strategy and execution".
+if (prStatement !== 'I move between strategy and execution, building clear systems and working closely with the people responsible for shipping. AI accelerates research, organization, production, and analysis, while judgment, verification, brand fit, and final approval remain mine.') {
+  failures.push('[claim] the practice statement must use the approved copy (Full Site Iteration V1)');
+}
+const prMarks = [...prStatementHtml.matchAll(/<strong class="em-key"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1]));
+if (prMarks.join(' | ') !== 'strategy and execution' || (prStatementHtml.match(/<strong\b/g) || []).length !== 1 || /<(?:b|em|mark|u)[\s>]/.test(prStatementHtml)) {
+  failures.push(`[claim] the practice statement emphasizes "strategy and execution" and nothing else (found ${prMarks.join(' | ') || 'none'})`);
+}
+// The emphasis treatment (Full Site Iteration V1, site-wide): a slightly heavier weight in the surrounding color,
+// never a highlighter, background, pill or decorative underline.
+const emKey = rulesFor(/(?:^|,)\s*\.em-key\s*(?=,|$)/);
+if (!emKey.length || emKey.some((r) => /background|box-shadow|text-decoration|border|padding/.test(r.body)) || !emKey.some((r) => /font-weight:\s*600/.test(r.body))) {
+  failures.push('[claim] .em-key is a slightly heavier weight (600) and nothing more: no background, underline, border or padding');
+}
+// Site-wide (Full Site Iteration V1): one emphasized phrase per paragraph at most (a quotation keeps its approved
+// phrases), and no highlighter or underline mark anywhere.
+for (const f of htmlFiles) {
+  const html = fs.readFileSync(f, 'utf8').replace(/<blockquote\b[\s\S]*?<\/blockquote>/g, '').replace(/<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>/g, '');
+  for (const m of html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
+    const n = (m[1].match(/<(?:strong|b|em)\b/g) || []).length;
+    if (n > 1) failures.push(`[claim] ${path.relative(dist, f)}: a paragraph emphasizes ${n} phrases ("${textOf(m[1]).slice(0, 60)}"); one at most`);
+  }
+  if (/<(?:mark|u)\b/.test(html)) failures.push(`[claim] ${path.relative(dist, f)}: no highlighter or underline marks`);
+}
 for (const retired of ['Governed by human judgment', 'AI-accelerated', 'AI accelerates the work', 'operating infrastructure', 'Governed automation', 'Marketing intelligence', 'What I do']) {
   if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired with the separate What I Do and How I Work sections`);
 }
@@ -713,6 +777,11 @@ for (const f of htmlFiles) {
   if (contactHtml) {
     const heading = plain((contactHtml.match(/<h2 id="contact-heading"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1]);
     if (heading !== "Your product is complex. Its story shouldn't be.") failures.push(`[claim] ${rel}: the Contact headline must read "Your product is complex. Its story shouldn't be." (found "${heading}")`);
+    // Full Site Iteration V1: "Its story shouldn't be." in the section's accent color, at the headline's own
+    // display weight, inside the one heading (so it reads as one sentence), and nothing else set apart.
+    const headingHtml = (contactHtml.match(/<h2 id="contact-heading"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1];
+    const accents = [...headingHtml.matchAll(/<span class="contact__accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => plain(m[1]));
+    if (accents.join(' | ') !== "Its story shouldn't be." || /<(?:strong|b|em|mark|u|br)[\s>/]/.test(headingHtml)) failures.push(`[claim] ${rel}: the Contact headline sets "Its story shouldn't be." in the accent color, and nothing else (found ${accents.join(' | ') || 'none'})`);
     const paras = [...contactHtml.matchAll(/<p class="(?!eyebrow)[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => plain(m[1]));
     if (paras.length !== 1 || paras[0] !== "If you need someone who can bring clarity from positioning through execution, let's talk.") {
       failures.push(`[claim] ${rel}: Contact must carry only the approved subline (found ${paras.length} paragraph(s))`);
@@ -730,6 +799,12 @@ for (const f of htmlFiles) {
   const year = new Date().getFullYear();
   if (credit !== `© ${year} John Cowin — Built end to end.`) failures.push(`[claim] ${rel}: the footer credit must read "© ${year} John Cowin — Built end to end." (found "${credit}")`);
   if ((textOf(footer).match(/John Cowin/g) || []).length !== 1) failures.push(`[claim] ${rel}: John's name must appear once in the footer`);
+}
+{
+  const accentRules = rulesFor(/^\.contact__accent(?:\[data-astro-cid-[\w-]+\])?$/);
+  if (!accentRules.some((r) => /color:\s*var\(--accent-ink\)/.test(r.body)) || accentRules.some((r) => /font-(?:weight|size|family)|background|text-decoration|display:\s*block/.test(r.body))) {
+    failures.push('[claim] the Contact accent takes the section\'s accent color and nothing else (same display weight and size, no block break, no background)');
+  }
 }
 for (const retired of ['Make the complex impossible to ignore', 'Site by John Cowin']) {
   if (home.includes(retired)) failures.push(`[claim] "${retired}" was retired in Version 1.8`);
@@ -1240,11 +1315,15 @@ const docsHtml = caseHtml('tpm-docs');
 if (!/data-surface="light-return"/.test((docsHtml.match(/<section\b[^>]*>/) || [''])[0])) failures.push('[tpm] 05 opens its own chapter on its own surface');
 if (tpmText(/<h2 id="tpm-docs-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Technical documentation') failures.push('[tpm] 05 is named Technical documentation');
 const DOCS_META = [
-  ['Goal', ['Replace fragmented documentation with a clear, connected system for technical audiences while controlling what product information could be made public.']],
+  // (Full Site Iteration V1: the goal and the contribution as John decided them.)
+  ['Goal', ['Replace outdated documentation with a clear, structured system for technical audiences while controlling what product information could be made public.']],
   ['Services', ['Documentation strategy, information architecture, technical writing, content governance, and MDX implementation.']],
   ['Credits', ['Visual design and interactive implementation: Bob van der Meer.']],
 ];
-const DOCS_CONTRIBUTION = 'I rebuilt the documentation from the ground up, moving it from a fragmented GitBook into a connected Mintlify system. I owned the architecture, technical writing, cross-references, calls to action, MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product information useful, accurate, and appropriate for public release.';
+const DOCS_CONTRIBUTION = 'I rebuilt the documentation from the ground up, moving it from an outdated GitBook into a purpose-built Mintlify documentation system. I owned the architecture, technical writing, cross-references, calls to action, MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product information useful, accurate, and appropriate for public release.';
+for (const retired of ['fragmented GitBook', 'connected Mintlify system', 'fragmented documentation']) {
+  if (spaced(docsHtml).includes(retired)) failures.push(`[tpm] "${retired}" was retired in Full Site Iteration V1`);
+}
 if (JSON.stringify(metaOf(docsHtml)) !== JSON.stringify(DOCS_META) || JSON.stringify(expectMeta(tpmData.documentation.meta)) !== JSON.stringify(DOCS_META)) failures.push(`[tpm] 05 metadata: Goal, Services and Credits, as approved (found ${JSON.stringify(metaOf(docsHtml))})`);
 if (/Timeline|Brief|Role/.test(spaced(docsHtml.replace(/<p class="tpm-case__contribution[\s\S]*?<\/p>/, '')))) failures.push('[tpm] 05 carries no timeline, brief or role');
 const docsP = docsHtml.match(/<p class="(tpm-case__contribution[^"]*)"[^>]*>([\s\S]*?)<\/p>/) || [, '', ''];
@@ -1277,7 +1356,13 @@ if (/\b\d+\s*(?:\+\s*)?pages?\b|Architecture Spotlight/i.test(spaced(docsHtml)))
 if (starts[0] !== 0 || starts.some((s, i) => i && s <= starts[i - 1]) || starts.some((s) => s >= docsSec)) failures.push('[tpm] the chapters start at 0 and in order, inside the walkthrough');
 if (!(starts[2] - starts[1] >= starts[1] - starts[0] && starts[2] - starts[1] >= docsSec - starts[2])) failures.push('[tpm] the architecture diagram is the longest moment of the walkthrough');
 if (chapterItems.some((m) => !/<button\b[^>]*data-seek[^>]*\bhidden\b|<button\b[^>]*\bhidden\b[^>]*data-seek/.test(m[0]))) failures.push('[tpm] each chapter plays from its point with a button that its script reveals');
-if (!/Bob van der Meer/.test(chapterItems[1]?.[0] || '')) failures.push('[tpm] the diagram chapter credits Bob van der Meer for its final design and build');
+// Full Site Iteration V1: the overview's note and the diagram's note as John decided them. The diagram's note
+// tells John's part only; Bob van der Meer's credit for the visual design and interactive build stays in 05's
+// Credits.
+const chapterNotes = chapterItems.map((m) => textOf((m[0].match(/<p\b[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]));
+if (chapterNotes[0] !== 'One branded Mintlify system in place of outdated GitBook documentation, organized from product understanding to implementation.') failures.push(`[tpm] the overview chapter carries its approved note (found "${chapterNotes[0] || ''}")`);
+if (chapterNotes[1] !== 'I developed the early diagram with engineering, validated it with the liquidity team, refined its structure, filtered out internal-only information, briefed design, and wrote every pop-up explanation.') failures.push(`[tpm] the diagram chapter carries its approved note (found "${chapterNotes[1] || ''}")`);
+if (/Bob/.test(chapterItems[1]?.[0] || '')) failures.push('[tpm] the diagram chapter\'s note no longer names Bob (his credit is in 05\'s Credits)');
 
 // ---- 06 the flagship animation campaign (V1.2): the headline, then Goal,
 // Services and Credits, the contribution centered beneath them (Bob's name
@@ -1432,7 +1517,8 @@ if (!conclusionHtml) failures.push('[tpm] 07 the conclusion closes the case stud
 else {
   const h2 = (conclusionHtml.match(/<h2 id="tpm-conclusion-title"[^>]*>([\s\S]*?)<\/h2>/) || [, ''])[1];
   if (spaced(h2) !== 'One foundation. Every expression aligned.' || JSON.stringify(accentsIn(h2)) !== JSON.stringify(['Every expression aligned.'])) failures.push('[tpm] 07 headline: One foundation. Every expression aligned. (its second sentence in the accent)');
-  const conclusionCopy = 'The work began with a shared product language and carried through the website, technical documentation, and flagship campaign, giving every public-facing expression the same strategic foundation.';
+  // (Full Site Iteration V1: broadened to the full public-facing system, as John decided; the headline is unchanged.)
+  const conclusionCopy = 'The work began with a shared product language and carried across the full public-facing system, from the website and technical documentation to campaigns, articles, content, and every expression built from the same strategic foundation.';
   if (textOf((conclusionHtml.match(/<p class="tpm-conclusion__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]) !== conclusionCopy || tpmData.conclusion?.copy !== conclusionCopy) failures.push('[tpm] 07 carries the approved paragraph');
   const cases = fs.readdirSync(path.join(root, 'src/content/work')).filter((f) => f.endsWith('.mdx')).map((f) => {
     const fm = fs.readFileSync(path.join(root, 'src/content/work', f), 'utf8');
@@ -1512,7 +1598,7 @@ const headlines = tpmHeads.filter((h) => h.level <= 2).length;
 if (!(accented >= 2 && accented <= 4 && accented < headlines) || (tpmArticle.match(/class="tpm-accent"/g) || []).length !== accented) failures.push(`[tpm] the accent marks one phrase in a few headlines, not every headline (found ${accented} of ${headlines})`);
 if (tpmHeads.some((h) => /tpm-em/.test(h.html)) || tpmParas.some((p) => /tpm-accent/.test(p)) || /tpm-em|tpm-accent|<strong\b|<b\b/.test(markHtml)) failures.push('[tpm] bold, accent and highlight never meet on one phrase');
 if (tpmHeads.some((h) => /<svg\b|<img\b/.test(h.html))) failures.push('[tpm] no icons in headlines');
-const emRule = rulesFor(/^\.tpm-em$/).map((r) => r.body).join(';');
+const emRule = rulesFor(/(?:^|,)\s*\.tpm-em\s*(?=,|$)/).map((r) => r.body).join(';');
 const accentRule = rulesFor(/^\.tpm-accent$/).map((r) => r.body).join(';');
 const emWeight = Number((emRule.match(/font-weight:\s*(\d+)/) || [])[1]);
 if (!(emWeight >= 500 && emWeight <= 650) || /background|accent/.test(emRule)) failures.push('[tpm] emphasis in a paragraph is a slightly heavier weight, nothing more');
@@ -1917,6 +2003,13 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // V1.6: the approved wider scope of the work, and the headline's second half in the page's teal, the color alone.
   const ACT_COPY = 'Before the doors open, I shape the strategy and coordinate every part of the activation, from sponsorships, speaking opportunities, and merchandise to event assets, on-site content, and post-event distribution.';
   if (one(act, /<p class="eva__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== ACT_COPY || evData.activation?.copy !== ACT_COPY) failures.push('[events] the activation carries the V1.6 paragraph: the strategy and every part of the activation, before the doors open');
+  // Full Site Iteration V1 (24): on wide screens the headline and the paragraph are top-aligned (never aligned to
+  // their ends), the paragraph's first line moved so its cap top sits level with the headline's (the two faces'
+  // measured metrics: Archivo's cap top 0.1365em into its line at 0.98, Manrope's 0.4986em at 1.7); widths,
+  // gap and rendering as before; stacked on small screens.
+  const evaHeadWide = evRules(/^\.eva__head$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+  const evaCopyWide = evRules(/^\.eva__copy$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+  if (!/align-items:\s*start/.test(evaHeadWide) || evRules(/^\.eva__head$/).some((r) => /align-items:\s*(?:end|flex-end|baseline|last baseline)/.test(r.body)) || !/grid-template-columns:\s*minmax\(0(?:px)?,\s*5fr\)\s+minmax\(0(?:px)?,\s*7fr\)/.test(evaHeadWide) || !/margin-top:\s*calc\(\s*\.1365\s*\*\s*var\(--text-2xl\)\s*-\s*\.4986\s*\*\s*var\(--text-md\)\s*\)/.test(evaCopyWide) || evRules(/^\.eva__head$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push('[events] the activation\'s headline and paragraph are top-aligned on wide screens, the paragraph\'s first line level with the headline\'s cap top, and stacked on small screens');
   const actTitle = (act.match(/<h2 id="ev-activation-title"[\s\S]*?<\/h2>/) || [''])[0];
   const actAccent = [...actTitle.matchAll(/<span class="eva__accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
   const accentRule = evRules(/^\.eva__accent$/).map((r) => r.body).join(';');
@@ -2211,13 +2304,23 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // Setup panel waits (data-loop-off) while Final shows.
   if (!/data-asset="ev-room-final-loop"/.test(finalPanel) || !/data-ev-loop-toggle/.test(finalPanel) || !finalPanel.includes(`/media/${evAsset(evData.setupFinal?.final).file}`) || /data-loop-off/.test(sfFinalTag) || !/data-loop-off/.test(sfSetupTag) || !/<video\b[^>]*\bmuted\b[^>]*>/.test(finalPanel)) failures.push('[events] Final holds the finished explainer: its muted two-scene loop with its pause control, playing by itself while Final shows (Creator Marketing V1.2), and the film behind Watch');
   // V1.6: the Final loop is only its two scenes, cut from the film's own shots,
-  // with nothing of "When things like slippage occur"; the homepage's preview is
-  // untouched.
+  // with nothing of "When things like slippage occur". (The homepage's events
+  // montage, Full Site Iteration V1, opens on the same shot; checked below.)
   const finalLoop = evAsset('ev-room-final-loop');
   const finalSec = mp4Seconds(path.join(root, 'public/media', finalLoop.file || '-'));
   const finalFacts = mp4Facts(path.join(root, 'public/media', finalLoop.file || '-'));
   if (finalLoop.permission !== 'approved' || !/1:09\.111 to 1:17\.953/.test(finalLoop.source || '') || !/Bolt solves slippage by providing you a deterministic price/.test(finalLoop.source || '') || !/set execution price/.test(finalLoop.source || '') || !/When things like slippage occur/.test(finalLoop.source || '') || !(Math.abs(finalSec - 8.84) < 0.05) || Math.abs(finalLoop.duration - 8.84) > 0.01 || finalFacts.handlers.includes('soun') || finalFacts.width !== 1600 || finalFacts.top.indexOf('moov') > finalFacts.top.indexOf('mdat') || !fs.existsSync(path.join(root, 'src/assets', finalLoop.poster || '-'))) failures.push(`[events] the Final loop is the two scenes alone, 1:09.111 to 1:17.953 of the film, silent, 1600 wide, with its poster (found ${finalSec}s)`);
-  if (evAsset('ev-slippage-preview').file !== 'bolt-slippage-explainer-preview.mp4' || LOOP_SECONDS['bolt-slippage-explainer-preview.mp4'] !== 9.72) failures.push('[events] the homepage keeps its own slippage preview');
+  // Full Site Iteration V1: the homepage's events card plays one montage in this order: the production room (the
+  // finished explainer, then its setup), Sui Fest and its event film, a brief creator podcast, and the live
+  // presentation last, whose title slide dissolves back into the explainer's yellow on dark (no jump in brightness).
+  {
+    const m = evAsset('ev-events-montage');
+    const src = m.source || '';
+    const order = ['Bolt Explainers - Slippage.mp4 1:09.111', 'Sui Summit BTS.jpeg', 'SuiFest.mp4 0:00.90', 'Jungle Talk.mp4', 'Max Presentation.mp4 0:00.50'].map((t) => src.indexOf(t));
+    if (m.file !== 'home-events-montage.mp4' || m.permission !== 'approved' || order.some((x) => x < 0) || order.some((x, i) => i && x < order[i - 1]) || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !(Math.abs(LOOP_SECONDS['home-events-montage.mp4'] - m.duration) < 0.02)) {
+      failures.push('[events] the homepage\'s events montage runs production room, Sui Fest, creator podcast, live presentation, its reset dissolving the presentation into the explainer');
+    }
+  }
   const sfPanelRule = evRules(/^(?:html\.js )?\.evd__sf-panel$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const sfPanelOn = evRules(/^(?:html\.js )?\.evd__sf-panel\.is-shown$/).filter((r) => !r.at).map((r) => r.body).join(';');
   const sfFrame = block(sfBlock, '<div class="evd__frame evd__frame--sf"');
@@ -2481,7 +2584,14 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (cmOne(ctx, /<p class="cmx__copy"[^>]*>([\s\S]*?)<\/p>/) !== CTX.copy || cmData.context?.copy !== CTX.copy) failures.push('[creator] the program context carries the V1.2 paragraph, word for word');
   // V1.3: beneath the paragraph, one supporting line on the roster, smaller and quieter (not a second paragraph of
   // equal weight), naming no one: no names, handles, pictures, follower counts, categories or travel histories.
-  const ROSTER_LINE = 'The roster brought together eight creators across streaming, crypto media, ecosystem leadership, entertainment, and community.';
+  // (Full Site Iteration V1: the roster line gives no count; the paragraph's one emphasis is John's central claim.)
+  const ROSTER_LINE = 'The roster brought together creators across streaming, crypto media, ecosystem leadership, entertainment, and community.';
+  if (/\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+creators\b/i.test(textOf(norm(ctx)))) failures.push('[creator] the program introduction gives no creator count (Full Site Iteration V1)');
+  const ctxCopyHtml = (ctx.match(/<p class="cmx__copy"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
+  const ctxMarks = [...ctxCopyHtml.matchAll(/<strong class="em-key"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1]));
+  if (ctxMarks.join(' | ') !== 'I led campaign strategy with co-sponsors' || (ctxCopyHtml.match(/<strong\b/g) || []).length !== 1 || /<(?:b|em|mark|u)[\s>]/.test(ctxCopyHtml) || /<strong\b|<em\b|<mark\b/.test((ctx.match(/<p class="cmx__roster"[\s\S]*?<\/p>/) || [''])[0])) {
+    failures.push(`[creator] the program paragraph emphasizes "I led campaign strategy with co-sponsors" and nothing else, the roster line none (found ${ctxMarks.join(' | ') || 'none'})`);
+  }
   const ctxWords = cmBlock(ctx, '<div class="cmx__words"');
   if (cmOne(ctx, /<p class="cmx__roster"[^>]*>([\s\S]*?)<\/p>/) !== ROSTER_LINE || cmData.context?.roster !== ROSTER_LINE || !/^<div class="cmx__words"[^>]*>\s*<p class="cmx__copy"[^>]*>[\s\S]*?<\/p>\s*<p class="cmx__roster"[^>]*>[\s\S]*?<\/p>\s*<\/div>$/.test(ctxWords) || /<img\b|<a\b|@/.test(ctxWords)) failures.push(`[creator] V1.3: beneath the program paragraph, one line on the roster, word for word ("${ROSTER_LINE}"), with no names, handles, pictures or links`);
   const rosterRule = cmRules(/^\.cmx__roster$/).filter((r) => !r.at).map((r) => r.body).join(';');
@@ -2490,7 +2600,8 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (/<svg\b|cmx__route|data-cmx-route/.test(ctx) || cmRules(/\.cmx__route/).length) failures.push('[creator] V1.2: no drawn route leads out of the program context (the network is no longer a ring)');
   // V1.4 (08): one full-width, centered editorial composition in place of the split headline and paragraph: the
   // headline at the top center in a narrow, balanced measure (12ch to 16ch; this face sets it in three lines at 16ch),
-  // the paragraph beneath it at a readable measure (44 to 50rem), then a short centered rule (a 1px line no wider than
+  // the paragraph beneath it at a readable measure (Full Site Iteration V1: 54 to 60rem, at the same type size, so it
+  // sets in fewer, longer lines), then a short centered rule (a 1px line no wider than
   // 3rem) and the roster line, smaller and quieter; no card, pill, badge or box, and no two-column grid at any width.
   // On phones the paragraph and the roster line set left in the same order while the headline stays centered. The
   // headline rises first, the paragraph follows with a short upward fade and the roster line comes last, only with
@@ -2503,7 +2614,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const ctxRuleLine = cmRules(/^\.cmx__roster::?before$/).map((r) => r.body).join(';');
   const ctxPhone = (re) => cmRules(re).filter((r) => /max-width:\s*39\.99rem|width\s*<=\s*39\.99rem/.test(r.at)).map((r) => r.body).join(';');
   if (!ctxInner.some((r) => !r.at && /display:\s*grid/.test(r.body) && /justify-items:\s*center/.test(r.body) && /text-align:\s*center/.test(r.body)) || ctxInner.some((r) => /grid-template-columns|grid-template-areas/.test(r.body)) || cmRules(/^\.cmx__(?:title|words|copy|roster)$/).some((r) => /grid-column|grid-area/.test(r.body))) failures.push('[creator] V1.4: the program introduction is one centered composition, not a split layout, at every width');
-  if (!(ctxTitleCh >= 12 && ctxTitleCh <= 16) || !/text-wrap:\s*balance/.test(ctxTitle) || !/margin:\s*0 auto/.test(ctxTitle) || !(ctxWordsRem >= 44 && ctxWordsRem <= 50)) failures.push(`[creator] V1.4: the headline sits at the top center in a narrow, balanced measure (12ch to 16ch, found ${ctxTitleCh}ch) and the paragraph beneath it at a readable one (44 to 50rem, found ${ctxWordsRem}rem)`);
+  if (!(ctxTitleCh >= 12 && ctxTitleCh <= 16) || !/text-wrap:\s*balance/.test(ctxTitle) || !/margin:\s*0 auto/.test(ctxTitle) || !(ctxWordsRem >= 54 && ctxWordsRem <= 60)) failures.push(`[creator] V1.4: the headline sits at the top center in a narrow, balanced measure (12ch to 16ch, found ${ctxTitleCh}ch) and the paragraph beneath it at a wider one (Full Site Iteration V1: 54 to 60rem, found ${ctxWordsRem}rem)`);
   if (!/content:\s*(?:''|"")/.test(ctxRuleLine) || !/height:\s*1px/.test(ctxRuleLine) || !(Number((ctxRuleLine.match(/width:\s*([\d.]+)rem/) || [])[1]) <= 3) || !/background:\s*var\(--line(?:-strong)?\)/.test(ctxRuleLine) || cmRules(/^\.cmx(?:__inner|__words|__copy|__roster)?$/).some((r) => /box-shadow|border(?:-[\w-]+)?\s*:|border-radius|outline|background-color/.test(r.body) || (/background:/.test(r.body) && !/background:\s*var\(--bg\)/.test(r.body)))) failures.push('[creator] V1.4: a short centered rule sets the roster line apart, with no card, pill, badge or box');
   if (!/text-align:\s*left/.test(ctxPhone(/^\.cmx__words$/)) || !/text-align:\s*left/.test(ctxPhone(/^\.cmx__roster$/)) || cmRules(/^\.cmx__title$/).some((r) => r.at && /text-align:\s*(?:left|start)/.test(r.body))) failures.push('[creator] V1.4: on phones the paragraph and the roster line set left, the headline stays centered');
   const revealDelay = (re) => Number((cmRules(re).filter((r) => MOTION_OK.test(r.at)).map((r) => r.body).join(';').match(/transition:\s*opacity\s+[\d.]+m?s\s+(?:(?:ease(?:-in|-out|-in-out)?|linear)\s+)?([\d.]+)s/) || [])[1]);
@@ -2589,7 +2700,8 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // ---- 09 The campaign atlas: one stage, three destinations
   const ATLAS = [
     { key: 'costa-rica', num: '01', type: 'Creator retreat', coords: '10.4° N, 85.8° W', copy: 'A creator house on the Pacific coast where shared moments became destination content, creator-led integrations, and bespoke campaigns produced for co-sponsors.', pieces: '40+', sponsors: ['Trezor', 'Bitrefill'], frags: ['cm-frag-costa-rica-villa', 'cm-frag-costa-rica-table'] },
-    { key: 'singapore', num: '02', type: 'Conference activation', coords: '1.3° N, 103.8° E', copy: "A crypto game show on a party bus, high tea on the 56th floor, and a shopping spree through the city's luxury malls, designed as a conference activation.", pieces: '35+', sponsors: ['Rayls Labs'], frags: ['cm-frag-singapore-dinner', 'cm-frag-singapore-high-tea'] },
+    // (Full Site Iteration V1: John's Singapore line, the activation across the city, never a retail brand.)
+    { key: 'singapore', num: '02', type: 'Conference activation', coords: '1.3° N, 103.8° E', copy: 'A city-wide conference activation spanning a crypto game show on a party bus, high tea above Singapore, and a creator shopping experience through the city.', pieces: '35+', sponsors: ['Rayls Labs'], frags: ['cm-frag-singapore-dinner', 'cm-frag-singapore-high-tea'] },
     { key: 'mykonos', num: '03', type: 'Creator retreat', coords: '37.4° N, 25.3° E', copy: 'A villa above the Aegean, a day on a catamaran, and long dinners into the evening, with four creators turning each moment into content.', pieces: '25+', sponsors: ['Phi Labs'], frags: ['cm-frag-mykonos-podcast', 'cm-frag-mykonos-terrace'] },
   ];
   const atlas = cmSec('cma');
@@ -2612,7 +2724,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     if (!new RegExp(`^<article class="cma__chapter" id="cm-place-${d.key}" data-cma-chapter="${i}" data-place="${d.key}" data-state="${i === 0 ? 'active' : 'after'}" aria-labelledby="cm-place-${d.key}-name"`).test(ch)) failures.push(`[creator] destination ${d.num} is ${name}, in order, named by its heading`);
     const meta = [...((ch.match(/<p class="cma__meta"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]).matchAll(/<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
     if (JSON.stringify(meta) !== JSON.stringify([d.num, d.type, d.coords])) failures.push(`[creator] ${name}: ${d.num}, ${d.type}, ${d.coords} (found ${meta.join(', ')})`);
-    if (cmOne(ch, /<h3 id="cm-place-[\w-]+-name"[^>]*>([\s\S]*?)<\/h3>/) !== name || cmOne(ch, /<p class="cma__copy"[^>]*>([\s\S]*?)<\/p>/) !== norm(d.copy)) failures.push(`[creator] ${name}: the destination's name and its V1.1 copy`);
+    if (cmOne(ch, /<h3 id="cm-place-[\w-]+-name"[^>]*>([\s\S]*?)<\/h3>/) !== name || cmOne(ch, /<p class="cma__copy"[^>]*>([\s\S]*?)<\/p>/) !== norm(d.copy)) failures.push(`[creator] ${name}: the destination's name and its approved copy`);
     const facts = [...ch.matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(m[1]), m[2]]);
     const want = [['Creators', String(perPlace[d.key])], ['Content pieces', d.pieces]];
     if (JSON.stringify(facts.slice(0, 2).map(([k, v]) => [k, textOf(v)])) !== JSON.stringify(want) || String(src.creators) !== want[0][1] || String(src.pieces) !== d.pieces) failures.push(`[creator] ${name}: ${want.map((w) => `${w[0]} ${w[1]}`).join(', ')}, as John gave them`);
@@ -2711,18 +2823,29 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (JSON.stringify(shownBrief) !== JSON.stringify(BRIEF.map(([l, t]) => [l, norm(t)])) || JSON.stringify((cmData.trezor?.brief || []).map((b) => [b.label, b.text])) !== JSON.stringify(BRIEF)) failures.push(`[creator] V1.2: the Trezor section states the assignment, the objective and the approach, word for word (found ${shownBrief.map((b) => b[0]).join(', ') || 'none'})`);
   // The three performance highlights (V1.1): the post's results on the creator's account, as a rate, a multiple and a
   // ranking with its percentile; never a raw total, and never presented as Trezor's complete campaign performance.
-  // V1.4: measured against the account's preceding 56 posts (V1.1 to V1.3 said three months); the multiple reads
+  // V1.4: measured against the account's preceding posts (V1.1 to V1.3 said three months); the multiple reads
   // "2.2x" (a screen reader hears "2.2 times"); the note is one sentence, the creator-account-results sentence gone.
+  // Full Site Iteration V1: the sample is 60 posts everywhere (copy, labels, metadata, accessible text and source
+  // notes), and the earlier 56-post sample appears nowhere; the figures themselves are unchanged.
   const HIGHLIGHTS = [
     ['524%', "above the account's average impressions", ''],
     ['2.2x', "the account's average total engagement", ''],
     // V1.2: by reach, never "most-viewed"; the 98th-percentile line kept.
-    ['#2', 'by reach out of 56 posts', 'Ranked in the 98th percentile for reach during the sample period.'],
+    ['#2', 'by reach out of 60 posts', 'Ranked in the 98th percentile for reach during the sample period.'],
   ];
   // (the data's documentation notes, the keys that begin with "_", may say what is ruled out)
   const cmDataWords = JSON.stringify(cmData).replace(/"_\w+":\s*"(?:[^"\\]|\\.)*"/g, '');
   if (/most[- ]viewed/i.test(cmNoCode) || /most[- ]viewed/i.test(cmDataWords) || cmAssets.filter((a) => /^cm-/.test(a.id)).some((a) => /most[- ]viewed/i.test(JSON.stringify(a)))) failures.push('[creator] V1.2: the ranking is "#2 by reach", never "most-viewed", in the page, the data or the manifest');
-  const HL_NOTE = "Measured on the creator's account against its preceding 56 posts.";
+  const HL_NOTE = "Measured on the creator's account against its preceding 60 posts.";
+  {
+    const m56 = /\b56[- ]posts?\b|\b56-post\b|preceding 56\b|out of 56\b/i;
+    const where = [];
+    if (m56.test(cmPage)) where.push('the page');
+    if (m56.test(JSON.stringify(cmData))) where.push('creator.json');
+    if (cmAssets.some((a) => m56.test(JSON.stringify(a)))) where.push('the manifest');
+    if (m56.test(fs.readFileSync(path.join(root, 'src/components/creator/CmTrezor.astro'), 'utf8'))) where.push('CmTrezor.astro');
+    if (where.length) failures.push(`[creator] the 56-post sample appears nowhere since Full Site Iteration V1 (found in ${where.join(', ')})`);
+  }
   const results = cmBlock(tz, '<div class="cmz__results"');
   const shownMetrics = cmBlocks(tz, '<li class="cmz__metric');
   // The figure as it is seen (what a screen reader is given instead, in an sr-only span, set aside).
@@ -2730,13 +2853,13 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const gotHl = shownMetrics.map((m) => [textOf(norm(valueHtml(m).replace(/<span class="sr-only"[^>]*>[\s\S]*?<\/span>/g, ''))), cmOne(m, /<span class="cmz__metric-label"[^>]*>([\s\S]*?)<\/span>/)]);
   const spokenHl = shownMetrics.map((m) => cmOne(valueHtml(m), /<span class="sr-only"[^>]*>([\s\S]*?)<\/span>/));
   if (JSON.stringify(spokenHl) !== JSON.stringify(['', '2.2 times', '']) || !/^<span aria-hidden="true"[^>]*>2\.2x<\/span><span class="sr-only"[^>]*>2\.2 times<\/span>$/.test(valueHtml(shownMetrics[1] || '').trim())) failures.push(`[creator] V1.4: the multiple reads "2.2x" and a screen reader hears "2.2 times"; the other figures are read as they are (found ${JSON.stringify(spokenHl)})`);
-  if (/creator-account results|not Trezor's total campaign performance|preceding three months/.test(cmSpaced) || cmData.trezor?.metricsNote !== HL_NOTE) failures.push('[creator] V1.4: the note is one sentence, "Measured on the creator\'s account against its preceding 56 posts.", with no creator-account-results sentence');
+  if (/creator-account results|not Trezor's total campaign performance|preceding three months/.test(cmSpaced) || cmData.trezor?.metricsNote !== HL_NOTE) failures.push(`[creator] the note is one sentence, "${HL_NOTE}", with no creator-account-results sentence`);
   // V1.3: the ranking's percentile reads as a quieter line under the row, so the three columns stay even.
   const hlLines = [...results.matchAll(/<p class="cmz__results-line"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(norm(m[1])));
   if (JSON.stringify(gotHl) !== JSON.stringify(HIGHLIGHTS.map(([v, l]) => [v, l])) || JSON.stringify(hlLines) !== JSON.stringify(HIGHLIGHTS.map((h) => h[2]).filter(Boolean).map(norm)) || /cmz__metric-note/.test(results)) failures.push(`[creator] the Trezor section shows the three approved highlights, exactly, the percentile under the row (found ${gotHl.map((h) => h.join(' ')).join(' | ')}; ${hlLines.join(' | ')})`);
   const metricIds = cmData.trezor?.metrics || [];
   const hlAssets = metricIds.map((id) => cmAsset(id));
-  if (hlAssets.length !== 3 || hlAssets.some((a, k) => a.permission !== 'approved' || a.type !== 'metric' || a.value !== HIGHLIGHTS[k][0] || a.metricLabel !== HIGHLIGHTS[k][1] || (a.metricNote || '') !== HIGHLIGHTS[k][2] || (a.metricSpoken || '') !== (k === 1 ? '2.2 times' : '') || !/measured on the creator's own account against its preceding 56 posts/.test(a.source || '') || !/never a raw total/.test(a.source || ''))) failures.push('[creator] the three highlights are approved metrics in the manifest, each recorded as measured on the creator\'s own account against its preceding 56 posts (V1.4), never a raw total; the multiple spoken as "2.2 times"');
+  if (hlAssets.length !== 3 || hlAssets.some((a, k) => a.permission !== 'approved' || a.type !== 'metric' || a.value !== HIGHLIGHTS[k][0] || a.metricLabel !== HIGHLIGHTS[k][1] || (a.metricNote || '') !== HIGHLIGHTS[k][2] || (a.metricSpoken || '') !== (k === 1 ? '2.2 times' : '') || !/measured on the creator's own account against its preceding 60 posts/.test(a.source || '') || !/never a raw total/.test(a.source || ''))) failures.push('[creator] the three highlights are approved metrics in the manifest, each recorded as measured on the creator\'s own account against its preceding 60 posts (Full Site Iteration V1), never a raw total; the multiple spoken as "2.2 times"');
   if (cmOne(results, /<p class="cmz__label"[^>]*>([\s\S]*?)<\/p>/) !== 'Performance highlights' || cmOne(results, /<p class="cmz__results-note"[^>]*>([\s\S]*?)<\/p>/) !== HL_NOTE) failures.push(`[creator] the highlights are labeled "Performance highlights" and framed: "${HL_NOTE}"`);
   // V1.3: the scale and centered composition of the results under the Technical Product Marketing film, in this page's
   // palette and type: the label centered over one balanced row of three equal columns on wide screens (stacked on
@@ -2783,12 +2906,33 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (!cmRules(/^\.cmz__quote p$/).some((r) => !r.at && /color:\s*var\(--heading\)/.test(r.body))) failures.push('[creator] V1.3: the rest of the quotation keeps its dark ink');
   if (emRules.some((r) => /animation/.test(r.body)) || emRules.some((r) => /:not\(\.is-in\)|transition/.test(r.body + bare(r.sel)) && !MOTION_OK.test(r.at)) || !emRules.some((r) => MOTION_OK.test(r.at) && /html\.js/.test(r.sel) && /\.cmz__quote:not\(\.is-in\)/.test(bare(r.sel)) && /^color:\s*inherit$/.test(r.body.trim())) || !emRules.some((r) => MOTION_OK.test(r.at) && /^transition:\s*color\s/.test(r.body.trim()) && !/background|transform|opacity|font-weight|infinite/.test(r.body))) failures.push('[creator] V1.3: the teal resolves once as the quotation arrives, only with motion allowed, and nothing pulses, sweeps or repeats');
 
+  // Full Site Iteration V1 (11): the feedback centered, quotation, phrases and attribution together, at a readable
+  // measure with balanced lines; its phrases are still set apart by type alone (above).
+  {
+    const quoteRule = cmRules(/^\.cmz__quote$/).filter((r) => !r.at).map((r) => r.body).join(';');
+    const quoteRem = Number((quoteRule.match(/max-width:\s*([\d.]+)rem/) || [])[1]);
+    if (!/text-align:\s*center/.test(quoteRule) || !/justify-self:\s*center/.test(quoteRule) || !(quoteRem >= 44 && quoteRem <= 56) || !cmRules(/^\.cmz__quote p$/).some((r) => !r.at && /text-wrap:\s*balance/.test(r.body)) || !cmRules(/^\.cmz__quote figcaption$/).some((r) => !r.at && /justify-items:\s*center/.test(r.body))) failures.push(`[creator] the Trezor feedback is centered with its attribution beneath it, at a readable measure (44 to 56rem, found ${quoteRem}rem) in balanced lines`);
+    // (12): then a quiet transition into the library: one centered 1px rule, strongest at its middle and fading to
+    // nothing at both ends, about two thirds of the width, with generous space; with motion allowed it draws out once
+    // from its center. No illustration, card, icon or wave.
+    const ruleEl = (tz.match(/<hr class="cmz__rule"[^>]*>/) || [''])[0];
+    const ruleCss = cmRules(/^\.cmz__rule$/).filter((r) => !r.at).map((r) => r.body).join(';');
+    const ruleW = Number((ruleCss.match(/width:\s*min\(([\d.]+)%/) || [])[1]);
+    if (!ruleEl || !/linear-gradient\(to right,\s*transparent,[^;]*\b50%,\s*transparent\)/.test(ruleCss) || !/height:\s*1px/.test(ruleCss) || !/border:\s*0\b/.test(ruleCss) || !(ruleW >= 60 && ruleW <= 70) || !/justify-self:\s*center/.test(ruleCss) || !/margin:\s*clamp\(\s*3rem/.test(ruleCss)) failures.push(`[creator] a centered 1px rule follows the feedback, strongest at its middle and fading at both ends, 60 to 70% of the width (found ${ruleW}%), with generous space`);
+    const ruleHidden = cmRules(/^html\.js \.cmz \.cmz__rule\[data-cm-reveal\]:not\(\.is-in\)$/);
+    if (!ruleHidden.length || ruleHidden.some((r) => !MOTION_OK.test(r.at) || !/transform:\s*scaleX\(0\)/.test(r.body)) || cmRules(/\.cmz__rule/).some((r) => /animation|transform-origin/.test(r.body))) failures.push('[creator] the rule draws out once from its center, only with motion allowed');
+    const afterQuote = tz.slice(tz.indexOf('</figure>', tz.indexOf('cmz__quote')));
+    if (/<(?:svg|img|picture|canvas)\b|class="[^"]*(?:card|icon|wave)/.test(afterQuote)) failures.push('[creator] no illustration, card, icon or wave in the transition to the library');
+  }
+
   // ---- 11 Selected content (V1.1; V1.2 its line, its loops and three recut edits; V1.3 Podcasts and the recut creator
   // ads): seven edits behind editorial tabs
   const lib = cmSec('cml');
-  const LIB = { kicker: 'Selected content', headline: 'One program, many formats.', copy: 'See the program move from destination films and creator ads to sponsor integrations and the moments behind the camera.' };
+  // (Full Site Iteration V1: the "Selected content" eyebrow is gone; the headline leads.)
+  const LIB = { headline: 'One program, many formats.', copy: 'See the program move from destination films and creator ads to sponsor integrations and the moments behind the camera.' };
+  if (/cml__kicker/.test(lib) || /SELECTED CONTENT|>\s*Selected content\s*</.test(lib) || 'kicker' in (cmData.library || {})) failures.push('[creator] the library opens on its headline: the "Selected content" eyebrow is gone (Full Site Iteration V1)');
   const FORMATS = [['destination', 'Destination films'], ['ads', 'Creator ads'], ['gameshow', 'Game show'], ['lifestyle', 'Lifestyle'], ['sponsor', 'Sponsor integrations'], ['bts', 'Behind the scenes'], ['podcasts', 'Podcasts']];
-  if (!/data-surface="light-return"/.test(openTag(lib)) || !/data-cm-library/.test(openTag(lib)) || cmOne(lib, /<p class="cml__kicker"[^>]*>([\s\S]*?)<\/p>/) !== LIB.kicker || cmOne(lib, /<h2 id="cm-library-title"[^>]*>([\s\S]*?)<\/h2>/) !== LIB.headline || cmOne(lib, /<p class="cml__copy"[^>]*>([\s\S]*?)<\/p>/) !== LIB.copy) failures.push(`[creator] the library reads "${LIB.kicker}", "${LIB.headline}" and "${LIB.copy}"`);
+  if (!/data-surface="light-return"/.test(openTag(lib)) || !/data-cm-library/.test(openTag(lib)) || cmOne(lib, /<h2 id="cm-library-title"[^>]*>([\s\S]*?)<\/h2>/) !== LIB.headline || cmOne(lib, /<p class="cml__copy"[^>]*>([\s\S]*?)<\/p>/) !== LIB.copy) failures.push(`[creator] the library reads "${LIB.headline}" and "${LIB.copy}"`);
   // The montage, its pill list and its social clips are gone.
   if (/class="cmm|data-cm-montage|Social clips/.test(cmPage) || 'montage' in cmData || fs.existsSync(path.join(root, 'public/media/cm-montage.mp4')) || fs.existsSync(path.join(root, 'public/media/cm-montage-540.mp4')) || fs.existsSync(path.join(root, 'src/components/creator/CmMontage.astro'))) failures.push('[creator] V1.1 replaced the montage with the library: no montage, no format pills, no "Social clips"');
   // The tabs: one tablist, seven tabs in order (V1.3: Podcasts the seventh), the first selected and the only stop in the
@@ -2821,26 +2965,22 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     const f = libFormats[i] || {};
     const e = cmAsset(f.edit);
     const v = (p.match(/<video\b[^>]*>/) || [''])[0];
-    let cues = [];
-    try {
-      cues = JSON.parse(decode((openTag(p).match(/data-cues="([^"]+)"/) || [, '[]'])[1]));
-    } catch {
-      cues = null;
-    }
     const srcs = [...p.matchAll(/<source src="([^"]+)" type="video\/mp4"([^>]*)>/g)].map((m) => [m[1], (m[2].match(/media="([^"]+)"/) || [])[1] || '']);
     if (!new RegExp(`^<div class="cml__panel[^"]*" id="cml-panel-${key}" data-cml-panel="${key}" data-label="${label}"`).test(p) || /\shidden\b/.test(openTag(p)) || cmOne(p, /<h3 class="cml__panel-title"[^>]*>([\s\S]*?)<\/h3>/) !== label) failures.push(`[creator] ${label}: its panel, named by its heading, visible without the script`);
     if (!/\bmuted\b/.test(v) || !/\bplaysinline\b/.test(v) || !/\bcontrols\b/.test(v) || !/preload="none"/.test(v) || !/\bposter="/.test(v) || /\b(?:autoplay|loop)\b/.test(v) || !new RegExp(`aria-label="${label}: [^"]{40,}"`).test(v) || !/data-cml-video/.test(v)) failures.push(`[creator] ${label}: one silent edit, muted, inline, on its poster, described, loading nothing early, with native controls until the script takes over, never autoplayed or looped in the markup`);
     if (JSON.stringify(srcs) !== JSON.stringify([[`${BASE}/media/${e.fileSmall}`, '(max-width: 47.99rem)'], [`${BASE}/media/${e.file}`, '']])) failures.push(`[creator] ${label}: phones get the smaller edit first, then the full one`);
-    if (!cues || JSON.stringify(cues) !== JSON.stringify(f.cues || []) || !cues.length || cues[0].at !== 0 || cues.some((c, k) => (k && c.at <= cues[k - 1].at) || c.at >= (e.duration || 0) || !Object.values(PLACES).includes(c.place))) failures.push(`[creator] ${label}: its destination cues run in order from 0 within the edit, each at one of the three destinations`);
+    // Full Site Iteration V1: no caption under the frame names the format or the place, so the edits carry no cues.
+    if (/data-cues=/.test(openTag(p)) || 'cues' in f) failures.push(`[creator] ${label}: no place cues (the caption under the frame is gone)`);
     if (e.permission !== 'approved' || e.type !== 'video' || !/^Selected content: /.test(e.label || '') || !new RegExp(`^SELECTED CONTENT, ${label.toUpperCase()}`).test(e.source || '')) failures.push(`[creator] ${label}: an approved edit in the manifest, its excerpts on record`);
     // V1.2: every edit dissolves back into its own opening (its reset as long as the script's), and the recut media
-    // carry new names, so no browser shows a cached older cut (V1.3: the creator ads are -v13; V1.4: Destination films,
-    // Sponsor integrations, Podcasts and Game show are -v14).
+    // carry new names, so no browser shows a cached older cut (V1.3: the creator ads are -v13; V1.4: Sponsor
+    // integrations, Podcasts and Game show are -v14; Full Site Iteration V1: Destination films and Behind the scenes
+    // are -fs1).
     const reset = Number((String(e.source || '').match(/([\d.]+) second dissolve reset/) || [])[1]);
     const libReset = Number((cmSource.match(/const LIB_RESET = ([\d.]+);/) || [])[1]);
     if (!(reset > 0) || reset !== libReset || !(libReset >= 0.25 && libReset <= 0.6)) failures.push(`[creator] ${label}: the edit's last moment dissolves into its own opening, ${libReset} seconds, as the script expects (found ${reset || 'none'} in the manifest)`);
-    const ver = ['destination', 'sponsor', 'podcasts', 'gameshow'].includes(key) ? 'v14' : key === 'ads' ? 'v13' : 'v12';
-    const olderFiles = [`cm-library-${key}.mp4`, `cm-library-${key}-540.mp4`, ...['v12', 'v13'].filter((v) => v < ver).flatMap((v) => [`cm-library-${key}-${v}.mp4`, `cm-library-${key}-${v}-540.mp4`])];
+    const ver = ['destination', 'bts'].includes(key) ? 'fs1' : ['sponsor', 'podcasts', 'gameshow'].includes(key) ? 'v14' : key === 'ads' ? 'v13' : 'v12';
+    const olderFiles = [`cm-library-${key}.mp4`, `cm-library-${key}-540.mp4`, ...['v12', 'v13', 'v14'].filter((v) => ver === 'fs1' || v < ver).flatMap((v) => [`cm-library-${key}-${v}.mp4`, `cm-library-${key}-${v}-540.mp4`])];
     if (e.file !== `cm-library-${key}-${ver}.mp4` || e.fileSmall !== `cm-library-${key}-${ver}-540.mp4` || olderFiles.some((f) => fs.existsSync(path.join(root, 'public/media', f)))) failures.push(`[creator] ${label}: the edit carries its version in its name (-${ver}), and the older files are gone`);
     for (const [file, h, maxMb] of [[e.file, 720, 5], [e.fileSmall, 540, 2.5]]) {
       const ff = path.join(root, 'public/media', file || 'missing');
@@ -2854,7 +2994,10 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
       if (!fx.avc || fx.handlers.includes('soun') || fx.top.indexOf('moov') > fx.top.indexOf('mdat') || fx.height !== h || Math.abs(fx.width / fx.height - 16 / 9) > 0.01 || !(sec >= 7 && sec <= 14) || Math.abs(sec - (e.duration || 0)) > 0.05 || mb > maxMb) failures.push(`[creator] ${file}: silent H.264, index first, landscape 16:9 at ${h} lines, 7 to 14 seconds, under ${maxMb} MB (found ${fx.width}x${fx.height}, ${sec.toFixed(2)} s, ${mb.toFixed(2)} MB)`);
     }
   });
-  if (!/<p class="cml__now" aria-hidden="true"[^>]*>\s*<span class="cml__now-format" data-cml-format/.test(lib) || !/<button type="button" class="cml__toggle" data-cml-toggle aria-label="Pause: Selected content" hidden/.test(lib)) failures.push('[creator] under the frame: the format and place on screen (visual only; the tabs name them), and one pause control, shown by the script');
+  // Full Site Iteration V1: under the frame only the pause and play control, at the lower right; the changing line
+  // that named the format and the place (and its cue logic) is gone.
+  if (/cml__now|data-cml-format|data-cml-place/.test(lib) || !/<div class="cml__bar"[^>]*>\s*<button type="button" class="cml__toggle" data-cml-toggle aria-label="Pause: Selected content" hidden/.test(lib) || !cmRules(/^html\.js \.cml__bar$/).some((r) => /justify-content:\s*flex-end/.test(r.body))) failures.push('[creator] under the frame: the pause and play control alone, at the lower right; no format or place caption');
+  if (/nowPlace|nowFormat|data-cml-place|\bcues\b/.test(fnOf('mountLibrary'))) failures.push('[creator] the library script keeps no caption or cue logic (Full Site Iteration V1)');
   // Without JavaScript the six edits read in turn; the tabs and the bar need the script.
   if (!cmRules(/^\.cml__nav$/).some((r) => !r.at && /display:\s*none/.test(r.body)) || !cmRules(/^html\.js \.cml__nav$/).some((r) => /display:\s*grid/.test(r.body)) || !cmRules(/^html\.js \.cml__panel$/).some((r) => /position:\s*absolute/.test(r.body))) failures.push('[creator] the tabs and the stacked frame need the script; without it the six edits read in turn');
   // The behavior: selection plays from the start; until the reader chooses, the next format follows as each edit
@@ -2970,9 +3113,11 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // ---- 13 The credits (V1.1): the team, each with what they owned or collaborated on, then the roll (V1.4: the eight
   // creators by their public X handles only, the one place the roster appears)
   const cr = cmSec('cmc');
+  // (Full Site Iteration V1: John and Maanav credited jointly for travel, villas and trip logistics; the line on
+  // varying on-site ownership is gone.)
   const TEAM = [
-    ['John Cowin', 'Co-led program planning; led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot management, approvals, distribution, campaign tracking, reporting, and ongoing creator and partner communication.'],
-    ['Maanav Porwal', 'Collaborated on creator and co-sponsor sourcing, interviews, selection, negotiations, legal contracts, travel, villas, and trip logistics, with the level of on-site ownership varying by activation.'],
+    ['John Cowin', 'Co-led program planning, travel, villa, and trip logistics; led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot management, approvals, distribution, campaign tracking, reporting, and ongoing creator and partner communication.'],
+    ['Maanav Porwal', 'Collaborated on creator and co-sponsor sourcing, interviews, selection, negotiations, legal contracts, travel, villas, and trip logistics.'],
     ['Bob van der Meer', 'Collaborated on creative concepts and handled much of the filming, editing, and final production work.'],
   ];
   const ROLL = [
@@ -2983,6 +3128,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (cmOne(cr, /<p class="cmc__kicker"[^>]*>([\s\S]*?)<\/p>/) !== 'Credits' || cmOne(cr, /<h2 id="cm-credits-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Many hands, one program.') failures.push('[creator] the credits read "Credits", "Many hands, one program."');
   const team = [...cr.matchAll(/<div class="cmc__member"[^>]*>\s*<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
   if (JSON.stringify(team) !== JSON.stringify(TEAM)) failures.push(`[creator] the credits open with the team, word for word: John Cowin, Maanav Porwal, Bob van der Meer (found ${team.map((t) => t[0]).join(', ')})`);
+  if (/level of on-site ownership|varying by activation/.test(cmSpaced) || /varying by activation/.test(JSON.stringify(cmData).replace(/"_\w+":\s*"(?:[^"\\]|\\.)*"/g, ''))) failures.push('[creator] the line on varying on-site ownership is gone (Full Site Iteration V1)');
   const rows = [...cr.matchAll(/<div class="cmc__row(?! cmc__row--handles)[^"]*"[^>]*>\s*<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
   if (JSON.stringify(rows) !== JSON.stringify(ROLL)) failures.push(`[creator] then the roll: the creators, the co-sponsors (Phi Labs among them), the brand and the hero's illustrative photography (found ${rows.map((r) => r[0]).join(', ')})`);
   // V1.4: the creators open the roll, in order, each by their public X handle and nothing else: no name, employer,
@@ -3034,9 +3180,11 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (fmString('intro') !== CM.copy || fmString('description') !== `John Cowin ${CM.copy.replace(/^I /, '')}`) failures.push('[creator] V1.2: the case study\'s intro and description follow the hero, naming John\'s ownership alone');
   if (mdxBody.trim()) failures.push('[creator] V1.2: the case study keeps no MDX body (the page is built from creator.json; its V1.0 narrative is gone)');
   if (/Maanav|Porwal|Bob van der Meer|1\.25M|impressions|single-handed|\bsole(?:ly)?\b|\bI ran\b|\bI built\b|\bI owned\b/i.test(mdxFront.replace(/^\s*#.*$/gm, ''))) failures.push('[creator] V1.2: the case study\'s record carries no collaborator names, impressions claims or sole-ownership wording');
-  if (!/^\s+fallback: \["activations", null, "cosponsors"\]$/m.test(mdxFront)) failures.push('[creator] V1.2: the homepage card\'s middle slot has no typographic stand-in (null), never the retired impressions figure');
+  // Full Site Iteration V1: the homepage card shows one video, the creator montage; its supporting panels, their
+  // typographic stand-ins and fallbacks are gone (and with them any place a figure could appear).
+  if (/^\s+(?:fallback|main|motion|side|fit):/m.test(mdxFront) || !/^\s+video: "cc-creator-montage"$/m.test(mdxFront)) failures.push('[creator] the homepage card shows one video, the creator montage, with no stand-in or fallback (Full Site Iteration V1)');
   const panelsSrc = fs.readFileSync(path.join(root, 'src/components/WorkPanels.astro'), 'utf8');
-  if (/impressions|1\.25M|fb--metric|fb__metric/.test(panelsSrc) || !/const cosponsors = \['trezor', 'bitrefill', 'rayls-labs', 'phi-labs'\]/.test(panelsSrc)) failures.push('[creator] V1.2: the card panels keep no impressions stand-in, and the co-sponsor stand-in includes Phi Labs');
+  if (/impressions|1\.25M|fb--metric|fb__metric|const cosponsors|data-card-secondary|card__panel|fallback/.test(panelsSrc)) failures.push('[creator] the card panels, their stand-ins and their fallbacks are gone (Full Site Iteration V1)');
   // creator.json: no placeholders, categories, testimonials, collaboration rows or people (V1.4: the credits' roster is
   // handles only); its notes speak for V1.4.
   if (/"text":\s*null|Placeholder|"category"|"voices"|"creditsLabel"|"owner"|"handle"|"people"|"affiliations"/.test(JSON.stringify(cmData)) || !/^Creator Marketing and Partnerships, Version 1\.4\b/.test(cmData._readme || '')) failures.push('[creator] V1.4: creator.json carries no placeholders, categories, testimonials, collaboration rows, names or affiliations, and its notes are for Version 1.4');
@@ -3158,6 +3306,25 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // V1.4, game show: the second trailer excerpt ends a frame earlier (9.42, not 9.43), clear of the trailer's next shot.
   if (!exOf('cm-library-gameshow').some((x) => x.file === 'Bolt Bus Trailer.mp4' && Math.abs(x.a - 8.47) < 0.005 && Math.abs(x.b - 9.42) < 0.005)) failures.push('[creator] V1.4: the game show\'s second trailer excerpt ends at 0:09.42, clear of the next shot');
   if (!exOf('cm-library-bts').some((x) => x.file === 'Costa Rica Aftermovie.mp4' && x.a <= 109.2 && x.b >= 110.2)) failures.push('[creator] V1.2: behind the scenes includes the Costa Rica crew around 1:49 to 1:50 of the aftermovie (the exterior setup and the bathroom crew laughing)');
+  // Full Site Iteration V1 (14): destination films keep the cloud reveal into Mykonos and run on into John's moment in
+  // the courtyard (readable, about two thirds of a second, live footage rather than a held frame) before the terrace.
+  {
+    const cloud = destEx.find((x) => x.file === 'Mykonos Aftermovie.mp4' && Math.abs(x.a - 28.95) < 0.005);
+    const destSrc = cmAsset('cm-library-destination').source || '';
+    const john = destSrc.match(/John's moment, (\d+:\d\d\.\d+) to (\d+:\d\d\.\d+)/);
+    const johnSec = john ? tcOf(john[2]) - tcOf(john[1]) : 0;
+    if (!cloud || !(Math.abs(cloud.b - 32.47) < 0.005) || !john || !(johnSec >= 0.6 && johnSec <= 1.0) || tcOf(john[2]) !== cloud.b || /freeze|frozen|held frame|slowed/i.test(destSrc)) failures.push(`[creator] destination films run the cloud reveal on into John's moment, 0.6 to 1.0 seconds of it, before the terrace (found ${johnSec.toFixed(2)} s)`);
+  }
+  // (17): behind the scenes keeps the Lock In Podcast brief, one camera on the set and one wide angle of the recording
+  // (1.5 to 2.5 seconds in all), and gives the time to Costa Rica and Mykonos production; the bathroom laughter stays.
+  {
+    const btsEx = exOf('cm-library-bts');
+    const lockSet = btsEx.filter((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 77.5 && x.b <= 78.56);
+    const lockPod = btsEx.filter((x) => x.file === 'Lock In Podcast.mp4');
+    const lockTime = [...lockSet, ...lockPod].reduce((n, x) => n + x.b - x.a, 0);
+    const prodNew = btsEx.filter((x) => (x.file === 'Costa Rica Aftermovie.mp4' && x.b < 70) || (x.file === 'Mykonos Aftermovie.mp4' && (x.b < 75 || x.a > 100)));
+    if (lockSet.length !== 1 || lockPod.length !== 1 || !(lockTime >= 1.5 && lockTime <= 2.5) || prodNew.length < 4) failures.push(`[creator] behind the scenes keeps the Lock In Podcast to one camera on set and one wide angle (1.5 to 2.5 s, found ${lockTime.toFixed(2)} s) and gives the time to Costa Rica and Mykonos production (found ${prodNew.length} new production moments)`);
+  }
   // The changed media carry new names, so no browser shows a cached V1.0 cut.
   for (const [id, old] of [['cm-loop-costa-rica', 'cm-costa-rica-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v11.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v13.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop-v13.mp4']]) {
     if (cmAsset(id).file === old || fs.existsSync(path.join(root, 'public/media', old))) failures.push(`[creator] ${id}: the recut loop has a new name (not ${old})`);
@@ -3337,12 +3504,55 @@ const varsOf = (body) => Object.fromEntries([...body.matchAll(/--intro-([a-z0-9]
 const holdVars = varsOf(rulesFor(/^html\.intro-hold$/).filter((r) => !r.at).map((r) => r.body).join(';'));
 // Creator Marketing V1.0, Part I: the note held fully legible (hold), then the reveal; no phrases.
 const T = Object.fromEntries(['lead', 'in', 'out', 'hold', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
+// An animation shorthand may list several animations (Full Site Iteration V1: the subject settles with the
+// photograph, then resolves above the name), and the minifier may reorder each one's parts.
+const splitTop = (v) => {
+  const out = [];
+  let depth = 0;
+  let cur = '';
+  for (const ch of v) {
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth -= 1;
+    if (ch === ',' && depth === 0) {
+      out.push(cur.trim());
+      cur = '';
+    } else cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+};
+const stripCalls = (v) => {
+  let out = '';
+  let depth = 0;
+  for (let i = 0; i < v.length; i += 1) {
+    if (!depth) {
+      const call = v.slice(i).match(/^(?:calc|var|cubic-bezier|steps)\(/);
+      if (call) {
+        depth = 1;
+        i += call[0].length - 1;
+        continue;
+      }
+    }
+    if (depth) {
+      if (v[i] === '(') depth += 1;
+      else if (v[i] === ')') depth -= 1;
+      continue;
+    }
+    out += v[i];
+  }
+  return out;
+};
 const handoff = (re) => {
   const rule = CSS_RULES.find((r) => MOTION_OK.test(r.at) && r.sel.split(',').some((x) => re.test(bare(x).trim())) && /animation:/.test(r.body));
   const v = rule ? (rule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
-  const dur = ms((v.match(/(?:^|\s)(-?[\d.]+m?s)\b/) || [])[1] || '');
-  const off = /var\(--intro-hero\)/.test(v) ? ms((v.match(/calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1] || '0ms') : NaN;
-  return { v, dur, off, name: (v.match(/^\s*([a-z-]+)/) || [])[1] };
+  const anims = splitTop(v).map((a) => ({
+    name: (a.match(/\b((?:hero|header)-[a-z-]+)\b/) || [])[1],
+    dur: ms((stripCalls(a).match(/(?:^|\s)(-?[\d.]+m?s)\b/) || [])[1] || ''),
+    off: /var\(--intro-hero\)/.test(a) ? ms((a.match(/calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1] || '0ms') : NaN,
+  }));
+  const off = anims.length ? Math.min(...anims.map((a) => a.off)) : NaN;
+  const end = anims.length ? Math.max(...anims.map((a) => a.off + a.dur)) : NaN;
+  return { v, anims, off, end, dur: end - off, name: anims[0]?.name };
 };
 const LAYERS = [
   ['the photograph', /^html\.intro-hold \.hero__photo$/],
@@ -3362,7 +3572,7 @@ if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.i
   if ((holdVars.hero || '').trim() !== 'var(--intro-reveal)') failures.push(`[intro] the hero's layers begin at the reveal (found ${holdVars.hero})`);
   for (const k of ['beat', 'show', 'step', 'p1', 'p2', 'p3']) if (holdVars[k]) failures.push(`[intro] --intro-${k} belonged to the retired phrases`);
   const reveal = T.lead + T.in + T.hold;
-  const heroEnd = Math.max(...LAYERS.map((l) => l.off + l.dur));
+  const heroEnd = Math.max(...LAYERS.map((l) => l.end));
   const total = reveal + heroEnd;
   INTRO_MOMENTS.push(Math.round(T.lead + T.in + T.hold * 0.25), Math.round(T.lead + T.in + T.hold * 0.75));
   // Creator Marketing V1.4 (01): the note's coded resolve takes 0.45 to 0.8 seconds, each position's moment of code
@@ -3374,14 +3584,38 @@ if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.i
   if (!(T.in >= 450 && T.in <= 800) || !(glyphMs >= 40 && glyphMs <= 120) || holdVars.letter) failures.push(`[intro] V1.4: the note resolves in 0.45 to 0.8 seconds, each position scrambling for a brief moment (40 to 120 ms) before its letter (found ${T.in} ms, glyphs ${glyphMs} ms${holdVars.letter ? ', and a letter rise' : ''})`);
   if (!(T.hold >= 1500) || reveal !== 2270) failures.push(`[intro] the complete note holds at least 1.5 seconds and the loader keeps its length: the reveal at 2.27 seconds, as in V1.1 (found a ${T.hold} ms hold, the reveal at ${reveal} ms)`);
   if (!(T.out >= 120 && T.out <= 160)) failures.push(`[intro] the note leaves in 0.12 to 0.16 seconds (found ${T.out} ms)`);
-  if (!(heroEnd >= 550 && heroEnd <= 800)) failures.push(`[intro] the dissolve and the hero's layered entrance take about 0.6 to 0.8 seconds (found ${heroEnd} ms)`);
-  if (!(total >= 2600 && total <= 3200)) failures.push(`[intro] the whole sequence runs about 2.6 to 3.2 seconds, the hero's layers included, a little quicker than V1.6's 3.45 (found ${total} ms)`);
+  // Full Site Iteration V1: the hero's staged entrance completes about 0.9 to 1.2 seconds after the loading screen
+  // starts to clear, so the whole sequence runs about 3.2 to 3.5 seconds.
+  if (!(heroEnd >= 900 && heroEnd <= 1200)) failures.push(`[intro] the hero's staged entrance completes 0.9 to 1.2 seconds after the loader starts to clear (found ${heroEnd} ms)`);
+  if (!(total >= 3170 && total <= 3470)) failures.push(`[intro] the whole sequence runs about 3.2 to 3.5 seconds, the hero's entrance included (found ${total} ms)`);
   const noteOut = (introRules(/^html\.intro \.intro__note$/).map((r) => r.body).join(';').match(/intro-word-out\s+var\(--intro-out\)\s+var\(--intro-leave\)\s+([^,;]+?)\s+forwards/) || [])[1];
   if (noteOut !== 'var(--intro-reveal)') failures.push(`[intro] the note holds its full time and leaves as the ground starts to clear (found ${noteOut})`);
   if (!(T.go > 0 && T.go < 200) || !(T.clear >= 300 && T.clear <= 500)) failures.push(`[intro] the marker sets off at once, and the ground dissolves in 0.3 to 0.5 seconds (found ${T.go} and ${T.clear} ms)`);
-  // The brief's order, overlapping: each layer starts after the one before, within the compact entrance.
-  const order = ['the photograph', 'the name', 'the descriptor', 'the navigation', 'the rule', 'the arrow'].map((k) => LAYERS.find((l) => l.label === k));
-  if (order.some((l, i) => i > 0 && !(l.off > order[i - 1].off)) || order.some((l, i) => i > 0 && !(l.off < order[i - 1].off + order[i - 1].dur)) || LAYERS[0].off !== LAYERS[1].off || LAYERS[0].off !== 0) failures.push(`[intro] the hero comes up in layers, in order and overlapping: the photograph (with its subject), the name, the descriptor, the navigation, the rule, the arrow (found ${order.map((l) => `${l.label} +${l.off}`).join(', ')})`);
+  // Full Site Iteration V1, the staged entrance, overlapping: (1) the photograph and its grade settle (the subject
+  // settles with it, unseen); (2) the moving name and the rule behind it, the name starting as the rule draws; (3) the
+  // foreground subject resolves above the name; (4) the descriptor, the arrow and the navigation last.
+  const L = Object.fromEntries(LAYERS.map((l) => [l.label, l]));
+  const resolve = (L['the subject'].anims || []).find((a) => a.name === 'hero-resolve');
+  const lastFour = ['the descriptor', 'the arrow', 'the navigation'].map((k) => L[k]);
+  const stageOk =
+    L['the photograph'].off === 0 &&
+    (L['the subject'].anims || []).some((a) => a.off === 0 && a.name === L['the photograph'].name) &&
+    L['the name'].off > 0 &&
+    Math.abs(L['the rule'].off - L['the name'].off) <= 100 &&
+    resolve && resolve.off > Math.max(L['the name'].off, L['the rule'].off) && resolve.off < L['the name'].end &&
+    lastFour.every((l) => l.off > resolve.off && l.off < resolve.off + resolve.dur) &&
+    Math.max(...lastFour.map((l) => l.off)) - Math.min(...lastFour.map((l) => l.off)) <= 120;
+  if (!stageOk) failures.push(`[intro] the hero arrives in four overlapping stages: the photograph, then the name and its rule together, then the subject above the name, then the descriptor, arrow and navigation (found ${LAYERS.map((l) => `${l.label} +${l.off}`).join(', ')}${resolve ? `, the subject resolving at +${resolve.off}` : ''})`);
+  const trackDelay = introRules(/^html\.intro-hold \.stream__track$/).filter((r) => MOTION_OK.test(r.at)).map((r) => (r.body.match(/animation-delay:\s*calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1]).find(Boolean);
+  if (ms(trackDelay || '') !== L['the name'].off) failures.push(`[intro] the name's movement begins with the name's arrival, as the rule draws (found the stream at +${ms(trackDelay || '')} ms)`);
+  // No bounce, no heavy blur, no large travel: opacity, a slight settle of the photograph, a short rise.
+  for (const name of ['hero-ambient', 'hero-resolve', 'hero-rise-fade', 'hero-draw', 'hero-point', 'header-in']) {
+    const k = keyframesOf(name);
+    const moves = [...k.matchAll(/translate(?:3d|X|Y)?\(([^)]*)\)/g)].flatMap((m) => [...m[1].matchAll(/(-?[\d.]+)px/g)].map((x) => Number(x[1])));
+    const blur = [...k.matchAll(/blur\(\s*([\d.]+)px\)/g)].map((m) => Number(m[1]));
+    if (!k || moves.some((v) => Math.abs(v) > 8) || blur.some((v) => v > 4) || /scale\((?:1\.[1-9]|[2-9])/.test(k)) failures.push(`[intro] ${name}: no bounce, heavy blur or large travel in the hero's entrance`);
+  }
+  if (LAYERS.some((l) => /cubic-bezier\(\s*[\d.]+\s*,\s*(?:-|1\.[0-9]*[1-9])/.test(l.v) || /cubic-bezier\([^)]*,\s*(?:-|1\.[0-9]*[1-9])[\d.]*\s*\)/.test(l.v))) failures.push('[intro] the hero\'s entrance curves never overshoot (no bounce)');
 }
 // The path: the marker from the left end to the right, arriving at the reveal, on a curve with no overshoot.
 const travel = keyframesOf('intro-travel');

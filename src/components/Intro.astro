@@ -21,11 +21,14 @@
  * with no overshoot, bounce or pause, as the hero comes in; its streak
  * lengthens with the speed. A pace, not a measure of loading.
  * When the marker reaches the end of its path the note and the path leave,
- * the ground dissolves and the hero comes up in layers (Hero.astro and
- * Header.astro): the photograph, the name, the descriptor, the navigation,
- * then the rule and the arrow, overlapping, in 0.6 seconds. About 2.9 seconds
- * in all, unchanged since V1.1. No percentage: the marker is a pace, not a
- * measure, and nothing here claims to count anything.
+ * the ground dissolves and the hero builds in four overlapping stages
+ * (Hero.astro and Header.astro; Full Site Iteration V1): the photograph and
+ * its grade; the moving name, its stream setting off as the rule behind it
+ * draws across the frame; the subject, resolving in front of the name; then
+ * the descriptor, the arrow and the navigation, the whole composition settled
+ * 1.1 seconds after the ground begins to clear. About 3.4 seconds in all. No
+ * percentage: the marker is a pace, not a measure, and nothing here claims to
+ * count anything.
  *
  * It plays on the homepage only, once per browsing session (the tab's session
  * storage). An inline script in the head decides before the first paint, by
@@ -174,10 +177,11 @@ const letters = at;
      in 0.7 s (V1.4) and holds, fully legible, for 1.53 s while the marker
      travels from just after the start to the end of its path, gathering speed,
      arriving as the hold ends: --intro-reveal (2.27 s, since V1.1), where the
-     note and the path leave, the ground starts to clear and the hero's layers
-     begin (--intro-hero, read by Hero.astro and Header.astro; they take 0.6 s,
-     so the hero is in place at about 2.9 s), so the ground clears onto
-     nothing. The same on phones, where the note matters most. */
+     note and the path leave, the ground starts to clear and the hero's stages
+     begin (--intro-hero, read by Hero.astro and Header.astro; since Full Site
+     Iteration V1 they take 1.1 s, so the hero is settled at about 3.4 s), so
+     the ground clears onto nothing. The same on phones, where the note matters
+     most. */
   :global(html.intro-hold) {
     --intro-lead: 40ms; /* the ground alone, before the note */
     --intro-in: 700ms; /* the note resolving, left to right (V1.4; V1.2's letter rise took 600 ms) */

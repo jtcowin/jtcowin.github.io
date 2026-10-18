@@ -27,8 +27,13 @@
  * at any time (the control under the frame), and it pauses off screen and in
  * a hidden tab. Reduced motion, a data-saving preference or a refused
  * autoplay start nothing: the selected edit waits on its poster and plays
- * through once on request. The line under the frame names the format and the
- * destination on screen, from the edit's own cue times (creator.json).
+ * through once on request.
+ *
+ * Full Site Iteration V1: no kicker above the headline (the headline, its copy,
+ * the formats and the stage stay), and no changing line under the frame naming
+ * the format and the destination (the tabs already say which format is on
+ * screen); the edits carry no cue times, and the pause control keeps its place
+ * at the lower right.
  *
  * V1.2, the surface: the section begins to turn toward the water of the
  * program ownership below before it ends, one broad gradient that carries on
@@ -46,16 +51,11 @@ import { withBase } from '@lib/paths';
 import Icon from '@components/Icon.astro';
 
 const { library: l } = creator;
-const PLACES = ['Costa Rica', 'Singapore', 'Mykonos'];
 if (l.formats.length !== 7) throw new Error(`[creator] the library holds seven formats (found ${l.formats.length})`);
 const formats = await Promise.all(
   l.formats.map(async (f, i) => {
     const e = getAsset(f.edit);
     if (!isSlotReady(e) || e.type !== 'video') throw new Error(`[creator] the ${f.label} edit needs an approved video (${f.edit})`);
-    const cues = f.cues;
-    if (!cues.length || cues[0].at !== 0 || cues.some((c, k) => (k && c.at <= cues[k - 1].at) || c.at >= (e.duration ?? 0) || !PLACES.includes(c.place))) {
-      throw new Error(`[creator] the ${f.label} edit's cues run in order from 0 within the edit, each at one of the three destinations`);
-    }
     const still = resolveImage(e);
     const poster = still ? await getImage({ src: still, width: Math.min(1280, still.width), format: 'webp', quality: 80 }) : null;
     return {
@@ -68,13 +68,11 @@ const formats = await Promise.all(
     };
   }),
 );
-const first = formats[0];
 ---
 
 <section class="cml" data-surface="light-return" aria-labelledby="cm-library-title" data-cm-library>
   <div class="container cml__inner">
     <header class="cml__head">
-      <p class="cml__kicker">{l.kicker}</p>
       <h2 id="cm-library-title" class="display cml__title">{l.headline}</h2>
       <p class="cml__copy">{l.copy}</p>
     </header>
@@ -107,7 +105,7 @@ const first = formats[0];
         <div class="cml__frames">
           {
             formats.map((f, i) => (
-              <div class:list={['cml__panel', i === 0 && 'is-on is-in']} id={`cml-panel-${f.key}`} data-cml-panel={f.key} data-label={f.label} data-cues={JSON.stringify(f.cues)}>
+              <div class:list={['cml__panel', i === 0 && 'is-on is-in']} id={`cml-panel-${f.key}`} data-cml-panel={f.key} data-label={f.label}>
                 <h3 class="cml__panel-title">{f.label}</h3>
                 <div class="cml__frame">
                   <video class="cml__video" muted playsinline controls preload="none" poster={f.poster} aria-label={f.e.alt} data-cml-video>
@@ -120,10 +118,6 @@ const first = formats[0];
           }
         </div>
         <div class="cml__bar">
-          <p class="cml__now" aria-hidden="true">
-            <span class="cml__now-format" data-cml-format>{first.label}</span>
-            <span class="cml__now-place" data-cml-place>{first.cues[0].place}</span>
-          </p>
           <button type="button" class="cml__toggle" data-cml-toggle aria-label="Pause: Selected content" hidden>
             <span class="cml__ico cml__ico--play">
               <Icon name="play" size={12} />
@@ -156,15 +150,6 @@ const first = formats[0];
     display: grid;
     gap: 1rem;
     max-width: 46rem;
-  }
-
-  .cml__kicker {
-    margin: 0;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--c-teal);
   }
 
   .cml__title {
@@ -355,36 +340,17 @@ const first = formats[0];
     white-space: nowrap;
   }
 
-  /* ---- under the frame: what is on screen, and the one control ------------------------ */
+  /* ---- under the frame: the one control, at the lower right (Full Site Iteration V1:
+     no line naming the format and the place beside it) --------------------------------- */
   .cml__bar {
     display: none;
   }
 
   :global(html.js) .cml__bar {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem 1.25rem;
+    justify-content: flex-end;
     margin-top: 0.85rem;
-  }
-
-  .cml__now {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.75rem;
-    margin: 0;
-    font-size: 0.8125rem;
-  }
-
-  .cml__now-format {
-    font-weight: 700;
-    color: var(--ink);
-  }
-
-  .cml__now-place {
-    color: var(--ink-3);
   }
 
   .cml__toggle {

@@ -659,7 +659,15 @@ button {
   color: var(--accent-ink);
 }
 
-.tpm-em {
+/* .em-key (Full Site Iteration V1) is the same paragraph emphasis beyond
+   Technical Product Marketing: the homepage's Select Work introduction and
+   practice paragraph, and the creator program paragraph. One phrase, the
+   paragraph's central claim, a slightly heavier weight in the surface's own
+   text color; never more than one in a paragraph, and never a marker, a
+   background, an underline or a pill. (One rule for both, as the minifier
+   would make it anyway.) */
+.tpm-em,
+.em-key {
   font-weight: 600;
   color: var(--ink);
 }

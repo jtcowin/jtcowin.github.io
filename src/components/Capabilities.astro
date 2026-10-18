@@ -15,11 +15,20 @@
  * squeezed into a square), with its name beneath. The files are the approved SVGs in src/assets/stack, shown as
  * images, so each keeps its own colors and its internal ids cannot collide.
  *
- * The capability rows respond to the pointer and to keyboard focus: the icon
- * lifts a few pixels, grows very slightly and, where the symbol suits it,
- * tilts a degree or two, while its circle picks up a little more teal. Only
- * the icon moves; the text never shifts. With reduced motion the same state
- * is shown by color alone. Nothing on the rows depends on hover.
+ * The capability rows respond to the pointer and to keyboard focus (Full Site
+ * Iteration V1, in place of the earlier slight tilt): when the pointer arrives,
+ * the circular icon turns once, a full 360 degrees forward, in a little over
+ * half a second on a smooth ease-out, while it lifts a pixel or two, grows very
+ * slightly and its circle picks up a little more teal. The turn runs once per
+ * arrival: it never loops while the pointer stays, and it always finishes
+ * forward (a full turn ends where it began), so it never spins back when the
+ * pointer leaves. Keyboard focus shows the same completed state (the lift and
+ * the teal) without any turning. Only the icon moves; the text and the row
+ * never shift. With reduced motion the state is shown by color alone.
+ * Nothing on the rows depends on hover.
+ *
+ * The statement carries one emphasized phrase (home.json `how.em`), the site's
+ * paragraph emphasis (.em-key).
  *
  * From 64rem the type and spacing scale with the smaller of the viewport's
  * width and its height (read as a 16:9 frame), as in About, and the Stack's
@@ -32,16 +41,19 @@ import { Image } from 'astro:assets';
 import home from '@data/home.json';
 import { resolveAssetFile } from '@lib/assets';
 import Icon from './Icon.astro';
+import { emphasize } from '@lib/tpm-copy';
 
 type Tool = { name: string; logo: string; scale?: number; shape?: 'wide' };
 const { practice } = home as unknown as {
   practice: {
     heading: string;
-    how: { copy: string };
-    capabilities: { label: string; items: { title: string; icon: string; tilt?: number }[] };
+    how: { copy: string; em: string };
+    capabilities: { label: string; items: { title: string; icon: string }[] };
     stack: { label: string; groups: { group: string; tools: Tool[] }[] };
   };
 };
+
+const statement = emphasize(practice.how.copy, practice.how.em, 'practice statement');
 
 const groups = practice.stack.groups.map((g) => ({
   ...g,
@@ -55,7 +67,7 @@ const groups = practice.stack.groups.map((g) => ({
     <div class="practice__top">
       <div class="practice__intro">
         <h2 id="practice-heading" class="display practice__heading">{practice.heading}</h2>
-        <p class="practice__statement">{practice.how.copy}</p>
+        <p class="practice__statement">{statement.map(({ text, em }) => (em ? <strong class="em-key">{text}</strong> : text))}</p>
       </div>
 
       <div class="practice__caps">
@@ -63,7 +75,7 @@ const groups = practice.stack.groups.map((g) => ({
         <ol class="caps">
           {
             practice.capabilities.items.map((item, i) => (
-              <li class="cap" tabindex="0" style={item.tilt ? `--tilt: ${item.tilt}deg` : undefined}>
+              <li class="cap" tabindex="0" data-cap>
                 <span class="cap__icon" aria-hidden="true">
                   <Icon name={item.icon as any} size={18} />
                 </span>
@@ -102,6 +114,28 @@ const groups = practice.stack.groups.map((g) => ({
     </div>
   </div>
 </section>
+
+<script>
+  // Full Site Iteration V1: a capability icon turns once, forward, when a fine
+  // pointer arrives on its row. The class is set on arrival and cleared when the
+  // turn ends, so it plays once per arrival, never loops while the pointer stays,
+  // and always finishes forward (a full turn ends where it began). Never with
+  // reduced motion or a coarse pointer; keyboard focus shows the completed state
+  // alone (the stylesheet).
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+  for (const row of document.querySelectorAll<HTMLElement>('[data-cap]')) {
+    const icon = row.querySelector<HTMLElement>('.cap__icon');
+    if (!icon) continue;
+    row.addEventListener('pointerenter', (event) => {
+      if (event.pointerType === 'touch' || !fine.matches || still.matches) return;
+      icon.classList.add('is-turning');
+    });
+    const done = () => icon.classList.remove('is-turning');
+    icon.addEventListener('animationend', done);
+    icon.addEventListener('animationcancel', done);
+  }
+</script>
 
 <style>
   .practice {
@@ -182,13 +216,18 @@ const groups = practice.stack.groups.map((g) => ({
     background: color-mix(in srgb, var(--accent) 10%, var(--bg));
     box-shadow: 0 0 0 1px transparent;
     transition:
-      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 260ms cubic-bezier(0.33, 1, 0.68, 1),
+      scale 260ms cubic-bezier(0.33, 1, 0.68, 1),
       background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  /* The completed state (Full Site Iteration V1): a very small lift and scale, so
+     the turn stays the main response, and the circle a little more teal. Keyboard
+     focus shows it as it stands, with no turning. */
   .cap:focus-visible .cap__icon {
-    transform: translateY(-3.5px) scale(1.06) rotate(var(--tilt, 0deg));
+    translate: 0 -2px;
+    scale: 1.03;
     background: color-mix(in srgb, var(--accent) 18%, var(--bg));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
   }
@@ -196,9 +235,30 @@ const groups = practice.stack.groups.map((g) => ({
   /* Hover only where hover is real, so a tap never leaves a row raised. */
   @media (hover: hover) and (pointer: fine) {
     .cap:hover .cap__icon {
-      transform: translateY(-3.5px) scale(1.06) rotate(var(--tilt, 0deg));
+      translate: 0 -2px;
+      scale: 1.03;
       background: color-mix(in srgb, var(--accent) 18%, var(--bg));
       box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+  }
+
+  /* The turn (Full Site Iteration V1): once, a full turn forward, when the pointer
+     arrives; the script below sets .is-turning on arrival and clears it when the
+     turn has ended, so it runs once per arrival, never loops while the pointer
+     stays and is never cut short or reversed when it leaves. A full turn ends
+     exactly where it began, so clearing it shows no jump. */
+  @media (prefers-reduced-motion: no-preference) {
+    .cap__icon.is-turning {
+      animation: cap-turn 560ms cubic-bezier(0.33, 1, 0.68, 1);
+    }
+  }
+
+  @keyframes cap-turn {
+    from {
+      rotate: 0deg;
+    }
+    to {
+      rotate: 360deg;
     }
   }
 
@@ -452,7 +512,8 @@ const groups = practice.stack.groups.map((g) => ({
 
     .cap:focus-visible .cap__icon,
     .cap:hover .cap__icon {
-      transform: none !important;
+      translate: none !important;
+      scale: none !important;
     }
   }
 </style>

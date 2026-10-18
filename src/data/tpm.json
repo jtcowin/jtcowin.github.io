@@ -1,5 +1,5 @@
 {
-  "_readme": "Technical Product Marketing, Version 1.6: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4; V1.5 gave the hero the Narrative Engine and the signal field and made the conclusion the dark closing movement into Contact; V1.6 replaced the engine and the field with the isometric system and gave the hero its section label). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3, V1.4, V1.5 and V1.6 briefs and the V1.2 delta brief (October 12 to 14, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published.",
+  "_readme": "Technical Product Marketing, Version 1.6: the rebuilt case study through 01 Hero, 02 Foundation, 03 the transitional statement, 04 Website, 05 Technical documentation, 06 the flagship animation campaign and 07 the conclusion, then Contact (Selected Writing, added in V1.3, was taken out in V1.4; V1.5 gave the hero the Narrative Engine and the signal field and made the conclusion the dark closing movement into Contact; V1.6 replaced the engine and the field with the isometric system and gave the hero its section label). Copy is John's approved wording from the V1 concept, the V1.1, V1.2, V1.3, V1.4, V1.5 and V1.6 briefs and the V1.2 delta brief (October 12 to 14, 2026); `accent` names the one phrase of a headline set in the accent color and `em` the one phrase of a paragraph set a little heavier (V1.3: a handful of each across the page, never both on one phrase); the chapter notes under the documentation walkthrough are drafted from the brief's confirmed facts and are open to John's edits. The foundation library lists twelve named documents in the brief's order, with display numbers 00 to 11 (not their Linear numbers); no document body is read, quoted or published. Full Site Iteration V1 (October 2026): the documentation's goal, contribution and overview note say outdated rather than fragmented, scattered or connected; the interactive architecture note keeps John's part only (Bob van der Meer stays credited in the documentation's credits); the conclusion reaches past the three featured examples to the whole public-facing system.",
   "hero": {
     "_hero": "The section label, then the headline and paragraph on the left, the isometric system on the right (V1.6, replacing the V1.5 Narrative Engine and its signal field), the seven scope terms in one centered line beneath them (V1.4); no media. The headline never changes; `break` is the phrase its first line ends with, so it always sets in two lines, sized to its column.",
     "label": "02 / Technical Product Marketing",
@@ -67,19 +67,19 @@
   "documentation": {
     "title": "Technical documentation",
     "meta": [
-      { "label": "Goal", "value": ["Replace fragmented documentation with a clear, connected system for technical audiences while controlling what product information could be made public."] },
+      { "label": "Goal", "value": ["Replace outdated documentation with a clear, structured system for technical audiences while controlling what product information could be made public."] },
       { "label": "Services", "value": ["Documentation strategy, information architecture, technical writing, content governance, and MDX implementation."] },
       { "label": "Credits", "value": ["Visual design and interactive implementation: **Bob van der Meer**."] }
     ],
     "_contribution": "Centered beneath the metadata. Bob's name is in the credits and is not repeated here.",
-    "contribution": "I rebuilt the documentation from the ground up, moving it from a fragmented GitBook into a connected Mintlify system. I owned the architecture, technical writing, cross-references, calls to action, MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product information useful, accurate, and appropriate for public release.",
+    "contribution": "I rebuilt the documentation from the ground up, moving it from an outdated GitBook into a purpose-built Mintlify documentation system. I owned the architecture, technical writing, cross-references, calls to action, MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product information useful, accurate, and appropriate for public release.",
     "em": "useful, accurate, and appropriate for public release",
     "media": "tm-docs-walkthrough",
     "_chapters": "The three proof points of the edited walkthrough, introduced as selected views from a broader documentation system, with where each begins in it (seconds, at the middle of the cross-fade into it). The notes are drafted from the brief's confirmed facts.",
     "chaptersLabel": "Selected views from a broader documentation system",
     "chapters": [
-      { "start": 0, "title": "Documentation overview", "note": "One branded Mintlify system in place of scattered GitBook pages, organized from product understanding to implementation." },
-      { "start": 10.45, "title": "Interactive architecture", "note": "I developed the early diagram with engineering, validated it with the liquidity team, refined its structure, filtered out internal-only information, briefed design, and wrote every pop-up explanation. Final visual design and interactive implementation: Bob van der Meer." },
+      { "start": 0, "title": "Documentation overview", "note": "One branded Mintlify system in place of outdated GitBook documentation, organized from product understanding to implementation." },
+      { "start": 10.45, "title": "Interactive architecture", "note": "I developed the early diagram with engineering, validated it with the liquidity team, refined its structure, filtered out internal-only information, briefed design, and wrote every pop-up explanation." },
       { "start": 22.95, "title": "Developer SDK", "note": "The existing SDK code was preserved while the surrounding structure, explanations, cross-references, navigation, and presentation were rebuilt." }
     ]
   },
@@ -111,7 +111,7 @@
     "_conclusion": "07 The closing frame (V1.3, renumbered when Selected Writing left in V1.4; since V1.5 a full screen on the dark closing ground that turns into the Contact green): a synthesis, not a summary. Only the way on to the next case study follows the copy, as one linked sentence (V1.4) that names it; `next` is that case study's id, which must be the next in the collection's order. No metrics, services, credits or roles.",
     "headline": "One foundation. Every expression aligned.",
     "accent": "Every expression aligned.",
-    "copy": "The work began with a shared product language and carried through the website, technical documentation, and flagship campaign, giving every public-facing expression the same strategic foundation.",
+    "copy": "The work began with a shared product language and carried across the full public-facing system, from the website and technical documentation to campaigns, articles, content, and every expression built from the same strategic foundation.",
     "next": "events-video",
     "nextLine": "Next, see how I bring events and multimedia production from concept through execution."
   }

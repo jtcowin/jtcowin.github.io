@@ -194,7 +194,9 @@ export function mountAtlas() {
 }
 
 // ---- selected-content library -------------------------------------------------------------
-type Cue = { at: number; place: string };
+// Full Site Iteration V1: no line under the frame names the format or the place (the tabs
+// say which format is on screen), so the edits carry no cue times and nothing here
+// rewrites text while an edit plays.
 const LIB_FADE = 350;
 /** Each edit's last moment dissolves back into its own opening (V1.2), this long. */
 const LIB_RESET = 0.4;
@@ -207,25 +209,17 @@ export function mountLibrary() {
   const tabs = Array.from(tablist.querySelectorAll<HTMLButtonElement>('[data-cml-tab]'));
   const panels = new Map<string, HTMLElement>();
   const videos = new Map<string, HTMLVideoElement>();
-  const cues = new Map<string, Cue[]>();
   for (const panel of Array.from(root.querySelectorAll<HTMLElement>('[data-cml-panel]'))) {
     const key = panel.dataset.cmlPanel as string;
     const video = panel.querySelector<HTMLVideoElement>('[data-cml-video]');
     if (!video) continue;
     panels.set(key, panel);
     videos.set(key, video);
-    try {
-      cues.set(key, (JSON.parse(panel.dataset.cues ?? '[]') as Cue[]).sort((x, y) => x.at - y.at));
-    } catch {
-      cues.set(key, []);
-    }
   }
   const order = tabs.map((t) => t.dataset.cmlTab as string).filter((k) => videos.has(k));
   if (!order.length) return;
   const toggle = root.querySelector<HTMLButtonElement>('[data-cml-toggle]');
   const toggleText = root.querySelector<HTMLElement>('[data-cml-toggle-text]');
-  const nowFormat = root.querySelector<HTMLElement>('[data-cml-format]');
-  const nowPlace = root.querySelector<HTMLElement>('[data-cml-place]');
   const tabOf = (key: string) => tabs.find((t) => t.dataset.cmlTab === key) ?? null;
 
   let active = order[0];
@@ -239,7 +233,6 @@ export function mountLibrary() {
   let focusIn = false; // keyboard focus is in the formats: no moving on meanwhile
   let pinned = false; // the reader selected this format: it loops until they select another (V1.2)
   let lastTime = 0;
-  let shownPlace = '';
 
   // The script takes over: the panels become tab panels, the native controls go.
   for (const key of order) {
@@ -280,10 +273,7 @@ export function mountLibrary() {
       if (!focusIn) t.tabIndex = on ? 0 : -1;
       if (!on) t.style.removeProperty('--fill');
     }
-    if (nowFormat) nowFormat.textContent = panels.get(key)?.dataset.label ?? '';
     root.toggleAttribute('data-pinned', pinned);
-    shownPlace = '';
-    mark();
   };
 
   /** Put a format on screen: its panel fades in over the one before, which leaves once covered. */
@@ -388,20 +378,6 @@ export function mountLibrary() {
     render();
   };
 
-  /** The place on screen, from the edit's cue times. */
-  const mark = () => {
-    const v = video();
-    const list = cues.get(active) ?? [];
-    if (!v || !list.length || !nowPlace) return;
-    const t = v.currentTime || 0;
-    let place = list[0].place;
-    for (const c of list) if (t >= c.at) place = c.place;
-    if (place !== shownPlace) {
-      nowPlace.textContent = place;
-      shownPlace = place;
-    }
-  };
-
   /**
    * Every frame while an edit plays: the line under its format fills; the next edit
    * loads near the end; and, unless the reader has pinned or is holding this format,
@@ -430,7 +406,6 @@ export function mountLibrary() {
           return;
         }
       }
-      mark();
       if (!cur.paused) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -544,7 +519,6 @@ export function mountLibrary() {
   }
   document.addEventListener('visibilitychange', sync);
   onMotionChange(sync);
-  for (const v of videos.values()) v.addEventListener('timeupdate', mark);
   root.dataset.ready = '';
   select(active);
   render();

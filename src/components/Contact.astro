@@ -18,11 +18,19 @@
  * feathered area around the pointer; nothing moves or bends. Touch screens
  * and reduced motion show only the still grid. The compact variant at the end
  * of the case-study pages keeps its plain surface.
+ *
+ * Full Site Iteration V1: the headline reads in two tones, its second sentence
+ * ("Its story shouldn't be.", home.json `contact.accent`) in the section's
+ * accent color at the same display weight, in the full and the compact Contact
+ * alike. A change of color only: no marker, underline, background or repeating
+ * motion, and the heading stays one sentence for assistive technology, wrapping
+ * as before.
  */
 import home from '@data/home.json';
 import site from '@data/site.json';
 import { withBase } from '@lib/paths';
 import Icon from './Icon.astro';
+import { emphasize } from '@lib/tpm-copy';
 
 interface Props {
   /** Compact variant used at the bottom of case-study pages. */
@@ -40,6 +48,7 @@ interface Props {
 const { compact = false, lead } = Astro.props;
 const { contact } = home;
 const resumeHref = withBase(site.resumePath);
+const heading = emphasize(contact.heading, contact.accent, 'Contact headline');
 ---
 
 <section
@@ -59,7 +68,9 @@ const resumeHref = withBase(site.resumePath);
   <div class="container contact__inner">
     <div class="contact__copy">
       <p class="eyebrow contact__eyebrow">Contact</p>
-      <h2 id="contact-heading" class:list={['display', compact ? 'display-lg' : 'display-xl']}>{contact.heading}</h2>
+      <h2 id="contact-heading" class:list={['display', compact ? 'display-lg' : 'display-xl']}>
+        {heading.map(({ text, em }) => (em ? <span class="contact__accent">{text}</span> : text))}
+      </h2>
       <p class="lede contact__lede">{contact.copy}</p>
     </div>
     <div class="contact__actions">
@@ -170,6 +181,12 @@ const resumeHref = withBase(site.resumePath);
 
   .contact__eyebrow {
     color: var(--accent);
+  }
+
+  /* The headline's second sentence (Full Site Iteration V1): the section's accent,
+     the headline's own weight and size; a change of color only. */
+  .contact__accent {
+    color: var(--accent-ink);
   }
 
   .contact__lede {

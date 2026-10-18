@@ -9,10 +9,10 @@
  * quotation and its attribution).
  *
  * The highlights (V1.1) are the post's results on the creator's own account,
- * measured against its preceding 56 posts (V1.4): a rate, a multiple (V1.4:
- * "2.2x", which a screen reader hears as "2.2 times") and a ranking with its
- * percentile (V1.2: #2 by reach out of 56 posts, never "most-viewed"), never
- * a raw total. V1.3 gives them the scale and the
+ * measured against its preceding 60 posts (Full Site Iteration V1, decided): a
+ * rate, a multiple (V1.4: "2.2x", which a screen reader hears as "2.2 times")
+ * and a ranking with its percentile (V1.2: #2 by reach out of 60 posts, never
+ * "most-viewed"), never a raw total. V1.3 gives them the scale and the
  * centered composition of the results under the Technical Product Marketing
  * film (TpmCampaign.astro), in this page's own palette and type: the label
  * centered above one balanced row of three equal columns (stacked on phones),
@@ -20,9 +20,9 @@
  * space and nothing around them (no cards, tiles, pills, shadows, lines or
  * dashboard chrome). The percentile and the note on what the figures were
  * measured against follow as quieter centered lines under the row, so the
- * three columns stay even (V1.4: the note is one sentence, "Measured on the
- * creator's account against its preceding 56 posts."; the sentence calling
- * them creator-account results is gone).
+ * three columns stay even (the note is one sentence, "Measured on the
+ * creator's account against its preceding 60 posts."; since V1.4 no sentence
+ * calls them creator-account results).
  *
  * V1.3: four phrases inside the one continuous quotation (creator.json
  * `emphasis`) are set apart by type alone: the page's deep teal and a
@@ -33,6 +33,15 @@
  * collaboration block that sat under the quotation is gone (V1.2): the
  * credits keep that record, and the section resolves on the quotation into
  * the library that follows.
+ *
+ * Full Site Iteration V1: the feedback is centered as a whole, the quotation,
+ * its four phrases and the attribution, the quotation at a readable measure
+ * with balanced lines, the attribution under a short centered rule. Beneath it,
+ * before the library ("One program, many formats."), a restrained transition:
+ * one centered hairline, strongest in the middle and fading to nothing at both
+ * ends, about two thirds of the content width, with generous room above and
+ * below; with motion allowed it draws once from its center outward as it comes
+ * into view, and then stays. No illustration, card, icon, wave or motif.
  */
 import creator from '@data/creator.json';
 import { getAsset, isVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
@@ -138,6 +147,8 @@ for (const phrase of t.emphasis ?? []) {
         </figure>
       )
     }
+
+    <hr class="cmz__rule" data-cm-reveal />
   </div>
 </section>
 
@@ -301,12 +312,16 @@ for (const phrase of t.emphasis ?? []) {
     }
   }
 
-  /* ---- Trezor's feedback ------------------------------------------------------------ */
+  /* ---- Trezor's feedback (Full Site Iteration V1: centered as a whole) -------------- */
   .cmz__quote {
     display: grid;
-    gap: 1.1rem;
-    max-width: 62rem;
+    justify-items: center;
+    gap: 1.25rem;
+    justify-self: center;
+    width: 100%;
+    max-width: 52rem;
     margin: clamp(0.5rem, 2vw, 1.5rem) 0 0;
+    text-align: center;
   }
 
   .cmz__quote blockquote {
@@ -321,7 +336,7 @@ for (const phrase of t.emphasis ?? []) {
     font-size: clamp(1.6rem, 1.05rem + 1.7vw, 2.75rem);
     line-height: 1.12;
     color: var(--heading);
-    text-wrap: pretty;
+    text-wrap: balance;
   }
 
   .cmz__quote p::before {
@@ -340,7 +355,11 @@ for (const phrase of t.emphasis ?? []) {
     color: var(--c-teal);
   }
 
+  /* The attribution, centered under a short centered rule. */
   .cmz__quote figcaption {
+    display: grid;
+    justify-items: center;
+    gap: 0.85rem;
     font-size: 0.875rem;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -349,12 +368,22 @@ for (const phrase of t.emphasis ?? []) {
 
   .cmz__quote figcaption::before {
     content: '';
-    display: inline-block;
     width: 1.5rem;
     height: 1px;
-    margin-right: 0.6rem;
-    vertical-align: middle;
     background: currentColor;
+  }
+
+  /* ---- the transition into the library (Full Site Iteration V1) ---------------------
+     One centered hairline, strongest in the middle and fading to nothing at both
+     ends, about two thirds of the content width, with generous room above and below.
+     It draws once from its center outward as it comes into view (below). */
+  .cmz__rule {
+    justify-self: center;
+    width: min(66%, 52rem);
+    height: 1px;
+    margin: clamp(3rem, 2rem + 4vw, 6rem) 0 clamp(1.5rem, 1rem + 2vw, 3rem);
+    border: 0;
+    background: linear-gradient(to right, transparent, color-mix(in srgb, var(--c-teal) 55%, transparent) 50%, transparent);
   }
 
   /* Authoring only: never in a production build. */
@@ -392,6 +421,18 @@ for (const phrase of t.emphasis ?? []) {
       transition:
         opacity 0.9s ease calc(var(--k, 0) * 0.12s),
         transform 1s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k, 0) * 0.12s);
+    }
+
+    /* The hairline draws once from its center outward as it comes into view
+       (the page's reveal observer marks it), then stays: it scales from the
+       middle, with no fade and no rise. */
+    :global(html.js) .cmz .cmz__rule[data-cm-reveal]:not(.is-in) {
+      opacity: 1;
+      transform: scaleX(0);
+    }
+
+    :global(html.js) .cmz .cmz__rule[data-cm-reveal] {
+      transition: transform 1.1s cubic-bezier(0.2, 0.75, 0.2, 1) 0.1s;
     }
   }
 </style>

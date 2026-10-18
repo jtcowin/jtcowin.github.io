@@ -26,6 +26,13 @@
  * order. The headline rises into place first, the paragraph follows with a
  * short upward fade and the roster line comes last; with reduced motion they
  * are simply there.
+ *
+ * Full Site Iteration V1: the paragraph takes a wider measure (56rem, the same
+ * type size), so it sets in fewer, longer lines at desktop sizes and reads as
+ * one open supporting block under the headline; it stays centered, with the
+ * short rule and the roster line beneath it. One phrase in it, "I led campaign
+ * strategy with co-sponsors" (creator.json `emphasis`), carries the site's
+ * paragraph emphasis, and the roster line names no count of creators.
  */
 import creator from '@data/creator.json';
 import { emphasize } from '@lib/tpm-copy';
@@ -34,6 +41,8 @@ const { context: c } = creator;
 if (!c.roster || /@|\bfollowers?\b|https?:/i.test(c.roster)) throw new Error('[creator] the program context carries one roster line, with no handles, links or follower counts');
 const sentences = c.headline.split(/(?<=[.!?])\s+/);
 const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'creator context headline') : [{ text: line, em: false }]));
+if (/\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+creators\b/i.test(c.roster)) throw new Error('[creator] the roster line names no count of creators (Full Site Iteration V1)');
+const copy = emphasize(c.copy, c.emphasis, 'creator program paragraph');
 ---
 
 <section class="cmx" data-surface="light" aria-labelledby="cm-context-title">
@@ -49,7 +58,7 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
       }
     </h2>
     <div class="cmx__words">
-      <p class="cmx__copy" data-cm-reveal>{c.copy}</p>
+      <p class="cmx__copy" data-cm-reveal>{copy.map(({ text, em }) => (em ? <strong class="em-key">{text}</strong> : text))}</p>
       <p class="cmx__roster" data-cm-reveal>{c.roster}</p>
     </div>
   </div>
@@ -89,11 +98,12 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
     color: var(--c-teal);
   }
 
+  /* Full Site Iteration V1: a wider measure (V1.4's was 46rem), the same type size. */
   .cmx__words {
     display: grid;
     justify-items: center;
     width: 100%;
-    max-width: 46rem;
+    max-width: 56rem;
   }
 
   .cmx__copy {

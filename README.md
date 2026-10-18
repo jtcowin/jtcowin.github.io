@@ -5,16 +5,15 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Creator Marketing and Partnerships Version 1.4 in review.** Version 2.0, Technical Product
-Marketing Version 1.6, Events and Multimedia Production Version 1.6 and Creator Marketing and
-Partnerships Version 1.3 are published. Creator Marketing and Partnerships Version 1.4 (John's delta
-brief against the deployed Version 1.3: the homepage loader's note coded into place and its marker
-gathering speed; a short scroll-linked hold before the Technical Product Marketing Foundation spreads,
-and the documentation walkthrough's SDK page pause taken out; Eva's glasses shot held in the Singapore
-loop and two stray frames gone from the Mykonos loop; the Trezor highlights' 2.2x and one-sentence
-note; the program introduction as one centered composition; destination films without Club Zero
-branding, calmer sponsor integrations and Podcasts reordered; the creators credited by their X handles
-only; see [Creator Marketing and Partnerships, Version 1.4](#creator-marketing-and-partnerships-version-14))
+**Status: Full Site Iteration V1 in review.** Version 2.0, Technical Product Marketing Version 1.6,
+Events and Multimedia Production Version 1.6 and Creator Marketing and Partnerships Version 1.4 are
+published. Full Site Iteration V1 (John's brief of surgical refinements across the site: the hero's
+staged entrance, decided copy and a restrained emphasis system, one landscape video per homepage card
+with two new montages, the capability icons' single turn, the creator page's wider program paragraph,
+60-post Trezor sample, centered feedback and quiet transition, the library without its eyebrow and
+caption, destination films with John's moment and a briefer Lock In moment behind the scenes, the
+credits' joint logistics, the Technical Product Marketing documentation and conclusion copy, the Contact
+accent and the Events activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1))
 is committed locally and not pushed until it has been reviewed in the browser. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
@@ -235,14 +234,17 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   Each Stack tool is `{ "name", "logo", "scale", "shape" }`: `logo` is an SVG under
   `src/assets/stack/`, `scale` (optional, around 0.84 to 1.04) nudges a mark that reads large or small
   so every tile looks the same size, and `"shape": "wide"` sets a horizontal wordmark (MDX) wide
-  instead of squeezing it into a square. Capability items take an optional `tilt` in degrees (2 at
-  most) for the icon's hover and focus state.
+  instead of squeezing it into a square. (Capability items no longer take a `tilt`: since Full Site
+  Iteration V1 every icon makes one full turn on hover instead.) The paragraphs that carry one emphasized
+  phrase name it beside their copy (`work.em`, `practice.how.em`, `contact.accent`); `emphasize()` in
+  `src/lib/tpm-copy.ts` fails the build if the phrase is not in its copy exactly once.
 - **Case studies**: `src/content/work/*.mdx`. Frontmatter holds the page metadata, hero copy, results,
   and the homepage card; the body holds the narrative sections using the components in
   `src/components/casestudy/`. Section ordering, headings, and copy are all editable in the MDX. The
   `card` block drives the Select Work card: `category`, `title`, a one-sentence `subline` (95 to 130
-  characters), `linkLabel`, and `media` (`main`, an optional `motion` loop, two `side` ids, optional
-  `fallback` stand-ins, and optional `focus`). `role` (optional) is the one-line "My role:" summary
+  characters), `linkLabel`, and `media` (since Full Site Iteration V1, `video`, the id of the card's one
+  approved video in the manifest, and an optional `focus`, the part of the frame kept in view where the
+  desktop band crops it). `role` (optional) is the one-line "My role:" summary
   under the intro (see Case-study roles below).
 - **Technical Product Marketing** (Version 1.6): `src/data/tpm.json` holds the hero's section label,
   copy and scope line (`hero.break` is the phrase the headline's first line ends with), the isometric
@@ -334,11 +336,10 @@ To replace a placeholder with a real asset:
    entry's `file` to that relative path. The image is optimized and served responsively at build time.
 2. **Video**: put the video file in `public/media/` and set `file` to its name; put a poster image
    under `src/assets/` and set `poster`. Case-study videos never autoplay and start muted with
-   controls. The exceptions are the Select Work card videos (see Select Work below): a card's primary
-   (`card.media.motion`) plays muted, without controls, only while its card is active, and a
-   secondary tile (a video id in `card.media.side`) plays only when asked. Card videos are short,
-   silent web loops cut from approved ranges (a primary under 4 MiB, a secondary under 2 MiB, each held
-   to its approved length by `verify.mjs`), each with a poster cut from the loop at its own aspect
+   controls. The exceptions are the Select Work card videos (see Select Work below): since Full Site
+   Iteration V1 each card has one (`card.media.video`), which plays muted, without controls, only while
+   its card is active. Card videos are short, silent web loops cut from approved ranges (each under
+   5 MiB and held to its length by `verify.mjs`), each with a poster cut from the loop at its own aspect
    ratio; the original masters stay outside the repository.
 3. **Galleries** (`type: gallery`): add objects to `items`: `{ "file": "work/creator-campaigns/mykonos-1.jpg", "alt": "…", "credit": null }`.
    Any unfilled `slots` keep rendering as placeholders.
@@ -428,6 +429,17 @@ pixel dimensions and carry identical `object-fit` and `object-position` rules, o
 register with the frame behind him. To change the photograph, replace both and re-derive the cutout.
 The moving name loops by duplicating its own track and translating it by exactly half, so the restart
 lands on identical pixels; changing the number of repeats per group keeps that true automatically.
+
+The staged entrance (Full Site Iteration V1): after the loader the hero arrives in four overlapping
+stages, timed from the moment the loader's ground starts to clear (`--intro-hero`, 2.27 seconds in).
+1, the photograph and its grade settle (a 3% scale and a dimmed grade easing out over 0.7 s; the
+foreground subject settles with it, still unseen). 2, the moving name and the rule behind it: the name
+fades in from 0.22 s and starts to move at that same moment, as the rule draws from the left from
+0.26 s (0.5 s, eased in and out). 3, the subject resolves above the name, 0.52 to 0.9 s, so it arrives
+in front of a name already moving. 4, the descriptor (a 6 px rise, from 0.72 s), the navigation (0.74
+s) and the arrow (0.76 s) last. Everything is complete 1.1 s after the ground starts to clear (0.7 s
+after it has gone); no bounce, no blur beyond the grade, no travel over 6 px. With reduced motion, or
+when the sequence does not run, the hero keeps its simple fade.
 
 Below 75rem the subject spans the full width at the rule's height, so a rule behind him would be
 invisible end to end. At those widths the same rule is drawn in front instead. This is the one place
@@ -543,8 +555,9 @@ files and none of the four excluded ones, and every reel manifest entry is an ap
 image; the Stack shows the approved 18 tools in their groups and order, ChatGPT once, each with its logo
 (empty alt text, since the name is set beside it), and `src/assets/stack/` holds exactly the 18
 approved SVGs with nothing in them that could run a script or load another file; the four capability
-rows are keyboard reachable and no icon tilts more than 2 degrees; Contact reads "Your product is
-complex. Its story shouldn't be." with the approved subline (since the Events V1.3 brief: "If you need
+rows are keyboard reachable and (since Full Site Iteration V1) each icon turns once, 360 degrees in 450
+to 650 ms with an ease-out, only on a fine pointer's arrival and only with motion allowed; Contact reads "Your product is
+complex. Its story shouldn't be." (its second sentence in the accent since Full Site Iteration V1) with the approved subline (since the Events V1.3 brief: "If you need
 someone who can bring clarity from positioning through execution, let's talk.") and keeps exactly the
 email and resume actions; the hero and footer descriptor is exactly "Web3 Marketing, Strategy, & Content"; and John's
 name appears once in the footer.
@@ -605,7 +618,9 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   2560x1440, including 1280x720, 1366x768, 1536x864, 1728x970 and common laptop windows such as
   1536x730 and 1440x790. Phones and tablets stack and scroll naturally, with no forced full height.
 - Type: paragraphs are Archivo at 440 on a 44em desktop measure, about the headline's width, so they
-  take two, three and two lines with the same breaks at every desktop size (36em below 64rem);
+  take three, three and two lines with the same breaks at every desktop size since Full Site Iteration
+  V1's copy (36em below 64rem; `text-wrap: pretty` keeps the first paragraph from ending on one word),
+  and the whole section still fits one screen from 1024x768 to 2560x1440;
   the concluding paragraph is a step larger at 560 in the heading color, with the resume button at the
   right edge of its row; the highlights are blue-teal at 600, 9.2:1 on the light surface. The trust bar
   keeps its contents, order, labels and monochrome marks, with its rhythm tightened through
@@ -632,10 +647,12 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 ### Select Work
 
 - One template and one size for every card: number and category, title, a one-sentence subline, one
-  dominant panel, two supporting panels, and one case-study link (the title is the link and the whole
+  landscape video at the card's full media width (Full Site Iteration V1, in place of the dominant
+  panel and its two supporting panels), and one case-study link (the title is the link and the whole
   card is its target; "View case study" is its visible label, beside the head on desktop and last on
-  phones). Metrics live on the case-study pages. The creator card's typographic stand-ins, which carry
-  the one approved aggregate, remain only as a fallback: they show if its videos lose their files.
+  phones). Metrics live on the case-study pages; nothing on a card is emphasized. The introduction above
+  the cards carries one emphasis, "strategy through execution", a slightly heavier weight in the
+  surrounding color.
 - The opening frame (Version 1.9): from 60rem the section starts just below the floating header
   (`--work-top`, the header's height and a little more), and the Work link lands with the section flush
   at the top, so the first view holds the headline, the introduction and the complete first card. At
@@ -643,8 +660,8 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   tall), with the second card waiting just below the frame.
 - The stack: from 60rem the cards stack as you scroll with `position: sticky`: each parks `--peek`
   (14px) lower than the one before, so the earlier cards' top edges stay in view and none is ever fully
-  covered. A covered card recedes 4% and its pictures dim; its text keeps full contrast. Every card is
-  one height, capped at 52% of the canvas width so the dominant panel stays near 16:9. Each card's
+  covered. A covered card recedes 4% and its video dims; its text keeps full contrast. Every card is
+  one height, capped at 52% of the canvas width. Each card's
   margin box ends where the last card's does (a `margin-bottom` of one `--peek` for every card after
   it), so when the section runs out the complete stack rests for a moment and then leaves as one,
   instead of the last card sliding over the others.
@@ -665,68 +682,62 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - Keyboard: going backwards through the stack (Shift+Tab) reaches cards that later ones cover. When a
   control in a covered card takes keyboard focus, the page scrolls back to where that card has just
   parked, so focus is never hidden under another card.
-- Media (Version 2.0): every tile plays one of John's approved loops, cut to the frame from his time
-  ranges. Each manifest entry's `source` note records its range, any frames trimmed from an edge, and
-  its poster frame.
+- The frame (Full Site Iteration V1): one frame and treatment on every card. On phones and tablets it is
+  16:9, the whole video. On desktop it is the whole of the card below its head, and every head keeps room
+  for a two-line subline, so the three frames share one size at any width; the video covers it,
+  centered, so the frame shows a centered band of the 16:9 edit, from 2.58:1 at most widths (1920x940,
+  2560x1440, MacBook windows) to 3.3:1 at 1440x900 and 3.75:1 at the rare short or 1600-wide windows
+  (1366x650, 1600x900). The two montages were cut for that band: every face and every word sits inside
+  the 3.3:1 band, and inside the 3.75:1 band wherever the footage allows; the Technical Product
+  Marketing animation is unchanged, so at 3.3:1 and wider the very top and bottom of its type can touch
+  the frame's edges.
+- Media (Full Site Iteration V1): each card plays one edit. Each manifest entry's `source` note records
+  every excerpt, its range and its order.
 
-  | Card | Tile | Loop | Approved range | Length | File |
-  | --- | --- | --- | --- | --- | --- |
-  | 01 | Primary | Costa Rica aftermovie | 1:29 to 1:30, then 1:40 to 1:53 | 13.56 s | 1280x720, 25 fps, 3.6 MB |
-  | 01 | Secondary | Trezor paper airplane | 0:00 to 0:12 | 12.01 s | 960x540, 1.9 MB |
-  | 01 | Secondary | Bolt Bus trailer | 0:01 to 0:12 | 10.93 s | 960x540, 2.0 MB |
-  | 02 | Primary | Hero animation | 0:10 to 0:22 | 11.68 s | 1600x900, 1.4 MB |
-  | 02 | Secondary | Website hero motion | unchanged | 13.50 s | 1280x718, 0.7 MB |
-  | 02 | Secondary | Architecture diagram | 0:03 to 0:14 | 11.00 s | 720x618, 30 fps, 0.3 MB |
-  | 03 | Primary | Slippage explainer | unchanged | 9.72 s | 1600x900, 1.2 MB |
-  | 03 | Secondary | Sui Fest interview | 0:20 to 0:32 | 12.01 s | 960x540, 1.6 MB |
-  | 03 | Secondary | Sui Summit presentation | 0:00 to 0:11 | 11.01 s | 960x446, 0.5 MB |
+  | Card | Video | Length | File |
+  | --- | --- | --- | --- |
+  | 01 | The creator montage (`cc-creator-montage`) | 15.52 s | `home-creator-montage.mp4`, 1600x900, 25 fps, 4.7 MB |
+  | 02 | The hero animation (`tm-hero-animation`), unchanged | 11.68 s | `bolt-hero-animation-loop.mp4`, 1600x900, 1.4 MB |
+  | 03 | The events montage (`ev-events-montage`) | 9.84 s | `home-events-montage.mp4`, 1600x900, 23.976 fps, 2.9 MB |
 
-  Four edges are trimmed, each by the fewest frames that remove a neighboring shot or a transition:
-  the first four frames and the last frame of the Costa Rica opening range and the first six of its
-  second range (neighboring shots), the first two frames of the Bolt Bus range (a flash of the previous
-  title card), and the last eight frames of the hero range (the start of the slide into the next
-  scene, so the loop now ends on the settled panel). Nothing is extended or substituted. The Costa Rica
-  loop joins its two ranges with a cut, opens on the overhead pool shot, runs through the crew and the
-  creators to the sky, and loops back to the pool. The loops are H.264 (High profile) at CRF 22 to 29,
-  with x264's film or animation tuning, a keyframe every two seconds, no audio track, fast start and
-  no metadata, at the source's own frame rate (the variable-rate architecture recording at a steady
-  30). The Costa Rica primary is above the 3 MB working target at 3.6 MB because its water and foliage
-  soften visibly any lower (CRF 30 would save 0.4 MB). Sizes here are decimal megabytes, as Finder
-  shows them; `verify.mjs` holds primaries under 4 MiB and secondaries under 2 MiB. The masters stay
-  outside the repository, and `verify.mjs` fails on any tracked or shipped file over 25 MB or under a
-  master's name.
-- Posters: each loop's poster is one frame extracted from the source at the loop's own crop and aspect
-  ratio (1600 px wide for the primaries, 960 for the secondaries, 720 for the architecture), served as a
-  lazy AVIF or WebP picture under the video, with the same fit and focus, so poster and loop fill the
-  tile identically: Costa Rica 1:29.32, the first sharp frame of the opening pool shot (its first
-  frames are motion blurred); Trezor 0:00.38, John signaling to the camera as the opening reveal widens;
-  Bolt Bus 0:11.55, the bus under its caption; Sui Fest 0:27.49, the captioned question; the Sui Summit
-  presentation 0:01.92, the speaker facing the room rather than turned toward the slide; and the first
-  frame of the hero and architecture loops. The website hero motion and the slippage preview keep their
-  approved posters. No video carries a `poster` attribute, which browsers fetch at once.
-- The architecture loop is contained like the still it replaced: the whole frame, as tall as the panel
-  less a little room, centered on its own plate (`#0D1012`, the recording's background) with the same
-  hairline. The recording's framing matches the still's within a few pixels, so the diagram keeps its
-  scale and position and its labels read as before at every width. The presentation loop keeps the
-  still's framing (`focus` 30% 50%), so the slide's title stays whole where a narrower panel crops it.
+  The creator montage keeps the Costa Rica aftermovie's crescendo (1:44.56 to 1:53.20, its own cuts and
+  acceleration) as its foundation, opened by slower destination imagery (Marina Bay from the air in golden
+  light, dissolving into the villa pool from above, then the crew with a gimbal) and with three new
+  subjects given 0.5 to 0.9 seconds each before the cutting quickens: the Trezor paper airplane (launched,
+  its flight, the Take Control card), the game show on wheels (the party bus under its caption) and
+  podcast production (a camera on the Lock In Podcast set, then the recording under the stone arch, cut
+  to stay clear of the operator stepping into frame and of the logo on his shirt). The events montage
+  runs the production room (the finished explainer's title, Bolt solves slippage, then the setup that
+  made it, a slow push across the behind-the-scenes photograph), Sui Fest (its title, We're at SuiFest in
+  Singapore, then the film's own quick run: the logo, the neon entrance, the crew filming on the floor, a
+  guest), a brief creator podcast (Jungle Talk's table, the top 80% of its frame, so its burned-in
+  captions and corner marks fall outside) and the live presentation last (Max introducing himself beside
+  the Sui Summit title slide, the recording's whole frame letterboxed onto its own ground, its captions
+  below the desktop band), whose yellow on dark dissolves back into the explainer's yellow on dark, so the
+  reset is one gesture with no jump in brightness. The explainer's title block is taller than the
+  narrowest band, so that one shot is set at 90% and 98 px lower in the frame, the plain studio wall
+  mirrored into the margins this opens (nothing of the type or the speaker is near them); the loop is
+  turned to start on the title's completed frame, which is also its poster. Both montages reset with a
+  0.4 second dissolve into their own opening (the creator montage also dissolves, 0.3 s, from Marina Bay
+  into the pool); everything else is hard cuts, every trim half a frame inside its range so no frame of a
+  neighboring shot comes along. H.264 High, `-preset slower`, CRF 26 (creator, 2.3 Mbps cap) and 23
+  (events, 3 Mbps cap), a keyframe every two seconds, no audio, fast start. `verify.mjs` holds each
+  card's one video under 5 MiB; the three together weigh 9 MB, against about 13 MB for Version 2.0's
+  nine.
+- Posters: each video's first frame, at its own crop (Marina Bay; the hero animation's first frame; the
+  explainer's complete title), served as a lazy AVIF or WebP picture under the video, so poster and video
+  fill the frame identically. No video carries a `poster` attribute, which browsers fetch at once.
 - Playback: every video sits on its poster in a frame of its own (`.card__frame`), invisible until its
   first frame is on screen (`requestVideoFrameCallback`, else the `playing` event), when it fades in
   over 0.18 seconds; whenever it stops it disappears again and returns to its first frame. Only the
-  active card's primary plays on its own, muted, looping and inline: on desktop, once its card has
-  reached its resting place in the stack (its sticky top) with at least 60% of its dominant panel in
-  view and clear of the next card; on tablets, once 60% of that panel is in view. Never two play at
-  once. A primary stops, back on its poster, when its card stops being the active one, and the reader's
-  pause holds. Secondary tiles show their poster and play only when asked: a mouse or pen resting on
-  the tile plays a silent preview from the loop's start, and the play button in its corner starts and
-  stops it from the keyboard or by touch. The card's primary waits on its current frame while a
-  secondary plays and resumes afterwards if its card is still active. A secondary stops, back on its
-  poster and first frame, when the pointer leaves, when most of it leaves the screen, when another
-  video starts or when the tab is hidden; a hidden tab pauses the primary too. A video that cannot load
-  keeps its poster, and its button goes. Data: a primary's video loads only as its card comes within a
-  screen of view; a secondary fetches its metadata once a request is likely (a mouse settling on its
-  card, rather than one carried across it by the scroll, or keyboard focus on its button) and the rest
-  only when it plays. Reduced motion, data saving and phones get posters only, with no autoplay and no
-  hover preview; the buttons still play a video on request.
+  active card's video plays on its own, muted, looping and inline: on desktop, once its card has reached
+  its resting place in the stack with at least 60% of its frame in view and clear of the next card; on
+  tablets, once 60% of the frame is in view. Never two play at once, and nothing plays on hover (the
+  supporting panels' hover previews went with them). The play button in the frame's corner starts and
+  stops the video from the keyboard or by touch, and the reader's pause holds. A hidden tab pauses it; a
+  video that cannot load keeps its poster, and its button goes. A card's video loads only as the card
+  comes within a screen of view. Reduced motion, data saving and phones get posters only, with no
+  autoplay; the button still plays a video on request.
 
 ### Work reel
 
@@ -776,12 +787,19 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   shrinking. Since Version 1.9 each group centers its heading and its tiles, and a short last row sits
   centered too; the tiles keep one width (a third of the row on phones, 6.25rem on tablets, about 8.4
   times the label size on desktop) rather than stretching to fill a row.
-- The capability rows respond to hover and keyboard focus alike: the icon lifts 3.5px, grows 6% and,
-  where the symbol suits it, tilts a degree or two (`tilt`), while its circle takes a little more teal
-  and a faint ring, over 220ms with an ease-out curve. Only the icon moves; the text never shifts, and
-  focus also draws the site's focus ring. Hover applies only where a fine pointer can hover, so a tap
-  never leaves an icon raised, and with reduced motion the state is shown by color alone. Nothing moves
-  without interaction.
+- The capability rows respond to hover and keyboard focus alike (Full Site Iteration V1): when a fine
+  pointer arrives on a row, its icon makes one full turn (360 degrees in 560 ms, easing out), once; it
+  never loops while the pointer stays, and leaving resets it without turning backwards (the class that
+  turns it comes off when the turn ends, `rotate` back at 0). Hover and keyboard focus both show the
+  completed state, a lift of 2px and a 3% scale, while the circle takes a little more teal and a faint
+  ring; focus never turns the icon, and also draws the site's focus ring. Only the icon moves (with the
+  individual `rotate`, `translate` and `scale` properties, so nothing in the layout shifts). Touch never
+  turns it, and with reduced motion the state is shown by color alone. The old resting tilt is gone.
+- The working-style statement (Full Site Iteration V1): "I move between strategy and execution, building
+  clear systems and working closely with the people responsible for shipping. AI accelerates research,
+  organization, production, and analysis, while judgment, verification, brand fit, and final approval
+  remain mine." Its one emphasis is "strategy and execution", a slightly heavier weight (`.em-key`, the
+  same rule as Technical Product Marketing's `.tpm-em`).
 - From 64rem the section scales with `--fit`, as About does, and is one screen tall. Spare height is
   shared out: one part above the content, one part between the upper composition and the Stack (up to
   2rem more than its own margin), and two parts below, so the Stack sits lower wherever there is room
@@ -833,10 +851,163 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   lightest line it can sit beside, a fully lit one included. That is why the brand surface's secondary
   text and accent are a touch lighter than light slate and light aqua (see Palette); `verify.mjs`
   recomputes it from the built CSS.
+- The accent (Full Site Iteration V1): "Its story shouldn't be." takes the section's accent color at the
+  headline's own display weight and size, inside the one heading (so it is read as one sentence) and
+  inline, so the headline wraps as before; on every page, the case studies' compact Contact included.
 - The footer carries the hero's descriptor, the links and one credit: "© 2026 John Cowin — Built end to
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Full Site Iteration V1
+
+John's Full Site Iteration V1 brief (October 2026) is a pass of surgical refinements across the
+published site: copy, hierarchy, media editing, emphasis and alignment. The structure and the creative
+direction are approved, so nothing is redesigned and no new system is introduced beyond what the brief
+asks for; everything it does not name is as described elsewhere in this README. No visitor-facing copy
+uses an em dash.
+
+- **01 The hero's staged entrance** (`Hero.astro`, `Header.astro`, `Intro.astro`). Four overlapping
+  stages after the loader: the photograph and its grade; the moving name and the rule behind it, the
+  name starting to move as the rule draws; the foreground subject resolving above the name; then the
+  descriptor, the navigation and the arrow. Complete 1.1 seconds after the loader's ground starts to
+  clear (see [Hero photograph and layering](#hero-photograph-and-layering)); no bounce, heavy blur or
+  large travel; reduced motion keeps the simple fade.
+- **02 Creative Instincts** (`home.json`). Paragraphs one and two word for word as decided ("...and major
+  bookings along the way."; "...my role expanded into positioning and messaging, technical documentation
+  and websites, partnerships and KOL management, and campaigns and distribution."), the third unchanged,
+  and exactly the same three highlights. The paragraphs now take three, three and two lines (the first
+  never ends on one word), and the section still fits one screen.
+- **03 One video per card** (`WorkPanels.astro`, `content.config.ts`, the case studies' frontmatter,
+  `assets.json`). The supporting panels, their hover previews, the three-panel grid and the typographic
+  stand-ins are gone; each card plays one landscape video at its full media width in one shared frame:
+  the new creator montage, the Technical Product Marketing hero animation alone, and the new events
+  montage (see [Select Work](#select-work) for the frame, the edits and their timings). The stack, the
+  number and label, the title, the subline, the link, autoplay for the active card only, the pause
+  control, the poster and the reduced-motion and data-saving behavior are as before. Retired with the
+  panels: the Costa Rica, Trezor, Bolt Bus, architecture, slippage preview, Sui Fest and Sui Summit card
+  loops, their posters and their manifest entries (`tm-website-motion` stays, since the Technical Product
+  Marketing MDX's earlier narrative still lists it).
+- **04 The practice paragraph** and **05 the capability icons** (`home.json`, `Capabilities.astro`): see
+  [From positioning to production](#from-positioning-to-production).
+- **06 Emphasis** (`index.astro`, `Contact.astro`, `global.css`). Select Work's introduction emphasizes
+  "strategy through execution"; Contact's "Its story shouldn't be." takes the accent color; nothing on
+  the card sublines, the Stack or About beyond its three highlights. One rule, `.tpm-em, .em-key`: a
+  slightly heavier weight (600) in the surrounding color.
+- **07 and 08 The program introduction** (`CmContext.astro`, `creator.json`). The paragraph widens to
+  56rem (54 to 60), centered at the same size, so it sets in fewer, longer lines; its one emphasis is "I
+  led campaign strategy with co-sponsors". The rule and the roster line stay; the roster line reads "The
+  roster brought together creators across streaming, crypto media, ecosystem leadership, entertainment,
+  and community." (no count), and the build refuses a creator count there.
+- **09 Singapore** (`creator.json`): "A city-wide conference activation spanning a crypto game show on a
+  party bus, high tea above Singapore, and a creator shopping experience through the city."
+- **10 The Trezor sample is 60 posts everywhere** (`creator.json`, `assets.json`, `CmTrezor.astro`): the
+  third highlight reads "#2", "by reach out of 60 posts"; the note, "Measured on the creator's account
+  against its preceding 60 posts."; the manifest's metric entries, their labels, their accessible text
+  and their source notes say 60. The figures, the multiple, the ranking and the 98th-percentile line are
+  unchanged, and the earlier sample appears nowhere (`verify.mjs` searches the page, the data, the
+  manifest and the component).
+- **11 The Trezor feedback, centered** (`CmTrezor.astro`). The quotation, its four teal phrases and the
+  attribution as one centered block on a 52rem measure, the quotation's lines balanced, the attribution
+  centered under a short hairline. No highlighter (the phrases are still type alone: the page's deep
+  teal, one step heavier).
+- **12 A quiet transition** (`CmTrezor.astro`). After the feedback, one centered 1px rule, strongest at
+  its middle and fading to nothing at both ends (transparent, then the teal at 55%, then transparent),
+  66% of the width up to 52rem, with generous space above (3 to 6rem) and below. With motion allowed it
+  draws out once from its center (1.1 s) as it comes into view; with reduced motion it is simply there.
+  No illustration, card, icon or wave.
+- **13 and 15 The library's frame** (`CmLibrary.astro`, `cm-motion.ts`, `creator.json`). The SELECTED
+  CONTENT eyebrow above "One program, many formats." is gone, and so is the changing caption at the
+  frame's lower left (the format and the place) with its cue data and its script; the pause and play
+  control stays at the lower right. The tabs still name the format on screen.
+- **14 Destination films** (`cm-library-destination-fs1.mp4`, 9.47 seconds). The cloud zoom into Mykonos
+  runs on into the courtyard and John's moment there, 0:31.82 to 0:32.47 of the Mykonos aftermovie,
+  readable for about two thirds of a second, live footage (no freeze), ending on the last frame before
+  his next caption word, then the villa terrace. The edit now runs at the aftermovie's own 23.976 fps,
+  the Costa Rica aerials retimed 4% slower, so John's moment keeps its length. His shirt carries a
+  small Club Zero mark, left as it is (nothing cropped or blurred).
+- **16 Shiv's Trezor packing** (Shiv Costa Rica Vlog.mp4, 0:06.80 to 0:08.30): tested and left out. Its
+  three clearest consecutive shots (0:07.52 to 0:08.88) at 70% speed run 1.96 seconds; optical-flow
+  interpolation smeared the box's edges, and the frame-repeating version still read as hectic (its
+  frame-to-frame motion about five times the sponsor edit's, the box legible for about half a second),
+  so it stays excluded, as in V1.4.
+- **17 Behind the scenes** (`cm-library-bts-fs1.mp4`, 11.0 seconds). The Lock In Podcast is one brief
+  moment: a camera on the set (stopping before its operator steps into frame), then one wide angle of the
+  recording, about two seconds in all; the two close-ups and the rest of the two-shot are gone. The time
+  goes to production the Podcasts format does not show: a creator filming herself in the pool, the yoga
+  class on a phone screen (Costa Rica), editing at laptops on the terrace, a pocket camera on the
+  catamaran and dinner filmed on a phone (Mykonos). The bathroom laughter and every other approved
+  moment stay.
+- **18 The credits** (`creator.json`). John: "Co-led program planning, travel, villa, and trip logistics;
+  led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot
+  management, approvals, distribution, campaign tracking, reporting, and ongoing creator and partner
+  communication." Maanav: "Collaborated on creator and co-sponsor sourcing, interviews, selection,
+  negotiations, legal contracts, travel, villas, and trip logistics." Bob's line, the handles, the
+  co-sponsors, the brand and the hero photography credit are unchanged; the line on varying on-site
+  ownership is gone.
+- **19 to 22 Technical Product Marketing** (`tpm.json`). The emphasis system is unchanged and nothing new
+  is emphasized. 05's goal: "Replace outdated documentation with a clear, structured system for technical
+  audiences while controlling what product information could be made public." Its contribution: "I rebuilt
+  the documentation from the ground up, moving it from an outdated GitBook into a purpose-built Mintlify
+  documentation system. I owned the architecture, technical writing, cross-references, calls to action,
+  MDX build, and GitHub publishing, working across engineering, growth, and design to make complex product
+  information useful, accurate, and appropriate for public release." The overview's note: "One branded
+  Mintlify system in place of outdated GitBook documentation, organized from product understanding to
+  implementation." The interactive architecture's note: "I developed the early diagram with engineering,
+  validated it with the liquidity team, refined its structure, filtered out internal-only information,
+  briefed design, and wrote every pop-up explanation." (Bob van der Meer stays credited in 05's Credits.)
+  The conclusion: "The work began with a shared product language and carried across the full
+  public-facing system, from the website and technical documentation to campaigns, articles, content, and
+  every expression built from the same strategic foundation." under the same headline.
+- **23 Contact** (`Contact.astro`, every page): see [Contact and the closing frame](#contact-and-the-closing-frame).
+- **24 The Events activation** (`EvActivation.astro`). On wide screens the headline and the paragraph are
+  top-aligned (V1.6 set them on the row's foot), the paragraph moved by the difference between where each
+  face's capitals start in its line (Archivo 0.1365em at 0.98, Manrope 0.4986em at 1.7), so its first line
+  stands level with the headline's cap top: measured 0 px apart at 1280, 1440 and 1920. The widths, the
+  gap and the rendering are as before; small screens stack as before.
+- **25 The guardrails**, site-wide: at most one emphasized phrase in a paragraph (the Trezor quotation
+  keeps its approved phrases), only accent color, a slightly heavier weight, or both with restraint, and
+  never a highlighter, background, pill or decorative underline.
+
+**Media notes.** Masters stay outside the repository. The Sui Summit presentation's first seconds were
+cut from `Max Presentation.mp4` on John's Mac (0:00 to 0:05.2) and read from that excerpt. The
+library edits are 1280x720 and 960x540 (`-fs1` names, so no browser keeps an older cut; the V1.4 and
+V1.2 files are gone): destination films 3.9 and 2.0 MB, behind the scenes 4.3 and 2.2 MB. Every new edit
+was scanned frame by frame (no one-frame flash or stray frame from a neighboring shot anywhere, each
+wrap as smooth as an ordinary frame step) and reviewed against the desktop bands.
+
+**For John to confirm.** The hero's entrance completes 1.1 seconds after the loader's ground starts to
+clear, 0.7 seconds after it has gone (read as "after the loading screen clears" from its start; a
+0.3 second longer entrance is a one-line change). On desktop the cards show a centered band of each
+16:9 edit (2.58:1 to 3.75:1 with the screen), so the montages were framed for it, and the hero
+animation's outermost type can touch the frame at the widest bands. The events montage opens on the
+explainer's title, reframed 10% smaller and lower with the plain wall extended, and its podcast shot is
+Jungle Talk's top 80% (its captions and the corner marks, Club Zero's among them, fall outside). John's
+moment in destination films shows the small Club Zero mark on his shirt. Shiv's packing stays out. The
+creator montage is 4.7 MB (the check's limit is now 5 MB a card, as each card has one video).
+
+**The checks** (`verify.mjs`, updated throughout for Full Site Iteration V1): the decided copy, word
+for word, and its single emphases (Select Work, the practice statement, the program paragraph) as
+`.em-key`, one rule with `.tpm-em`; one video per card, the right file, a 16:9 frame on phones and one
+shared size on desktop, no panel, stand-in, fallback or hover-play left, each video under 5 MB, silent,
+H.264, index first, at its length, with its poster; the retired card files, posters and manifest entries
+gone; the capability icon's single 360 degree turn (450 to 650 ms, ease-out, once, only for a fine
+pointer and with motion allowed), the completed state for hover and focus, focus never turning it,
+color alone with reduced motion, no tilt; the Contact accent on every page; the hero's four overlapping
+stages, the name moving as the rule draws, complete 0.9 to 1.2 seconds in, no bounce, blur or large
+travel; the Technical Product Marketing goal, contribution, notes and conclusion, Bob's credit kept in
+05's Credits; no creator count in the roster line; the 54 to 60rem paragraph; Singapore; 60 posts
+everywhere and 56 nowhere; the centered feedback; the transition rule (gradient, 1px, 60 to 70%, its
+center-out reveal only with motion); the library's eyebrow, caption and cues gone and the control at
+the lower right; John's moment (0.6 to 1.0 seconds, live) and behind the scenes' brief Lock In moment;
+the credits; the activation's top alignment; the events montage's order; and, site-wide, no paragraph
+with two emphases and no highlighter or underline mark. A mutation run broke each of these promises in
+turn (58 mutations) and every one was caught, and a browser pass (40 checks) confirmed the behavior: the
+hero's stages and their timing in the running animations, the icon's single turn and its completed
+state, one card video at a time as each card rests, the frames' shared size and 16:9 on phones, the
+emphasis weights, the accent, the rule drawing out from its center, the library's bar, the activation's
+cap tops level at three widths, and no sideways scroll on any page from 360 to 1920. The accessibility
+scan finds nothing on all five pages at two widths, and `astro check` reports no errors.
 
 ### Creator Marketing and Partnerships, Version 1.4
 
@@ -912,10 +1083,10 @@ visitor-facing copy uses an em dash.
   next shot; now 0:09.42).
 - **07 The Trezor highlights** (`creator.json`, `assets.json`, `CmTrezor.astro`). The centered
   composition is unchanged. The middle figure reads `2.2x` (a screen reader hears "2.2 times"); the
-  note is one sentence, "Measured on the creator's account against its preceding 56 posts.", the
-  creator-account-results sentence gone. `524%` above the account's average impressions, `2.2x` the
-  account's average total engagement and `#2` by reach out of 56 posts, with the 98th-percentile line;
-  no raw totals.
+  note is one sentence, "Measured on the creator's account against its preceding posts." (the sample
+  given as 60 posts since Full Site Iteration V1), the creator-account-results sentence gone. `524%` above
+  the account's average impressions, `2.2x` the account's average total engagement and `#2` by reach
+  out of the sample's posts, with the 98th-percentile line; no raw totals.
 - **08 The program introduction** (`CmContext.astro`). The split layout is replaced by one full-width,
   centered editorial composition: the headline at the top center in a narrow measure ("Each
   destination / became a campaign / in motion.", "a campaign in motion." in the teal; four lines on
@@ -1075,7 +1246,7 @@ visitor-facing copy uses an em dash.
   caption, the figures on one line, with generous space and nothing around them (the V1.2 hairlines
   are gone; no cards, tiles, pills, shadows or dashboard chrome). The metrics are exactly as before
   ("524%", "above the account's average impressions"; "2.2 times", "the account's average total
-  engagement"; "#2", "by reach out of 56 posts"); the 98th-percentile line and the note on what they
+  engagement"; "#2", "by reach out of" the sample's posts, 60 since Full Site Iteration V1); the 98th-percentile line and the note on what they
   measure follow under the row as quieter centered lines, so the three columns stay even. No raw totals.
 - **08 The quotation's emphasis** (`CmTrezor.astro`). The translucent underlay is gone. The four phrases
   are set apart by type alone: the page's deep teal and one step more weight (800 against the
@@ -1263,7 +1434,7 @@ is inferred from the code and measured in a browser.
   testimonial transition is gone too, with its placeholder entries (`cm-testimonial-1` to `-3`), its
   data and its component: the network flows straight into the atlas.
 - **11 to 14 The Trezor Dare Ad** (`CmTrezor.astro`). After the film: Assignment, Objective and
-  Approach in John's words; the highlights with the third as "#2 by reach out of 56 posts" and its 98th
+  Approach in John's words; the highlights with the third as "#2 by reach" out of the sample's posts (60 since Full Site Iteration V1) and its 98th
   percentile line (never "most-viewed", creator-account framing kept); then the one quotation, four of
   its phrases ("level of care and creativity", "production quality", "attention to detail",
   "understanding our goals") in the accent over a soft underlay that draws in once, in reading order,

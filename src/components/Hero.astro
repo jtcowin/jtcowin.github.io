@@ -394,23 +394,26 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     }
   }
 
-  /* ---- the handoff from the opening sequence (Intro.astro, V1.5) --------------
-     The ground clears at --intro-hero, set on the document, and the hero comes
-     up in layers, overlapping, all within 0.6 seconds (Events V1.6 tightened it
-     from about three quarters of a second, in the same order, so the whole
-     opening stays near three and a half seconds with the longer note):
-       1. the ambient layer, the photograph (both of its layers together, so the
-          subject stays registered with the frame behind him), from dim and a
-          little large to its own light and size, as the ground dissolves;
-       2. the name, the hero's headline, rising a few pixels as it fades in;
-       3. the descriptor, the hero's supporting line, the same way;
-       4. the navigation, its actions (Header.astro);
-       5. the supporting details: the rule drawing from left to right, the way
-          the marker ran, and the arrow settling into its corner.
-     (The hero has no eyebrow and no buttons of its own; the brief's order is
-     kept for the layers it has.) The fills only reach backwards, so once the
-     handoff ends nothing holds the hero. With reduced motion none of this runs:
-     the ground clears straight to the hero as it stands. */
+  /* ---- the handoff from the opening sequence (Intro.astro) -----------------------
+     Full Site Iteration V1: the ground clears at --intro-hero, set on the document,
+     and the composition builds in four distinct, overlapping stages, the whole hero
+     settled 1.1 seconds after the loading screen begins to clear (0.6 before):
+       1. the scene: the photograph and its grade, from dim and a little large to
+          their own light and size, from the first moment, as the ground dissolves
+          (0 to 0.7 s);
+       2. the name and the rule behind it: the name fades in as its stream begins to
+          travel (the stream starts here, not before), while the rule draws across
+          the frame from the left, the way the marker ran (0.22 to 0.76 s);
+       3. the subject: the cutout resolves in front of the moving name, so the depth
+          and the occlusion become clear; it settles with the photograph on the same
+          clock, so the two stay registered, and only its opacity is its own
+          (0.52 to 0.9 s);
+       4. the descriptor, the arrow and the navigation (Header.astro) complete the
+          composition (0.72 to 1.1 s).
+     Opacity, the rule's draw and a few pixels at most: no bounce, no blur, no large
+     travel, nothing that moves on its own once settled. The fills only reach
+     backwards, so once the handoff ends nothing holds the hero. With reduced motion
+     none of this runs: the ground clears straight to the hero as it stands. */
   @media (prefers-reduced-motion: no-preference) {
     :global(html.intro-hold) .hero__photo .hero__img,
     :global(html.intro-hold) .hero__subject .hero__img,
@@ -418,26 +421,36 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
       animation: none;
     }
 
-    :global(html.intro-hold) .hero__photo,
+    :global(html.intro-hold) .hero__photo {
+      animation: hero-ambient 700ms var(--ease-out) var(--intro-hero) backwards;
+    }
+
     :global(html.intro-hold) .hero__subject {
-      animation: hero-ambient 600ms var(--ease-out) var(--intro-hero) backwards;
+      animation:
+        hero-ambient 700ms var(--ease-out) var(--intro-hero) backwards,
+        hero-resolve 380ms var(--ease-out) calc(var(--intro-hero) + 520ms) backwards;
     }
 
     :global(html.intro-hold) .hero__name {
-      animation: hero-rise-fade 400ms var(--ease-out) calc(var(--intro-hero) + 70ms) backwards;
+      animation: hero-resolve 420ms var(--ease-out) calc(var(--intro-hero) + 220ms) backwards;
     }
 
-    :global(html.intro-hold) .hero__descriptor {
-      animation: hero-rise-fade 350ms var(--ease-out) calc(var(--intro-hero) + 140ms) backwards;
+    /* The stream begins its travel as the name comes in. */
+    :global(html.intro-hold) .stream__track {
+      animation-delay: calc(var(--intro-hero) + 220ms);
     }
 
     :global(html.intro-hold) .hero__rule {
       transform-origin: 0 50%;
-      animation: hero-draw 380ms cubic-bezier(0.65, 0, 0.35, 1) calc(var(--intro-hero) + 220ms) backwards;
+      animation: hero-draw 500ms cubic-bezier(0.65, 0, 0.35, 1) calc(var(--intro-hero) + 260ms) backwards;
+    }
+
+    :global(html.intro-hold) .hero__descriptor {
+      animation: hero-rise-fade 380ms var(--ease-out) calc(var(--intro-hero) + 720ms) backwards;
     }
 
     :global(html.intro-hold) .hero__arrow {
-      animation: hero-point 300ms var(--ease-out) calc(var(--intro-hero) + 300ms) backwards;
+      animation: hero-point 340ms var(--ease-out) calc(var(--intro-hero) + 760ms) backwards;
     }
   }
 
@@ -455,11 +468,21 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
   @keyframes hero-rise-fade {
     from {
       opacity: 0;
-      transform: translate3d(0, 10px, 0);
+      transform: translate3d(0, 6px, 0);
     }
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+
+  /* A layer resolving in place: opacity only. */
+  @keyframes hero-resolve {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 

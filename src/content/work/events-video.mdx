@@ -21,17 +21,10 @@ card:
   subline: "Led event strategy and multi-camera production that turned live technical moments into reusable content."
   linkLabel: "View case study"
   media:
-    # Primary: the slippage explainer (a 9.7 second preview). Secondary
-    # motion: the Sui Fest interview and the opening of the Sui Summit
-    # presentation, played only on request. The Sui Fest stand-in appears
-    # only if its entry loses its approved file.
-    main: "ev-slippage-preview"
-    motion: "ev-slippage-preview"
-    side: ["ev-suifest-loop", "ev-max-loop"]
-    fallback: [null, "suifest", null]
-    # Where a narrower panel crops the presentation, keep the slide's title
-    # whole and as much of the speaker as fits.
-    focus: ["", "", "30% 50%"]
+    # Full Site Iteration V1: one landscape video for the whole card (no
+    # supporting panels): the events montage (the production room, Sui Fest, a
+    # brief creator podcast, ending on the live presentation).
+    video: "ev-events-montage"
 ---
 
 import Section from '@components/casestudy/Section.astro';

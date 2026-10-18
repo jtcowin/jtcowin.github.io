@@ -39,35 +39,20 @@ const work = defineCollection({
       subline: z.string().max(130),
       linkLabel: z.string(),
       media: z.object({
-        /** Asset id for the dominant panel (a still, or a video's poster). */
-        main: z.string(),
-        /** Optional muted loop for the dominant panel. */
-        motion: z.string().optional(),
         /**
-         * Asset ids for the two supporting panels. A still shows as an image;
-         * a video entry becomes a secondary motion tile, which shows its
-         * poster and plays only when the visitor asks (a hover preview with a
-         * fine pointer, or its play button).
+         * Full Site Iteration V1: one landscape video for the whole card, an
+         * approved video entry in the asset manifest. It takes the card's full
+         * media width in the same frame and treatment as the other cards, sits
+         * on its own poster (the entry's still) until it plays, and plays muted,
+         * on its own only while its card is the active one in the stack.
          */
-        side: z.tuple([z.string(), z.string()]),
+        video: z.string(),
         /**
-         * Typographic stand-ins, in slot order, while an id has no approved
-         * file (null for a slot that needs none).
+         * Optional CSS object-position for the video and its poster: which part
+         * of the frame stays in view where the card's media area crops it (the
+         * wide desktop frame). Omitted means centered.
          */
-        fallback: z.tuple([z.string().nullable(), z.string().nullable(), z.string().nullable()]).optional(),
-        /**
-         * Optional fit per slot, in the same order: `contain` shows the whole
-         * image or video, uncropped, on a plate of its own background (the
-         * asset's `plate` color) with a little room around it. Omitted means
-         * cover.
-         */
-        fit: z.array(z.enum(['cover', 'contain'])).max(3).optional(),
-        /**
-         * Optional CSS object-position per slot, in the same order (main, then
-         * the two sides), for an image whose panel crops it: which part stays
-         * in view. Omitted or empty means centered.
-         */
-        focus: z.array(z.string()).max(3).optional(),
+        focus: z.string().optional(),
       }),
     }),
   }),

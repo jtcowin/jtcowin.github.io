@@ -11,10 +11,13 @@ import Intro from '@components/Intro.astro';
 import home from '@data/home.json';
 import { getImage } from 'astro:assets';
 import { getAsset, resolveImage } from '@lib/assets';
+import { emphasize } from '@lib/tpm-copy';
 import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
 import manropeLatin from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
 
 const work = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
+// Full Site Iteration V1: the introduction's one emphasized phrase (home.json `work.em`).
+const workCopy = emphasize(home.work.copy, home.work.em, 'Select Work introduction');
 
 // The hero's two photographic layers (Hero.astro), preloaded with the same
 // widths and format its pictures request, so the opening sequence hands over
@@ -102,7 +105,7 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
       <div class="container work__track">
         <div class="section-head work__head" data-work-head>
           <h2 id="work-heading" class="display display-lg">{home.work.heading}</h2>
-          <p class="lede">{home.work.copy}</p>
+          <p class="lede">{workCopy.map(({ text, em }) => (em ? <strong class="em-key">{text}</strong> : text))}</p>
         </div>
         <WorkPanels entries={work} />
       </div>

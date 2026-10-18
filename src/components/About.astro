@@ -403,9 +403,12 @@ const leading = paragraphs.slice(0, -1);
     line-height: 1.42;
     letter-spacing: -0.008em;
     color: var(--flow-ink);
-    /* Plain wrapping, so the lines fall the same way before, during and
+    /* Full Site Iteration V1: wrapping that avoids a lone word on a
+       paragraph's last line (the revised first paragraph ends "along the
+       way."). It depends only on the words and their widths, never on the
+       flow's paint, so the lines still fall the same way before, during and
        after the flow. */
-    text-wrap: wrap;
+    text-wrap: pretty;
   }
 
   .flow__p--two {

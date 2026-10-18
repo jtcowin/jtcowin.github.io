@@ -1,5 +1,5 @@
 {
-  "_readme": "Homepage copy (Version 1.7). Select Work cards are drawn from each case study's frontmatter in src/content/work/.",
+  "_readme": "Homepage copy (Version 1.7; Full Site Iteration V1, October 2026: the revised About and practice paragraphs, one emphasized phrase in the Select Work introduction and in the practice paragraph, and the Contact headline's second sentence in the accent). Select Work cards are drawn from each case study's frontmatter in src/content/work/.",
   "intro": {
     "_note": "The homepage opening sequence (Intro.astro), since the V1.5 brief of October 16, 2026: the viewing note alone (the Creator Marketing V1.0 brief, October 17, 2026, removed the three phrases), exactly as approved and written in capitals as approved. Once per browsing session, never when returning from a case study; see Intro.astro for the timing.",
     "note": "BEST EXPERIENCED ON DESKTOP"
@@ -14,7 +14,8 @@
   },
   "work": {
     "heading": "Select Work",
-    "copy": "The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship."
+    "copy": "The examples below show how I move from strategy through execution and coordinate the people, systems, and details required to ship.",
+    "em": "strategy through execution"
   },
   "reel": {
     "_note": "Version 1.8: a purely visual transition after Select Work. The 24 approved pieces in `pool` are shuffled on each fresh visit (kept for the rest of the browser session) and dealt into three rows of `perRow`; a row is repeated only as far as it takes to leave no blank edge. The images are decorative: empty alt text, no captions or labels. Excluded by decision: the 2:53 PM screenshot (financial comparison claims), the 2:59 PM screenshot (live figures that age), Discord.jpeg and Educational.jpeg.",
@@ -47,10 +48,11 @@
     ]
   },
   "practice": {
-    "_note": "What I Do and How I Work in one section (Version 1.7), kept in Version 1.8 with the approved How I Work statement, the four capability groups and an 18-tool Stack drawn from the approved brand SVGs in src/assets/stack. Since Version 1.9 the statement carries no visible How I Work label, and each Stack group's heading and tools are centered in its column. `tilt` sets the small rotation a capability icon takes on hover and keyboard focus, for the symbols that suit one.",
+    "_note": "What I Do and How I Work in one section (Version 1.7), kept in Version 1.8 with the approved How I Work statement, the four capability groups and an 18-tool Stack drawn from the approved brand SVGs in src/assets/stack. Since Version 1.9 the statement carries no visible How I Work label, and each Stack group's heading and tools are centered in its column. Full Site Iteration V1 (October 2026): the statement is John's revised paragraph, `how.em` its one emphasized phrase, and a capability icon answers the pointer with one complete turn (no tilt).",
     "heading": "From positioning to production.",
     "how": {
-      "copy": "I move comfortably between strategy and execution. I work best with clear ownership, direct collaboration, and systems that make good work repeatable. AI speeds up research, organization, production, and analysis; judgment, verification, brand fit, and final approval stay with me."
+      "copy": "I move between strategy and execution, building clear systems and working closely with the people responsible for shipping. AI accelerates research, organization, production, and analysis, while judgment, verification, brand fit, and final approval remain mine.",
+      "em": "strategy and execution"
     },
     "capabilities": {
       "label": "Capabilities",
@@ -61,8 +63,7 @@
         },
         {
           "title": "Technical content and websites",
-          "icon": "file-text",
-          "tilt": -1.5
+          "icon": "file-text"
         },
         {
           "title": "Partnerships and KOL programs",
@@ -70,8 +71,7 @@
         },
         {
           "title": "Campaigns and distribution",
-          "icon": "send",
-          "tilt": -2
+          "icon": "send"
         }
       ]
     },
@@ -188,14 +188,14 @@
     }
   },
   "about": {
-    "_note": "About (Version 1.7): the static headline, then three paragraphs (the music and business foundation, the move to Phi Labs Global and the wider scope, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three approved highlights, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
+    "_note": "About (Version 1.7; its first two paragraphs revised in Full Site Iteration V1, October 2026): the static headline, then three paragraphs (the music and business foundation, the move to Phi Labs Global and the wider scope, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three approved highlights, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
     "heading": "Creative instincts. Operator discipline.",
     "paragraphs": [
       {
-        "text": "I came to DeFi in 2021 after a decade of building audiences and running the business behind a **globally distributed music project**, securing sponsorships, media appearances, and major bookings."
+        "text": "I came to DeFi in 2021 after a decade of building audiences and running the business behind a **globally distributed music project**, securing sponsorships, media appearances, and major bookings along the way."
       },
       {
-        "text": "In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching **more than 200,000 people**. As the company evolved, my role expanded into positioning, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
+        "text": "In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching **more than 200,000 people**. As the company evolved, my role expanded into positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
       },
       {
         "text": "Today, I turn product complexity into **market narratives** people understand and connect with."
@@ -208,7 +208,9 @@
     "headshot": "about-headshot"
   },
   "contact": {
+    "_note": "Full Site Iteration V1 (October 2026): `accent`, the headline's second sentence, is set in the section's accent color wherever Contact appears (full and compact); the heading stays one sentence for assistive technology.",
     "heading": "Your product is complex. Its story shouldn’t be.",
+    "accent": "Its story shouldn’t be.",
     "copy": "If you need someone who can bring clarity from positioning through execution, let’s talk.",
     "secondary": {
       "label": "Download resume",

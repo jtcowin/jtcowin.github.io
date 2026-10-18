@@ -842,13 +842,14 @@ const work = (await getCollection('work'))
     }
   }
 
-  /* The homepage opening sequence (Intro.astro, V1.5): the navigation, the
-     hero's actions, is the fourth of its layers, after the photograph, the name
-     and the descriptor and before the rule and the arrow (Hero.astro). The fill
-     only reaches backwards, so nothing holds the header afterwards. */
+  /* The homepage opening sequence (Intro.astro; Full Site Iteration V1): the
+     navigation completes the hero's composition with the descriptor and the arrow,
+     its fourth and last stage, after the scene, the name and its rule, and the
+     subject (Hero.astro). The fill only reaches backwards, so nothing holds the
+     header afterwards. */
   @media (prefers-reduced-motion: no-preference) {
     :global(html.intro-hold) .site-header {
-      animation: header-in 330ms var(--ease-out) calc(var(--intro-hero) + 200ms) backwards;
+      animation: header-in 360ms var(--ease-out) calc(var(--intro-hero) + 740ms) backwards;
     }
   }
 
