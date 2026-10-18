@@ -32,19 +32,23 @@
  * (within bounds, so nothing drifts apart), the media centered beside them.
  * Collapsed headers carry only their number, title and a chevron.
  *
- * The production room (V1.4, events.json `setupFinal`) opens on Setup: the
- * behind-the-scenes photograph. A segmented control just above the stage (V1.5:
- * two equal options, SETUP and FINAL, the selected one filled in the accent)
- * switches the same stage between it and the finished explainer (its muted
- * preview and its pause control) through a crossfade; the reader makes the
- * switch, the stage keeps its size, and the two are never side by side. Watch
- * full video with sound shows only under Final; under Setup its line stays
- * empty, so nothing below moves.
+ * The production room (V1.4, events.json `setupFinal`) opens on Final (since
+ * Creator Marketing V1.2, Part One; it opened on Setup before): the finished
+ * explainer's muted preview, which plays by itself while the chapter is open
+ * and in view, with its pause control. A segmented control just above the
+ * stage (V1.5: two equal options, SETUP and FINAL, the selected one filled in
+ * the accent) switches the same stage to Setup, the behind-the-scenes
+ * photograph, and back, through a crossfade; the reader makes the switch, the
+ * stage keeps its size, and the two are never side by side. The reader's last
+ * choice holds for the rest of the visit: closing the chapter and opening it
+ * again does not bring Final back over a chosen Setup. Watch full video with
+ * sound shows only under Final; under Setup its line stays empty, so nothing
+ * below moves.
  *
  * Reduced motion: a chapter changes through a short fade, with no height in
  * motion and no scroll pinning, and Setup and Final change at once. Without
  * JavaScript all three chapters are open, each film with its native controls,
- * and the production room shows its photograph, then its film; a chapter with
+ * and the production room shows its film, then its photograph; a chapter with
  * no film (V1.6: the live presentation and the event film) shows its preview
  * still, on its poster.
  *
@@ -137,20 +141,20 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                         {ch.sf ? (
                           <div class="evd__sf" data-sf>
                             <div class="evd__sf-tabs" role="tablist" aria-label={ch.sf.label} data-sf-tabs>
-                              <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-setup" aria-controls="ev-sf-setup" aria-selected="true" data-sf-tab="setup">
+                              <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-setup" aria-controls="ev-sf-setup" aria-selected="false" tabindex="-1" data-sf-tab="setup">
                                 {ch.sf.tabs.setup}
                               </button>
-                              <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-final" aria-controls="ev-sf-final" aria-selected="false" tabindex="-1" data-sf-tab="final">
+                              <button type="button" role="tab" class="evd__sf-tab" id="ev-sf-tab-final" aria-controls="ev-sf-final" aria-selected="true" data-sf-tab="final">
                                 {ch.sf.tabs.final}
                               </button>
                             </div>
                             {/* The stage: Setup and Final share it, and its frame marks and
                                 timecode belong to whichever is shown. */}
                             <div class="evd__frame evd__frame--sf" data-deck-frame>
-                              <div class="evd__sf-panel is-shown" id="ev-sf-setup" role="tabpanel" aria-labelledby="ev-sf-tab-setup" data-sf-panel="setup">
+                              <div class="evd__sf-panel" id="ev-sf-setup" role="tabpanel" aria-labelledby="ev-sf-tab-setup" data-sf-panel="setup" data-loop-off>
                                 <EvSlot id={ch.sf.photo} aspect="16:9" sizes={sizes} class="evd__photo" />
                               </div>
-                              <div class="evd__sf-panel" id="ev-sf-final" role="tabpanel" aria-labelledby="ev-sf-tab-final" data-sf-panel="final" data-loop-off>
+                              <div class="evd__sf-panel is-shown" id="ev-sf-final" role="tabpanel" aria-labelledby="ev-sf-tab-final" data-sf-panel="final">
                                 <div class="evd__preview" data-deck-preview>
                                   <EvSlot id={ch.preview} aspect="16:9" fit={ch.previewFit === 'contain' ? 'contain' : 'cover'} class="evd__loop" />
                                 </div>
@@ -193,9 +197,9 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                           </div>
                         )}
                         {/* Only where the chapter has a film (V1.6: the production room
-                            alone); there it waits, out of sight, until FINAL is chosen. */}
+                            alone); there it belongs to FINAL, out of sight under SETUP. */}
                         {ch.full && (
-                          <button type="button" class:list={['evd__watch', ch.sf && 'is-away']} data-deck-watch>
+                          <button type="button" class="evd__watch" data-deck-watch>
                             <span class="evd__watch-icon" aria-hidden="true">
                               <Icon name="play" size={12} />
                             </span>
@@ -548,7 +552,8 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
           select(tabs[j].dataset.sfTab as string, true);
         });
       });
-      select('setup');
+      // Final first (V1.2); afterwards the reader's last choice stands for the visit.
+      select('final');
     }
 
     // Watch full video with sound: the preview steps aside and the full film plays
@@ -921,9 +926,13 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     min-width: 0;
   }
 
-  /* Without JavaScript: the photograph, then the film, and no control. */
+  /* Without JavaScript: the film, then the photograph (V1.2), and no control. */
   :global(html:not(.js)) .evd__frame--sf {
     gap: 1rem;
+  }
+
+  :global(html:not(.js)) .evd__sf-panel[data-sf-panel='final'] {
+    order: -1;
   }
 
   :global(html:not(.js)) .evd__sf-tabs {

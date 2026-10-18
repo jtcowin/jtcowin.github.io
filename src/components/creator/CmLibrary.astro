@@ -1,24 +1,36 @@
 ---
 /**
- * 11 Selected content (Creator Marketing and Partnerships, V1.1): a library
+ * 11 Selected content (Creator Marketing and Partnerships, V1.2): a library
  * of six edits from across the three trips, one for each format (destination
  * films, creator ads, the game show, lifestyle, sponsor integrations and the
  * crew behind the scenes). Each edit is a curated mini-edit of its own,
- * silent and landscape, 9 to 12 seconds, and no excerpt appears in two of
- * them (or in an atlas loop or fragment).
+ * silent and landscape, 7 to 14 seconds, whose last moment dissolves back
+ * into its own opening (V1.2), so it can repeat with no black frame, held
+ * frame or flash; no excerpt appears in two of them (or in an atlas loop or
+ * fragment). V1.2 recut three: creator ads (Jungle Talk in place of the two
+ * Slippage lines), sponsor integrations (Shiv's Trezor box and Ashley's
+ * Trezor device in place of the Bitrefill call, the ClubZero card and the Sup
+ * Raj invitation) and behind the scenes (the Costa Rica crew around 1:49).
  *
  * The formats are chosen with plain text tabs (role="tablist"), an index
  * number and a label each, and a restrained active line under the selected
- * one that fills as its edit plays: no pills, capsules or chrome. Selecting a
- * format (a click, or Enter or Space on a focused tab; the arrow keys, Home
- * and End move between them) plays its edit from the start. With motion
- * allowed the library moves on to the next format when an edit ends, round
- * and round, and holds while keyboard focus is in the formats; the reader can
- * pause it at any time (the control under the frame), and it pauses off
- * screen and in a hidden tab. Reduced motion, a data-saving preference or a
- * refused autoplay start nothing: the selected edit waits on its poster and
- * plays once on request. The line under the frame names the format and the
- * destination on screen, from the edit's own cue times (creator.json).
+ * one that fills as its edit plays: no pills, capsules or chrome. Until the
+ * reader chooses, with motion allowed, the library moves on to the next
+ * format as each edit ends, round and round, and holds (the edit repeating)
+ * while keyboard focus is in the formats. Selecting a format (a click, or
+ * Enter or Space on a focused tab; the arrow keys, Home and End move between
+ * them) pins it (V1.2): its edit plays from the start and loops until the
+ * reader selects another. The reader can pause at any time (the control
+ * under the frame), and it pauses off screen and in a hidden tab. Reduced
+ * motion, a data-saving preference or a refused autoplay start nothing: the
+ * selected edit waits on its poster and plays through once on request. The
+ * line under the frame names the format and the destination on screen, from
+ * the edit's own cue times (creator.json).
+ *
+ * V1.2, the surface: the section begins to turn toward the water of the
+ * program ownership below before it ends, one broad gradient that carries on
+ * through the open air above the waterline (CmOwnership.astro), so the two
+ * never meet at a line.
  *
  * Without JavaScript the six edits read in turn, each under its own heading
  * with its own controls. Client behavior: src/lib/cm-motion.ts
@@ -125,9 +137,11 @@ const first = formats[0];
 </section>
 
 <style>
+  /* The surface turns, from about halfway down, toward the open air above the
+     ownership's waterline, where CmOwnership.astro takes the same gradient on (V1.2). */
   .cml {
     padding-block: calc(var(--section-y) * 0.6) var(--section-y);
-    background: var(--bg);
+    background: linear-gradient(to bottom, var(--bg) 0%, var(--bg) 52%, #e3ecea 100%);
   }
 
   .cml__inner {

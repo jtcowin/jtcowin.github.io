@@ -1,121 +1,32 @@
 ---
 order: 1
 title: "Creator Marketing and Partnerships"
-description: "John Cowin helped lead creator programs across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor coordination, on-site production, and distribution in close collaboration with Maanav Porwal and Bob van der Meer."
+description: "John Cowin helped lead creator programs across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor coordination, on-site production, and distribution."
 navLabel: "Creator campaigns"
 eyebrow: "Creator marketing and partnerships"
 headline: "Eight creators. Three international activations. One coordinated production and distribution system."
-intro: "I planned and ran creator programs in Greece, Costa Rica, and Singapore for Bolt Liquidity."
+intro: "I helped lead creator programs across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor coordination, on-site production, and distribution."
 role: "Campaign strategy, creative briefs, scripting and direction, creator and sponsor coordination, review and approval, and distribution."
 heroAsset: "cm-hero-estate"
 ogAsset: "og-creator-campaigns"
 results:
-  - "Eight unique creators across 17 participations"
-  - "80 content deliverables"
-  - "Approximately 1.25 million impressions"
-  - "Two creator retreats and one conference activation"
-  - "Co-sponsor work with Trezor, Bitrefill, and Rayls Labs"
+  - "Eight creators across three international activations"
+  - "Campaign strategy, creative direction, production, and coordinated distribution"
+  - "Co-sponsor campaigns with Trezor, Bitrefill, Rayls Labs, and Phi Labs"
 card:
   category: "Case study"
   title: "Creator Marketing and Partnerships"
-  subline: "Built international creator campaigns from partner strategy and logistics through production and coordinated distribution."
+  subline: "Helped lead international creator campaigns, from sponsor strategy and creative direction to production and distribution."
   linkLabel: "View case study"
   media:
     # Primary: the Costa Rica aftermovie loop (13.6 seconds, two approved
     # ranges joined). Secondary motion: the Trezor paper airplane and the Bolt
     # Bus trailer, played only on request. The typographic stand-ins below
-    # appear only if one of these entries loses its approved file.
+    # appear only if one of these entries loses its approved file (V1.2: the
+    # middle slot has none, so it would fall back to the card's quiet tone,
+    # never to a performance claim).
     main: "cc-costa-rica-loop"
     motion: "cc-costa-rica-loop"
     side: ["cc-trezor-loop", "cc-bolt-bus-loop"]
-    fallback: ["activations", "impressions", "cosponsors"]
+    fallback: ["activations", null, "cosponsors"]
 ---
-
-import Section from '@components/casestudy/Section.astro';
-import Activations from '@components/casestudy/Activations.astro';
-import Activation from '@components/casestudy/Activation.astro';
-import Creators from '@components/casestudy/Creators.astro';
-import Testimonial from '@components/casestudy/Testimonial.astro';
-import Note from '@components/casestudy/Note.astro';
-import Credit from '@components/casestudy/Credit.astro';
-
-<Section id="context" title="Context" kicker="01">
-
-Bolt Liquidity was still in beta, had limited product visibility, and operated without a paid marketing budget. The creator program needed to generate credible, native content while building relationships with creators and complementary Web3 brands.
-
-</Section>
-
-<Section id="role" title="Program management" kicker="02">
-
-I managed the programs from initial concept through distribution. That included creator selection and relationships, housing and travel logistics, contracts with our legal team, sponsor outreach, package negotiation, production planning, scripting, directing, shot and draft reviews, publishing, tagging, timing, and coordinated engagement.
-
-</Section>
-
-<Section id="sponsorships" title="Sponsorships" kicker="03">
-
-Trezor, Bitrefill, and Rayls Labs purchased co-sponsor packages tied to the activations. I negotiated content deliverables and timelines, and managed communication between each sponsor, the creators, internal stakeholders, and production collaborators.
-
-</Section>
-
-<Section id="activations" title="Activation breakdown" kicker="04">
-
-Three activations, each with its own creator roster, sponsor package, production plan, and publishing window.
-
-<Activations>
-  <Activation
-    index={1}
-    place="Mykonos"
-    region="Greece · creator retreat"
-    stats={["Four creator participations", "17 content pieces"]}
-    gallery="cc-gallery-mykonos"
-  />
-  <Activation
-    index={2}
-    place="Playa Flamingo"
-    region="Costa Rica · creator retreat"
-    stats={["Six creator participations", "34 content pieces"]}
-    gallery="cc-gallery-costa-rica"
-  />
-  <Activation
-    index={3}
-    place="Singapore"
-    region="Conference activation"
-    stats={["Seven creator participations", "29 content pieces"]}
-    gallery="cc-gallery-singapore"
-  />
-</Activations>
-
-</Section>
-
-<Section id="creators" title="Selected creator collaborators" kicker="05">
-
-Creators are listed by name or handle. Affiliations marked as user-reported have not been independently verified.
-
-<Creators
-  ids={[
-    'cc-creator-shiv',
-    'cc-creator-ashley-dcan',
-    'cc-creator-blonde-broker',
-    'cc-creator-eva',
-    'cc-creator-arcanic',
-    'cc-creator-raj-patel',
-  ]}
-/>
-
-</Section>
-
-<Section id="performance" title="Performance highlight" kicker="06">
-
-A creator-led Trezor campaign post ranked #2 by reach within a 56-post comparison set from the creator's own account. It reached approximately 8.7 times the account's average impressions and generated 2.2 times average total engagement.
-
-<Note>Comparison prepared from the creator's public post history. Figures compare the campaign post with a 56-post account sample. They are directional performance benchmarks, not Trezor-owned analytics.</Note>
-
-<Testimonial id="cc-testimonial-trezor" />
-
-</Section>
-
-<Credit>
-
-I led strategy, logistics, creator and sponsor coordination, scripting, direction, reviews, publishing, and distribution. Creators performed and published campaign content. Internal designers and editors completed final visual builds and edits where applicable. Legal supported contracts.
-
-</Credit>

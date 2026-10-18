@@ -144,7 +144,7 @@ const cards = entries.map((entry, index) => {
 });
 
 // Typographic stand-ins, drawn only from approved case-study facts.
-const cosponsors = ['trezor', 'bitrefill', 'rayls-labs']
+const cosponsors = ['trezor', 'bitrefill', 'rayls-labs', 'phi-labs']
   .map((id) => {
     const logo = getLogo(id);
     return { logo, img: resolveLogoImage(logo) };
@@ -256,13 +256,6 @@ const places = [
                           </li>
                         ))}
                       </ol>
-                    </div>
-                  ) : slot.kind === 'fallback' && slot.name === 'impressions' ? (
-                    <div class="fb fb--metric">
-                      <p class="fb__metric">
-                        <span class="fb__metric-small">Approximately</span> <span class="fb__metric-big">1.25M</span>{' '}
-                        <span class="fb__metric-small">impressions</span>
-                      </p>
                     </div>
                   ) : slot.kind === 'fallback' && slot.name === 'cosponsors' ? (
                     <div class="fb fb--logos">
@@ -1131,32 +1124,6 @@ const places = [
     .fb__places li {
       padding-block: 0.1rem;
     }
-  }
-
-  .fb--metric {
-    align-content: center;
-  }
-
-  .fb__metric {
-    margin: 0;
-    display: grid;
-    gap: 0.1rem;
-  }
-
-  .fb__metric-small {
-    font-size: clamp(0.7rem, 5cqh, 0.9rem);
-    font-weight: 600;
-    color: var(--ink-3);
-  }
-
-  .fb__metric-big {
-    font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-stretch: var(--display-stretch);
-    font-size: clamp(1.8rem, 30cqh, 4.2rem);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    color: var(--heading);
   }
 
   /* An event still to come: the event's name and place. */

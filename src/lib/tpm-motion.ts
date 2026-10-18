@@ -29,6 +29,18 @@
  * first; a "Play with sound" button stays on it until the reader takes it up,
  * then starts it again from the beginning with sound, and standard controls
  * (mute or unmute, pause or play, replay) take its place.
+ *
+ * Rises (Creator Marketing V1.2, Part One: no scroll hiccups). The large
+ * frames (the website's display, the documentation's browser frame, the
+ * flagship film) still rise a little into place as they come up the screen,
+ * but the rise is now read from the scroll position itself, every frame,
+ * instead of a timed transition set off by a threshold: it starts with the
+ * reader's first movement, never runs ahead of the gesture (a timed rise made
+ * the page seem to jump as it crossed the threshold), and reverses exactly on
+ * the way back up. Nothing here listens to the wheel or touches the scroll
+ * position; the page always scrolls natively. Recordings are fetched while
+ * the browser is idle, well before they are reached, never in the middle of a
+ * gesture.
  */
 
 export const LIVE_QUERY = '(min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference)';
@@ -65,6 +77,16 @@ interface Stage {
 const stages: Stage[] = [];
 let raf = 0;
 
+interface Rise {
+  el: HTMLElement;
+  /** Its top in the document, from layout (never from its own transform). */
+  top: number;
+  distance: number;
+  scale: number;
+  last: string;
+}
+const rises: Rise[] = [];
+
 function tick() {
   raf = 0;
   const vh = window.innerHeight;
@@ -76,6 +98,66 @@ function tick() {
     const progress = run > 0 ? clamp(-rect.top / run) : rect.top <= 0 ? 1 : 0;
     stage.update(progress, rect, vh);
   }
+  if (rises.length) {
+    const still = reduceMq.matches;
+    const y = window.scrollY;
+    for (const r of rises) {
+      // 0 while its top is still at the foot of the screen, 1 once it is two fifths
+      // of the way up; eased so it moves from the very first pixel of scrolling. It
+      // fades in from nothing, as V1.6's entrance did, so below the screen it is
+      // simply not there yet (never half there, with its words at half contrast).
+      const t = still ? 1 : clamp((y + vh - r.top) / (vh * 0.4));
+      const e = 1 - (1 - t) * (1 - t);
+      const key = t >= 1 ? '' : `${(r.distance * (1 - e)).toFixed(1)}|${(1 - r.scale * (1 - e)).toFixed(4)}|${e.toFixed(3)}`;
+      if (key === r.last) continue;
+      r.last = key;
+      if (!key) {
+        r.el.style.transform = '';
+        r.el.style.opacity = '';
+        continue;
+      }
+      const [d, k, o] = key.split('|');
+      r.el.style.transform = `translate3d(0, ${d}px, 0)${r.scale ? ` scale(${k})` : ''}`;
+      r.el.style.opacity = o;
+    }
+  }
+}
+
+/** Where each rise stands in the document (layout offsets, unaffected by its own transform). */
+function measureRises() {
+  for (const r of rises) {
+    let top = 0;
+    for (let n: HTMLElement | null = r.el; n; n = n.offsetParent as HTMLElement | null) top += n.offsetTop;
+    r.top = top;
+    r.last = '-';
+  }
+  schedule();
+}
+
+/**
+ * A frame that rises into place as it comes up the screen, `distance` pixels (and
+ * `scale` of its size) below its place at the foot of the screen, read from the
+ * scroll position every frame. Reduced motion leaves it in place.
+ */
+export function addRise(el: HTMLElement, { distance = 40, scale = 0 } = {}) {
+  rises.push({ el, top: 0, distance, scale, last: '-' });
+  measureRises();
+}
+
+let riseTimer = 0;
+window.addEventListener('resize', () => {
+  window.clearTimeout(riseTimer);
+  riseTimer = window.setTimeout(measureRises, 120);
+});
+window.addEventListener('load', measureRises);
+document.fonts?.ready.then(measureRises);
+if ('ResizeObserver' in window) new ResizeObserver(() => measureRises()).observe(document.body);
+
+/** Work for a quiet moment (a recording's fetch), never in the middle of a gesture. */
+export function whenIdle(fn: () => void) {
+  const ric = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+  if (typeof ric === 'function') ric(fn, { timeout: 1200 });
+  else window.setTimeout(fn, 200);
 }
 
 export function schedule() {
@@ -135,11 +217,14 @@ export class Walkthrough {
    */
   private phase: '' | 'hold' | 'fade' | 'rewind' = '';
   private timer = 0;
+  /** The poster image under the recording, decoded ahead of each turn (V1.2, Part One). */
+  private posterImg: HTMLImageElement | null = null;
 
   constructor(root: HTMLElement, options: WalkthroughOptions = {}) {
     this.root = root;
     this.video = root.querySelector('video') as HTMLVideoElement;
     this.toggle = root.querySelector<HTMLButtonElement>('[data-walk-toggle]');
+    this.posterImg = root.querySelector<HTMLImageElement>('img');
     this.label = this.toggle?.dataset.label ?? 'video';
     this.cycle = options.cycle ?? null;
     const { video, toggle } = this;
@@ -214,17 +299,20 @@ export class Walkthrough {
         },
         { threshold: [0, 0.2, threshold] },
       ).observe(root);
-      // Fetched as it comes within a screen of view.
+      // Fetched as it comes within two screens of view, while the browser is idle
+      // (not in the middle of a gesture).
       const near = new IntersectionObserver(
         ([entry]) => {
           if (!entry.isIntersecting) return;
           near.disconnect();
-          if (this.autoplayAllowed() && video.preload === 'none') {
-            video.preload = 'auto';
-            video.load();
-          }
+          whenIdle(() => {
+            if (this.autoplayAllowed() && video.preload === 'none') {
+              video.preload = 'auto';
+              video.load();
+            }
+          });
         },
-        { rootMargin: '100% 0px 100% 0px' },
+        { rootMargin: '200% 0px 200% 0px' },
       );
       near.observe(root);
     } else {
@@ -280,6 +368,9 @@ export class Walkthrough {
     window.clearTimeout(this.timer);
     this.phase = 'hold';
     this.state();
+    // The poster comes back into view during the fade: decode it now, during the
+    // hold, so the fade never waits on it (a long frame there felt like a hitch).
+    this.posterImg?.decode?.().catch(() => {});
     root.style.setProperty('--walk-fade', `${cycle.fade}ms`);
     this.timer = window.setTimeout(() => {
       this.phase = 'fade';
@@ -506,17 +597,20 @@ export class Film {
         },
         { threshold: [0, 0.2, threshold] },
       ).observe(root);
-      // Fetched as it comes within a screen of view, if it may start itself.
+      // Fetched as it comes within two screens of view, if it may start itself,
+      // while the browser is idle (not in the middle of a gesture).
       const near = new IntersectionObserver(
         ([entry]) => {
           if (!entry.isIntersecting) return;
           near.disconnect();
-          if (this.autoplayAllowed() && video.preload === 'none') {
-            video.preload = 'auto';
-            video.load();
-          }
+          whenIdle(() => {
+            if (this.autoplayAllowed() && video.preload === 'none') {
+              video.preload = 'auto';
+              video.load();
+            }
+          });
         },
-        { rootMargin: '100% 0px 100% 0px' },
+        { rootMargin: '200% 0px 200% 0px' },
       );
       near.observe(root);
     } else {

@@ -1,28 +1,38 @@
 ---
 /**
- * 12 Program ownership (Creator Marketing and Partnerships, V1.1): John's
+ * 12 Program ownership (Creator Marketing and Partnerships, V1.2): John's
  * working headline across a waterline. Its first sentence sits in the open air
- * ("The experience was visible."); a slow wave line divides the section; the
- * second sentence ("The system behind it was not.") sits below it in deep
- * water, with one line of copy and three editorial chapters (V1.1, in place
- * of the nine areas and their rings): Build the program, Direct the work and
- * Carry it to market, each with its index, a line of what it covered and who
- * owned it (shared with Maanav Porwal, led with Bob van der Meer's
- * collaboration, led as the liaison between creators and co-sponsors).
+ * ("The experience was visible."); a wave divides the section; the second
+ * sentence ("The system behind it was not.") sits below it in deep water,
+ * with one line on his role and three editorial chapters of his own work
+ * (V1.2): Shape the campaign, Direct the production and Carry it to market,
+ * each with its index, its title and what it covered. No collaborators are
+ * named here (the credits name them), and nothing John did not do.
  * Restrained columns on wide screens, one after another on phones: no cards,
- * pills or icons. The water deepens into the credits that follow. The wave
- * drifts and a faint light moves across the water; with reduced motion both
- * are still, and the chapters are simply there.
+ * pills or icons.
+ *
+ * V1.2, the transition: the selected-content surface above begins to turn
+ * toward the water before it ends (CmLibrary.astro), the gradient carries on
+ * through the open air above the waterline, and a more prominent wave (about
+ * half as tall again as V1.1's, a lighter swell behind it and a soft light
+ * on its crest) completes the turn into the water: one continuous transition.
+ * The wave moves once, slowly, as it comes into view, and then stays still (no
+ * continuous drift); a faint light still moves across the water. With reduced
+ * motion both are still and the chapters are simply there. The water deepens
+ * into the credits that follow.
  */
 import creator from '@data/creator.json';
 
 const { ownership: o } = creator;
 if (`${o.above} ${o.below}` !== o.headline) throw new Error('[creator] the ownership headline must be its two sentences, above and below the waterline');
 if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in three chapters (found ${o.chapters.length})`);
+for (const ch of o.chapters) if (/Maanav|Bob van der Meer|\bowner\b/i.test(JSON.stringify(ch))) throw new Error('[creator] the ownership chapters describe John\'s work only');
 ---
 
 <section class="cmo" data-surface="light" aria-labelledby="cm-own-title">
-  <div class="cmo__water" data-surface="dark" aria-hidden="true">
+  <div class="cmo__air" aria-hidden="true"></div>
+  <div class="cmo__water" data-surface="dark" aria-hidden="true" data-cm-reveal>
+    <span class="cmo__swell"></span>
     <span class="cmo__wave"></span>
     <span class="cmo__light"></span>
   </div>
@@ -40,7 +50,6 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
           <p class="cmo__index" aria-hidden="true">{c.index}</p>
           <h3 class="display cmo__chapter-title">{c.title}</h3>
           <p class="cmo__chapter-text">{c.text}</p>
-          <p class="cmo__owner">{c.owner}</p>
         </li>
       ))
     }
@@ -50,18 +59,32 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
 <style>
   .cmo {
     --water-top: #1b4b4f;
+    /* The open air above the waterline takes the selected-content surface's turn on
+       toward the water (V1.2): from where that section's gradient ends to just
+       above the wave. */
+    --air-top: #e3ecea;
+    --air-low: #cfe0dc;
     position: relative;
     isolation: isolate;
     display: grid;
     grid-template-columns: [full-start] minmax(var(--gutter), 1fr) [content-start] minmax(0, calc(var(--container) - 2 * var(--gutter))) [content-end] minmax(var(--gutter), 1fr) [full-end];
     grid-template-rows: auto [above] auto [water] auto auto auto;
     padding-top: var(--section-y);
-    background: var(--bg);
+    background: var(--air-top);
     overflow: clip;
   }
 
-  .cmo > :not(.cmo__water) {
+  .cmo > :not(.cmo__water, .cmo__air) {
     grid-column: content;
+  }
+
+  /* ---- the open air, from the section's top edge to the waterline ------------------------- */
+  .cmo__air {
+    grid-column: full;
+    grid-row: 1 / water;
+    z-index: -2;
+    margin-top: calc(-1 * var(--section-y));
+    background: linear-gradient(to bottom, var(--air-top) 0%, var(--air-low) 100%);
   }
 
   /* ---- the water, from the waterline down ----------------------------------------- */
@@ -73,14 +96,33 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
     background: linear-gradient(to bottom, var(--water-top) 0%, #123638 38%, #0e2629 72%, #0d0f10 100%);
   }
 
-  /* One period of the wave line (720 by 40), repeated across the width. */
-  .cmo__wave {
+  /* The wave (V1.2): one period (880 by 60) repeated across the width, about half
+     as tall again as V1.1's, its crest catching a soft light (a lighter rim drawn
+     just above it, so it follows the curve); behind it a lighter
+     swell, out of phase and a little higher, gives the water its depth. Both sit
+     on the waterline and rise into the air above it. */
+  .cmo__wave,
+  .cmo__swell {
     position: absolute;
     left: 0;
     right: 0;
     bottom: calc(100% - 1px);
-    height: clamp(1rem, 2.4vw, 2.25rem);
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20 C 120 6 240 6 360 20 S 600 34 720 20 V 40 H 0 Z' fill='%231b4b4f'/%3E%3C/svg%3E") 0 0 / 720px 100% repeat-x;
+    background-repeat: repeat-x;
+    pointer-events: none;
+  }
+
+  .cmo__wave {
+    height: clamp(1.6rem, 3.8vw, 3.5rem);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 880 60' preserveAspectRatio='none'%3E%3Cpath d='M0 27.6 C 147 7.6 293 7.6 440 27.6 S 733 47.6 880 27.6 V 54 H 0 Z' fill='%239fc9c3' fill-opacity='0.7'/%3E%3Cpath d='M0 30 C 147 10 293 10 440 30 S 733 50 880 30 V 60 H 0 Z' fill='%231b4b4f'/%3E%3C/svg%3E");
+    background-size: 880px 100%;
+    background-position: -220px 100%;
+  }
+
+  .cmo__swell {
+    height: clamp(2.1rem, 4.9vw, 4.5rem);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 880 60' preserveAspectRatio='none'%3E%3Cpath d='M0 28 C 147 8 293 8 440 28 S 733 48 880 28 V 54 H 0 Z' fill='%234f918a' fill-opacity='0.3'/%3E%3C/svg%3E");
+    background-size: 880px 100%;
+    background-position: 490px 100%;
   }
 
   .cmo__light {
@@ -112,9 +154,11 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
     line-height: 0.96;
   }
 
+  /* Room under the first sentence for the taller wave and its swell (V1.2), so the
+     words always stand clear of it. */
   .cmo__above {
     display: block;
-    padding-bottom: clamp(2.5rem, 5vw, 4.5rem);
+    padding-bottom: clamp(4rem, 8vw, 7.5rem);
     color: var(--c-ink);
   }
 
@@ -175,45 +219,43 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
     color: #c9d6d3;
   }
 
-  /* Who owned it: a short rule, then the names, quieter than the chapter's words. */
-  .cmo__owner {
-    max-width: 30rem;
-    margin: 0.25rem 0 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.5;
-    color: #b4c5c1;
-  }
-
-  .cmo__owner::before {
-    content: '';
-    display: inline-block;
-    width: 1.25rem;
-    height: 1px;
-    margin-right: 0.55rem;
-    vertical-align: middle;
-    background: currentColor;
-  }
-
   /* Wide screens: three columns whose parts share rows (subgrid), so the index,
-     the title, the words and the owner line up across the chapters. */
+     the title and the words line up across the chapters. */
   @media (min-width: 60rem) {
     .cmo__chapters {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-template-rows: repeat(4, auto);
+      grid-template-rows: repeat(3, auto);
       column-gap: clamp(2rem, 4vw, 3.5rem);
     }
 
     .cmo__chapter {
-      grid-row: span 4;
+      grid-row: span 3;
       grid-template-rows: subgrid;
       row-gap: 0.75rem;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .cmo__wave {
-      animation: cmo-drift 18s linear infinite;
+    /* The wave's one movement (V1.2): as the water comes into view the wave and its
+       swell rise to their full height from the waterline and drift a little, the two
+       in opposite directions, over a few seconds, then stay where they settle. (The
+       height grows within the box, not by scaling it, so no edge of the drawing
+       ever shows as a line.) */
+    :global(html.js) .cmo__water:not(.is-in) .cmo__wave {
+      background-size: 880px 55%;
+      background-position: 0 100%;
+    }
+
+    :global(html.js) .cmo__water:not(.is-in) .cmo__swell {
+      background-size: 880px 50%;
+      background-position: 330px 100%;
+    }
+
+    :global(html.js) .cmo__water .cmo__wave,
+    :global(html.js) .cmo__water .cmo__swell {
+      transition:
+        background-position 3.2s cubic-bezier(0.25, 0.6, 0.3, 1),
+        background-size 2.4s cubic-bezier(0.25, 0.6, 0.3, 1);
     }
 
     .cmo__light {
@@ -229,15 +271,6 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
       transition:
         opacity 0.9s ease calc(var(--k) * 0.14s),
         transform 1s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k) * 0.14s);
-    }
-  }
-
-  @keyframes cmo-drift {
-    from {
-      background-position-x: 0;
-    }
-    to {
-      background-position-x: -720px;
     }
   }
 

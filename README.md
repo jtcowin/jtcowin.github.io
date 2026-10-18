@@ -5,15 +5,18 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Creator Marketing and Partnerships Version 1.1 in review.** Version 2.0, Technical Product
+**Status: Creator Marketing and Partnerships Version 1.2 in review.** Version 2.0, Technical Product
 Marketing Version 1.6, Events and Multimedia Production Version 1.6 and Creator Marketing and
-Partnerships Version 1.0 are published. Creator Marketing and Partnerships Version 1.1 (John's delta
-brief against the deployed Version 1.0: a shorter hero that credits his collaborators, the creators by
-name and handle without destination histories, atlas names that never clip, recut Costa Rica and
-Singapore loops, the Trezor Dare Ad's creator-account highlights, a selected-content library of six
-edits behind editorial tabs, the program ownership in three chapters, a team credit stack and a new
-conclusion) is committed locally and not pushed until it has been reviewed in the browser.
-Placeholders render only in `npm run dev`; production builds hide
+Partnerships Version 1.1 are published. Creator Marketing and Partnerships Version 1.2 (John's delta
+brief against the deployed Version 1.1: Part One, across the site, a letter-by-letter entrance for the
+loader's note, the Events production room opening on Final and the Technical Product Marketing page
+answering the first movement of a trackpad; then, on the creator page, John's own words until the
+credits, a warped portrait field for the creators with a stable details area, no testimonial
+transition, the Trezor brief, ranking and emphasized quotation, a library that loops a selected format
+and turns toward the water below, three recut edits, three ownership chapters under a more prominent
+wave and the obsolete Version 1.0 fields removed; see [Creator Marketing and Partnerships, Version
+1.2](#creator-marketing-and-partnerships-version-12)) is committed locally and not pushed until it has
+been reviewed in the browser. Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -42,24 +45,31 @@ browsing session, with a short sequence; since Events Version 1.5 it is a brisk,
 small marker travelling the screen from left to right while a viewing note, BEST EXPERIENCED ON
 DESKTOP, is held long enough to be read), handing over to the hero in layers. Since Creator Marketing
 and Partnerships Version 1.0 the note is its only line (the three phrases are gone, with nothing in
-their place) and the whole sequence takes about 2.9 seconds (Events V1.6: 3.45).
+their place) and the whole sequence takes about 2.9 seconds (Events V1.6: 3.45); since its Version 1.2
+the note comes in letter by letter, each letter rising out of a soft blur into focus as the line's
+tracking settles, in 0.6 seconds, then holds, the whole sequence keeping its length. Since the same
+version the page answers the first movement of a trackpad: its pinned stages move from their first
+pixel, and its large frames rise with the scroll itself rather than on a timed entrance.
 
 Creator Marketing and Partnerships, the first case study, has its own page since its Version 1.0, now
-at Version 1.1 (see [Creator Marketing and Partnerships, Version
-1.1](#creator-marketing-and-partnerships-version-11)), in a visual language of its own: open air and
-daylight, destination atmospheres, a curved path, a waterline and closing credits. A full-screen hero
-layers one coastal scene in depth (the sky, the headline "Creator campaigns, built to travel." set in
-it, a white villa and its palm, and two palm fronds nearest, each moving at its own rate as the page
-scrolls; illustrative stock photography, credited once, in the credits) over a paragraph that names
-John's part and his collaborators, Maanav Porwal and Bob van der Meer; the program context follows,
-then the eight creators John worked with travelling slowly round a curved path (their names, handles
-and confirmed affiliations at its center on hover, focus or a tap); a campaign atlas that holds still
-on wide screens while Costa Rica, Singapore and Mykonos take the stage in turn, each with its own silent
-loop, two stills, its figures and its co-sponsors; the Trezor Dare Ad, its film first and with sound,
-then three creator-account highlights, Trezor's feedback and the credits; a library of six edits, one
-per format, chosen with editorial tabs; the program ownership in three chapters across a waterline;
-closing credits that open with the team; and a conclusion that leads on to Technical Product Marketing
-before Contact. Three creator testimonials and the Trezor brief are placeholders in `npm run dev` only.
+at Version 1.2 (see [Creator Marketing and Partnerships, Version
+1.2](#creator-marketing-and-partnerships-version-12)), in a visual language of its own: open air and
+daylight, destination atmospheres, a curved field in depth, a waterline and closing credits. A
+full-screen hero layers one coastal scene in depth (the sky, the headline "Creator campaigns, built to
+travel." set in it, a white villa and its palm, and two palm fronds nearest, each moving at its own rate
+as the page scrolls; illustrative stock photography, credited once, in the credits) over a paragraph on
+John's part; the program context follows ("Each destination became a campaign in motion."), then the
+eight creators John worked with, their portraits moving slowly through one field warped across a broad
+curve in depth, the creator in the focal zone named, with handle and confirmed affiliations, in a
+details area of its own; a campaign atlas that holds still on wide screens while Costa Rica, Singapore
+and Mykonos take the stage in turn, each with its own silent loop, two stills, its figures and its
+co-sponsors; the Trezor Dare Ad, its film first and with sound, then its assignment, objective and
+approach, three creator-account highlights and Trezor's feedback with four phrases in the accent; a
+library of six edits, one per format, chosen with editorial tabs, a selected format looping, the
+section turning toward the water below; the program ownership in three chapters of John's work across
+a waterline; closing credits that open with the team, the only place collaborators are named; and a
+conclusion that leads on to Technical Product Marketing before Contact. The page has no placeholder
+left.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
 1.0, now at Version 1.6 (see [Events and Multimedia Production, Version
@@ -73,7 +83,8 @@ moment before the section lets go; then the activation (an original 3D concept r
 television and projected wall play their loops), the Expanding Production Deck (the live presentation,
 the production room and the event film in one vertical accordion, one chapter open at a time, each
 card's media framed with the hero's production marks and a timecode, its words in a natural rhythm
-beside it, the production room switching between its Setup photograph and its Final explainer; on wide
+beside it, the production room opening on its Final explainer (since Creator Marketing V1.2; its Setup
+photograph a click away, the reader's choice kept for the visit); on wide
 screens the reader's own scrolling opens the chapters in turn while the deck holds below the site's
 header), and a conclusion that closes on the five stages and leads on to the next case study, Creator
 Marketing and Partnerships, before Contact. Since Creator Marketing V1.0 the live presentation's and the
@@ -280,28 +291,30 @@ Steps 2 and 3 should happen close together so the canonical URLs and the served 
   `src/data/ev-activation.json`, written by `scripts/render/activation-composite.py`. The page's
   metadata and its Select Work card still come from the case study's frontmatter; its older MDX body is
   no longer rendered.
-- **Creator Marketing and Partnerships** (Version 1.0): `src/data/creator.json` holds every word on the
-  page and its media configuration, section by section. `hero`: the label, the headline, the paragraph,
-  the photography credit and its four layers (`layers`: `sky`, `estate`, `frondLeft`, `frondRight`,
-  asset ids). `context`: the kicker, the headline and its `accent`, the paragraph. `network`: the
-  kicker, headline, `sub` and `hint`, and exactly eight `creators` (each with its `id`, `name`, profile
-  picture `asset`, confirmed `affiliations`, an optional `category`, shown once John confirms one, and
-  its `destinations` by key); the build stops on any other number. `voices`: up to three creator
-  testimonials (`asset`, an `assets.json` testimonial, and `side`, left or right). `atlas`: the kicker
-  and title, the fact labels and the three `destinations` in order (`key`, `index`, `name`, `type`,
-  `coords`, `copy`, `creators` and `pieces`, the exact figures, `sponsors` as logo ids or `null` until
-  confirmed, the `loop` and two `fragments`). `trezor`: the kicker, title and deck, the `film`, the
-  `brief` (assignment, objective and approach, each `text` `null` until John supplies it), the
-  `metrics` (`assets.json` metric entries), the `feedback` (the approved testimonial) and the
-  collaboration `credits` (`names` `null` until confirmed). `montage`: the kicker, headline and copy,
-  the `reel`, the `formats` (key and label) and the `cuts` (the reel time in seconds where each excerpt
-  takes over, its format and its place). `ownership`: the kicker, the headline as its two sentences
-  (`above` and `below` the waterline), the line of copy and the nine `areas`. `credits`: the rows
-  (`role` and `names`, `null` until confirmed) and the closing `note`. `conclusion`: the headline, its
-  `accent`, the paragraph, `nextLine` and `next` (the next case study in order, or the build stops).
-  Motion is `src/lib/cm-motion.ts`; the players and silent loops are `src/lib/ev-media.ts`'s. The
-  page's metadata and its Select Work card still come from the case study's frontmatter; its older MDX
-  body is no longer rendered.
+- **Creator Marketing and Partnerships** (Version 1.2): `src/data/creator.json` holds every word on the
+  page and its media configuration, section by section (keys that begin with `_` are notes). `hero`:
+  the label, the headline, the paragraph (John's ownership only) and its four layers (`layers`: `sky`,
+  `estate`, `frondLeft`, `frondRight`, asset ids). `context`: the headline and its `accent`, the
+  paragraph (no kicker since V1.2). `network`: the kicker, headline, `sub` and `hint`, and exactly eight
+  `creators` (each with its `id`, `name`, `handle`, profile picture `asset` and confirmed
+  `affiliations`; no `category` since V1.2, and the build stops on one, on a missing handle or
+  affiliation, or on any other number of creators). `atlas`: the section's `heading` (for assistive
+  technology only since V1.2), the fact labels and the three `destinations` in order (`key`, `index`,
+  `name`, `kind`, `coords`, `copy`, `creators` and `pieces`, the exact figures, `sponsors` as logo ids,
+  the `loop` and two `fragments`). `trezor`: the kicker, title and deck, the `film` and its
+  `filmLabel`, the `brief` (assignment, objective and approach, John's words), the `metrics`
+  (`assets.json` metric entries) with their label and note, the `feedback` (the approved testimonial)
+  and `emphasis`, the phrases of the quotation set in the accent (each must occur exactly once in it,
+  or the build stops). `library`: the kicker, headline, copy and the tablist's `label`, and the six
+  `formats` (`key`, `label`, the `edit`'s asset id and its `cues`, the edit time in seconds where each
+  destination takes over). `ownership`: the kicker, the headline as its two sentences (`above` and
+  `below` the waterline, or the build stops), the line on John's role and the three `chapters` (`key`,
+  `index`, `title`, `text`; no owner lines and no collaborators, or the build stops). `credits`: the
+  kicker and title, the `team` (`name` and `role`) and the `rows` (`role` and `names`), the only place
+  on the page that names collaborators. `conclusion`: the headline, its `accent`, the paragraph,
+  `nextLine` and `next` (the next case study in order, or the build stops). Motion is
+  `src/lib/cm-motion.ts`; the players and silent loops are `src/lib/ev-media.ts`'s. The page's metadata
+  and its Select Work card come from the case study's frontmatter, which has no body since V1.2.
 - **Credibility bar logos**: `src/data/logos.json`
 - **Accent color and design tokens**: `src/styles/global.css` (`--accent` is a single token)
 
@@ -336,8 +349,9 @@ To replace a placeholder with a real asset:
 8. **Select Work card visuals**: set asset ids in the case study's `card.media`: `main` (the dominant
    still, or the primary video's entry, whose poster stands in if the video is absent), `motion` (the
    primary video) and `side` (two ids; a video id there becomes a secondary motion tile). A slot whose asset is not approved and present
-   shows its `fallback` stand-in (`activations`, `impressions`, `cosponsors` or `suifest`, drawn only
-   from approved facts) or a quiet empty tone, and the real image replaces it as soon as the manifest
+   shows its `fallback` stand-in (`activations`, `cosponsors` or `suifest`, drawn only from approved
+   facts; the `impressions` stand-in was retired in Creator Marketing V1.2) or, for a `null` slot, a
+   quiet empty tone, and the real image replaces it as soon as the manifest
    entry has a file. `focus` sets the `object-position` for each slot, in the order main, first side,
    second side, for an image or video its panel has to crop; `fit` (same order) set to `contain` shows
    an image or a video whole and uncropped, inset on the `plate` color from its manifest entry.
@@ -363,14 +377,13 @@ To replace a placeholder with a real asset:
     pending is listed in [Events and Multimedia Production, Version
     1.0](#events-and-multimedia-production-version-10).
 
-11. **Creator slots** (`cm-` entries): the three creator testimonials (`cm-testimonial-1` to `-3`: set
-    `quote` and `attribution`, then `permission: approved`; the section appears, between the network
-    and the atlas, as soon as one is approved, and never shows Trezor's feedback), the Trezor brief
-    (`trezor.brief` in `creator.json`: each `text`), the Trezor collaboration rows still without names
-    (`trezor.credits`, `names`), and a creator's `category`. Each is a labeled placeholder in `npm run
-    dev` and absent from a production build until it is filled. (Since V1.1 the three Trezor highlights,
-    `cm-trezor-metric-1` to `-3`, are approved and checked word for word, and Mykonos's co-sponsor is
-    Phi Labs.)
+11. **Creator slots** (`cm-` entries): none are left. Since V1.2 the Trezor brief is John's own words,
+    the creator testimonials and their transition are gone (their placeholder entries,
+    `cm-testimonial-1` to `-3`, the `voices` data and `CmVoices.astro` were removed; a complete approved
+    set would come back as a new brief), the Trezor collaboration rows are gone with their block (the
+    credits keep that record), and the creators carry no category. (Since V1.1 the three Trezor
+    highlights, `cm-trezor-metric-1` to `-3`, are approved and checked word for word, and Mykonos's
+    co-sponsor is Phi Labs.)
 
 Set `permission` to `private-only` on anything that must never render even if a file is present.
 The build will crop real media to the entry's aspect ratio with `object-fit: cover`.
@@ -512,8 +525,9 @@ are listed with the page (see [Creator Marketing and Partnerships, Version
 The Version 1.7 checks: the homepage order (hero, About, Select Work, the reel, the combined section,
 Contact) and its four surfaces; "Select Work" and its intro; three cards in the approved order, each
 with its number and category, the approved title and subline (one sentence, 95 to 130 characters, 12
-to 16 words), one dominant and two supporting panels, exactly one link, and no metric other than the
-creator stand-in's "Approximately 1.25M impressions"; a card loop that is muted, inline, looping, has
+to 16 words), one dominant and two supporting panels, exactly one link, and no metric (since Creator
+Marketing V1.2 not even the creator stand-in's retired "Approximately 1.25M impressions", which the
+guardrails now refuse anywhere, with "most-viewed"); a card loop that is muted, inline, looping, has
 a poster, loads nothing up front and carries its pause control; and the combined section's headline,
 labels, four capability groups, three Stack groups, no certificate column, a How I Work statement of
 60 words at most, and none of the retired AI-centered copy.
@@ -820,6 +834,199 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Creator Marketing and Partnerships, Version 1.2
+
+John's Creator Marketing and Partnerships V1.2 brief (October 2026) is a delta against the deployed
+Version 1.1: only what it names changed, and everything else is Version 1.1 as described below. Its
+Part One reaches three other places on the site. No visitor-facing copy uses an em dash. The screen
+recording the brief mentions (diagnostic only) was not among John's files, so the trackpad work below
+is inferred from the code and measured in a browser.
+
+- **01 The loader's note** (`Intro.astro`; Part One). The bar, its timing, the note's words, the
+  once-per-session rule and reduced motion are unchanged, and no phrase comes back. The note no longer
+  simply appears: its 24 letters come up one after another, left to right, each rising 0.42 em out of
+  a 4-pixel blur into focus (380 ms each, staggered so the last arrives 600 ms after the first begins)
+  while the line's tracking settles from 0.34 em to its resting 0.22 em; the complete line then holds
+  for 1.63 seconds (was 2.1), so the reveal stays at 2.27 seconds and the loader at about 2.9 in all. No
+  cursor, typewriter, bounce, overshoot, scrambling, particles or flash; the bar stays the primary
+  motion. Reduced motion still clears the ground at once with no note (were the note ever shown there,
+  its letters would only fade).
+- **02 The production room opens on Final** (`EvDeck.astro`; Part One). FINAL is selected whenever the
+  chapter opens, and its muted preview (the two-scene loop) plays by itself while the chapter is open
+  and in view, with its pause control and Watch full video with sound beneath it; SETUP, the
+  behind-the-scenes photograph, is a click away, and the reader's last choice holds for the rest of the
+  visit (closing and reopening the chapter does not bring Final back over a chosen Setup). The controls
+  are unchanged. Without JavaScript the film comes first, then the photograph.
+- **03 Technical Product Marketing answers the first movement** (`tpm-motion.ts`, `TpmHero.astro`,
+  `TpmFlow.astro`, `TpmWebsite.astro`, `TpmDocs.astro`, `TpmCampaign.astro`; Part One). The page
+  already scrolled natively (one passive listener, no wheel handling, no snapping); what read as
+  hiccups at the four places John named was motion that did not follow the gesture. Now: the hero's
+  fade and lift answer from the first pixel (its layers promoted once for the stage, not toggled as the
+  reader scrolls); the Foundation's stage has no still stretch at its entry (V1.6 held the compact
+  stack for 0.15 of a screen) and holds the finished statement 0.35 of a screen (was 0.75) before it
+  releases, so the pin is 3.55 screens (was 4.1), its stack and library moving from the first pixel;
+  the website's display, the documentation's browser and the flagship film rise into place from the
+  scroll position itself, every frame (a rise that follows the gesture and reverses exactly), instead of
+  a timed transition set off by a threshold, which ran ahead of the trackpad's momentum and made the
+  page seem to jump; and the recordings are fetched two screens ahead while the browser is idle, the
+  walkthrough's poster decoded before each return to it, so no gesture lands on a long frame. Measured
+  in a browser: the first wheel event moves the page at once and the full distance, with no step back,
+  no programmatic scroll and no layout shift, in small and medium gestures, both ways, over repeated
+  passes. Reduced motion: native scroll, the frames simply in place.
+- **04 to 07 John's words, the collaborators in the credits** (`creator.json`, `CmHero.astro`,
+  `CmContext.astro`, `CmOwnership.astro`). The hero paragraph ends at "on-site production, and
+  distribution." (the page's description follows). The program context has no kicker; its headline is
+  "Each destination became a campaign in motion." ("a campaign in motion." in the accent) and its
+  paragraph says what John led and helped plan. The ownership keeps the wave, "The experience was
+  visible." and "The system behind it was not.", then "My role connected the campaign from sponsor
+  strategy and creative direction through on-site production, distribution, and reporting." and three
+  chapters of John's own work, with no owner lines: 01 Shape the campaign, 02 Direct the production, 03
+  Carry it to market (nothing on creator sourcing, legal contracts, solo filming or editing, or sole
+  ownership of travel logistics). Maanav Porwal and Bob van der Meer are named once, in the credits,
+  which are unchanged.
+- **06 The wave** (`CmOwnership.astro`). About half again as deep as V1.1's at every width (crest to
+  trough 1.5 times, its box 3.8vw high, from 1.6 to 3.5 rem), its curve still soft, with a lighter swell
+  behind it, out of phase, and a light drawn along its crest as a shape (never a line), in the page's
+  palette. It moves once, as the water comes into view (rising to its full depth over 2.4 seconds while
+  it and its swell drift apart over 3.2), then stays still: the V1.1 drift is gone. The first sentence
+  keeps room below it for the wave and its swell at every width. Reduced motion: still.
+- **08 to 10 The creator network** (`CmNetwork.astro`, `mountNetwork` in `cm-motion.ts`). The ring, its
+  ellipse and the route line into it are gone. The eight portraits move through one continuous field
+  warped across a broad curve in depth: each enters from beyond the field's far edge, small, turned and
+  a little soft, grows and sharpens as it comes down the curve to the focal zone, where it is largest
+  and square to the reader, then drifts back and fades as the next arrives; after the eighth comes the
+  first, with no seam. One creator every 5.2 seconds, constant. Each card is placed by its own
+  perspective, turn, lean and scale; there is no frame, shell, route or destination. The creator in the
+  focal zone (`aria-current`) is named in a details area of its own: display name, handle and confirmed
+  affiliations, nothing else, every creator's details stacked in one cell so it never changes height,
+  centered in the field's height beside it on wider screens (the field fading out before it) and in its
+  own row under the field on phones, never under a portrait. Hovering or keyboard-focusing a creator
+  eases the field to a stop and shows them (a teal ring); selecting one still approaching brings them
+  forward to the focal zone, never back; a creator focused out of sight comes into view along the path;
+  moving on lets the field set off again, the same way. Every creator is a button in the page's order.
+  On touch screens a sideways swipe moves the field (a vertical one scrolls the page) and a tap holds a
+  creator for six seconds. One Pause control under the details. Off screen or in a hidden tab it rests;
+  reduced motion shows a still gallery, two rows of four, a creator shown by selecting them; without
+  JavaScript every creator's details show with the portrait. The `category` field is gone. The
+  testimonial transition is gone too, with its placeholder entries (`cm-testimonial-1` to `-3`), its
+  data and its component: the network flows straight into the atlas.
+- **11 to 14 The Trezor Dare Ad** (`CmTrezor.astro`). After the film: Assignment, Objective and
+  Approach in John's words; the highlights with the third as "#2 by reach out of 56 posts" and its 98th
+  percentile line (never "most-viewed", creator-account framing kept); then the one quotation, four of
+  its phrases ("level of care and creativity", "production quality", "attention to detail",
+  "understanding our goals") in the accent over a soft underlay that draws in once, in reading order,
+  as the quotation arrives (simply set for reduced motion), never pulsing and never broken out of the
+  passage. The collaboration block is gone, in the page, the data and the styles, and the section closes
+  on the quotation with a little less room below.
+- **15 The atlas** (`CmAtlas.astro`). The small CAMPAIGN ATLAS kicker is gone, with nothing in its
+  place; the section's heading names it for assistive technology only, and the index keeps its place at
+  the right of the bar.
+- **15 to 17 Selected content** (`CmLibrary.astro`, `mountLibrary` in `cm-motion.ts`). "See the program
+  move from destination films and creator ads to sponsor integrations and the moments behind the
+  camera." Every edit's last 0.4 seconds now dissolve into its own opening (baked into the file), so it
+  can repeat with no black frame, held frame or flash. Until the reader chooses, the library moves on to
+  the next format as each edit begins that dissolve, as before; a format the reader selects is pinned:
+  its edit plays from the start and loops until they select another, with no moving on (it pauses off
+  screen and resumes, still pinned). Pause, keyboard, reduced motion (the edit plays once on request)
+  and the silent-autoplay rules are unchanged. Three edits are recut (below); Destination films, Game
+  show and Lifestyle keep their excerpts, retimed only for the reset. The section's ground begins to
+  turn toward the water halfway down, the ownership's open air carries the same color on, and the wave
+  completes it: no line, band, border or blur curtain between them, the text contrast unchanged.
+- **18 Obsolete Version 1.0 fields** (`creator-campaigns.mdx`, `WorkPanels.astro`, `creator.json`).
+  The case study's frontmatter keeps its metadata with the intro and description following the hero,
+  the results "Eight creators across three international activations", "Campaign strategy, creative
+  direction, production, and coordinated distribution" and "Co-sponsor campaigns with Trezor, Bitrefill,
+  Rayls Labs, and Phi Labs", and no body (its V1.0 narrative is gone). The homepage card's middle slot
+  falls back to nothing (`null`) instead of the impressions figure, whose branch and styles left
+  `WorkPanels.astro` (after a search of the whole project), and the co-sponsor stand-in includes Phi
+  Labs. The card's subline, drafted for John's confirmation because the old one claimed the logistics,
+  reads "Helped lead international creator campaigns, from sponsor strategy and creative direction to
+  production and distribution." `creator.json` lost its placeholders, `category`, `voices`, the Trezor
+  collaboration rows, the context and atlas kickers and the atlas's unused title; its notes speak for
+  V1.2. The schema validates and the build passes.
+
+**Media and excerpts (V1.2).** The six edits carry new names (`cm-library-*-v12.mp4`, with
+`-v12-540.mp4` for phones), so no browser shows a cached V1.1 cut; the V1.1 files are removed. 1280 by
+720 (960 by 540), silent H.264, the index first, 0.2-second dissolves between excerpts and the
+0.4-second reset. The changed placements (times in the source files, which stay outside the
+repository):
+
+| Placement | Source file | Start | End | What |
+| --- | --- | --- | --- | --- |
+| Creator ads (10.64 s) | Bitrefill Pool Ad.mp4 | 0:16.00 | 0:19.40 | the gift-card overlay by the pool |
+| | Trezor Paper Airplane.mp4 | 0:02.75 | 0:04.22 | the paper airplane over the pool |
+| | Trezor Paper Airplane.mp4 | 0:16.90 | 0:18.25 | a creator holding up the Trezor box |
+| | Singapore Slippage Ad.mp4 | 0:00.40 | 0:01.95 | its title over the high tea room |
+| | Jungle Talk.mp4 | 0:00.10 | 0:02.20 | the creator panel at its table in the jungle (new) |
+| | Jungle Talk.mp4 | 0:32.24 | 0:33.80 | the Jungle Talk title card with its sponsors (new) |
+| Sponsor integrations (7.76 s) | Costa Rica Aftermovie.mp4 | 0:10.00 | 0:12.55 | the creator house's title card with Bolt, Trezor and Bitrefill |
+| | Shiv Costa Rica Vlog.mp4 | 0:06.80 | 0:08.30 | Shiv's Trezor box on his desk, then held up to the camera (new) |
+| | Ashley Costa Rica Vlog.mp4 | 0:02.62 | 0:04.34 | Ashley holding up her Trezor device (new) |
+| | Costa Rica Aftermovie.mp4 | 1:42.90 | 1:44.54 | the Trezor integration: the device by the pool, then the app |
+| | Mykonos Aftermovie.mp4 | 0:15.30 | 0:17.00 | a Bolt Liquidity invitation to Mykonos |
+| Behind the scenes (13.36 s) | Ashley Costa Rica Vlog.mp4 | 0:25.50 | 0:26.40 | the crew filming the creators |
+| | Costa Rica Aftermovie.mp4 | 0:00.04 | 0:00.68 | a creator filming on a phone gimbal |
+| | Ashley Costa Rica Vlog.mp4 | 0:38.07 | 0:38.90 | a camera rig and its monitor |
+| | Costa Rica Aftermovie.mp4 | 1:18.90 | 1:20.40 | filming the sunset on a phone |
+| | Costa Rica Aftermovie.mp4 | 1:40.28 | 1:41.10 | the crew with a gimbal |
+| | Costa Rica Aftermovie.mp4 | 1:48.48 | 1:50.60 | the exterior setup, a take in the hallway, laughter, then the crew in the bathroom (new, its own cuts) |
+| | Mykonos Aftermovie.mp4 | 1:17.88 | 1:18.52 | a camera on set |
+| | Lock In Podcast.mp4 | 1:30.00 | 1:33.20 | the podcast, the two-shot |
+| | Lock In Podcast.mp4 | 2:15.00 | 2:16.80 | the host's close-up |
+| | Lock In Podcast.mp4 | 12:16.00 | 12:18.40 | the guest's close-up |
+
+Removed: "That slippage, baby" (Singapore Slippage Ad.mp4 0:24.10 to 0:24.88) and "Don't let slippage
+take away your fancy high tea sushi" (0:30.15 to 0:31.95) from the creator ads; the Bitrefill "cover
+your flight" scene (Costa Rica Aftermovie.mp4 0:33.00 to 0:35.60), the ClubZero credit-card moment
+(Singapore Spending Spree.mp4 2:00.76 to 2:02.40) and the "Bolt Liquidity or Sup Raj" moment (Mykonos
+Aftermovie.mp4 0:24.55 to 0:26.15) from sponsor integrations. Destination films (8.72 s), Game show
+(9.93 s) and Lifestyle (8.76 s) keep their V1.1 excerpts (below).
+
+**For John to confirm.** The accent falls on "a campaign in motion."; the Sup Shiv invitation (a Bolt
+Liquidity invitation, Mykonos Aftermovie.mp4 0:15.30) stays in sponsor integrations, since only the Sup
+Raj moment was named; Jungle Talk is placed in Costa Rica for the place line; ClubZero's name remains
+where it is part of a title card; behind the scenes keeps the aftermovie's own cuts from 1:48.5 to
+1:50.6 (the exterior setup, two quick takes in the hallway, then the crew laughing in the bathroom);
+sponsor integrations runs 7.76 seconds, a little under the others; a
+selected format stays pinned when the reader leaves the section and returns (paused while away); a
+swipe moves the field either way (only selection and the field's own motion are one-way), and a tap
+holds a creator for six seconds; the network keeps its hint ("Select a creator for details.") and its
+Pause control; the atlas heading stays for assistive technology; the loader shows no note with reduced
+motion, as before; the card's subline is drafted; and the trackpad causes were inferred, since the
+recording was not available.
+
+**The checks** (`verify.mjs`, "Creator Marketing and Partnerships", now Version 1.2, with the loader,
+the production room and the Technical Product Marketing scroll in their own sections): every changed
+word, word for word, in the page and in `creator.json`; the collaborators named only in the credits (in
+the words, the descriptions and the metadata); no kicker on the program context or the atlas; the
+network's field (its eight buttons in order; the details area with only names, handles and
+affiliations, in its own column or row, centered, one height for every creator; one way at a constant
+pace, never backward; hover and keyboard focus easing it to a stop, a click let go when the pointer
+leaves, a tap's hold running out; the swipe, the Pause control, reduced motion and no JavaScript) and no
+ring, categories or testimonials; nothing focusable inside a part hidden from assistive technology;
+the Trezor brief, "#2 by reach" (with "most-viewed" and the impressions aggregate refused anywhere on
+the site), the four emphasized phrases drawn in once and no collaboration block; the library's line,
+its pinned loops, its reset matching the edits, the recut edits' new names and new moments, and the
+removed clips kept out; the blend's one color and no line; the ownership's chapters of John's own work,
+the wave half again as deep, moving once, with the words clear of it; the case study's results, no MDX
+body, the card's subline and its stand-ins; and, for Part One, the loader's letters, tracking, timing
+and length, the production room's Final default and the reader's kept choice, and the Technical Product
+Marketing page's native scroll, its stage phases, its hero and its rises (which fade in from nothing, so
+nothing below the screen is half there). A mutation run broke each of these promises in turn (101
+mutations, with a sample of earlier checks) and every one was caught, and a browser pass (90 checks)
+confirmed the behavior: the loader frame by frame and with reduced motion; the production room's Final,
+Setup and the kept choice; the field's pace and direction at four desktop sizes, its hover, selection,
+keyboard order, Pause and rest off screen; a phone's swipe and tap hold; the quotation's emphasis; the
+library moving on, then a selected format looping through leaving and returning; the blend's color
+across the seam; the wave's one movement and its clearance at fifteen widths from 320 to 2560; reduced
+motion and no JavaScript. On Technical Product Marketing, trackpad-like wheel gestures at the ten places
+around the hiccups (the hero, the Foundation's entry, hold and release, the website at 0:30, the
+documentation's overview and SDK chapter, and back up into the hero) moved the page on the first frame
+(19 to 39 ms), the full distance, with no step back, no programmatic scroll, no layout shift and no long
+frame, and the rises read the same on repeated passes. The accessibility scan finds nothing on all five
+pages at two widths, `astro check` reports no errors, no page scrolls sideways from 320 to 2560, and every
+edit's loop point is as smooth as a frame of its own dissolve.
 
 ### Creator Marketing and Partnerships, Version 1.1
 

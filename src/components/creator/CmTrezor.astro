@@ -1,19 +1,27 @@
 ---
 /**
- * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.1): led by the
+ * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.2): led by the
  * final video (Trezor Dare Ad.mp4, with sound, on request), then, in this
  * order and revealed as the reader scrolls: the assignment, the objective and
- * the approach (placeholders: labeled in `npm run dev`, absent from a
- * production build until John supplies them), three performance highlights,
- * Trezor's feedback (one concise attributed quote, the approved one, kept
- * apart from the creator testimonials) and the collaboration credits.
+ * the approach (John's words, V1.2: a lifestyle-led creative idea that
+ * connected the device's features with culture and community, not a feature
+ * list), three performance highlights and Trezor's feedback (the approved
+ * quotation and its attribution).
  *
  * The highlights (V1.1) are the post's results on the creator's own account,
  * against that account's preceding three months: a rate, a multiple and a
- * ranking with its percentile, never a raw total. A note under the label says
- * what they measure and that they are not Trezor's total campaign
- * performance. Set as a restrained row of figures and words on a hairline,
- * not as dashboard cards.
+ * ranking with its percentile (V1.2: #2 by reach out of 56 posts, never
+ * "most-viewed"), never a raw total. A note under the label says what they
+ * measure and that they are not Trezor's total campaign performance. Set as a
+ * restrained row of figures and words on a hairline, not as dashboard cards.
+ *
+ * V1.2: four phrases inside the one continuous quotation (creator.json
+ * `emphasis`) take the page's accent and a soft underlay that draws in once,
+ * as the quotation arrives, then stays; with reduced motion they are simply
+ * set. No pull quotes, badges or checklist. The collaboration block that sat
+ * under the quotation is gone: John's part is told by the campaign and the
+ * page's ownership, and the full record is in the credits; the section now
+ * resolves on the quotation into the library that follows.
  */
 import creator from '@data/creator.json';
 import { getAsset, isVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
@@ -25,7 +33,23 @@ const metrics = t.metrics.map((id) => getAsset(id)).map((e) => ({ e, ready: isVi
 const shownMetrics = metrics.filter((m) => m.ready || SHOW_PLACEHOLDERS);
 const feedback = getAsset(t.feedback);
 const quoteReady = isVisible(feedback) && feedback.type === 'testimonial' && Boolean(feedback.quote);
-const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
+// The quotation as one run of text, the approved phrases marked where they stand (each exactly once).
+type Run = { text: string; em: boolean };
+let quote: Run[] = [{ text: feedback.quote ?? '', em: false }];
+for (const phrase of t.emphasis ?? []) {
+  const hits = quote.filter((r) => !r.em && r.text.includes(phrase));
+  const total = quote.reduce((n, r) => n + (r.em ? 0 : r.text.split(phrase).length - 1), 0);
+  if (hits.length !== 1 || total !== 1) throw new Error(`[creator] the Trezor quotation must contain "${phrase}" exactly once`);
+  quote = quote.flatMap((r) => {
+    if (r !== hits[0]) return [r];
+    const at = r.text.indexOf(phrase);
+    return [
+      { text: r.text.slice(0, at), em: false },
+      { text: phrase, em: true },
+      { text: r.text.slice(at + phrase.length), em: false },
+    ].filter((x) => x.text);
+  });
+}
 ---
 
 <section class="cmz" data-surface="light-return" aria-labelledby="cm-trezor-title">
@@ -84,34 +108,22 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
       quoteReady && (
         <figure class="cmz__quote" data-cm-reveal>
           <blockquote>
-            <p>{feedback.quote}</p>
+            <p>
+              {quote.map((r, i) => (r.em ? <em class="cmz__em" style={`--e: ${quote.slice(0, i).filter((x) => x.em).length}`}>{r.text}</em> : r.text))}
+            </p>
           </blockquote>
           {feedback.attribution && <figcaption>{feedback.attribution}</figcaption>}
         </figure>
-      )
-    }
-
-    {
-      credits.length > 0 && (
-        <div class="cmz__credits" data-cm-reveal>
-          <p class="cmz__label">{t.creditsLabel}</p>
-          <dl>
-            {credits.map((c) => (
-              <div class:list={[!c.names && 'cmz__pending']}>
-                <dt>{c.role}</dt>
-                <dd>{c.names ?? 'Placeholder · names to confirm'}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
       )
     }
   </div>
 </section>
 
 <style>
+  /* V1.2: with the collaboration block gone the section ends on the quotation,
+     a little closer to the library it leads into. */
   .cmz {
-    padding-block: var(--section-y) calc(var(--section-y) * 0.85);
+    padding-block: var(--section-y) calc(var(--section-y) * 0.5);
     background: var(--bg);
   }
 
@@ -255,7 +267,7 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
     display: grid;
     gap: 1.1rem;
     max-width: 62rem;
-    margin: clamp(0.5rem, 2vw, 1.5rem) 0;
+    margin: clamp(0.5rem, 2vw, 1.5rem) 0 0;
   }
 
   .cmz__quote blockquote {
@@ -281,6 +293,20 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
     content: '”';
   }
 
+  /* The four phrases: the accent, over a soft underlay low on the line (each
+     line of a phrase its own). It draws in once as the quotation arrives,
+     then stays; nothing repeats. */
+  .cmz__em {
+    font-style: normal;
+    color: var(--c-teal);
+    background-image: linear-gradient(rgba(79, 145, 138, 0.2), rgba(79, 145, 138, 0.2));
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 100% 0.36em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
   .cmz__quote figcaption {
     font-size: 0.875rem;
     font-weight: 700;
@@ -296,43 +322,6 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
     margin-right: 0.6rem;
     vertical-align: middle;
     background: currentColor;
-  }
-
-  /* ---- collaboration -------------------------------------------------------------- */
-  .cmz__credits {
-    display: grid;
-    gap: 1rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .cmz__credits dl {
-    display: grid;
-    gap: 0.6rem 2.5rem;
-    margin: 0;
-  }
-
-  .cmz__credits dl > div {
-    display: grid;
-    gap: 0.15rem;
-  }
-
-  .cmz__credits dt {
-    font-size: 0.8125rem;
-    color: var(--ink-3);
-  }
-
-  .cmz__credits dd {
-    margin: 0;
-    font-size: var(--text-md);
-    font-weight: 650;
-    color: var(--ink);
-  }
-
-  @media (min-width: 48rem) {
-    .cmz__credits dl {
-      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    }
   }
 
   /* Authoring only: never in a production build. */
@@ -352,6 +341,17 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .cmz__quote:not(.is-in) .cmz__em {
+      color: inherit;
+      background-size: 0% 0.36em;
+    }
+
+    :global(html.js) .cmz__quote .cmz__em {
+      transition:
+        color 0.7s ease calc(0.55s + var(--e, 0) * 0.18s),
+        background-size 0.9s cubic-bezier(0.45, 0, 0.2, 1) calc(0.55s + var(--e, 0) * 0.18s);
+    }
+
     :global(html.js) .cmz [data-cm-reveal]:not(.is-in) {
       opacity: 0;
       transform: translate3d(0, 1.5rem, 0);

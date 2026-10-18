@@ -253,7 +253,7 @@ const isoVars = [
 </section>
 
 <script>
-  import { addStage, live, onLiveChange, reducedMotion, span, smooth } from '@lib/tpm-motion';
+  import { addStage, live, onLiveChange, reducedMotion, span, smooth, easeOut } from '@lib/tpm-motion';
 
   const hero = document.querySelector<HTMLElement>('[data-tpm-hero]');
   const scope = hero?.querySelector<HTMLElement>('[data-tpm-scope]');
@@ -398,29 +398,37 @@ const isoVars = [
     const rail = hero.querySelector<HTMLElement>('[data-tpm-rail]');
     const flow = document.querySelector<HTMLElement>('[data-tpm-flow]');
     const fading = [copyBox, visual, rail].filter(Boolean) as HTMLElement[];
+    let lastKey = '';
 
     const reset = () => {
       for (const el of fading) {
         el.style.opacity = '';
         el.style.transform = '';
         el.style.filter = '';
-        el.style.willChange = '';
+        el.style.willChange = live() ? 'opacity, transform' : '';
       }
       flow?.style.removeProperty('--lead-r');
       flow?.style.removeProperty('--lead-shadow');
       flow?.style.removeProperty('--rise');
+      lastKey = '';
     };
 
     // p runs from 0 to 1 over the one screen the stage holds, which is
     // exactly the Foundation's rise from the bottom of the screen to the top.
+    // Creator Marketing V1.2, Part One: the hero answers the very first movement
+    // (its lift eases out from p = 0 and its fade starts at once), so no part of
+    // the gesture is spent with nothing moving; its layers are promoted once,
+    // while the stage is live, not switched on and off as the reader scrolls.
     const update = (p: number) => {
-      const fade = smooth(span(p, 0.15, 0.95));
+      const fade = span(p, 0.02, 0.95);
       const soft = smooth(span(p, 0.3, 1));
-      const lift = smooth(p);
+      const lift = easeOut(p);
+      const key = `${p.toFixed(4)}`;
+      if (key === lastKey) return;
+      lastKey = key;
       for (const el of fading) {
-        el.style.willChange = p > 0 && p < 1 ? 'opacity, transform, filter' : '';
         el.style.opacity = fade > 0 ? (1 - 0.8 * fade).toFixed(3) : '';
-        el.style.transform = lift > 0 ? `translate3d(0, ${(-26 * lift).toFixed(2)}px, 0) scale(${(1 - 0.02 * lift).toFixed(4)})` : '';
+        el.style.transform = lift > 0 ? `translate3d(0, ${(-32 * lift).toFixed(2)}px, 0) scale(${(1 - 0.02 * lift).toFixed(4)})` : '';
         el.style.filter = soft > 0.002 ? `blur(${(2 * soft).toFixed(2)}px)` : '';
       }
       // The surface's leading edge rounds off its corners until it settles

@@ -5,15 +5,20 @@
  * on the ink ground. A small marker in the accent travels a faint hairline from
  * the left of the screen to the right, a short streak behind it as it gathers
  * speed, while one quiet viewing note, set small at the center ("BEST
- * EXPERIENCED ON DESKTOP"), arrives from the left and holds, fully legible, for
- * 2.1 seconds: long enough to read comfortably, with nothing replacing it (the
- * three phrases V1.5 added are gone). When the marker reaches the end of its
- * path the note and the path leave, the ground dissolves and the hero comes up
- * in layers (Hero.astro and Header.astro): the photograph, the name, the
- * descriptor, the navigation, then the rule and the arrow, overlapping, in 0.6
- * seconds. About 2.9 seconds in all, a little quicker than V1.6's 3.45. No
- * percentage: the marker is a pace, not a measure, and nothing here claims to
- * count anything.
+ * EXPERIENCED ON DESKTOP"), comes in and holds, fully legible, until the
+ * marker arrives. V1.2 (Creator Marketing V1.2, Part One): the note no longer
+ * simply appears. Its letters come up one after another, left to right, each
+ * rising a fraction of its height out of a soft blur into focus, while the
+ * line's tracking settles from open to its resting width; the whole entrance
+ * takes 0.6 seconds, then the complete line holds for 1.63 seconds before it
+ * leaves. No cursor, sound, bounce, overshoot, scrambling or particles, and
+ * nothing flashes. The marker stays the primary motion and keeps its timing.
+ * When the marker reaches the end of its path the note and the path leave,
+ * the ground dissolves and the hero comes up in layers (Hero.astro and
+ * Header.astro): the photograph, the name, the descriptor, the navigation,
+ * then the rule and the arrow, overlapping, in 0.6 seconds. About 2.9 seconds
+ * in all, unchanged by V1.2. No percentage: the marker is a pace, not a
+ * measure, and nothing here claims to count anything.
  *
  * It plays on the homepage only, once per browsing session (the tab's session
  * storage). An inline script in the head decides before the first paint, by
@@ -24,7 +29,8 @@
  * Nothing waits for it: the hero's photograph loads as usual underneath (and is
  * preloaded, see index.astro), and scrolling, a click, a tap or a key dismisses
  * it at once. With reduced motion there is no travel and no words: the ground
- * clears in a fifth of a second, straight to the hero.
+ * clears in a fifth of a second, straight to the hero (were the note ever shown
+ * there, it would only fade in, with no letter-by-letter movement).
  *
  * The timing lives in custom properties on the document (`--intro-*`, below),
  * which the hero (Hero.astro) and the header (Header.astro) read for their
@@ -35,13 +41,31 @@
 import home from '@data/home.json';
 
 const { note } = home.intro;
+// The note letter by letter (V1.2), word by word so a word never breaks; every
+// letter carries its place in the line for its moment in the entrance.
+let at = 0;
+const words = note.split(' ').map((w) => Array.from(w).map((ch) => ({ ch, c: at++ })));
+const letters = at;
 ---
 
 <div class="intro" aria-hidden="true" data-intro>
   <div class="intro__ground"></div>
   <div class="intro__stage">
     <div class="intro__readout">
-      <p class="intro__note">{note}</p>
+      <p class="intro__note" style={`--letters: ${letters}`}>
+        {
+          words.map((w, i) => [
+            i ? ' ' : '',
+            <span class="intro__word">
+              {w.map(({ ch, c }) => (
+                <span class="intro__ch" style={`--c: ${c}`}>
+                  {ch}
+                </span>
+              ))}
+            </span>,
+          ])
+        }
+      </p>
     </div>
     <div class="intro__track">
       <span class="intro__lane"><span class="intro__run"><span class="intro__trail"></span></span></span>
@@ -109,9 +133,10 @@ const { note } = home.intro;
      phones, where the note matters most. */
   :global(html.intro-hold) {
     --intro-lead: 40ms; /* the ground alone, before the note */
-    --intro-in: 130ms; /* the note arriving */
+    --intro-in: 600ms; /* the note arriving, letter by letter (V1.2; was 130 ms) */
+    --intro-letter: 380ms; /* each letter's own rise into focus */
     --intro-out: 130ms; /* the note leaving, as the ground starts to clear */
-    --intro-hold: 2100ms; /* the note, fully legible */
+    --intro-hold: 1630ms; /* the complete note, fully legible (V1.2; was 2.1 s, so the sequence keeps its length) */
     --intro-go: 120ms; /* the marker sets off */
     --intro-clear: 400ms; /* the ground dissolving */
 
@@ -290,12 +315,37 @@ const { note } = home.intro;
     animation: intro-streak calc(var(--intro-reveal) - var(--intro-go)) linear var(--intro-go) both;
   }
 
-  /* The note arrives from the left and, once it has been read, leaves to the
+  /* The note (V1.2): its tracking settles from open to its resting width over the
+     entrance while its letters come up one after another, left to right, each
+     rising out of a soft blur into focus; once it has been read it leaves to the
      right, the way the marker runs, as the ground starts to clear. */
   :global(html.intro) .intro__note {
     animation:
-      intro-word-in var(--intro-in) var(--intro-arrive) var(--intro-lead) both,
+      intro-note-in var(--intro-in) var(--intro-arrive) var(--intro-lead) both,
       intro-word-out var(--intro-out) var(--intro-leave) var(--intro-reveal) forwards;
+  }
+
+  .intro__word {
+    display: inline-block;
+  }
+
+  .intro__ch {
+    display: inline-block;
+  }
+
+  :global(html.intro) .intro__ch {
+    animation: intro-letter-in var(--intro-letter) cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--intro-lead) + var(--c) * (var(--intro-in) - var(--intro-letter)) / max(1, var(--letters) - 1)) both;
+  }
+
+  /* Reduced motion never shows the note (above); were it shown, it would only fade. */
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.intro) .intro__ch {
+      animation-name: intro-fade-in;
+    }
+
+    :global(html.intro) .intro__note {
+      animation-name: intro-fade-in, intro-fade-out;
+    }
   }
 
   /* Reduced motion: no travel and no note; the ground clears at once, in a
@@ -333,14 +383,28 @@ const { note } = home.intro;
     animation-play-state: paused !important;
   }
 
-  @keyframes intro-word-in {
+  /* The line itself is there from the start of the entrance; its letters bring it in. */
+  @keyframes intro-note-in {
+    from {
+      opacity: 1;
+      letter-spacing: 0.34em;
+    }
+    to {
+      opacity: 1;
+      letter-spacing: 0.22em;
+    }
+  }
+
+  @keyframes intro-letter-in {
     from {
       opacity: 0;
-      transform: translateX(-0.22em);
+      transform: translate3d(0, 0.42em, 0);
+      filter: blur(4px);
     }
     to {
       opacity: 1;
       transform: none;
+      filter: blur(0);
     }
   }
 

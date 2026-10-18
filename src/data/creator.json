@@ -1,10 +1,10 @@
 {
-  "_readme": "Creator Marketing and Partnerships, Version 1.1: the page's words and its media configuration, section by section (src/pages/work/creator-campaigns.astro and src/components/creator/). Version 1.1 is John's delta brief (October 2026) against the deployed Version 1.0: the hero headline and paragraph, the program context, the creator network's introduction and handles (no destinations on the creators), the atlas sublines and content counts, the Mykonos co-sponsor, the Trezor Dare Ad and its three creator-account highlights, the selected-content library (six formats, one edit each), the program ownership in three chapters, the credit stack and the conclusion, word for word; everything else is Version 1.0 (the approved copy and the confirmed roster and affiliations). A field set to null is a placeholder: it shows as a labeled placeholder in `npm run dev` only and renders nothing in a production build, so the public page never shows one (testimonials, Trezor's assignment, objective and approach, the Trezor collaboration rows without names, the creators' category labels). Media slots name asset ids in src/data/assets.json; every slot already holds its final aspect ratio, all of them square or landscape.",
+  "_readme": "Creator Marketing and Partnerships, Version 1.2: the page's words and its media configuration, section by section (src/pages/work/creator-campaigns.astro and src/components/creator/). Version 1.2 is John's delta brief (October 2026) against the deployed Version 1.1: the page stays on John's own work until the credits, the single place where collaborators are named (the hero and program paragraphs and the program ownership name no one else); the program context loses its kicker and takes a new headline and paragraph; the creator network becomes a warped, auto-scrolling portrait field with a stable details area (no category labels); the testimonial transition is out until a complete approved set exists; the atlas loses its kicker; the Trezor Dare Ad gains its assignment, objective and approach, its third highlight reads #2 by reach, its quotation carries four emphasized phrases and its collaboration block is gone; the selected-content library takes a new line, loops a format the reader selects and recuts three edits; the program ownership is three chapters of John's work under a more prominent wave. Everything else is Version 1.1 (the approved copy and the confirmed roster and affiliations). Media slots name asset ids in src/data/assets.json; every slot already holds its final aspect ratio, all of them square or landscape.",
   "hero": {
-    "_hero": "05 Hero: one full-screen landscape composition in layers (the coastal-estate reference, used for the hero only): the sky, the headline, the villa and its palms in front of the headline's lower line, and two palm fronds at the corners, each moving at its own rate as the page scrolls, with a slow drift of their own; reduced motion holds the layers still. The photographs are illustrative stock (Unsplash), credited once, in the credits (V1.1), and never presented as footage from the trips.",
+    "_hero": "05 Hero: one full-screen landscape composition in layers (the coastal-estate reference, used for the hero only): the sky, the headline, the villa and its palms in front of the headline's lower line, and two palm fronds at the corners, each moving at its own rate as the page scrolls, with a slow drift of their own; reduced motion holds the layers still. The photographs are illustrative stock (Unsplash), credited once, in the credits (V1.1), and never presented as footage from the trips. V1.2: the paragraph names John's ownership only; the collaborators are credited in the credits.",
     "label": "01 / Creator Marketing and Partnerships",
     "headline": "Creator campaigns, built to travel.",
-    "copy": "I helped lead creator programs across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor coordination, on-site production, and distribution in close collaboration with Maanav Porwal and Bob van der Meer.",
+    "copy": "I helped lead creator programs across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor coordination, on-site production, and distribution.",
     "layers": {
       "sky": "cm-hero-sky",
       "estate": "cm-hero-estate",
@@ -13,14 +13,13 @@
     }
   },
   "context": {
-    "_context": "06 Program context: John's V1.1 headline (its second sentence in the accent) and one paragraph that names his primary ownership and credits Maanav Porwal's and Bob van der Meer's collaboration (no services grid), with a single drawn route that leaves the paragraph and leads into the creator network.",
-    "kicker": "The program",
-    "headline": "A trip is the setting. A program connects everything around it.",
-    "accent": "A program connects everything around it.",
-    "copy": "For Bolt Liquidity, each trip brought creators, sponsors, and a production plan together for a few focused days. My primary ownership covered campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot planning, approvals, distribution, and reporting. Maanav Porwal collaborated on creator and co-sponsor sourcing, negotiations, contracts, travel, and logistics, while Bob van der Meer collaborated on concepts and handled much of the filming and editing."
+    "_context": "06 Program context (V1.2): no kicker; John's headline, its closing phrase in the accent, and one paragraph on what he led and helped plan, naming no collaborators (they are credited in the credits). No services grid, no list of roles and no drawn route (the network it led into is no longer a ring).",
+    "headline": "Each destination became a campaign in motion.",
+    "accent": "a campaign in motion.",
+    "copy": "For Bolt Liquidity, each trip brought creators, sponsors, and a production plan together for a few focused days. I led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot planning, approvals, distribution, and reporting, and helped plan the travel, logistics, and production that made each activation possible."
   },
   "network": {
-    "_network": "07 Creator network: exactly the eight creators John confirmed, each with a display name and handle (V1.1), square profile pictures traveling one way, slowly, around a curved path in depth, with no controls and nothing to drag. Hovering, focusing or selecting a creator shows their name, handle and confirmed affiliations at the center; nothing on the cards is a testimonial, a follower count, a ranking or a destination history. Reduced motion holds the ring still; narrow screens show a plain list with everything visible. Handles are plain text, not links. `category` is a placeholder label (null until John confirms one).",
+    "_network": "07 Creator network (V1.2): exactly the eight creators John confirmed, each with a display name, handle and confirmed affiliations, their square profile pictures in one continuous field warped across a broad curve in depth: the field travels one way at a slow, constant pace, each portrait entering from beyond the frame, growing as it nears the focal zone and leaving past it, and the creator in the focal zone is the one shown in the details area beside the field (below it on phones). Hovering or focusing a creator eases the field to a stop and shows them; selecting an approaching creator brings them forward to the focal zone (never backward); a pause control holds the field. Reduced motion shows a still gallery, two rows, selected by hand; without JavaScript every creator's details show with their portrait. Nothing on a card is a testimonial, a follower count, a ranking, a category or a destination history; handles are plain text, not links.",
     "kicker": "Creator network",
     "headline": "The creators who made it travel.",
     "sub": "Eight creators spanning streaming, crypto media, ecosystem leadership, entertainment, and community.",
@@ -34,8 +33,7 @@
         "affiliations": [
           "Rainbet",
           "Kick and Twitch streamer"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "the-blonde-broker",
@@ -46,8 +44,7 @@
           "VP of Financial Services at Corgi",
           "Host of The Market Runup",
           "Not Your Average Bros"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "ashley",
@@ -59,8 +56,7 @@
           "Rainbet partner",
           "AVAX Team 1 collaborator",
           "Not Your Average Bros"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "shiv",
@@ -70,8 +66,7 @@
         "affiliations": [
           "Pudgy Penguins advisor",
           "Bing Bong host"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "raj",
@@ -80,8 +75,7 @@
         "asset": "cm-creator-raj",
         "affiliations": [
           "Head of Ecosystem at Abstract"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "arcanic",
@@ -91,8 +85,7 @@
         "affiliations": [
           "Versus FNF team",
           "Pump.fun partner"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "caleb",
@@ -101,8 +94,7 @@
         "asset": "cm-creator-caleb",
         "affiliations": [
           "Sport.fun"
-        ],
-        "category": null
+        ]
       },
       {
         "id": "simon",
@@ -111,32 +103,13 @@
         "asset": "cm-creator-simon",
         "affiliations": [
           "Growth contributor at Pump.fun"
-        ],
-        "category": null
-      }
-    ]
-  },
-  "voices": {
-    "_voices": "08 The testimonial transition: up to three short creator testimonials (one or two sentences each), one at a time as the page scrolls, lower left, lower right, then lower left again on the way into the destinations, each with its attribution. They are V1 placeholders (assets.json, pending): until one is approved the section renders nothing in a production build and the network leads straight into the atlas. Never on the creator cards, and never Trezor's feedback, which belongs to the Trezor section.",
-    "items": [
-      {
-        "asset": "cm-testimonial-1",
-        "side": "left"
-      },
-      {
-        "asset": "cm-testimonial-2",
-        "side": "right"
-      },
-      {
-        "asset": "cm-testimonial-3",
-        "side": "left"
+        ]
       }
     ]
   },
   "atlas": {
-    "_atlas": "09 Campaign atlas: one stage that holds still while the reader scrolls through three states, Costa Rica, Singapore and Mykonos, each with its own loop (5 to 10 seconds, silent, landscape, reset with a dissolve), two fragments, color atmosphere, large name, chapter index and concise copy. Wide screens with motion allowed pin it; narrow or short screens, reduced motion and no JavaScript show the three chapters one after another. Counts: creators as the V1.0 roster counted them (6, 7 and 4), content pieces as John gave them in V1.1 (40+, 35+ and 25+). `sponsors` names logo ids in src/data/logos.json.",
-    "kicker": "Campaign atlas",
-    "title": "Three destinations, one program.",
+    "_atlas": "09 Campaign atlas: one stage that holds still while the reader scrolls through three states, Costa Rica, Singapore and Mykonos, each with its own loop (5 to 10 seconds, silent, landscape, reset with a dissolve), two fragments, color atmosphere, large name, chapter index and concise copy. Wide screens with motion allowed pin it; narrow or short screens, reduced motion and no JavaScript show the three chapters one after another. Counts: creators as the V1.0 roster counted them (6, 7 and 4), content pieces as John gave them in V1.1 (40+, 35+ and 25+). `sponsors` names logo ids in src/data/logos.json. V1.2: no visible kicker; `heading` names the section for assistive technology only (the unused V1.0 `title` is gone).",
+    "heading": "Campaign atlas",
     "factLabels": {
       "creators": "Creators",
       "pieces": "Content pieces",
@@ -201,7 +174,7 @@
     ]
   },
   "trezor": {
-    "_trezor": "10 Trezor Dare Ad: the final video first (Trezor Dare Ad.mp4, with sound, on request), then the assignment, the objective and the approach (placeholders until John supplies them), three performance highlights from the creator's own account (compared with that account's preceding three months, never presented as Trezor's total campaign performance), Trezor's feedback (one concise attributed quote, kept apart from the creator testimonials) and the collaboration credits.",
+    "_trezor": "10 Trezor Dare Ad (V1.2): the final video first (Trezor Dare Ad.mp4, with sound, on request), then the assignment, the objective and the approach (John's words), three performance highlights from the creator's own account (compared with that account's preceding three months, never presented as Trezor's total campaign performance; the third is #2 by reach, never most-viewed), and Trezor's feedback (the approved quotation, one continuous quote with four phrases in the accent; `emphasis` lists them, each found once in the quotation). No collaboration block: the credits at the foot of the page keep that record.",
     "kicker": "Featured campaign",
     "title": "Trezor Dare Ad",
     "deck": "A creator-led sponsor integration for Trezor, filmed at the creator house in Costa Rica.",
@@ -211,17 +184,17 @@
       {
         "key": "assignment",
         "label": "Assignment",
-        "text": null
+        "text": "Create a creator-led campaign that places Trezor's new device inside a culturally relevant, community-driven moment rather than a conventional product demonstration."
       },
       {
         "key": "objective",
         "label": "Objective",
-        "text": null
+        "text": "Build affinity with crypto culture and community while highlighting the device's Bluetooth connectivity and refined, modern design."
       },
       {
         "key": "approach",
         "label": "Approach",
-        "text": null
+        "text": "Turn the product into the center of a playful dare filmed with creators at the Costa Rica house, using a real social setting to demonstrate wireless use, showcase the device's design, and make the integration feel native rather than ad-like."
       }
     ],
     "metricsLabel": "Performance highlights",
@@ -232,31 +205,18 @@
       "cm-trezor-metric-3"
     ],
     "feedback": "cc-testimonial-trezor",
-    "creditsLabel": "Collaboration",
-    "credits": [
-      {
-        "role": "Program strategy and sponsor coordination",
-        "names": "John Cowin"
-      },
-      {
-        "role": "Creators",
-        "names": null
-      },
-      {
-        "role": "Production",
-        "names": null
-      },
-      {
-        "role": "Editing",
-        "names": null
-      }
+    "emphasis": [
+      "level of care and creativity",
+      "production quality",
+      "attention to detail",
+      "understanding our goals"
     ]
   },
   "library": {
-    "_library": "11 Selected content: a library of six edits from across the three trips, one per format, each a curated mini-edit of its own (silent, landscape, 9 to 12 seconds), chosen with simple text tabs and a restrained active line that fills as the edit plays. Selecting a format plays its edit from the start; with motion allowed the library moves on to the next format when an edit ends, the reader can pause it at any time, and it holds while keyboard focus is in the formats. Reduced motion, a data-saving preference or a refused autoplay start nothing: the selected edit waits on its poster and plays on request. Without JavaScript the six edits read in turn, each with its own controls. `cues` are the edit's own times (seconds) where each destination takes over, for the place line under the frame.",
+    "_library": "11 Selected content (V1.2): a library of six edits from across the three trips, one per format, each a curated mini-edit of its own (silent, landscape, 7 to 14 seconds) whose last moment dissolves back into its own opening, so it can repeat with no seam; chosen with simple text tabs and a restrained active line that fills as the edit plays. Until the reader chooses, with motion allowed, the library moves on to the next format as each edit ends, round and round (holding while keyboard focus is in the formats); a format the reader selects is pinned: its edit plays from the start and loops until they select another. The reader can pause at any time; it pauses off screen and in a hidden tab. Reduced motion, a data-saving preference or a refused autoplay start nothing: the selected edit waits on its poster and plays through once on request. Without JavaScript the six edits read in turn, each with its own controls. `cues` are the edit's own times (seconds) where each destination takes over, for the place line under the frame.",
     "kicker": "Selected content",
     "headline": "One program, many formats.",
-    "copy": "Choose a format to watch its edit, drawn from across the three trips.",
+    "copy": "See the program move from destination films and creator ads to sponsor integrations and the moments behind the camera.",
     "label": "Formats",
     "formats": [
       {
@@ -269,7 +229,7 @@
             "place": "Costa Rica"
           },
           {
-            "at": 4.9,
+            "at": 4.5,
             "place": "Mykonos"
           }
         ]
@@ -284,8 +244,12 @@
             "place": "Costa Rica"
           },
           {
-            "at": 6.07,
+            "at": 5.67,
             "place": "Singapore"
+          },
+          {
+            "at": 7.02,
+            "place": "Costa Rica"
           }
         ]
       },
@@ -310,31 +274,31 @@
             "place": "Costa Rica"
           },
           {
-            "at": 1.35,
+            "at": 0.95,
             "place": "Singapore"
           },
           {
-            "at": 2.57,
+            "at": 2.17,
             "place": "Mykonos"
           },
           {
-            "at": 3.17,
+            "at": 2.77,
             "place": "Costa Rica"
           },
           {
-            "at": 4.61,
+            "at": 4.21,
             "place": "Singapore"
           },
           {
-            "at": 5.6,
+            "at": 5.2,
             "place": "Mykonos"
           },
           {
-            "at": 6.15,
+            "at": 5.75,
             "place": "Costa Rica"
           },
           {
-            "at": 8.07,
+            "at": 7.67,
             "place": "Mykonos"
           }
         ]
@@ -349,11 +313,7 @@
             "place": "Costa Rica"
           },
           {
-            "at": 5.74,
-            "place": "Singapore"
-          },
-          {
-            "at": 7.11,
+            "at": 6.24,
             "place": "Mykonos"
           }
         ]
@@ -368,7 +328,7 @@
             "place": "Costa Rica"
           },
           {
-            "at": 3.82,
+            "at": 5.54,
             "place": "Mykonos"
           }
         ]
@@ -376,38 +336,35 @@
     ]
   },
   "ownership": {
-    "_ownership": "12 Program ownership: John's working headline, its first sentence above a waterline and its second below it, where three editorial chapters (V1.1) set out how the program was built, directed and carried to market, each crediting who owned it: no list of areas, no rings, no cards or pills.",
+    "_ownership": "12 Program ownership (V1.2): John's working headline, its first sentence above a waterline and its second below it (a more prominent wave, moving once into place and then still), one line on his role and three editorial chapters of his own work: shaping the campaign, directing the production and carrying it to market. No collaborators named here (the credits name them), no list of areas, no rings, no cards or pills, and nothing John did not do (no creator sourcing, legal contracts, solo filming or editing, or sole ownership of travel logistics).",
     "kicker": "Program ownership",
     "headline": "The experience was visible. The system behind it was not.",
     "above": "The experience was visible.",
     "below": "The system behind it was not.",
-    "copy": "Beneath every post was a collaborative program spanning sourcing, logistics, creative direction, production, distribution, and partner reporting.",
+    "copy": "My role connected the campaign from sponsor strategy and creative direction through on-site production, distribution, and reporting.",
     "chapters": [
       {
-        "key": "build",
+        "key": "shape",
         "index": "01",
-        "title": "Build the program",
-        "text": "Creator and co-sponsor sourcing, interviews, negotiations, contracts, travel, villas, schedules, and logistics.",
-        "owner": "A collaboration between John Cowin and Maanav Porwal"
+        "title": "Shape the campaign",
+        "text": "Campaign strategy with co-sponsors, sponsor packages, creative concepts, briefs, scripts, schedules, and deliverable planning."
       },
       {
         "key": "direct",
         "index": "02",
-        "title": "Direct the work",
-        "text": "Campaign strategy with co-sponsors, creative concepts, scripts, briefs, shoot schedules, shot tracking, on-site direction, and production coordination.",
-        "owner": "Led by John Cowin, with Bob van der Meer collaborating on concepts and handling much of the filming and editing"
+        "title": "Direct the production",
+        "text": "Creator coordination, shot planning, on-site direction, production scheduling, approvals, and revision guidance."
       },
       {
         "key": "market",
         "index": "03",
         "title": "Carry it to market",
-        "text": "Creator and sponsor approvals, posting schedules, content-release coordination, campaign tracking, reporting, and ongoing partner relationships.",
-        "owner": "Led by John Cowin as the liaison between creators and co-sponsors"
+        "text": "Sponsor and creator liaison work, posting schedules, distribution, campaign tracking, reporting, and ongoing partner relationships."
       }
     ]
   },
   "credits": {
-    "_credits": "13 Credits: one system for everyone who made the work, set like a film's closing credits. The team first (V1.1): John Cowin, Maanav Porwal and Bob van der Meer, each with what they owned or collaborated on, word for word from John's brief; then the eight creators, the co-sponsors, the brand and the hero's illustrative photography (credited here only). Nothing implies John edited, shot or designed the work.",
+    "_credits": "13 Credits: one system for everyone who made the work, set like a film's closing credits. The team first (V1.1): John Cowin, Maanav Porwal and Bob van der Meer, each with what they owned or collaborated on, word for word from John's brief; then the eight creators, the co-sponsors, the brand and the hero's illustrative photography (credited here only). Since V1.2 the only place on the page that names individual collaborators. Nothing implies John edited, shot or designed the work.",
     "kicker": "Credits",
     "title": "Many hands, one program.",
     "team": [

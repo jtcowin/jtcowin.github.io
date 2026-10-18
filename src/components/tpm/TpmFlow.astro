@@ -144,7 +144,7 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
 </div>
 
 <script>
-  import { addStage, live, onLiveChange, reducedMotion, clamp, lerp, span, easeInOut, smooth } from '@lib/tpm-motion';
+  import { addStage, live, onLiveChange, reducedMotion, clamp, lerp, span, easeOut, smooth } from '@lib/tpm-motion';
 
   type Pt = { x: number; y: number };
   type Box = { x: number; y: number; w: number; h: number };
@@ -168,13 +168,17 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
     // Lengths in screen heights of scrolling; the stage holds for their sum.
     // 02 runs from the entry to the exit, 03 from its first word to the end of
     // the hold. Each is one number to tune after the browser review.
+    // Creator Marketing V1.2, Part One (no trackpad hiccups): no still stretch at
+    // the entry (V1.6 held the compact stack for 0.15 of a screen, so the first
+    // movement after the hero seemed to do nothing) and a shorter hold at the
+    // end (0.35 of a screen, was 0.75), so the page releases into the Website
+    // chapter without a dead stretch; the pin is 3.55 screens, was 4.1.
     const PHASES: Array<[string, number]> = [
-      ['settle', 0.15], // the entry and the compact stack
       ['spread', 0.5], // the stack opens: the featured spread
       ['rail', 1.45], // the full library moves right to left
       ['exit', 0.4], // the documents and the opening step back
       ['statement', 0.85], // the statement, word by word
-      ['hold', 0.75], // the whole statement, held to be read
+      ['hold', 0.35], // the whole statement, held to be read
     ];
     const RUN = PHASES.reduce((sum, [, v]) => sum + v, 0);
     const windows = new Map<string, [number, number]>();
@@ -261,7 +265,8 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
       head.style.visibility = headOut >= 0.999 ? 'hidden' : '';
 
       // The library.
-      const offset = -smooth(tRail) * G.travel;
+      // The library moves with the scroll from its first pixel, easing only into its end.
+      const offset = -(0.55 * tRail + 0.45 * easeOut(tRail)) * G.travel;
       const top = bandY - cardH / 2;
       docs.forEach((doc, i) => {
         const sx = slotX(i);
@@ -271,7 +276,8 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
         let opacity = 1;
         if (i < IN_PILE) {
           const pose = PILE[i];
-          const q = easeInOut(clamp((tSpread - i * 0.07) / (1 - (IN_PILE - 1) * 0.07)));
+          // Eased out, so the stack answers the first movement of the scroll.
+          const q = easeOut(clamp((tSpread - i * 0.07) / (1 - (IN_PILE - 1) * 0.07)));
           x = lerp(G.pile.x - cardW / 2 + pose.dx, sx, q) + offset;
           y = lerp(top + pose.dy, top, q);
           rot = lerp(pose.r, 0, q);
@@ -303,7 +309,7 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
         w.style.transform = q < 1 ? `translate3d(0, ${(0.28 * (1 - q)).toFixed(3)}em, 0)` : '';
       });
       // Then the one highlight sweeps in behind its clause, early in the hold.
-      mark?.style.setProperty('--sweep', smooth(span(phase(p, 'hold'), 0.04, 0.42)).toFixed(3));
+      mark?.style.setProperty('--sweep', smooth(span(phase(p, 'hold'), 0.04, 0.7)).toFixed(3));
     };
 
     const reset = () => {
@@ -634,7 +640,7 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
   /* ---- live: one sticky stage ------------------------------------------------------ */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
     .tpm-flow.is-live {
-      height: calc(var(--view-h) * (1 + var(--flow-run, 4.1)));
+      height: calc(var(--view-h) * (1 + var(--flow-run, 3.55)));
       /* Arriving over the hero: the leading edge, rounded until it settles. */
       border-radius: var(--lead-r, 0px) var(--lead-r, 0px) 0 0;
     }
