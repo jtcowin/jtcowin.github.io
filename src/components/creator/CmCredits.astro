@@ -1,13 +1,16 @@
 ---
 /**
- * 13 Credits (Creator Marketing and Partnerships, V1.1): one system for
+ * 13 Credits (Creator Marketing and Partnerships, V1.3): one system for
  * everyone who made the work, set like a film's closing credits on the deep
  * ground the waterline leads into. The team first: John Cowin, Maanav Porwal
  * and Bob van der Meer, each name with what they owned or collaborated on, in
  * John's words (V1.1, in place of the role rows, the pending editing and
  * filming rows, the generic internal collaborators and the closing note).
  * Then the rest of the roll, the role on one side of a center line and the
- * names on the other (stacked on phones): the eight creators, the co-sponsors
+ * names on the other (stacked on phones): the eight creators, each with their
+ * confirmed affiliations (V1.3: since the creator network is gone, the
+ * credits are the one place the roster and its affiliations appear; no
+ * handles, pictures, follower counts or categories), the co-sponsors
  * (Trezor, Bitrefill, Rayls Labs and Phi Labs), the brand, and the hero's
  * illustrative photography, credited here only. Nothing implies John edited,
  * shot or designed the work.
@@ -16,8 +19,14 @@ import creator from '@data/creator.json';
 import { SHOW_PLACEHOLDERS } from '@lib/assets';
 
 const { credits: c } = creator;
-const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
+type Person = { name: string; affiliations: string[] };
+type Row = { role: string; names?: string | null; people?: Person[] };
+const rows = (c.rows as Row[]).filter((r) => r.names || r.people?.length || SHOW_PLACEHOLDERS);
 if (c.team.length !== 3) throw new Error(`[creator] the credits name the three people behind the program (found ${c.team.length})`);
+const creators = rows.find((r) => r.people);
+if (!creators || creators.people?.length !== 8 || creators.people.some((p) => !p.name || !p.affiliations.length || /@/.test(p.name + p.affiliations.join(' ')))) {
+  throw new Error('[creator] the credits carry the eight creators, each with their affiliations and no handles');
+}
 ---
 
 <section class="cmc" data-surface="dark" aria-labelledby="cm-credits-title">
@@ -36,12 +45,28 @@ if (c.team.length !== 3) throw new Error(`[creator] the credits name the three p
     </dl>
     <dl class="cmc__roll">
       {
-        rows.map((r) => (
-          <div class:list={['cmc__row', !r.names && 'cmc__row--pending']} data-cm-reveal>
-            <dt>{r.role}</dt>
-            <dd>{r.names ?? 'Placeholder · names to confirm'}</dd>
-          </div>
-        ))
+        rows.map((r) =>
+          r.people ? (
+            <div class="cmc__row cmc__row--people" data-cm-reveal>
+              <dt>{r.role}</dt>
+              <dd>
+                <ul class="cmc__people">
+                  {r.people.map((p) => (
+                    <li class="cmc__person">
+                      <span class="cmc__person-name">{p.name}</span>{' '}
+                      <span class="cmc__person-aff">{p.affiliations.join(', ')}</span>
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          ) : (
+            <div class:list={['cmc__row', !r.names && 'cmc__row--pending']} data-cm-reveal>
+              <dt>{r.role}</dt>
+              <dd>{r.names ?? 'Placeholder · names to confirm'}</dd>
+            </div>
+          ),
+        )
       }
     </dl>
   </div>
@@ -141,6 +166,31 @@ if (c.team.length !== 3) throw new Error(`[creator] the credits name the three p
     line-height: 1.4;
     color: var(--c-bone);
     text-wrap: balance;
+  }
+
+  /* The creators (V1.3): one line each, the name in the roll's type and their
+     affiliations after it, quieter, as a film's credits set a name and a part. */
+  .cmc__people {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cmc__person {
+    text-wrap: balance;
+  }
+
+  .cmc__person-name {
+    font-weight: 600;
+    color: var(--c-bone);
+  }
+
+  .cmc__person-aff {
+    font-size: 0.82em;
+    font-weight: 400;
+    color: var(--ink-2);
   }
 
   @media (min-width: 48rem) {

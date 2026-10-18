@@ -1,20 +1,21 @@
 ---
 /**
- * Creator Marketing and Partnerships, Version 1.2.
+ * Creator Marketing and Partnerships, Version 1.3.
  *
  * The first selected-work case study, built around the programs John helped
  * lead in Costa Rica, Singapore and Mykonos: 05 the hero (one layered
- * landscape composition), 06 the program context, 07 the creator network (a
- * warped, auto-scrolling portrait field with a stable details area), 09 the
- * campaign atlas (one stage, three destinations), 10 the Trezor Dare Ad, 11
- * the selected-content library (six formats, one edit each), 12 the program
+ * landscape composition), 06 the program context (V1.3: one restrained line
+ * on the roster beneath its paragraph), 09 the campaign atlas (one stage,
+ * three destinations), 10 the Trezor Dare Ad, 11 the selected-content library
+ * (seven formats, one edit each; V1.3 adds Podcasts), 12 the program
  * ownership in three chapters of John's work, 13 the credits (the one place
- * that names the people he worked with) and 14 the conclusion, with the way on
- * to the next case study, then Contact and the footer. (Section numbers
- * follow the V1.0 brief; 08, the testimonial transition, is out until a
- * complete approved set of creator testimonials exists, so the network leads
- * straight into the atlas. Version 1.2 is John's delta brief against the
- * deployed Version 1.1.)
+ * that names the people he worked with, the eight creators with their
+ * affiliations) and 14 the conclusion, with the way on to the next case
+ * study, then Contact and the footer. (Section numbers follow the V1.0 brief.
+ * 07, the creator network, is gone since V1.3, with nothing in its place: the
+ * program context leads straight into the atlas. 08, the testimonial
+ * transition, is out until a complete approved set of creator testimonials
+ * exists. Version 1.3 is John's delta brief against the deployed Version 1.2.)
  *
  * It keeps the portfolio's type, palette, navigation, buttons and Contact,
  * and speaks its own visual language: open air and daylight, destination
@@ -35,7 +36,6 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import CmHero from '@components/creator/CmHero.astro';
 import CmContext from '@components/creator/CmContext.astro';
-import CmNetwork from '@components/creator/CmNetwork.astro';
 import CmAtlas from '@components/creator/CmAtlas.astro';
 import CmTrezor from '@components/creator/CmTrezor.astro';
 import CmLibrary from '@components/creator/CmLibrary.astro';
@@ -52,7 +52,6 @@ const d = entry.data;
   <article class="cm" aria-labelledby="cm-title">
     <CmHero />
     <CmContext />
-    <CmNetwork />
     <CmAtlas />
     <CmTrezor />
     <CmLibrary />
@@ -69,13 +68,13 @@ const d = entry.data;
 
 <script>
   import { mountLoops, mountPlayers } from '@lib/ev-media';
-  import { mountHero, mountNetwork, mountAtlas, mountLibrary, mountReveals } from '@lib/cm-motion';
+  import { mountHero, mountAtlas, mountLibrary, mountOwnership, mountReveals } from '@lib/cm-motion';
   mountHero();
-  mountNetwork();
   mountAtlas();
   mountPlayers();
   mountLoops();
   mountLibrary();
+  mountOwnership();
   mountReveals();
 </script>
 

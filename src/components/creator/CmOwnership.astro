@@ -16,10 +16,18 @@
  * through the open air above the waterline, and a more prominent wave (about
  * half as tall again as V1.1's, a lighter swell behind it and a soft light
  * on its crest) completes the turn into the water: one continuous transition.
- * The wave moves once, slowly, as it comes into view, and then stays still (no
- * continuous drift); a faint light still moves across the water. With reduced
- * motion both are still and the chapters are simply there. The water deepens
- * into the credits that follow.
+ *
+ * V1.3, the wave flows again: both layers travel to the left without end, each
+ * at its own slow, even pace, the wave one period every 18 seconds and the
+ * swell behind it one every 22 (slower, so it moves less), their crests half a
+ * period apart to begin with. Each cycle ends exactly where the next begins
+ * (the layer is one period wider than the screen and moves by exactly one
+ * period), so there is no reset or jump, and there is no vertical movement:
+ * the depth, colors and gradient are V1.2's. They move only while the water is
+ * near the screen and the page is visible (cm-motion.ts, mountOwnership), and
+ * with reduced motion (or without JavaScript) they are still; a faint light
+ * moves across the water as before. The water deepens into the credits that
+ * follow.
  */
 import creator from '@data/creator.json';
 
@@ -29,9 +37,9 @@ if (o.chapters.length !== 3) throw new Error(`[creator] the ownership is told in
 for (const ch of o.chapters) if (/Maanav|Bob van der Meer|\bowner\b/i.test(JSON.stringify(ch))) throw new Error('[creator] the ownership chapters describe John\'s work only');
 ---
 
-<section class="cmo" data-surface="light" aria-labelledby="cm-own-title">
+<section class="cmo" data-surface="light" aria-labelledby="cm-own-title" data-cmo>
   <div class="cmo__air" aria-hidden="true"></div>
-  <div class="cmo__water" data-surface="dark" aria-hidden="true" data-cm-reveal>
+  <div class="cmo__water" data-surface="dark" aria-hidden="true" data-cmo-water>
     <span class="cmo__swell"></span>
     <span class="cmo__wave"></span>
     <span class="cmo__light"></span>
@@ -100,12 +108,14 @@ for (const ch of o.chapters) if (/Maanav|Bob van der Meer|\bowner\b/i.test(JSON.
      as tall again as V1.1's, its crest catching a soft light (a lighter rim drawn
      just above it, so it follows the curve); behind it a lighter
      swell, out of phase and a little higher, gives the water its depth. Both sit
-     on the waterline and rise into the air above it. */
+     on the waterline and rise into the air above it. V1.3: each layer is one
+     period wider than the water, so it can travel a whole period to the left and
+     land exactly where it began (the section clips the overhang). */
   .cmo__wave,
   .cmo__swell {
     position: absolute;
     left: 0;
-    right: 0;
+    width: calc(100% + 880px);
     bottom: calc(100% - 1px);
     background-repeat: repeat-x;
     pointer-events: none;
@@ -122,7 +132,7 @@ for (const ch of o.chapters) if (/Maanav|Bob van der Meer|\bowner\b/i.test(JSON.
     height: clamp(2.1rem, 4.9vw, 4.5rem);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 880 60' preserveAspectRatio='none'%3E%3Cpath d='M0 28 C 147 8 293 8 440 28 S 733 48 880 28 V 54 H 0 Z' fill='%234f918a' fill-opacity='0.3'/%3E%3C/svg%3E");
     background-size: 880px 100%;
-    background-position: 490px 100%;
+    background-position: 220px 100%;
   }
 
   .cmo__light {
@@ -236,30 +246,27 @@ for (const ch of o.chapters) if (/Maanav|Bob van der Meer|\bowner\b/i.test(JSON.
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    /* The wave's one movement (V1.2): as the water comes into view the wave and its
-       swell rise to their full height from the waterline and drift a little, the two
-       in opposite directions, over a few seconds, then stay where they settle. (The
-       height grows within the box, not by scaling it, so no edge of the drawing
-       ever shows as a line.) */
-    :global(html.js) .cmo__water:not(.is-in) .cmo__wave {
-      background-size: 880px 55%;
-      background-position: 0 100%;
+    /* The wave's flow (V1.3): both layers travel one period to the left, for ever,
+       at an even pace, so each cycle ends exactly where the next begins; the swell
+       behind takes longer over the same period, so it moves less. They run only
+       while the water is near the screen and the page is visible
+       (cm-motion.ts, mountOwnership: data-flow on the section). */
+    :global(html.js) .cmo__wave {
+      animation: cmo-flow 18s linear infinite;
+      will-change: transform;
     }
 
-    :global(html.js) .cmo__water:not(.is-in) .cmo__swell {
-      background-size: 880px 50%;
-      background-position: 330px 100%;
-    }
-
-    :global(html.js) .cmo__water .cmo__wave,
-    :global(html.js) .cmo__water .cmo__swell {
-      transition:
-        background-position 3.2s cubic-bezier(0.25, 0.6, 0.3, 1),
-        background-size 2.4s cubic-bezier(0.25, 0.6, 0.3, 1);
+    :global(html.js) .cmo__swell {
+      animation: cmo-flow 22s linear infinite;
+      will-change: transform;
     }
 
     .cmo__light {
       animation: cmo-light 14s ease-in-out infinite alternate;
+    }
+
+    :global(html.js) .cmo:not([data-flow='on']) :is(.cmo__wave, .cmo__swell, .cmo__light) {
+      animation-play-state: paused;
     }
 
     :global(html.js) .cmo__chapters:not(.is-in) .cmo__chapter {
@@ -271,6 +278,15 @@ for (const ch of o.chapters) if (/Maanav|Bob van der Meer|\bowner\b/i.test(JSON.
       transition:
         opacity 0.9s ease calc(var(--k) * 0.14s),
         transform 1s cubic-bezier(0.2, 0.75, 0.2, 1) calc(var(--k) * 0.14s);
+    }
+  }
+
+  @keyframes cmo-flow {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-880px, 0, 0);
     }
   }
 

@@ -1,6 +1,6 @@
 ---
 /**
- * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.2): led by the
+ * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.3): led by the
  * final video (Trezor Dare Ad.mp4, with sound, on request), then, in this
  * order and revealed as the reader scrolls: the assignment, the objective and
  * the approach (John's words, V1.2: a lifestyle-led creative idea that
@@ -11,17 +11,25 @@
  * The highlights (V1.1) are the post's results on the creator's own account,
  * against that account's preceding three months: a rate, a multiple and a
  * ranking with its percentile (V1.2: #2 by reach out of 56 posts, never
- * "most-viewed"), never a raw total. A note under the label says what they
- * measure and that they are not Trezor's total campaign performance. Set as a
- * restrained row of figures and words on a hairline, not as dashboard cards.
+ * "most-viewed"), never a raw total. V1.3 gives them the scale and the
+ * centered composition of the results under the Technical Product Marketing
+ * film (TpmCampaign.astro), in this page's own palette and type: the label
+ * centered above one balanced row of three equal columns (stacked on phones),
+ * each a display-scale figure over a short caption, centered, with generous
+ * space and nothing around them (no cards, tiles, pills, shadows, lines or
+ * dashboard chrome). The percentile and the note on what the figures measure
+ * (creator-account results, not Trezor's total campaign performance) follow
+ * as quieter centered lines under the row, so the three columns stay even.
  *
- * V1.2: four phrases inside the one continuous quotation (creator.json
- * `emphasis`) take the page's accent and a soft underlay that draws in once,
- * as the quotation arrives, then stays; with reduced motion they are simply
- * set. No pull quotes, badges or checklist. The collaboration block that sat
- * under the quotation is gone: John's part is told by the campaign and the
- * page's ownership, and the full record is in the credits; the section now
- * resolves on the quotation into the library that follows.
+ * V1.3: four phrases inside the one continuous quotation (creator.json
+ * `emphasis`) are set apart by type alone: the page's deep teal and a
+ * slightly heavier weight, the rest of the quotation in its usual dark ink.
+ * No marker, underlay, rectangle, underline, shadow, pill or badge. With
+ * motion allowed the teal resolves once, as the quotation arrives, and then
+ * stays; nothing pulses, sweeps or repeats. No pull quotes or checklist; the
+ * collaboration block that sat under the quotation is gone (V1.2): the
+ * credits keep that record, and the section resolves on the quotation into
+ * the library that follows.
  */
 import creator from '@data/creator.json';
 import { getAsset, isVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
@@ -31,6 +39,8 @@ const { trezor: t } = creator;
 const brief = t.brief.filter((b) => b.text || SHOW_PLACEHOLDERS);
 const metrics = t.metrics.map((id) => getAsset(id)).map((e) => ({ e, ready: isVisible(e) && e.type === 'metric' && Boolean(e.value) }));
 const shownMetrics = metrics.filter((m) => m.ready || SHOW_PLACEHOLDERS);
+// A highlight's own note (the ranking's percentile) reads under the row, so the three columns stay even (V1.3).
+const metricNotes = shownMetrics.filter((m) => m.ready && m.e.metricNote).map((m) => m.e.metricNote as string);
 const feedback = getAsset(t.feedback);
 const quoteReady = isVisible(feedback) && feedback.type === 'testimonial' && Boolean(feedback.quote);
 // The quotation as one run of text, the approved phrases marked where they stand (each exactly once).
@@ -80,17 +90,13 @@ for (const phrase of t.emphasis ?? []) {
     {
       shownMetrics.length > 0 && (
         <div class="cmz__results" data-cm-reveal>
-          <div class="cmz__results-head">
-            <p class="cmz__label">{t.metricsLabel}</p>
-            {t.metricsNote && <p class="cmz__results-note">{t.metricsNote}</p>}
-          </div>
+          <p class="cmz__label">{t.metricsLabel}</p>
           <ul class="cmz__metrics">
             {shownMetrics.map(({ e, ready }) =>
               ready ? (
                 <li class="cmz__metric" data-asset={e.id}>
                   <strong class="cmz__value">{e.value}</strong>
                   {e.metricLabel && <span class="cmz__metric-label">{e.metricLabel}</span>}
-                  {e.metricNote && <span class="cmz__metric-note">{e.metricNote}</span>}
                 </li>
               ) : (
                 <li class="cmz__metric cmz__pending" data-asset={e.id} data-pending>
@@ -100,6 +106,10 @@ for (const phrase of t.emphasis ?? []) {
               ),
             )}
           </ul>
+          <div class="cmz__results-foot">
+            {metricNotes.map((note) => <p class="cmz__results-line">{note}</p>)}
+            {t.metricsNote && <p class="cmz__results-note">{t.metricsNote}</p>}
+          </div>
         </div>
       )
     }
@@ -199,28 +209,23 @@ for (const phrase of t.emphasis ?? []) {
     }
   }
 
-  /* ---- performance highlights: a restrained row on a hairline, no cards ---------------- */
+  /* ---- performance highlights (V1.3): the scale and centered composition of the
+     results under the Technical Product Marketing film, in this page's palette and
+     type: a centered label, one balanced row of three equal columns (stacked on
+     phones), display-scale figures over short captions, nothing around them ------ */
   .cmz__results {
     display: grid;
-    gap: 1.25rem;
-  }
-
-  .cmz__results-head {
-    display: grid;
-    gap: 0.45rem;
-  }
-
-  .cmz__results-note {
-    max-width: 44rem;
-    margin: 0;
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    color: var(--ink-3);
+    justify-items: center;
+    gap: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    margin-block: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+    text-align: center;
   }
 
   .cmz__metrics {
     display: grid;
-    gap: 1.25rem 2.5rem;
+    gap: clamp(2rem, 1.25rem + 2.5vw, 3rem);
+    width: 100%;
+    max-width: 68rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -229,36 +234,58 @@ for (const phrase of t.emphasis ?? []) {
   .cmz__metric {
     display: grid;
     align-content: start;
-    gap: 0.3rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--line-strong);
+    justify-items: center;
+    gap: 0.7rem;
   }
 
   .cmz__value {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
-    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.375rem);
-    line-height: 1.05;
+    font-size: clamp(2.5rem, 1.6rem + 3vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
     color: var(--heading);
   }
 
   .cmz__metric-label {
-    font-size: var(--text-md);
-    line-height: 1.45;
+    max-width: 16em;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
     color: var(--ink-2);
+    text-wrap: balance;
   }
 
-  .cmz__metric-note {
+  .cmz__results-foot {
+    display: grid;
+    justify-items: center;
+    gap: 0.6rem;
+  }
+
+  .cmz__results-line {
+    max-width: 40rem;
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    color: var(--ink-2);
+    text-wrap: balance;
+  }
+
+  .cmz__results-note {
+    max-width: 44rem;
+    margin: 0;
     font-size: var(--text-sm);
-    line-height: 1.45;
+    line-height: 1.5;
     color: var(--ink-3);
+    text-wrap: balance;
   }
 
-  @media (min-width: 56rem) {
+  @media (min-width: 48rem) {
     .cmz__metrics {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: clamp(1.5rem, 3vw, 3rem);
     }
   }
 
@@ -293,18 +320,12 @@ for (const phrase of t.emphasis ?? []) {
     content: '”';
   }
 
-  /* The four phrases: the accent, over a soft underlay low on the line (each
-     line of a phrase its own). It draws in once as the quotation arrives,
-     then stays; nothing repeats. */
+  /* The four phrases (V1.3): set apart by type alone, the page's deep teal and a
+     slightly heavier weight; no marker, underlay or line. */
   .cmz__em {
     font-style: normal;
+    font-weight: 800;
     color: var(--c-teal);
-    background-image: linear-gradient(rgba(79, 145, 138, 0.2), rgba(79, 145, 138, 0.2));
-    background-repeat: no-repeat;
-    background-position: 0 88%;
-    background-size: 100% 0.36em;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
   }
 
   .cmz__quote figcaption {
@@ -341,15 +362,13 @@ for (const phrase of t.emphasis ?? []) {
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    /* The teal resolves once, phrase after phrase, as the quotation arrives. */
     :global(html.js) .cmz__quote:not(.is-in) .cmz__em {
       color: inherit;
-      background-size: 0% 0.36em;
     }
 
     :global(html.js) .cmz__quote .cmz__em {
-      transition:
-        color 0.7s ease calc(0.55s + var(--e, 0) * 0.18s),
-        background-size 0.9s cubic-bezier(0.45, 0, 0.2, 1) calc(0.55s + var(--e, 0) * 0.18s);
+      transition: color 0.9s ease calc(0.55s + var(--e, 0) * 0.18s);
     }
 
     :global(html.js) .cmz [data-cm-reveal]:not(.is-in) {

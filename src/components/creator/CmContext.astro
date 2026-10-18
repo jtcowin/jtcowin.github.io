@@ -1,17 +1,24 @@
 ---
 /**
- * 06 Program context (Creator Marketing and Partnerships, V1.2): no kicker
+ * 06 Program context (Creator Marketing and Partnerships, V1.3): no kicker
  * (V1.2), John's headline ("Each destination became a campaign in motion.",
  * its closing phrase in the accent) and one paragraph on what he led and
  * helped plan, naming no collaborators: they are credited once, in the
- * credits. No services grid and no list of roles, and no drawn route (V1.2:
- * the network it led into is no longer a ring). The headline rises once into
- * place and the paragraph follows; with reduced motion they are simply there.
+ * credits. V1.3: beneath the paragraph, one smaller, quieter line on the
+ * roster (eight creators, the fields they came from), set apart from the
+ * paragraph rather than as a second paragraph of equal weight: no names,
+ * handles, pictures, follower counts, categories or travel histories (the
+ * creators are named, with their affiliations, in the credits). The creator
+ * network that followed is gone, so the section leads straight into the
+ * campaign atlas. No services grid and no list of roles. The headline rises
+ * once into place and the words follow; with reduced motion they are simply
+ * there.
  */
 import creator from '@data/creator.json';
 import { emphasize } from '@lib/tpm-copy';
 
 const { context: c } = creator;
+if (!c.roster || /@|\bfollowers?\b|https?:/i.test(c.roster)) throw new Error('[creator] the program context carries one roster line, with no handles, links or follower counts');
 const sentences = c.headline.split(/(?<=[.!?])\s+/);
 const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'creator context headline') : [{ text: line, em: false }]));
 ---
@@ -28,7 +35,10 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
         ])
       }
     </h2>
-    <p class="cmx__copy" data-cm-reveal>{c.copy}</p>
+    <div class="cmx__words">
+      <p class="cmx__copy" data-cm-reveal>{c.copy}</p>
+      <p class="cmx__roster" data-cm-reveal>{c.roster}</p>
+    </div>
   </div>
 </section>
 
@@ -59,12 +69,28 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
     color: var(--c-teal);
   }
 
-  .cmx__copy {
+  .cmx__words {
+    display: grid;
+    gap: clamp(1rem, 0.8rem + 0.6vw, 1.4rem);
     max-width: 44rem;
+  }
+
+  .cmx__copy {
     margin: 0;
     font-size: var(--text-lg);
     line-height: 1.55;
     color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* The roster line (V1.3): a supporting note under the paragraph, smaller and
+     quieter, not a second paragraph of the same weight. */
+  .cmx__roster {
+    max-width: 36rem;
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.55;
+    color: var(--ink-3);
     text-wrap: pretty;
   }
 
@@ -75,13 +101,13 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
       align-items: end;
     }
 
-    .cmx__copy {
+    .cmx__words {
       padding-bottom: 0.4rem;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    :global(html.js) .cmx__copy:not(.is-in) {
+    :global(html.js) :is(.cmx__copy, .cmx__roster):not(.is-in) {
       opacity: 0;
       transform: translate3d(0, 0.75rem, 0);
     }
@@ -90,6 +116,12 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
       transition:
         opacity 0.8s ease 0.2s,
         transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.2s;
+    }
+
+    :global(html.js) .cmx__roster {
+      transition:
+        opacity 0.8s ease 0.4s,
+        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.4s;
     }
   }
 </style>

@@ -1,5 +1,5 @@
 {
-  "_readme": "Creator Marketing and Partnerships, Version 1.2: the page's words and its media configuration, section by section (src/pages/work/creator-campaigns.astro and src/components/creator/). Version 1.2 is John's delta brief (October 2026) against the deployed Version 1.1: the page stays on John's own work until the credits, the single place where collaborators are named (the hero and program paragraphs and the program ownership name no one else); the program context loses its kicker and takes a new headline and paragraph; the creator network becomes a warped, auto-scrolling portrait field with a stable details area (no category labels); the testimonial transition is out until a complete approved set exists; the atlas loses its kicker; the Trezor Dare Ad gains its assignment, objective and approach, its third highlight reads #2 by reach, its quotation carries four emphasized phrases and its collaboration block is gone; the selected-content library takes a new line, loops a format the reader selects and recuts three edits; the program ownership is three chapters of John's work under a more prominent wave. Everything else is Version 1.1 (the approved copy and the confirmed roster and affiliations). Media slots name asset ids in src/data/assets.json; every slot already holds its final aspect ratio, all of them square or landscape.",
+  "_readme": "Creator Marketing and Partnerships, Version 1.3: the page's words and its media configuration, section by section (src/pages/work/creator-campaigns.astro and src/components/creator/). Version 1.3 is John's delta brief (October 2026) against the deployed Version 1.2: the creator network is gone, with nothing in its place, so the program context (which gains one quieter line on the roster) leads straight into the campaign atlas, and the eight creators and their affiliations appear only in the credits; the Singapore loop is rebuilt around the party-bus game show, high tea on the 56th floor and the city, with one shopping moment and no retail signage; the Mykonos loop gains the aftermovie's Lock In Podcast production moment; the Trezor Dare Ad's performance highlights take the centered, display-scale composition of the Technical Product Marketing results and its quotation's four phrases are set apart by type alone; the ownership wave flows again; the selected-content library gains Podcasts (seven formats) and its creator ads trade Jungle Talk for a Trezor Dare Ad excerpt, and a format the reader selects loops until they select another or leave the section. Everything else is Version 1.2 (and before it Version 1.1: the approved copy and the confirmed roster and affiliations). Media slots name asset ids in src/data/assets.json; every slot already holds its final aspect ratio, all of them square or landscape.",
   "hero": {
     "_hero": "05 Hero: one full-screen landscape composition in layers (the coastal-estate reference, used for the hero only): the sky, the headline, the villa and its palms in front of the headline's lower line, and two palm fronds at the corners, each moving at its own rate as the page scrolls, with a slow drift of their own; reduced motion holds the layers still. The photographs are illustrative stock (Unsplash), credited once, in the credits (V1.1), and never presented as footage from the trips. V1.2: the paragraph names John's ownership only; the collaborators are credited in the credits.",
     "label": "01 / Creator Marketing and Partnerships",
@@ -13,102 +13,14 @@
     }
   },
   "context": {
-    "_context": "06 Program context (V1.2): no kicker; John's headline, its closing phrase in the accent, and one paragraph on what he led and helped plan, naming no collaborators (they are credited in the credits). No services grid, no list of roles and no drawn route (the network it led into is no longer a ring).",
+    "_context": "06 Program context (V1.3): no kicker; John's headline, its closing phrase in the accent, and one paragraph on what he led and helped plan, naming no collaborators (they are credited in the credits); beneath it `roster`, one smaller, quieter line on the eight creators and the fields they came from (V1.3: no names, handles, pictures, follower counts, categories or travel histories). No services grid and no list of roles. The creator network that followed it is gone (V1.3), so the context leads straight into the atlas.",
     "headline": "Each destination became a campaign in motion.",
     "accent": "a campaign in motion.",
-    "copy": "For Bolt Liquidity, each trip brought creators, sponsors, and a production plan together for a few focused days. I led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot planning, approvals, distribution, and reporting, and helped plan the travel, logistics, and production that made each activation possible."
-  },
-  "network": {
-    "_network": "07 Creator network (V1.2): exactly the eight creators John confirmed, each with a display name, handle and confirmed affiliations, their square profile pictures in one continuous field warped across a broad curve in depth: the field travels one way at a slow, constant pace, each portrait entering from beyond the frame, growing as it nears the focal zone and leaving past it, and the creator in the focal zone is the one shown in the details area beside the field (below it on phones). Hovering or focusing a creator eases the field to a stop and shows them; selecting an approaching creator brings them forward to the focal zone (never backward); a pause control holds the field. Reduced motion shows a still gallery, two rows, selected by hand; without JavaScript every creator's details show with their portrait. Nothing on a card is a testimonial, a follower count, a ranking, a category or a destination history; handles are plain text, not links.",
-    "kicker": "Creator network",
-    "headline": "The creators who made it travel.",
-    "sub": "Eight creators spanning streaming, crypto media, ecosystem leadership, entertainment, and community.",
-    "hint": "Select a creator for details.",
-    "creators": [
-      {
-        "id": "eva",
-        "name": "Eva",
-        "handle": "@evaedxn",
-        "asset": "cm-creator-eva",
-        "affiliations": [
-          "Rainbet",
-          "Kick and Twitch streamer"
-        ]
-      },
-      {
-        "id": "the-blonde-broker",
-        "name": "The Blonde Broker",
-        "handle": "@theblondebroker",
-        "asset": "cm-creator-the-blonde-broker",
-        "affiliations": [
-          "VP of Financial Services at Corgi",
-          "Host of The Market Runup",
-          "Not Your Average Bros"
-        ]
-      },
-      {
-        "id": "ashley",
-        "name": "Ashley",
-        "handle": "@AshleyDCan",
-        "asset": "cm-creator-ashley",
-        "affiliations": [
-          "Founder of Daily X News",
-          "Rainbet partner",
-          "AVAX Team 1 collaborator",
-          "Not Your Average Bros"
-        ]
-      },
-      {
-        "id": "shiv",
-        "name": "Shiv",
-        "handle": "@shivst3r",
-        "asset": "cm-creator-shiv",
-        "affiliations": [
-          "Pudgy Penguins advisor",
-          "Bing Bong host"
-        ]
-      },
-      {
-        "id": "raj",
-        "name": "Raj",
-        "handle": "@RajPatel",
-        "asset": "cm-creator-raj",
-        "affiliations": [
-          "Head of Ecosystem at Abstract"
-        ]
-      },
-      {
-        "id": "arcanic",
-        "name": "Arcanic",
-        "handle": "@Arcanic",
-        "asset": "cm-creator-arcanic",
-        "affiliations": [
-          "Versus FNF team",
-          "Pump.fun partner"
-        ]
-      },
-      {
-        "id": "caleb",
-        "name": "Caleb",
-        "handle": "@calebrebelo_",
-        "asset": "cm-creator-caleb",
-        "affiliations": [
-          "Sport.fun"
-        ]
-      },
-      {
-        "id": "simon",
-        "name": "Simon",
-        "handle": "@simonrez_",
-        "asset": "cm-creator-simon",
-        "affiliations": [
-          "Growth contributor at Pump.fun"
-        ]
-      }
-    ]
+    "copy": "For Bolt Liquidity, each trip brought creators, sponsors, and a production plan together for a few focused days. I led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot planning, approvals, distribution, and reporting, and helped plan the travel, logistics, and production that made each activation possible.",
+    "roster": "The roster brought together eight creators across streaming, crypto media, ecosystem leadership, entertainment, and community."
   },
   "atlas": {
-    "_atlas": "09 Campaign atlas: one stage that holds still while the reader scrolls through three states, Costa Rica, Singapore and Mykonos, each with its own loop (5 to 10 seconds, silent, landscape, reset with a dissolve), two fragments, color atmosphere, large name, chapter index and concise copy. Wide screens with motion allowed pin it; narrow or short screens, reduced motion and no JavaScript show the three chapters one after another. Counts: creators as the V1.0 roster counted them (6, 7 and 4), content pieces as John gave them in V1.1 (40+, 35+ and 25+). `sponsors` names logo ids in src/data/logos.json. V1.2: no visible kicker; `heading` names the section for assistive technology only (the unused V1.0 `title` is gone).",
+    "_atlas": "09 Campaign atlas: one stage that holds still while the reader scrolls through three states, Costa Rica, Singapore and Mykonos, each with its own loop (5 to 10 seconds, silent, landscape, reset with a dissolve), two fragments, color atmosphere, large name, chapter index and concise copy. Wide screens with motion allowed pin it; narrow or short screens, reduced motion and no JavaScript show the three chapters one after another. Counts: creators as the V1.0 roster counted them (6, 7 and 4), content pieces as John gave them in V1.1 (40+, 35+ and 25+). `sponsors` names logo ids in src/data/logos.json. V1.2: no visible kicker; `heading` names the section for assistive technology only (the unused V1.0 `title` is gone). V1.3: the Singapore loop is rebuilt around the city, the party-bus game show and high tea on the 56th floor (the girls photographing the food, its details, the creators at the table) with one shopping moment and no retail signage, and the Mykonos loop gains the aftermovie's Lock In Podcast production moment between the water and the villa; Costa Rica is unchanged.",
     "heading": "Campaign atlas",
     "factLabels": {
       "creators": "Creators",
@@ -174,7 +86,7 @@
     ]
   },
   "trezor": {
-    "_trezor": "10 Trezor Dare Ad (V1.2): the final video first (Trezor Dare Ad.mp4, with sound, on request), then the assignment, the objective and the approach (John's words), three performance highlights from the creator's own account (compared with that account's preceding three months, never presented as Trezor's total campaign performance; the third is #2 by reach, never most-viewed), and Trezor's feedback (the approved quotation, one continuous quote with four phrases in the accent; `emphasis` lists them, each found once in the quotation). No collaboration block: the credits at the foot of the page keep that record.",
+    "_trezor": "10 Trezor Dare Ad (V1.3): the final video first (Trezor Dare Ad.mp4, with sound, on request), then the assignment, the objective and the approach (John's words), three performance highlights from the creator's own account (compared with that account's preceding three months, never presented as Trezor's total campaign performance; the third is #2 by reach, never most-viewed), set since V1.3 in the centered, display-scale composition of the Technical Product Marketing results (a centered label, one row of three, the percentile and `metricsNote` as quieter lines under it), and Trezor's feedback (the approved quotation, one continuous quote whose four phrases, listed in `emphasis` and each found once in the quotation, are set apart by type alone since V1.3: the deep teal and a slightly heavier weight, no marker). No collaboration block: the credits at the foot of the page keep that record.",
     "kicker": "Featured campaign",
     "title": "Trezor Dare Ad",
     "deck": "A creator-led sponsor integration for Trezor, filmed at the creator house in Costa Rica.",
@@ -213,7 +125,7 @@
     ]
   },
   "library": {
-    "_library": "11 Selected content (V1.2): a library of six edits from across the three trips, one per format, each a curated mini-edit of its own (silent, landscape, 7 to 14 seconds) whose last moment dissolves back into its own opening, so it can repeat with no seam; chosen with simple text tabs and a restrained active line that fills as the edit plays. Until the reader chooses, with motion allowed, the library moves on to the next format as each edit ends, round and round (holding while keyboard focus is in the formats); a format the reader selects is pinned: its edit plays from the start and loops until they select another. The reader can pause at any time; it pauses off screen and in a hidden tab. Reduced motion, a data-saving preference or a refused autoplay start nothing: the selected edit waits on its poster and plays through once on request. Without JavaScript the six edits read in turn, each with its own controls. `cues` are the edit's own times (seconds) where each destination takes over, for the place line under the frame.",
+    "_library": "11 Selected content (V1.3): a library of seven edits from across the three trips, one per format, each a curated mini-edit of its own (silent, landscape, 7 to 14 seconds) whose last moment dissolves back into its own opening, so it can repeat with no seam; chosen with simple text tabs and a restrained active line that fills as the edit plays. Until the reader chooses, with motion allowed, the library moves on to the next format as each edit ends, round and round (holding while keyboard focus is in the formats); a format the reader selects is pinned: its edit plays from the start and loops until they select another or leave the section (V1.3), after which the library moves on again. The reader can pause at any time; it pauses off screen and in a hidden tab. Reduced motion, a data-saving preference or a refused autoplay start nothing: the selected edit waits on its poster and plays through once on request. Without JavaScript the seven edits read in turn. V1.3: Podcasts is the seventh format (Max and Caleb's Lock In Podcast, Pool Talk, Jungle Talk and Food Talk), and creator ads trade Jungle Talk for a short Trezor Dare Ad excerpt. `cues` are the edit's own times (seconds) where each destination takes over, for the place line under the frame.",
     "kicker": "Selected content",
     "headline": "One program, many formats.",
     "copy": "See the program move from destination films and creator ads to sponsor integrations and the moments behind the camera.",
@@ -332,11 +244,30 @@
             "place": "Mykonos"
           }
         ]
+      },
+      {
+        "key": "podcasts",
+        "label": "Podcasts",
+        "edit": "cm-library-podcasts",
+        "cues": [
+          {
+            "at": 0.0,
+            "place": "Mykonos"
+          },
+          {
+            "at": 4.98,
+            "place": "Costa Rica"
+          },
+          {
+            "at": 7.37,
+            "place": "Singapore"
+          }
+        ]
       }
     ]
   },
   "ownership": {
-    "_ownership": "12 Program ownership (V1.2): John's working headline, its first sentence above a waterline and its second below it (a more prominent wave, moving once into place and then still), one line on his role and three editorial chapters of his own work: shaping the campaign, directing the production and carrying it to market. No collaborators named here (the credits name them), no list of areas, no rings, no cards or pills, and nothing John did not do (no creator sourcing, legal contracts, solo filming or editing, or sole ownership of travel logistics).",
+    "_ownership": "12 Program ownership (V1.3): John's working headline, its first sentence above a waterline and its second below it (V1.2's more prominent wave and its swell, which since V1.3 flow again: each layer travels to the left at its own slow, even pace, without end and without a visible reset, the swell slower than the wave; still for reduced motion), one line on his role and three editorial chapters of his own work: shaping the campaign, directing the production and carrying it to market. No collaborators named here (the credits name them), no list of areas, no rings, no cards or pills, and nothing John did not do (no creator sourcing, legal contracts, solo filming or editing, or sole ownership of travel logistics).",
     "kicker": "Program ownership",
     "headline": "The experience was visible. The system behind it was not.",
     "above": "The experience was visible.",
@@ -364,7 +295,7 @@
     ]
   },
   "credits": {
-    "_credits": "13 Credits: one system for everyone who made the work, set like a film's closing credits. The team first (V1.1): John Cowin, Maanav Porwal and Bob van der Meer, each with what they owned or collaborated on, word for word from John's brief; then the eight creators, the co-sponsors, the brand and the hero's illustrative photography (credited here only). Since V1.2 the only place on the page that names individual collaborators. Nothing implies John edited, shot or designed the work.",
+    "_credits": "13 Credits: one system for everyone who made the work, set like a film's closing credits. The team first (V1.1): John Cowin, Maanav Porwal and Bob van der Meer, each with what they owned or collaborated on, word for word from John's brief; then the eight creators, each with their confirmed affiliations (V1.3: with the creator network gone, the credits are the one place the roster and its affiliations appear, as `people`; no handles, pictures, follower counts or categories), the co-sponsors, the brand and the hero's illustrative photography (credited here only). Since V1.2 the only place on the page that names individual collaborators. Nothing implies John edited, shot or designed the work.",
     "kicker": "Credits",
     "title": "Many hands, one program.",
     "team": [
@@ -384,7 +315,64 @@
     "rows": [
       {
         "role": "Creators",
-        "names": "Eva, The Blonde Broker, Ashley, Shiv, Raj, Arcanic, Caleb, and Simon"
+        "people": [
+          {
+            "name": "Eva",
+            "affiliations": [
+              "Rainbet",
+              "Kick and Twitch streamer"
+            ]
+          },
+          {
+            "name": "The Blonde Broker",
+            "affiliations": [
+              "VP of Financial Services at Corgi",
+              "Host of The Market Runup",
+              "Not Your Average Bros"
+            ]
+          },
+          {
+            "name": "Ashley",
+            "affiliations": [
+              "Founder of Daily X News",
+              "Rainbet partner",
+              "AVAX Team 1 collaborator",
+              "Not Your Average Bros"
+            ]
+          },
+          {
+            "name": "Shiv",
+            "affiliations": [
+              "Pudgy Penguins advisor",
+              "Bing Bong host"
+            ]
+          },
+          {
+            "name": "Raj",
+            "affiliations": [
+              "Head of Ecosystem at Abstract"
+            ]
+          },
+          {
+            "name": "Arcanic",
+            "affiliations": [
+              "Versus FNF team",
+              "Pump.fun partner"
+            ]
+          },
+          {
+            "name": "Caleb",
+            "affiliations": [
+              "Sport.fun"
+            ]
+          },
+          {
+            "name": "Simon",
+            "affiliations": [
+              "Growth contributor at Pump.fun"
+            ]
+          }
+        ]
       },
       {
         "role": "Co-sponsors",
