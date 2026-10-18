@@ -1,33 +1,34 @@
 ---
 /**
- * 07 Creator network (Creator Marketing and Partnerships, V1.0): exactly the
+ * 07 Creator network (Creator Marketing and Partnerships, V1.1): exactly the
  * eight creators John confirmed, their square profile pictures (never a
  * profile screenshot) traveling one way, slowly, around a curved path in depth:
  * an ellipse seen from slightly above, the nearest card largest and on top,
  * the farthest smaller and fainter, each with a small tilt of its own (the
  * reference recording's depth on the custom-spaces curve). There is nothing to
  * drag and no control to reverse it. The section's heading sits at the center
- * of the ring; hovering, focusing or selecting a creator puts their name,
- * affiliations and destinations there instead (selecting holds them), and the
+ * of the ring; hovering, focusing or selecting a creator puts their display
+ * name, handle and affiliations there instead (selecting holds them), and the
  * ring eases to a stop meanwhile. Nothing on a card is a testimonial, a
- * follower count or a ranking, and the affiliations are John's confirmed ones,
- * stated plainly.
+ * follower count, a ranking or a destination history (V1.1 removed the
+ * destinations), the affiliations are John's confirmed ones, stated plainly,
+ * and the handles are plain text, not links.
  *
  * Every card's details are in the page for assistive technology (each card
  * names its details), and narrow screens show the eight as a plain list with
  * everything visible, so nothing depends on hover. The ring is an
  * enhancement: without JavaScript wider screens show the same list, four
  * across. Reduced motion holds the ring still (the arrangement below); the
- * category label is a V1 placeholder (development only) until John confirms
+ * category label is a placeholder (development only) until John confirms
  * one. Motion: src/lib/cm-motion.ts (mountNetwork).
  */
 import { Image } from 'astro:assets';
 import creator from '@data/creator.json';
 import { getAsset, resolveImage, SHOW_PLACEHOLDERS } from '@lib/assets';
 
-const { network: n, atlas } = creator;
+const { network: n } = creator;
 if (n.creators.length !== 8) throw new Error(`[creator] the network shows exactly eight creators (found ${n.creators.length})`);
-const places = Object.fromEntries(atlas.destinations.map((d) => [d.key, d.name]));
+for (const c of n.creators) if (!/^@\w+$/.test(c.handle ?? '')) throw new Error(`[creator] ${c.name} needs a handle, written as @handle`);
 const N = n.creators.length;
 // The still arrangement (reduced motion, and the first frame): evenly round the ellipse, the first card nearest.
 const cards = n.creators.map((c, i) => {
@@ -45,7 +46,6 @@ const cards = n.creators.map((c, i) => {
     o: (0.55 + 0.45 * depth).toFixed(3),
     z: Math.round(depth * 100),
     tilt: [-5, 4, -3, 6, -6, 3, -4, 5][i % 8],
-    dest: c.destinations.map((k) => places[k] ?? k),
   };
 });
 ---
@@ -79,20 +79,13 @@ const cards = n.creators.map((c, i) => {
             </button>
             <div class="cmn__info" id={`cmn-${c.id}`} data-cmn-info>
               <p class="cmn__info-name">{c.name}</p>
+              <p class="cmn__handle">{c.handle}</p>
               <ul class="cmn__aff">
                 {c.affiliations.map((a) => (
                   <li>{a}</li>
                 ))}
               </ul>
               {c.category ? <p class="cmn__cat">{c.category}</p> : SHOW_PLACEHOLDERS && <p class="cmn__cat cmn__cat--pending">Placeholder · Category</p>}
-              <p class="cmn__dest">
-                <span class="cmn__dest-label">Traveled to</span>
-                {c.destinations.map((k, j) => (
-                  <span class="cmn__chip" data-place={k}>
-                    {c.dest[j]}
-                  </span>
-                ))}
-              </p>
             </div>
           </li>
         ))
@@ -106,10 +99,6 @@ const cards = n.creators.map((c, i) => {
     position: relative;
     padding-block: 0 clamp(3rem, 6vw, 6rem);
     background: var(--bg);
-    /* Destination colors, used again in the atlas. */
-    --place-costa-rica: #2f7a62;
-    --place-singapore: #b8862b;
-    --place-mykonos: #2c6fae;
   }
 
   /* ---- narrow screens: a plain list, everything visible --------------------------- */
@@ -228,10 +217,19 @@ const cards = n.creators.map((c, i) => {
     color: var(--heading);
   }
 
+  .cmn__handle {
+    margin: 0.2rem 0 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--c-teal);
+    overflow-wrap: anywhere;
+  }
+
   .cmn__aff {
     display: grid;
     gap: 0.15rem;
-    margin: 0.35rem 0 0;
+    margin: 0.45rem 0 0;
     padding: 0;
     list-style: none;
     font-size: 0.875rem;
@@ -253,57 +251,6 @@ const cards = n.creators.map((c, i) => {
     padding: 0.2rem 0.45rem;
     border: 1px dashed var(--line-strong);
     border-radius: 4px;
-  }
-
-  .cmn__dest {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem;
-    margin: 0.55rem 0 0;
-  }
-
-  .cmn__dest-label {
-    width: 100%;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-
-  .cmn__chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.25rem 0.6rem 0.25rem 0.45rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--bg-elev);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    line-height: 1.2;
-    color: var(--ink);
-  }
-
-  .cmn__chip::before {
-    content: '';
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: var(--chip, var(--c-teal));
-  }
-
-  .cmn__chip[data-place='costa-rica'] {
-    --chip: var(--place-costa-rica);
-  }
-
-  .cmn__chip[data-place='singapore'] {
-    --chip: var(--place-singapore);
-  }
-
-  .cmn__chip[data-place='mykonos'] {
-    --chip: var(--place-mykonos);
   }
 
   /* ---- wider screens with JavaScript: the ring (without it, the list below, in four columns) -- */
@@ -406,19 +353,15 @@ const cards = n.creators.map((c, i) => {
       line-height: 0.95;
     }
 
+    :global(html.js) .cmn__detail :global(.cmn__handle) {
+      margin-top: 0.45rem;
+      font-size: var(--text-md);
+    }
+
     :global(html.js) .cmn__detail :global(.cmn__aff) {
       justify-items: center;
       margin-top: 0.8rem;
       font-size: var(--text-md);
-    }
-
-    :global(html.js) .cmn__detail :global(.cmn__dest) {
-      justify-content: center;
-      margin-top: 1rem;
-    }
-
-    :global(html.js) .cmn__detail :global(.cmn__dest-label) {
-      text-align: center;
     }
 
     :global(html.js) .cmn__ring {

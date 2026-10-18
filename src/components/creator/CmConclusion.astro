@@ -1,14 +1,15 @@
 ---
 /**
- * 14 The conclusion (Creator Marketing and Partnerships, V1.0): one short
- * idea, that a connected program produced content right away and value that
- * lasted (the headline's last words in the accent), then, set apart, the way on
- * to the next case study in order (NextCase: Technical Product Marketing),
- * then the shared Contact section. The ground carries on from the credits'
- * deep ink and turns, as it goes, to exactly the Contact green, as on the
- * other case studies, and Contact's grid rises out of its lower part
- * (creator-campaigns.astro gives Contact its lead). The build stops if the
- * next case study named in creator.json is missing or out of order.
+ * 14 The conclusion (Creator Marketing and Partnerships, V1.1): one short
+ * idea, that the program kept working after each trip ended (the headline's
+ * second sentence in the accent; V1.1 retired the claim that every trip "paid
+ * off"), then, set apart, the way on to the next case study in order
+ * (NextCase: Technical Product Marketing), then the shared Contact section.
+ * The ground carries on from the credits' deep ink and turns, as it goes, to
+ * exactly the Contact green, as on the other case studies, and Contact's grid
+ * rises out of its lower part (creator-campaigns.astro gives Contact its
+ * lead). The build stops if the next case study named in creator.json is
+ * missing or out of order.
  */
 import { getCollection } from 'astro:content';
 import creator from '@data/creator.json';
@@ -17,7 +18,8 @@ import { withBase } from '@lib/paths';
 import NextCase from '@components/NextCase.astro';
 
 const { conclusion: c } = creator;
-const title = emphasize(c.headline, c.accent, 'creator conclusion headline');
+// One line per sentence (V1.1: two short sentences), the accent on the one that carries it.
+const lines = c.headline.split(/(?<=[.!?])\s+/).map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'creator conclusion headline') : [{ text: line, em: false }]));
 const all = (await getCollection('work')).sort((a, b) => a.data.order - b.data.order);
 const idx = all.findIndex((e) => e.id === 'creator-campaigns');
 const following = idx >= 0 && all.length > 1 ? all[(idx + 1) % all.length] : null;
@@ -31,9 +33,14 @@ if (following && following.id !== next.id) {
 <section class="cme" data-surface="dark" aria-labelledby="cm-conclusion-title">
   <div class="container cme__inner">
     <h2 id="cm-conclusion-title" class="display cme__title" data-cm-reveal>
-      <span class="cm-cut">
-        <span>{title.map(({ text, em }) => (em ? <span class="cme__accent">{text}</span> : text))}</span>
-      </span>
+      {
+        lines.map((line, i) => [
+          i ? ' ' : '',
+          <span class="cm-cut" style={`--k: ${i}`}>
+            <span>{line.map(({ text, em }) => (em ? <span class="cme__accent">{text}</span> : text))}</span>
+          </span>,
+        ])
+      }
     </h2>
     <p class="cme__copy">{c.copy}</p>
     <div class="cme__next">
@@ -70,6 +77,8 @@ if (following && following.id !== next.id) {
   .cme__title {
     margin: 0;
     font-size: clamp(2.5rem, 1.2rem + 3.8vw, 5.25rem);
+    line-height: 1;
+    text-wrap: balance;
   }
 
   .cme__title :global(.cm-cut) {

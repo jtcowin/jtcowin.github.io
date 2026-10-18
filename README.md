@@ -5,13 +5,14 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Creator Marketing and Partnerships Version 1.0 in review.** Version 2.0, Technical Product
-Marketing Version 1.6 and Events and Multimedia Production Version 1.6 are published. Creator Marketing
-and Partnerships Version 1.0 (the first case study's own page, from its layered coastal hero through
-the creator network, the campaign atlas, the Trezor dare, the selected-content montage, the program
-ownership and the credits to its conclusion, and, site-wide, the homepage loader reduced to its viewing
-note and the Events deck's video centered in its card) is committed locally and not pushed until it has
-been reviewed in the browser.
+**Status: Creator Marketing and Partnerships Version 1.1 in review.** Version 2.0, Technical Product
+Marketing Version 1.6, Events and Multimedia Production Version 1.6 and Creator Marketing and
+Partnerships Version 1.0 are published. Creator Marketing and Partnerships Version 1.1 (John's delta
+brief against the deployed Version 1.0: a shorter hero that credits his collaborators, the creators by
+name and handle without destination histories, atlas names that never clip, recut Costa Rica and
+Singapore loops, the Trezor Dare Ad's creator-account highlights, a selected-content library of six
+edits behind editorial tabs, the program ownership in three chapters, a team credit stack and a new
+conclusion) is committed locally and not pushed until it has been reviewed in the browser.
 Placeholders render only in `npm run dev`; production builds hide
 any asset that is not both approved and present, so an unresolved entry never reaches the public site
 (see [Replacing placeholders](#replacing-placeholders)).
@@ -43,20 +44,22 @@ DESKTOP, is held long enough to be read), handing over to the hero in layers. Si
 and Partnerships Version 1.0 the note is its only line (the three phrases are gone, with nothing in
 their place) and the whole sequence takes about 2.9 seconds (Events V1.6: 3.45).
 
-Creator Marketing and Partnerships, the first case study, has its own page since its Version 1.0 (see
-[Creator Marketing and Partnerships, Version 1.0](#creator-marketing-and-partnerships-version-10)),
-in a visual language of its own: open air and daylight, destination atmospheres, a curved path, a
-waterline and closing credits. A full-screen hero layers one coastal scene in depth (the sky, the
-headline set in it, a white villa whose roofline and palm cross the headline, and two palm fronds
-nearest, each moving at its own rate as the page scrolls; illustrative stock photography, credited as
-such); the program context follows, then the eight creators John worked with travelling slowly round a
-curved path (their names, confirmed affiliations and destinations at its center on hover, focus or a
-tap); a campaign atlas that holds still on wide screens while Costa Rica, Singapore and Mykonos take the
-stage in turn, each with its own silent loop, two stills, its figures and its co-sponsors; the Trezor
-dare, its film first and with sound, then Trezor's feedback and the credits; one silent montage of the
-formats the program made; the program ownership across a waterline; closing credits that name everyone
-who made the work; and a conclusion that leads on to Technical Product Marketing before Contact. Three
-creator testimonials, the Trezor brief and its exact results are placeholders in `npm run dev` only.
+Creator Marketing and Partnerships, the first case study, has its own page since its Version 1.0, now
+at Version 1.1 (see [Creator Marketing and Partnerships, Version
+1.1](#creator-marketing-and-partnerships-version-11)), in a visual language of its own: open air and
+daylight, destination atmospheres, a curved path, a waterline and closing credits. A full-screen hero
+layers one coastal scene in depth (the sky, the headline "Creator campaigns, built to travel." set in
+it, a white villa and its palm, and two palm fronds nearest, each moving at its own rate as the page
+scrolls; illustrative stock photography, credited once, in the credits) over a paragraph that names
+John's part and his collaborators, Maanav Porwal and Bob van der Meer; the program context follows,
+then the eight creators John worked with travelling slowly round a curved path (their names, handles
+and confirmed affiliations at its center on hover, focus or a tap); a campaign atlas that holds still
+on wide screens while Costa Rica, Singapore and Mykonos take the stage in turn, each with its own silent
+loop, two stills, its figures and its co-sponsors; the Trezor Dare Ad, its film first and with sound,
+then three creator-account highlights, Trezor's feedback and the credits; a library of six edits, one
+per format, chosen with editorial tabs; the program ownership in three chapters across a waterline;
+closing credits that open with the team; and a conclusion that leads on to Technical Product Marketing
+before Contact. Three creator testimonials and the Trezor brief are placeholders in `npm run dev` only.
 
 Events and Multimedia Production, the third and final case study, has its own page since its Version
 1.0, now at Version 1.6 (see [Events and Multimedia Production, Version
@@ -362,12 +365,12 @@ To replace a placeholder with a real asset:
 
 11. **Creator slots** (`cm-` entries): the three creator testimonials (`cm-testimonial-1` to `-3`: set
     `quote` and `attribution`, then `permission: approved`; the section appears, between the network
-    and the atlas, as soon as one is approved, and never shows Trezor's feedback), the Trezor results
-    (`cm-trezor-metric-1` to `-3`: an exact, verified `value` and its `metricLabel`, then
-    `permission: approved`; `verify.mjs` allows only an exact figure), the Trezor brief (`trezor.brief`
-    in `creator.json`: each `text`), the collaboration and closing credits (`names` in `creator.json`),
-    a creator's `category`, and Mykonos's co-sponsors (`sponsors`, logo ids from `logos.json`). Each is
-    a labeled placeholder in `npm run dev` and absent from a production build until it is filled.
+    and the atlas, as soon as one is approved, and never shows Trezor's feedback), the Trezor brief
+    (`trezor.brief` in `creator.json`: each `text`), the Trezor collaboration rows still without names
+    (`trezor.credits`, `names`), and a creator's `category`. Each is a labeled placeholder in `npm run
+    dev` and absent from a production build until it is filled. (Since V1.1 the three Trezor highlights,
+    `cm-trezor-metric-1` to `-3`, are approved and checked word for word, and Mykonos's co-sponsor is
+    Phi Labs.)
 
 Set `permission` to `private-only` on anything that must never render even if a file is present.
 The build will crop real media to the entry's aspect ratio with `object-fit: cover`.
@@ -817,6 +820,174 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Creator Marketing and Partnerships, Version 1.1
+
+John's Creator Marketing and Partnerships V1.1 brief (October 2026) is a delta against the deployed
+Version 1.0: only what it changes changed, and everything else (the visual system, the network's ring,
+the atlas's structure, the waterline, the colors, the navigation and Contact) is Version 1.0 as
+described below. No visitor-facing copy uses an em dash.
+
+- **01 to 03 The hero** (`CmHero.astro`, `creator.json`). The headline is "Creator campaigns, built to
+  travel." (the brief's recommended line), and the paragraph reads "I helped lead creator programs
+  across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor
+  coordination, on-site production, and distribution in close collaboration with Maanav Porwal and Bob
+  van der Meer." The layered villa keeps its depth. The two-line headline sits higher than V1.0's three
+  lines (its last line clears the gable; the palm's crown reaches the foot of its last word), and on
+  short, wide screens (a laptop's browser window) the scene drops by up to a fifth of the hero, and past
+  that the type eases down, so the headline always has clear sky under the header (measured from 960 by
+  600 to 2560 by 1440 and on phones). The photo credit is gone from the hero: the illustrative
+  photography is credited once, in the credits. The page's description follows the new paragraph.
+- **04 The program context** (`CmContext.astro`). "A trip is the setting. A program connects
+  everything around it." and one paragraph: John's primary ownership (campaign strategy with
+  co-sponsors, sponsor coordination, creative direction, on-site shoot planning, approvals,
+  distribution and reporting), Maanav Porwal's collaboration (creator and co-sponsor sourcing,
+  negotiations, contracts, travel and logistics) and Bob van der Meer's (concepts, and much of the
+  filming and editing).
+- **05 and 06 The creator network** (`CmNetwork.astro`). "Eight creators spanning streaming, crypto
+  media, ecosystem leadership, entertainment, and community." The participations line, every "Traveled
+  to" label and every destination chip are gone (and the destinations are out of the data). Each creator
+  shows a display name and handle, as plain text: Eva @evaedxn, The Blonde Broker @theblondebroker,
+  Ashley @AshleyDCan, Shiv @shivst3r, Raj @RajPatel, Arcanic @Arcanic, Caleb @calebrebelo_, Simon
+  @simonrez_, with the confirmed affiliations unchanged.
+- **07 Names that never clip** (`CmAtlas.astro`). The destination names are sized against their words
+  column (`22.5cqi`, the longest, Singapore, about 4.15 em wide), so the last letter is always inside it,
+  and on the pinned stage the box that hides a name as it slides keeps 0.16 em below the line for the
+  descenders (the g and p of Singapore, the y of Mykonos) and a little past the last letter; a name set
+  aside moves a whole box away (125%). A browser pass renders each name with and without its clip at ten
+  desktop sizes, 960 by 600 to 2560 by 1440: identical, pixel for pixel.
+- **08 to 10 The destinations** (`creator.json`, `assets.json`). Costa Rica: "A creator house on the
+  Pacific coast where shared moments became destination content, creator-led integrations, and bespoke
+  campaigns produced for co-sponsors.", 40+ content pieces, and its loop recut without the closing shot
+  of a creator running into the surf (a jet ski crossing the bay into the sun in its place, the rhythm
+  and the dissolve reset kept). Singapore: "A crypto game show on a party bus, high tea on the 56th
+  floor, and a shopping spree through the city's luxury malls, designed as a conference activation.",
+  35+ pieces, a longer loop (the city from the air, the party bus pulling up at ION Orchard, Louis
+  Vuitton and Prada, trying on glasses, the high tea room and a dessert) without the shot in a Bolt
+  Liquidity shirt, and a dinner toast in place of the party-bus still with the microphone (the high tea
+  still kept). Mykonos: 25+ pieces, Phi Labs as its co-sponsor (the approved logo, set like the others
+  as one light silhouette on the dark ground, drawn a little taller so its letters match), and the Lock
+  In Podcast recording with Max and Caleb (from `Podcast Still.jpeg`, cropped to 16:9) in place of the
+  catamaran still; its water loop is unchanged.
+- **11 and 12 The Trezor Dare Ad** (`CmTrezor.astro`). Renamed everywhere (heading, film, data and
+  descriptions). After the film, "Performance highlights", framed in one line ("Measured on the
+  creator's own account against that account's preceding three months. These are creator-account
+  results, not Trezor's total campaign performance."), then three figures on a hairline, restrained (no
+  cards, the figures at most 2.4 rem): 524% above the account's average impressions; 2.2 times the
+  account's average total engagement; #2 most-viewed post out of 56, "Ranked in the 98th percentile for
+  reach during the sample period." No raw totals anywhere. Trezor's feedback and its attribution stay.
+- **13 to 15 Selected content** (`CmLibrary.astro`, `mountLibrary` in `cm-motion.ts`; the montage and its
+  pill list are retired). Six formats, each with its own edit: Destination films, Creator ads, Game
+  show, Lifestyle, Sponsor integrations and Behind the scenes, chosen with plain text tabs (an index and
+  a label, a hairline under each; the selected one a little stronger, its line filling as the edit
+  plays). The tabs are real controls (`role="tab"`): a click, or Enter or Space, plays that format's edit
+  from the start; the arrow keys, Home and End move between them. With motion allowed, the next format
+  follows when an edit ends, round and round, except while keyboard focus is in the formats; one Pause
+  control under the frame holds it, and it pauses off screen and in a hidden tab. Reduced motion, a
+  data-saving preference or a refused autoplay start nothing: the selected edit waits on its poster and
+  plays once on request. Under the frame, the format and the destination on screen (from each edit's
+  `cues`). Phones get the 960 by 540 edits, the formats two across; without JavaScript the six edits read
+  two across, each with its own controls. The Mykonos podcast is no longer a split-second flash: it
+  closes Behind the scenes with 7.4 seconds of the Lock In Podcast (the two-shot, then each close-up).
+  No excerpt repeats another edit, an atlas loop or a still.
+- **16 The program ownership** (`CmOwnership.astro`). The wave and the headline stay; the nine areas and
+  their rings are gone. "Beneath every post was a collaborative program spanning sourcing, logistics,
+  creative direction, production, distribution, and partner reporting." Then three editorial chapters,
+  as restrained columns in the water (one after another on phones), each with its index, title, words
+  and who owned it: 01 Build the program ("A collaboration between John Cowin and Maanav Porwal"), 02
+  Direct the work ("Led by John Cowin, with Bob van der Meer collaborating on concepts and handling much
+  of the filming and editing"), 03 Carry it to market ("Led by John Cowin as the liaison between creators
+  and co-sponsors"). Their parts line up across the columns (`subgrid`).
+- **17 The credits** (`CmCredits.astro`). The team first, each name with what they owned or
+  collaborated on, word for word: John Cowin, Maanav Porwal, Bob van der Meer. Then the roll: the eight
+  creators; Trezor, Bitrefill, Rayls Labs, and Phi Labs; Bolt Liquidity; and the hero photography
+  (illustrative, not from the trips), its only credit on the page. No generic internal collaborators
+  and no closing note.
+- **18 The conclusion** (`CmConclusion.astro`). "The trip ends. The program keeps working." (one line
+  each, the second in the accent) and "Each activation produced an immediate body of campaign content
+  and strengthened the creator and partner relationships behind the next opportunity. The value
+  continued through distribution, reporting, and ongoing collaboration after everyone went home." The
+  layout and the way on to Technical Product Marketing are unchanged.
+
+**Media and excerpts (V1.1).** The changed media carry new names (`cm-costa-rica-loop-v11.mp4`,
+`cm-singapore-loop-v11.mp4`, `cm-library-*.mp4`), so no browser shows a cached Version 1.0 cut; the
+montage files and the two replaced stills are removed. Loops are 1600 by 900, the edits 1280 by 720
+(960 by 540 for phones), silent H.264 with the index first. Times are in the source files, which stay
+outside the repository.
+
+| Placement | Source file | Start | End | What |
+| --- | --- | --- | --- | --- |
+| Atlas, Costa Rica loop (`cm-costa-rica-loop-v11.mp4`, 6.28 s) | Shiv Costa Rica Vlog.mp4 | 0:09.88 | 0:11.88 | the villa pool from the drone |
+| | Shiv Costa Rica Vlog.mp4 | 0:23.02 | 0:23.86 | the pool and palms |
+| | Costa Rica Aftermovie.mp4 | 1:16.32 | 1:17.00 | the golden-hour beach |
+| | Costa Rica Aftermovie.mp4 | 1:17.04 | 1:18.64 | the group at the water's edge (the original cut kept) |
+| | Shiv Costa Rica Vlog.mp4 | 0:45.76 | 0:47.70 | a jet ski crossing the bay, then into the sun (new; replaces Ashley Costa Rica Vlog.mp4 0:53.25 to 0:54.45) |
+| | Shiv Costa Rica Vlog.mp4 | 0:17.14 | 0:18.10 | palms against the sunset |
+| Atlas, Singapore loop (`cm-singapore-loop-v11.mp4`, 6.30 s) | Mykonos Aftermovie.mp4 | 2:24.60 | 2:27.40 | Marina Bay Sands from the air |
+| | Singapore Spending Spree.mp4 | 0:27.76 | 0:28.43 | the party bus pulling up at ION Orchard (replaces 0:18.00 to 0:19.95) |
+| | Singapore Spending Spree.mp4 | 0:47.36 | 0:48.70 | Louis Vuitton, then Prada |
+| | Singapore Spending Spree.mp4 | 1:15.02 | 1:16.18 | trying on glasses |
+| | Singapore Spending Spree.mp4 | 1:20.62 | 1:21.32 | the high tea room above the city |
+| | Singapore Slippage Ad.mp4 | 0:08.72 | 0:09.84 | a dessert at high tea |
+| Atlas, Singapore still (new) | Singapore Spending Spree.mp4 | 1:41.16 | (frame) | the creators' dinner toast |
+| Atlas, Mykonos still (new) | Creator Videos/Podcast Still.jpeg | | (photograph) | Max and Caleb recording the Lock In Podcast |
+| Library, Destination films (9.12 s) | Costa Rica Aftermovie.mp4 | 0:06.60 | 0:09.62 | the coastline from the air, with its titles |
+| | Costa Rica Aftermovie.mp4 | 0:49.60 | 0:50.46 | the villa pool from above |
+| | Costa Rica Aftermovie.mp4 | 1:53.86 | 1:55.38 | the house from a drone |
+| | Mykonos Aftermovie.mp4 | 0:28.95 | 0:31.45 | through the clouds down to the island |
+| | Mykonos Aftermovie.mp4 | 0:40.95 | 0:42.92 | the infinity pool above the sea |
+| Library, Creator ads (9.97 s) | Bitrefill Pool Ad.mp4 | 0:16.00 | 0:19.40 | the gift-card overlay by the pool |
+| | Trezor Paper Airplane.mp4 | 0:02.75 | 0:04.22 | the paper airplane over the pool |
+| | Trezor Paper Airplane.mp4 | 0:16.90 | 0:18.25 | a creator holding up the Trezor box |
+| | Singapore Slippage Ad.mp4 | 0:00.40 | 0:01.95 | its title over the high tea room |
+| | Singapore Slippage Ad.mp4 | 0:24.10 | 0:24.88 | a creator's line, in its caption |
+| | Singapore Slippage Ad.mp4 | 0:30.15 | 0:31.95 | its closing line at the table |
+| Library, Game show (10.30 s) | Bolt Bus Trailer.mp4 | 0:00.00 | 0:06.48 | the bus arrives; the seven creators introduced, the prize on the line |
+| | Bolt Bus Trailer.mp4 | 0:08.47 | 0:09.43 | the bus on the road |
+| | Singapore Spending Spree.mp4 | 0:14.33 | 0:15.95 | a quiz question, then a correct answer |
+| | Bolt Bus Trailer.mp4 | 0:20.58 | 0:22.20 | the BOLT BUS title |
+| Library, Lifestyle (9.16 s) | Shiv Costa Rica Vlog.mp4 | 0:19.50 | 0:20.95 | a run and jump into the pool |
+| | Singapore Spending Spree.mp4 | 0:49.82 | 0:51.30 | a boutique |
+| | Mykonos Aftermovie.mp4 | 1:46.40 | 1:47.24 | the catamaran's wake |
+| | Costa Rica Aftermovie.mp4 | 0:59.86 | 1:01.50 | morning yoga |
+| | Singapore Spending Spree.mp4 | 1:28.86 | 1:30.10 | an arcade |
+| | Mykonos Aftermovie.mp4 | 1:29.60 | 1:30.38 | a toast on a night out |
+| | Costa Rica Aftermovie.mp4 | 1:32.02 | 1:33.38 | the grill, then dinner at the house |
+| | Costa Rica Aftermovie.mp4 | 1:36.78 | 1:37.54 | a creator at dinner |
+| | Mykonos Aftermovie.mp4 | 1:09.24 | 1:10.45 | dinner on the terrace at sunset |
+| Library, Sponsor integrations (10.16 s) | Costa Rica Aftermovie.mp4 | 0:10.40 | 0:12.40 | the creator house's title card with Bolt, Trezor and Bitrefill |
+| | Costa Rica Aftermovie.mp4 | 0:33.00 | 0:35.60 | the Bitrefill integration, a video call |
+| | Costa Rica Aftermovie.mp4 | 1:42.90 | 1:44.54 | the Trezor integration: the device by the pool, then the app |
+| | Singapore Spending Spree.mp4 | 2:00.76 | 2:02.40 | paying with the ClubZero card |
+| | Mykonos Aftermovie.mp4 | 0:15.30 | 0:16.95 | a Bolt Liquidity invitation to Mykonos |
+| | Mykonos Aftermovie.mp4 | 0:24.55 | 0:26.15 | another invitation, read in a mirror |
+| Library, Behind the scenes (11.64 s) | Ashley Costa Rica Vlog.mp4 | 0:25.50 | 0:26.40 | the crew filming the creators |
+| | Costa Rica Aftermovie.mp4 | 0:00.04 | 0:00.68 | a creator filming on a phone gimbal |
+| | Ashley Costa Rica Vlog.mp4 | 0:38.07 | 0:38.90 | a camera rig and its monitor |
+| | Costa Rica Aftermovie.mp4 | 1:18.90 | 1:20.40 | filming the sunset on a phone |
+| | Costa Rica Aftermovie.mp4 | 1:40.28 | 1:41.10 | the crew with a gimbal |
+| | Mykonos Aftermovie.mp4 | 1:17.88 | 1:18.52 | a camera on set |
+| | Lock In Podcast.mp4 | 1:30.00 | 1:33.20 | the podcast, the two-shot |
+| | Lock In Podcast.mp4 | 2:15.00 | 2:16.80 | the host's close-up |
+| | Lock In Podcast.mp4 | 12:16.00 | 12:18.40 | the guest's close-up |
+
+The Mykonos loop, the other stills and the Trezor film are as in Version 1.0 (below).
+
+**The checks** (`verify.mjs`, "Creator Marketing and Partnerships", now Version 1.1): every changed
+word, word for word, in the page and in `creator.json`; the collaborators named exactly wherever they
+appear; the hero's room under the header and no credit in it, the photographers credited exactly once;
+the eight handles as plain text and no destinations on the network; the atlas's copy, counts and
+co-sponsors, the names sized to their column and their clip leaving room for descenders; the recut
+loops under new names; the Trezor Dare Ad's name everywhere and Trezor spelled one way; the three
+highlights exactly, framed, restrained, and no raw totals; "524%" allowed only as that first highlight
+with its exact label (the guardrail still fails it anywhere else); the library's tabs, panels, edits,
+files, cues and script, and no pills; the ownership's chapters and owners, no areas or cards, and their
+lining up; the team and the roll; the conclusion without a financial claim; no moment used twice across
+the loops, edits and stills, and the removed shots kept out. A mutation run broke each of these
+promises in turn (98 mutations, with a sample of earlier checks) and every one was caught, and a browser
+pass (59 checks) confirmed the behavior: the headline's room at sixteen sizes, the network's names and
+handles, the atlas's names pixel for pixel, the library's selection, keyboard, focus hold, pause, off
+screen, line and places, the chapters lining up, reduced motion, phones and no JavaScript.
 
 ### Creator Marketing and Partnerships, Version 1.0
 

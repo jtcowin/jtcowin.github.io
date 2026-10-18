@@ -56,6 +56,8 @@ export interface AssetEntry {
   // metric
   value?: string;
   metricLabel?: string;
+  /** A metric's qualifying line, set smaller under its label (Creator V1.1: the reach percentile). */
+  metricNote?: string | null;
   // gallery
   slots?: number;
   items?: GalleryItem[];

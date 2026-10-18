@@ -1,14 +1,19 @@
 ---
 /**
- * 10 The Trezor campaign (Creator Marketing and Partnerships, V1.0): led by
- * the final video (Trezor Dare Ad.mp4, with sound, on request), then, in this
- * order and revealed as the reader scrolls: the assignment, the objective, the
- * approach, the exact metrics, Trezor's feedback (one concise attributed
- * quote, the approved one, kept apart from the creator testimonials) and the
- * collaboration credits. Assignment, objective, approach, metrics and the
- * creator, production and editing credits are V1 placeholders: labeled in
- * `npm run dev`, absent from a production build until John supplies them, and
- * a metric only ever states an exact, verified figure.
+ * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.1): led by the
+ * final video (Trezor Dare Ad.mp4, with sound, on request), then, in this
+ * order and revealed as the reader scrolls: the assignment, the objective and
+ * the approach (placeholders: labeled in `npm run dev`, absent from a
+ * production build until John supplies them), three performance highlights,
+ * Trezor's feedback (one concise attributed quote, the approved one, kept
+ * apart from the creator testimonials) and the collaboration credits.
+ *
+ * The highlights (V1.1) are the post's results on the creator's own account,
+ * against that account's preceding three months: a rate, a multiple and a
+ * ranking with its percentile, never a raw total. A note under the label says
+ * what they measure and that they are not Trezor's total campaign
+ * performance. Set as a restrained row of figures and words on a hairline,
+ * not as dashboard cards.
  */
 import creator from '@data/creator.json';
 import { getAsset, isVisible, SHOW_PLACEHOLDERS } from '@lib/assets';
@@ -51,13 +56,17 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
     {
       shownMetrics.length > 0 && (
         <div class="cmz__results" data-cm-reveal>
-          <p class="cmz__label">{t.metricsLabel}</p>
+          <div class="cmz__results-head">
+            <p class="cmz__label">{t.metricsLabel}</p>
+            {t.metricsNote && <p class="cmz__results-note">{t.metricsNote}</p>}
+          </div>
           <ul class="cmz__metrics">
             {shownMetrics.map(({ e, ready }) =>
               ready ? (
                 <li class="cmz__metric" data-asset={e.id}>
                   <strong class="cmz__value">{e.value}</strong>
                   {e.metricLabel && <span class="cmz__metric-label">{e.metricLabel}</span>}
+                  {e.metricNote && <span class="cmz__metric-note">{e.metricNote}</span>}
                 </li>
               ) : (
                 <li class="cmz__metric cmz__pending" data-asset={e.id} data-pending>
@@ -178,16 +187,28 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
     }
   }
 
-  /* ---- results ------------------------------------------------------------------- */
+  /* ---- performance highlights: a restrained row on a hairline, no cards ---------------- */
   .cmz__results {
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
+  }
+
+  .cmz__results-head {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .cmz__results-note {
+    max-width: 44rem;
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--ink-3);
   }
 
   .cmz__metrics {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-    gap: 1.25rem 2rem;
+    gap: 1.25rem 2.5rem;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -195,22 +216,38 @@ const credits = t.credits.filter((c) => c.names || SHOW_PLACEHOLDERS);
 
   .cmz__metric {
     display: grid;
-    gap: 0.35rem;
+    align-content: start;
+    gap: 0.3rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line-strong);
   }
 
   .cmz__value {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
-    font-size: clamp(2.25rem, 1.5rem + 2.2vw, 3.5rem);
-    line-height: 1;
+    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.375rem);
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
     color: var(--heading);
   }
 
   .cmz__metric-label {
-    font-size: var(--text-sm);
+    font-size: var(--text-md);
     line-height: 1.45;
     color: var(--ink-2);
+  }
+
+  .cmz__metric-note {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--ink-3);
+  }
+
+  @media (min-width: 56rem) {
+    .cmz__metrics {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
   /* ---- Trezor's feedback ------------------------------------------------------------ */

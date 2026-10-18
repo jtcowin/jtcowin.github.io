@@ -1,6 +1,6 @@
 ---
 /**
- * 09 Campaign atlas (Creator Marketing and Partnerships, V1.0): one stage for
+ * 09 Campaign atlas (Creator Marketing and Partnerships, V1.1): one stage for
  * the three destinations, Costa Rica, Singapore and Mykonos. On wide screens
  * tall enough to hold it, with motion allowed, the stage holds still while
  * the reader scrolls through three states (src/lib/cm-motion.ts, mountAtlas):
@@ -13,10 +13,17 @@
  * atmosphere. Not a stacked gallery: one main loop and two fragments each,
  * all landscape, all at their own ratio.
  *
- * Copy, counts and co-sponsors: creator.json (the Mykonos co-sponsors are a V1
- * placeholder, development only); media: assets.json. The loops play only
- * while their destination is the one shown and well in view, never for
- * reduced motion or a data-saving preference, each with its own pause
+ * V1.1: the large names never clip. Their size is capped by the width of the
+ * words column (container units), so the longest name, Singapore, always fits
+ * with its last letter whole, and on the pinned stage the box that hides a
+ * name as it slides in and out leaves room below the line for descenders (the
+ * g and p of Singapore, the y of Mykonos). The co-sponsors' marks are set as
+ * one light silhouette on the dark ground, so a dark mark (Phi Labs) reads
+ * like the others.
+ *
+ * Copy, counts and co-sponsors: creator.json; media: assets.json. The loops
+ * play only while their destination is the one shown and well in view, never
+ * for reduced motion or a data-saving preference, each with its own pause
  * control (ev-media.ts, mountLoops).
  */
 import { getImage, Picture, Image } from 'astro:assets';
@@ -40,7 +47,7 @@ const chapters = await Promise.all(
     });
     const sponsors = (d.sponsors ?? []).map((id) => {
       const logo = getLogo(id);
-      return { name: logo.name, image: resolveLogoImage(logo) };
+      return { id, name: logo.name, image: resolveLogoImage(logo) };
     });
     return { ...d, loop, poster: poster?.src, src: withBase(`/media/${loop.file}`), frags, sponsorList: sponsors };
   }),
@@ -101,7 +108,7 @@ const L = atlas.factLabels;
                       <dt>{L.sponsors}</dt>
                       <dd>
                         {c.sponsorList.map((s) =>
-                          s.image ? <Image src={s.image} alt={s.name} height={20} class="cma__logo" loading="lazy" /> : <span class="cma__logo-word">{s.name}</span>,
+                          s.image ? <Image src={s.image} alt={s.name} height={20} class="cma__logo" data-logo={s.id} loading="lazy" /> : <span class="cma__logo-word">{s.name}</span>,
                         )}
                       </dd>
                     </div>
@@ -287,6 +294,8 @@ const L = atlas.factLabels;
     display: grid;
     align-content: start;
     gap: 1.1rem;
+    /* The names are sized against this column (cqi), so the longest always fits. */
+    container-type: inline-size;
   }
 
   .cma__meta {
@@ -306,9 +315,12 @@ const L = atlas.factLabels;
     font-variant-numeric: tabular-nums;
   }
 
+  /* "Singapore", the longest name, is about 4.15em wide: 22.5cqi keeps it, and
+     "Costa Rica" (4.4em) on one line, inside the column at every width. */
   .cma__name {
     margin: 0;
     font-size: clamp(3.4rem, 1.4rem + 6.4vw, 8.75rem);
+    font-size: min(clamp(3.4rem, 1.4rem + 6.4vw, 8.75rem), 22.5cqi);
     line-height: 0.88;
     letter-spacing: -0.02em;
     color: var(--c-bone);
@@ -368,10 +380,17 @@ const L = atlas.factLabels;
     min-height: 1.75rem;
   }
 
+  /* One light silhouette for every mark on the dark ground (Phi Labs' artwork is black). */
   .cma__sponsors :global(.cma__logo) {
     height: 18px;
     width: auto;
+    filter: brightness(0) invert(1);
     opacity: 0.92;
+  }
+
+  /* Phi Labs' letters sit small in a tall frame: drawn a little taller, its capitals match the other marks'. */
+  .cma__sponsors :global(.cma__logo[data-logo='phi-labs']) {
+    height: 22px;
   }
 
   .cma__logo-word {
@@ -576,18 +595,25 @@ const L = atlas.factLabels;
       opacity 0.8s ease;
   }
 
+  /* The box that hides a name as it slides in and out: below the 0.88 line box
+     the descenders reach about 0.1em further (0.2em under the baseline), so it
+     keeps 0.16em of room there, and a little past the last letter; the
+     negative margins keep the layout as it was. Set aside, a name moves a
+     whole box away (125% of its line), descenders and all. */
   .cma.is-pinned .cma__name {
     overflow: hidden;
-    padding-bottom: 0.06em;
-    margin-bottom: -0.06em;
+    padding-bottom: 0.16em;
+    margin-bottom: -0.16em;
+    padding-inline-end: 0.06em;
+    margin-inline-end: -0.06em;
   }
 
   .cma.is-pinned .cma__chapter[data-state='after'] .cma__name-in {
-    transform: translate3d(0, 105%, 0);
+    transform: translate3d(0, 125%, 0);
   }
 
   .cma.is-pinned .cma__chapter[data-state='before'] .cma__name-in {
-    transform: translate3d(0, -105%, 0);
+    transform: translate3d(0, -125%, 0);
   }
 
   .cma.is-pinned .cma__chapter:not([data-state='active']) :is(.cma__meta, .cma__copy, .cma__facts) {

@@ -1,0 +1,441 @@
+---
+/**
+ * 11 Selected content (Creator Marketing and Partnerships, V1.1): a library
+ * of six edits from across the three trips, one for each format (destination
+ * films, creator ads, the game show, lifestyle, sponsor integrations and the
+ * crew behind the scenes). Each edit is a curated mini-edit of its own,
+ * silent and landscape, 9 to 12 seconds, and no excerpt appears in two of
+ * them (or in an atlas loop or fragment).
+ *
+ * The formats are chosen with plain text tabs (role="tablist"), an index
+ * number and a label each, and a restrained active line under the selected
+ * one that fills as its edit plays: no pills, capsules or chrome. Selecting a
+ * format (a click, or Enter or Space on a focused tab; the arrow keys, Home
+ * and End move between them) plays its edit from the start. With motion
+ * allowed the library moves on to the next format when an edit ends, round
+ * and round, and holds while keyboard focus is in the formats; the reader can
+ * pause it at any time (the control under the frame), and it pauses off
+ * screen and in a hidden tab. Reduced motion, a data-saving preference or a
+ * refused autoplay start nothing: the selected edit waits on its poster and
+ * plays once on request. The line under the frame names the format and the
+ * destination on screen, from the edit's own cue times (creator.json).
+ *
+ * Without JavaScript the six edits read in turn, each under its own heading
+ * with its own controls. Client behavior: src/lib/cm-motion.ts
+ * (mountLibrary); phones get the lighter encodes.
+ */
+import { getImage } from 'astro:assets';
+import creator from '@data/creator.json';
+import { getAsset, isSlotReady, resolveImage } from '@lib/assets';
+import { withBase } from '@lib/paths';
+import Icon from '@components/Icon.astro';
+
+const { library: l } = creator;
+const PLACES = ['Costa Rica', 'Singapore', 'Mykonos'];
+if (l.formats.length !== 6) throw new Error(`[creator] the library holds six formats (found ${l.formats.length})`);
+const formats = await Promise.all(
+  l.formats.map(async (f, i) => {
+    const e = getAsset(f.edit);
+    if (!isSlotReady(e) || e.type !== 'video') throw new Error(`[creator] the ${f.label} edit needs an approved video (${f.edit})`);
+    const cues = f.cues;
+    if (!cues.length || cues[0].at !== 0 || cues.some((c, k) => (k && c.at <= cues[k - 1].at) || c.at >= (e.duration ?? 0) || !PLACES.includes(c.place))) {
+      throw new Error(`[creator] the ${f.label} edit's cues run in order from 0 within the edit, each at one of the three destinations`);
+    }
+    const still = resolveImage(e);
+    const poster = still ? await getImage({ src: still, width: Math.min(1280, still.width), format: 'webp', quality: 80 }) : null;
+    return {
+      ...f,
+      e,
+      index: String(i + 1).padStart(2, '0'),
+      poster: poster?.src,
+      src: withBase(`/media/${e.file}`),
+      small: e.fileSmall ? withBase(`/media/${e.fileSmall}`) : null,
+    };
+  }),
+);
+const first = formats[0];
+---
+
+<section class="cml" data-surface="light-return" aria-labelledby="cm-library-title" data-cm-library>
+  <div class="container cml__inner">
+    <header class="cml__head">
+      <p class="cml__kicker">{l.kicker}</p>
+      <h2 id="cm-library-title" class="display cml__title">{l.headline}</h2>
+      <p class="cml__copy">{l.copy}</p>
+    </header>
+
+    <div class="cml__body">
+      <div class="cml__nav" role="tablist" aria-label={l.label} data-cml-tabs>
+        {
+          formats.map((f, i) => (
+            <button
+              type="button"
+              role="tab"
+              class="cml__tab"
+              id={`cml-tab-${f.key}`}
+              aria-controls={`cml-panel-${f.key}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? '0' : '-1'}
+              data-cml-tab={f.key}
+            >
+              <span class="cml__tab-index">{f.index}</span>
+              <span class="cml__tab-label">{f.label}</span>
+              <span class="cml__tab-line" aria-hidden="true">
+                <span class="cml__tab-fill" />
+              </span>
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="cml__stage" data-cml-stage>
+        <div class="cml__frames">
+          {
+            formats.map((f, i) => (
+              <div class:list={['cml__panel', i === 0 && 'is-on is-in']} id={`cml-panel-${f.key}`} data-cml-panel={f.key} data-label={f.label} data-cues={JSON.stringify(f.cues)}>
+                <h3 class="cml__panel-title">{f.label}</h3>
+                <div class="cml__frame">
+                  <video class="cml__video" muted playsinline controls preload="none" poster={f.poster} aria-label={f.e.alt} data-cml-video>
+                    {f.small && <source src={f.small} type="video/mp4" media="(max-width: 47.99rem)" />}
+                    <source src={f.src} type="video/mp4" />
+                  </video>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <div class="cml__bar">
+          <p class="cml__now" aria-hidden="true">
+            <span class="cml__now-format" data-cml-format>{first.label}</span>
+            <span class="cml__now-place" data-cml-place>{first.cues[0].place}</span>
+          </p>
+          <button type="button" class="cml__toggle" data-cml-toggle aria-label="Pause: Selected content" hidden>
+            <span class="cml__ico cml__ico--play">
+              <Icon name="play" size={12} />
+            </span>
+            <span class="cml__ico cml__ico--pause">
+              <Icon name="pause" size={12} />
+            </span>
+            <span class="cml__toggle-text" data-cml-toggle-text>Pause</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cml {
+    padding-block: calc(var(--section-y) * 0.6) var(--section-y);
+    background: var(--bg);
+  }
+
+  .cml__inner {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3.25rem);
+  }
+
+  .cml__head {
+    display: grid;
+    gap: 1rem;
+    max-width: 46rem;
+  }
+
+  .cml__kicker {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-teal);
+  }
+
+  .cml__title {
+    margin: 0;
+    font-size: clamp(2.2rem, 1.3rem + 2.6vw, 3.75rem);
+    line-height: 0.98;
+  }
+
+  .cml__copy {
+    max-width: 34rem;
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  .cml__body {
+    display: grid;
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  /* ---- the formats: plain text tabs, an index and a label, and a line under each ---- */
+  .cml__nav {
+    display: none;
+  }
+
+  :global(html.js) .cml__nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25rem;
+  }
+
+  .cml__tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 0.65rem;
+    width: 100%;
+    padding: 0.8rem 0 0.85rem;
+    text-align: left;
+    color: var(--ink-3);
+    transition: color 0.25s ease;
+  }
+
+  .cml__tab:hover {
+    color: var(--ink-2);
+  }
+
+  .cml__tab[aria-selected='true'] {
+    color: var(--ink);
+  }
+
+  .cml__tab:focus-visible {
+    outline: 2px solid var(--c-teal);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .cml__tab-index {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cml__tab-label {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  /* The line: a hairline under every format; under the selected one a little
+     stronger, and filling with the edit's progress (--fill, set by the script). */
+  .cml__tab-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .cml__tab[aria-selected='true'] .cml__tab-line {
+    height: 2px;
+    background: var(--line-strong);
+  }
+
+  .cml__tab-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--c-teal);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+
+  .cml__tab[aria-selected='true'] .cml__tab-fill {
+    transform: scaleX(var(--fill, 0));
+  }
+
+  /* ---- the stage: one frame, the selected edit on top -------------------------------- */
+  .cml__frames {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .cml__panel {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .cml__panel-title {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .cml__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #050607;
+  }
+
+  .cml__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* With the script: the six edits are layers of one frame; the selected one
+     fades in over the one it replaces, which stays beneath until covered. */
+  :global(html.js) .cml__frames {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #050607;
+    box-shadow: 0 30px 60px -32px rgba(13, 15, 16, 0.5);
+  }
+
+  :global(html.js) .cml__panel {
+    position: absolute;
+    inset: 0;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  :global(html.js) .cml__panel.is-on {
+    opacity: 1;
+  }
+
+  :global(html.js) .cml__panel.is-in {
+    z-index: 1;
+  }
+
+  :global(html.js) .cml__panel:focus-visible {
+    outline: 2px solid var(--c-teal);
+    outline-offset: -2px;
+  }
+
+  :global(html.js) .cml__frame {
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+  }
+
+  /* The tab names the panel; its heading is kept for assistive technology. */
+  :global(html.js) .cml__panel-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---- under the frame: what is on screen, and the one control ------------------------ */
+  .cml__bar {
+    display: none;
+  }
+
+  :global(html.js) .cml__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.25rem;
+    margin-top: 0.85rem;
+  }
+
+  .cml__now {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+    margin: 0;
+    font-size: 0.8125rem;
+  }
+
+  .cml__now-format {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .cml__now-place {
+    color: var(--ink-3);
+  }
+
+  .cml__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.25rem;
+    padding: 0 0.15rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ink-2);
+    transition: color 0.2s ease;
+  }
+
+  .cml__toggle:hover {
+    color: var(--ink);
+  }
+
+  .cml__toggle:focus-visible {
+    outline: 2px solid var(--c-teal);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .cml__ico {
+    display: grid;
+    place-items: center;
+  }
+
+  .cml__ico--pause,
+  .cml__toggle[data-state='playing'] .cml__ico--play {
+    display: none;
+  }
+
+  .cml__toggle[data-state='playing'] .cml__ico--pause {
+    display: grid;
+  }
+
+  /* ---- wide screens: the formats as a column beside a larger frame -------------------- */
+  @media (min-width: 60rem) {
+    .cml__body {
+      grid-template-columns: minmax(12rem, 0.32fr) minmax(0, 1fr);
+      align-items: start;
+      column-gap: clamp(2.5rem, 4.5vw, 4.5rem);
+    }
+
+    /* Without the script: the six edits two across, each under its heading. */
+    :global(html:not(.js)) .cml__body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    :global(html:not(.js)) .cml__frames {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2.25rem clamp(1.5rem, 3vw, 2.5rem);
+    }
+
+    :global(html.js) .cml__nav {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 0.25rem;
+    }
+
+    .cml__tab {
+      padding: 1rem 0 1.05rem;
+    }
+
+    .cml__tab-label {
+      font-size: 1.125rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) .cml__panel,
+    .cml__tab {
+      transition: none;
+    }
+  }
+</style>

@@ -1,17 +1,18 @@
 ---
 /**
- * Creator Marketing and Partnerships, Version 1.0.
+ * Creator Marketing and Partnerships, Version 1.1.
  *
- * The first selected-work case study, built around the programs John ran in
- * Costa Rica, Singapore and Mykonos: 05 the hero (one layered landscape
- * composition), 06 the program context, 07 the creator network (eight
- * creators on a curved path in depth), 08 the testimonial transition (V1
- * placeholders, absent from a production build until approved), 09 the
- * campaign atlas (one stage, three destinations), 10 the Trezor campaign,
- * 11 the selected-content montage, 12 the program ownership, 13 the credits
- * and 14 the conclusion, with the way on to the next case study, then
- * Contact and the footer. (Section numbers follow the V1.0 brief, whose
- * Part I, 01 to 04, adjusts the Events page and the homepage loader.)
+ * The first selected-work case study, built around the programs John helped
+ * lead in Costa Rica, Singapore and Mykonos with Maanav Porwal and Bob van der
+ * Meer: 05 the hero (one layered landscape composition), 06 the program
+ * context, 07 the creator network (eight creators on a curved path in depth),
+ * 08 the testimonial transition (placeholders, absent from a production build
+ * until approved), 09 the campaign atlas (one stage, three destinations), 10
+ * the Trezor Dare Ad, 11 the selected-content library (six formats, one edit
+ * each), 12 the program ownership in three chapters, 13 the credits and 14
+ * the conclusion, with the way on to the next case study, then Contact and
+ * the footer. (Section numbers follow the V1.0 brief; Version 1.1 is John's
+ * delta brief against the deployed Version 1.0.)
  *
  * It keeps the portfolio's type, palette, navigation, buttons and Contact,
  * and speaks its own visual language: open air and daylight, destination
@@ -37,7 +38,7 @@ import CmNetwork from '@components/creator/CmNetwork.astro';
 import CmVoices from '@components/creator/CmVoices.astro';
 import CmAtlas from '@components/creator/CmAtlas.astro';
 import CmTrezor from '@components/creator/CmTrezor.astro';
-import CmMontage from '@components/creator/CmMontage.astro';
+import CmLibrary from '@components/creator/CmLibrary.astro';
 import CmOwnership from '@components/creator/CmOwnership.astro';
 import CmCredits from '@components/creator/CmCredits.astro';
 import CmConclusion from '@components/creator/CmConclusion.astro';
@@ -55,7 +56,7 @@ const d = entry.data;
     <CmVoices />
     <CmAtlas />
     <CmTrezor />
-    <CmMontage />
+    <CmLibrary />
     <CmOwnership />
     <CmCredits />
     <CmConclusion />
@@ -69,13 +70,13 @@ const d = entry.data;
 
 <script>
   import { mountLoops, mountPlayers } from '@lib/ev-media';
-  import { mountHero, mountNetwork, mountAtlas, mountMontage, mountReveals } from '@lib/cm-motion';
+  import { mountHero, mountNetwork, mountAtlas, mountLibrary, mountReveals } from '@lib/cm-motion';
   mountHero();
   mountNetwork();
   mountAtlas();
   mountPlayers();
   mountLoops();
-  mountMontage();
+  mountLibrary();
   mountReveals();
 </script>
 

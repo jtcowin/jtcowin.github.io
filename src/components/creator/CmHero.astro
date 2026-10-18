@@ -1,12 +1,13 @@
 ---
 /**
- * 05 Hero (Creator Marketing and Partnerships, V1.0): one full-screen
+ * 05 Hero (Creator Marketing and Partnerships, V1.1): one full-screen
  * landscape composition in layers, after the coastal-estate reference (and
  * used only here, never again for the destinations). From the back: the sky;
- * the headline, large, set in the sky; the villa, its roofline and the tall
- * palm crossing the headline's last line; two palm fronds at the lower
- * corners, nearest of all; a soft ground fade at the foot, where the label,
- * the approved paragraph and the photo credit sit.
+ * the headline, large, set in the sky; the villa and the tall palm, whose
+ * crown reaches the foot of the headline's last word; two palm fronds at the
+ * lower corners, nearest of all; a soft ground fade at the foot, where the
+ * label and the paragraph sit. On short, wide screens the scene drops a little
+ * so the two lines keep clear sky under the header.
  *
  * Motion: as the page scrolls, each layer moves at its own rate (the sky
  * slowest, then the headline, the villa, the fronds fastest), so the villa
@@ -16,9 +17,10 @@
  * still in its resting state (the layered composition stays); without
  * JavaScript the hero is the same still composition.
  *
- * The photographs are illustrative stock (Unsplash, credited here and in the
- * credits) and are never presented as footage from the trips. The headline is
- * John's V1 placeholder; the paragraph is his approved copy (creator.json).
+ * The photographs are illustrative stock (Unsplash) and are never presented
+ * as footage from the trips; V1.1 credits them once, in the credits at the
+ * foot of the page, not here. The headline and the paragraph are John's V1.1
+ * words (creator.json).
  */
 import { Picture } from 'astro:assets';
 import creator from '@data/creator.json';
@@ -75,7 +77,6 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
     <p class="cmh__label">{hero.label}</p>
     <p class="cmh__copy">{hero.copy}</p>
   </div>
-  <p class="cmh__credit">{hero.credit}</p>
 </section>
 
 <style>
@@ -87,14 +88,22 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
     --ratio: 1.5849;
     --scene-w: max(100vw, calc(var(--hero-h) * var(--ratio)));
     --scene-h: calc(var(--scene-w) / var(--ratio));
-    /* The roofline, from the canvas foot (0.509 of the canvas height), and the
-       headline's size: the roof covers the lower part of its last line. */
+    /* The roofline, from the canvas foot (0.509 of the canvas height). */
     --roof: calc(var(--scene-h) * 0.509);
-    --title-size: clamp(2.9rem, 0.9rem + 6.3vw, 9.75rem);
     /* How far the headline's last line box sits above the roofline (a share of
-       the type size): the gable and the tall palm cross that line, the flat
-       roofs only graze it. */
-    --title-lift: 0.03;
+       the type size). V1.1: the two-line headline ends where the tall palm
+       stands, so it sits higher than V1.0's three lines did: the palm's crown
+       reaches the foot of its last word, in front of it, and the word stays
+       whole; as the page scrolls the villa still rises over the headline. */
+    --title-lift: 0.6;
+    /* Short, wide screens (a laptop's browser window) put the roofline high on
+       the screen, under the header. There the scene drops (its foot below the
+       hero's, at most a fifth of the hero) just enough to keep the two lines in
+       clear sky under the header row, and past that the headline gets smaller:
+       --title-max is the size that fits with the whole drop. */
+    --title-max: calc((var(--hero-h) - var(--roof) + var(--hero-h) * 0.2 - var(--header-row) - 1.25rem) / (1.8 + var(--title-lift)));
+    --title-size: min(clamp(2.9rem, 0.9rem + 6.3vw, 9.75rem), var(--title-max));
+    --drop: clamp(0px, calc(var(--header-row) + 1.25rem + var(--title-size) * (1.8 + var(--title-lift)) - (var(--hero-h) - var(--roof))), calc(var(--hero-h) * 0.2));
     --p: 0;
 
     position: relative;
@@ -136,7 +145,7 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
   .cmh__canvas {
     position: absolute;
     left: 50%;
-    bottom: 0;
+    bottom: calc(-1 * var(--drop));
     width: var(--scene-w);
     aspect-ratio: 3200 / 2019;
     translate: -50% 0;
@@ -181,7 +190,7 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
     position: absolute;
     z-index: 1;
     left: 50%;
-    bottom: calc(var(--roof) + var(--title-lift) * var(--title-size));
+    bottom: calc(var(--roof) - var(--drop) + var(--title-lift) * var(--title-size));
     width: min(calc(100% - 2 * var(--gutter)), 10.6em);
     margin: 0;
     translate: -50% 0;
@@ -190,6 +199,7 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
     line-height: 0.9;
     letter-spacing: -0.015em;
     text-align: center;
+    text-wrap: balance;
     color: #fbfaf7;
     text-shadow: 0 0.02em 0.5em rgba(14, 44, 78, 0.22);
     opacity: calc(1 - var(--p) * 1.35);
@@ -239,17 +249,6 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
     line-height: 1.5;
     color: var(--c-ink-2);
     text-wrap: pretty;
-  }
-
-  .cmh__credit {
-    position: absolute;
-    right: var(--gutter);
-    bottom: 0.85rem;
-    z-index: 4;
-    margin: 0;
-    font-size: 0.6875rem;
-    letter-spacing: 0.01em;
-    color: var(--c-steel-deep);
   }
 
   /* ---- arrival, and the slow drift ------------------------------------------- */
@@ -372,9 +371,10 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
 
   /* ---- narrow screens: the same depth, smaller fronds kept behind the words -- */
   @media (max-width: 47.99rem) {
+    /* (V1.1: the last line clears the gable's peak, so every word reads whole on a phone.) */
     .cmh {
       --title-size: clamp(2.6rem, 1.2rem + 6.2vw, 3.6rem);
-      --title-lift: 0.32;
+      --title-lift: 0.75;
     }
 
     .cmh__title {
@@ -409,11 +409,6 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
       bottom: 2.6rem;
       justify-items: start;
       text-align: left;
-    }
-
-    .cmh__credit {
-      left: var(--gutter);
-      right: auto;
     }
   }
 </style>

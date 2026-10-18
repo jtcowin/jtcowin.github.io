@@ -1,26 +1,39 @@
 ---
 /**
- * 13 Credits (Creator Marketing and Partnerships, V1.0): one system for
+ * 13 Credits (Creator Marketing and Partnerships, V1.1): one system for
  * everyone who made the work, set like a film's closing credits on the deep
- * ground the waterline leads into: the role on one side of a center line, the
- * names on the other (stacked on phones). John's rows name the strategy, the
- * program management, the creative direction and the production
- * coordination; editing, filming and design are credited to the people who
- * did them, and nothing here implies John edited, shot or designed the work.
- * The closing note says so plainly. Rows without names yet (editing, filming
- * and production partners) are V1 placeholders, development only.
+ * ground the waterline leads into. The team first: John Cowin, Maanav Porwal
+ * and Bob van der Meer, each name with what they owned or collaborated on, in
+ * John's words (V1.1, in place of the role rows, the pending editing and
+ * filming rows, the generic internal collaborators and the closing note).
+ * Then the rest of the roll, the role on one side of a center line and the
+ * names on the other (stacked on phones): the eight creators, the co-sponsors
+ * (Trezor, Bitrefill, Rayls Labs and Phi Labs), the brand, and the hero's
+ * illustrative photography, credited here only. Nothing implies John edited,
+ * shot or designed the work.
  */
 import creator from '@data/creator.json';
 import { SHOW_PLACEHOLDERS } from '@lib/assets';
 
 const { credits: c } = creator;
 const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
+if (c.team.length !== 3) throw new Error(`[creator] the credits name the three people behind the program (found ${c.team.length})`);
 ---
 
 <section class="cmc" data-surface="dark" aria-labelledby="cm-credits-title">
   <div class="container cmc__inner">
     <p class="cmc__kicker">{c.kicker}</p>
     <h2 id="cm-credits-title" class="display cmc__title">{c.title}</h2>
+    <dl class="cmc__team">
+      {
+        c.team.map((m) => (
+          <div class="cmc__member" data-cm-reveal>
+            <dt>{m.name}</dt>
+            <dd>{m.role}</dd>
+          </div>
+        ))
+      }
+    </dl>
     <dl class="cmc__roll">
       {
         rows.map((r) => (
@@ -31,7 +44,6 @@ const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
         ))
       }
     </dl>
-    <p class="cmc__note">{c.note}</p>
   </div>
 </section>
 
@@ -67,6 +79,40 @@ const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
     line-height: 1;
   }
 
+  /* ---- the team: a name, then what they owned or collaborated on --------------------- */
+  .cmc__team {
+    display: grid;
+    gap: clamp(1.6rem, 3vw, 2.25rem);
+    width: 100%;
+    max-width: 60rem;
+    margin: 0 0 clamp(2rem, 4vw, 3rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px solid rgba(243, 239, 232, 0.16);
+  }
+
+  .cmc__member {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .cmc__member dt {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2.1rem);
+    line-height: 1.05;
+    color: var(--c-bone);
+  }
+
+  .cmc__member dd {
+    max-width: 36rem;
+    margin: 0 auto;
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
   .cmc__roll {
     display: grid;
     gap: clamp(1.1rem, 2vw, 1.5rem);
@@ -98,7 +144,22 @@ const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
   }
 
   @media (min-width: 48rem) {
-    /* The center line: roles to its left, names to its right. */
+    /* The center line: names (and roles) to its left, what they did (and the names) to its right. */
+    .cmc__member {
+      grid-template-columns: 1fr 1fr;
+      column-gap: 2.5rem;
+      align-items: baseline;
+    }
+
+    .cmc__member dt {
+      text-align: right;
+    }
+
+    .cmc__member dd {
+      margin: 0;
+      text-align: left;
+    }
+
     .cmc__row {
       grid-template-columns: 1fr 1fr;
       column-gap: 2.5rem;
@@ -114,15 +175,6 @@ const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
     }
   }
 
-  .cmc__note {
-    max-width: 44rem;
-    margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
-    font-size: var(--text-md);
-    line-height: 1.6;
-    color: var(--ink-2);
-    text-wrap: pretty;
-  }
-
   /* Authoring only: never in a production build. */
   .cmc__row--pending dd {
     color: var(--ink-3);
@@ -130,12 +182,12 @@ const rows = c.rows.filter((r) => r.names || SHOW_PLACEHOLDERS);
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    :global(html.js) .cmc__row:not(.is-in) {
+    :global(html.js) :is(.cmc__row, .cmc__member):not(.is-in) {
       opacity: 0;
       transform: translate3d(0, 0.9rem, 0);
     }
 
-    :global(html.js) .cmc__row {
+    :global(html.js) :is(.cmc__row, .cmc__member) {
       transition:
         opacity 0.9s ease,
         transform 1s cubic-bezier(0.2, 0.75, 0.2, 1);
