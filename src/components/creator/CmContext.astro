@@ -8,11 +8,24 @@
  * roster (eight creators, the fields they came from), set apart from the
  * paragraph rather than as a second paragraph of equal weight: no names,
  * handles, pictures, follower counts, categories or travel histories (the
- * creators are named, with their affiliations, in the credits). The creator
- * network that followed is gone, so the section leads straight into the
- * campaign atlas. No services grid and no list of roles. The headline rises
- * once into place and the words follow; with reduced motion they are simply
- * there.
+ * creators appear in the credits, by their handles since V1.4). The creator
+ * network that followed is gone, so the section leads straight into the campaign atlas. No services
+ * grid and no list of roles.
+ *
+ * V1.4, one centered editorial introduction in place of the split headline and
+ * paragraph: the headline at the top center in a narrow measure (16ch, the
+ * width at which this face sets it in three balanced lines, "Each destination
+ * / became a campaign / in motion.", four on the narrowest phones), "a
+ * campaign in motion." still in the teal;
+ * the paragraph beneath it at a readable measure (about 46rem); then a short
+ * centered rule and, under it, the roster line, smaller and quieter (no card,
+ * pill, badge or box). More room above and below than V1.3, so it opens the
+ * chapter with confidence, and an ordinary section end straight into Costa
+ * Rica. On phones the headline stays centered and the paragraph and the roster
+ * line set left, where centered lines would be hard to scan, in the same
+ * order. The headline rises into place first, the paragraph follows with a
+ * short upward fade and the roster line comes last; with reduced motion they
+ * are simply there.
  */
 import creator from '@data/creator.json';
 import { emphasize } from '@lib/tpm-copy';
@@ -43,22 +56,29 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
 </section>
 
 <style>
+  /* One centered editorial composition (V1.4), with more room around it than V1.3's
+     split layout, ending in an ordinary section end straight into the atlas. */
   .cmx {
     position: relative;
-    padding-block: calc(var(--section-y) * 0.9) clamp(2.5rem, 6vw, 4rem);
+    padding-block: calc(var(--section-y) * 1.15) clamp(4rem, 3rem + 4vw, 6.5rem);
     background: var(--bg);
   }
 
   .cmx__inner {
     display: grid;
-    gap: clamp(1.25rem, 0.9rem + 1.2vw, 2rem);
+    justify-items: center;
+    gap: clamp(1.75rem, 1.2rem + 1.8vw, 3rem);
+    text-align: center;
   }
 
+  /* The headline at the top center in a narrow measure, its lines balanced: three
+     in this face (four on the narrowest phones). */
   .cmx__title {
-    max-width: 20ch;
-    margin: 0;
-    font-size: clamp(2.35rem, 1.2rem + 3.6vw, 5rem);
-    line-height: 0.98;
+    max-width: 16ch;
+    margin: 0 auto;
+    font-size: clamp(2.5rem, 1.25rem + 3.9vw, 5.5rem);
+    line-height: 0.96;
+    text-wrap: balance;
   }
 
   .cmx__title :global(.cm-cut) {
@@ -71,38 +91,48 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
 
   .cmx__words {
     display: grid;
-    gap: clamp(1rem, 0.8rem + 0.6vw, 1.4rem);
-    max-width: 44rem;
+    justify-items: center;
+    width: 100%;
+    max-width: 46rem;
   }
 
   .cmx__copy {
     margin: 0;
     font-size: var(--text-lg);
-    line-height: 1.55;
+    line-height: 1.6;
     color: var(--ink-2);
     text-wrap: pretty;
   }
 
   /* The roster line (V1.3): a supporting note under the paragraph, smaller and
-     quieter, not a second paragraph of the same weight. */
+     quieter, not a second paragraph of the same weight. V1.4: set apart by a
+     short centered rule and a little more space, nothing around it. */
   .cmx__roster {
-    max-width: 36rem;
-    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+    max-width: 34rem;
+    margin: clamp(1.75rem, 1.4rem + 1vw, 2.5rem) 0 0;
     font-size: var(--text-base);
     line-height: 1.55;
     color: var(--ink-3);
     text-wrap: pretty;
   }
 
-  @media (min-width: 64rem) {
-    .cmx__inner {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-      column-gap: clamp(3rem, 6vw, 7rem);
-      align-items: end;
-    }
+  .cmx__roster::before {
+    content: '';
+    width: 2.5rem;
+    height: 1px;
+    background: var(--line-strong);
+  }
 
-    .cmx__words {
-      padding-bottom: 0.4rem;
+  /* Phones: the headline stays centered; the paragraph and the roster line set
+     left, the same order. */
+  @media (max-width: 39.99rem) {
+    .cmx__words,
+    .cmx__roster {
+      justify-items: start;
+      text-align: left;
     }
   }
 
@@ -114,14 +144,14 @@ const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line,
 
     :global(html.js) .cmx__copy {
       transition:
-        opacity 0.8s ease 0.2s,
-        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.2s;
+        opacity 0.8s ease 0.25s,
+        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.25s;
     }
 
     :global(html.js) .cmx__roster {
       transition:
-        opacity 0.8s ease 0.4s,
-        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.4s;
+        opacity 0.8s ease 0.5s,
+        transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1) 0.5s;
     }
   }
 </style>

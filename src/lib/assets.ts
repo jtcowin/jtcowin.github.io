@@ -56,6 +56,8 @@ export interface AssetEntry {
   // metric
   value?: string;
   metricLabel?: string;
+  /** What a screen reader says in place of `value`, where the figure's symbol would be read aloud ("2.2x"). */
+  metricSpoken?: string;
   /** A metric's qualifying line, set smaller under its label (Creator V1.1: the reach percentile). */
   metricNote?: string | null;
   // gallery

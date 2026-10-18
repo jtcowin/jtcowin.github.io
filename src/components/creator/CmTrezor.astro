@@ -1,6 +1,6 @@
 ---
 /**
- * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.3): led by the
+ * 10 Trezor Dare Ad (Creator Marketing and Partnerships, V1.4): led by the
  * final video (Trezor Dare Ad.mp4, with sound, on request), then, in this
  * order and revealed as the reader scrolls: the assignment, the objective and
  * the approach (John's words, V1.2: a lifestyle-led creative idea that
@@ -9,17 +9,20 @@
  * quotation and its attribution).
  *
  * The highlights (V1.1) are the post's results on the creator's own account,
- * against that account's preceding three months: a rate, a multiple and a
- * ranking with its percentile (V1.2: #2 by reach out of 56 posts, never
- * "most-viewed"), never a raw total. V1.3 gives them the scale and the
+ * measured against its preceding 56 posts (V1.4): a rate, a multiple (V1.4:
+ * "2.2x", which a screen reader hears as "2.2 times") and a ranking with its
+ * percentile (V1.2: #2 by reach out of 56 posts, never "most-viewed"), never
+ * a raw total. V1.3 gives them the scale and the
  * centered composition of the results under the Technical Product Marketing
  * film (TpmCampaign.astro), in this page's own palette and type: the label
  * centered above one balanced row of three equal columns (stacked on phones),
  * each a display-scale figure over a short caption, centered, with generous
  * space and nothing around them (no cards, tiles, pills, shadows, lines or
- * dashboard chrome). The percentile and the note on what the figures measure
- * (creator-account results, not Trezor's total campaign performance) follow
- * as quieter centered lines under the row, so the three columns stay even.
+ * dashboard chrome). The percentile and the note on what the figures were
+ * measured against follow as quieter centered lines under the row, so the
+ * three columns stay even (V1.4: the note is one sentence, "Measured on the
+ * creator's account against its preceding 56 posts."; the sentence calling
+ * them creator-account results is gone).
  *
  * V1.3: four phrases inside the one continuous quotation (creator.json
  * `emphasis`) are set apart by type alone: the page's deep teal and a
@@ -95,7 +98,16 @@ for (const phrase of t.emphasis ?? []) {
             {shownMetrics.map(({ e, ready }) =>
               ready ? (
                 <li class="cmz__metric" data-asset={e.id}>
-                  <strong class="cmz__value">{e.value}</strong>
+                  <strong class="cmz__value">
+                    {e.metricSpoken ? (
+                      <>
+                        <span aria-hidden="true">{e.value}</span>
+                        <span class="sr-only">{e.metricSpoken}</span>
+                      </>
+                    ) : (
+                      e.value
+                    )}
+                  </strong>
                   {e.metricLabel && <span class="cmz__metric-label">{e.metricLabel}</span>}
                 </li>
               ) : (

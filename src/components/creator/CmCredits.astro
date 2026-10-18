@@ -1,31 +1,31 @@
 ---
 /**
- * 13 Credits (Creator Marketing and Partnerships, V1.3): one system for
+ * 13 Credits (Creator Marketing and Partnerships, V1.4): one system for
  * everyone who made the work, set like a film's closing credits on the deep
  * ground the waterline leads into. The team first: John Cowin, Maanav Porwal
  * and Bob van der Meer, each name with what they owned or collaborated on, in
  * John's words (V1.1, in place of the role rows, the pending editing and
  * filming rows, the generic internal collaborators and the closing note).
  * Then the rest of the roll, the role on one side of a center line and the
- * names on the other (stacked on phones): the eight creators, each with their
- * confirmed affiliations (V1.3: since the creator network is gone, the
- * credits are the one place the roster and its affiliations appear; no
- * handles, pictures, follower counts or categories), the co-sponsors
- * (Trezor, Bitrefill, Rayls Labs and Phi Labs), the brand, and the hero's
- * illustrative photography, credited here only. Nothing implies John edited,
- * shot or designed the work.
+ * names on the other (stacked on phones): the eight creators, by their public
+ * X handles only (V1.4, in place of V1.3's names and affiliations: no
+ * employers, partnerships, projects, descriptors, follower counts or travel
+ * histories; plain text, no links, icons or social cards; since the creator
+ * network is gone, the credits are the one place the roster appears), the
+ * co-sponsors (Trezor, Bitrefill, Rayls Labs and Phi Labs), the brand, and
+ * the hero's illustrative photography, credited here only. Nothing implies
+ * John edited, shot or designed the work.
  */
 import creator from '@data/creator.json';
 import { SHOW_PLACEHOLDERS } from '@lib/assets';
 
 const { credits: c } = creator;
-type Person = { name: string; affiliations: string[] };
-type Row = { role: string; names?: string | null; people?: Person[] };
-const rows = (c.rows as Row[]).filter((r) => r.names || r.people?.length || SHOW_PLACEHOLDERS);
+type Row = { role: string; names?: string | null; handles?: string[] };
+const rows = (c.rows as Row[]).filter((r) => r.names || r.handles?.length || SHOW_PLACEHOLDERS);
 if (c.team.length !== 3) throw new Error(`[creator] the credits name the three people behind the program (found ${c.team.length})`);
-const creators = rows.find((r) => r.people);
-if (!creators || creators.people?.length !== 8 || creators.people.some((p) => !p.name || !p.affiliations.length || /@/.test(p.name + p.affiliations.join(' ')))) {
-  throw new Error('[creator] the credits carry the eight creators, each with their affiliations and no handles');
+const creators = rows.find((r) => r.handles);
+if (!creators || creators.handles?.length !== 8 || creators.handles.some((h) => !/^@[A-Za-z0-9_]{1,15}$/.test(h))) {
+  throw new Error('[creator] the credits carry the eight creators by their X handles only (an @, then the handle, nothing else)');
 }
 ---
 
@@ -46,16 +46,13 @@ if (!creators || creators.people?.length !== 8 || creators.people.some((p) => !p
     <dl class="cmc__roll">
       {
         rows.map((r) =>
-          r.people ? (
-            <div class="cmc__row cmc__row--people" data-cm-reveal>
+          r.handles ? (
+            <div class="cmc__row cmc__row--handles" data-cm-reveal>
               <dt>{r.role}</dt>
               <dd>
-                <ul class="cmc__people">
-                  {r.people.map((p) => (
-                    <li class="cmc__person">
-                      <span class="cmc__person-name">{p.name}</span>{' '}
-                      <span class="cmc__person-aff">{p.affiliations.join(', ')}</span>
-                    </li>
+                <ul class="cmc__handles">
+                  {r.handles.map((h) => (
+                    <li class="cmc__handle">{h}</li>
                   ))}
                 </ul>
               </dd>
@@ -168,29 +165,17 @@ if (!creators || creators.people?.length !== 8 || creators.people.some((p) => !p
     text-wrap: balance;
   }
 
-  /* The creators (V1.3): one line each, the name in the roll's type and their
-     affiliations after it, quieter, as a film's credits set a name and a part. */
-  .cmc__people {
+  /* The creators (V1.4): one handle a line, in the roll's type, as plain text. */
+  .cmc__handles {
     display: grid;
-    gap: 0.55rem;
+    gap: 0.4rem;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .cmc__person {
-    text-wrap: balance;
-  }
-
-  .cmc__person-name {
-    font-weight: 600;
-    color: var(--c-bone);
-  }
-
-  .cmc__person-aff {
-    font-size: 0.82em;
-    font-weight: 400;
-    color: var(--ink-2);
+  .cmc__handle {
+    overflow-wrap: anywhere;
   }
 
   @media (min-width: 48rem) {

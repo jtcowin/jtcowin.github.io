@@ -29,7 +29,10 @@
  * expression. The Website chapter that follows starts on its own surface.
  *
  * All of it runs in one sticky stage on wide, tall-enough screens with motion
- * allowed (see tpm-motion.ts). Arriving (V1.3), the whole dark surface rises
+ * allowed (see tpm-motion.ts). Creator Marketing V1.4: once the stage has
+ * pinned and the stack has settled, the whole stack holds together for a short
+ * stretch of scrolling (0.15 of a screen) before it spreads, so it reads as
+ * one object first. Arriving (V1.3), the whole dark surface rises
  * over the held hero from the bottom of the screen, its leading corners
  * rounded until it settles, and the opening fades up 32px into place: the
  * hero's script (TpmHero.astro) sets --lead-r and --rise here as it goes.
@@ -168,12 +171,17 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
     // Lengths in screen heights of scrolling; the stage holds for their sum.
     // 02 runs from the entry to the exit, 03 from its first word to the end of
     // the hold. Each is one number to tune after the browser review.
-    // Creator Marketing V1.2, Part One (no trackpad hiccups): no still stretch at
-    // the entry (V1.6 held the compact stack for 0.15 of a screen, so the first
-    // movement after the hero seemed to do nothing) and a shorter hold at the
-    // end (0.35 of a screen, was 0.75), so the page releases into the Website
-    // chapter without a dead stretch; the pin is 3.55 screens, was 4.1.
+    // Creator Marketing V1.2, Part One (no trackpad hiccups): a shorter hold at
+    // the end (0.35 of a screen, was 0.75), so the page releases into the Website
+    // chapter without a dead stretch. Creator Marketing V1.4, Part Two: once the
+    // frame has pinned and the stack has settled, the stack stays whole for a
+    // short beat of scrolling ('stack', 0.15 of a screen: about half a second at
+    // an ordinary trackpad pace) so it reads as one object before it opens; the
+    // spread then eases in, and every phase after it is as it was. The pin is
+    // 3.7 screens. A phase of the scroll, not a timer: it holds exactly as long
+    // as the reader scrolls through it, and never at the end.
     const PHASES: Array<[string, number]> = [
+      ['stack', 0.15], // the whole stack, held together
       ['spread', 0.5], // the stack opens: the featured spread
       ['rail', 1.45], // the full library moves right to left
       ['exit', 0.4], // the documents and the opening step back
@@ -276,8 +284,9 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
         let opacity = 1;
         if (i < IN_PILE) {
           const pose = PILE[i];
-          // Eased out, so the stack answers the first movement of the scroll.
-          const q = easeOut(clamp((tSpread - i * 0.07) / (1 - (IN_PILE - 1) * 0.07)));
+          // V1.4: eased in and out, so after the held stack the spread begins
+          // smoothly, with no jolt at the end of the hold.
+          const q = smooth(clamp((tSpread - i * 0.07) / (1 - (IN_PILE - 1) * 0.07)));
           x = lerp(G.pile.x - cardW / 2 + pose.dx, sx, q) + offset;
           y = lerp(top + pose.dy, top, q);
           rot = lerp(pose.r, 0, q);
@@ -640,7 +649,7 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
   /* ---- live: one sticky stage ------------------------------------------------------ */
   @media (min-width: 60rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
     .tpm-flow.is-live {
-      height: calc(var(--view-h) * (1 + var(--flow-run, 3.55)));
+      height: calc(var(--view-h) * (1 + var(--flow-run, 3.7)));
       /* Arriving over the hero: the leading edge, rounded until it settles. */
       border-radius: var(--lead-r, 0px) var(--lead-r, 0px) 0 0;
     }

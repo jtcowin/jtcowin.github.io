@@ -6,18 +6,25 @@
  * the left of the screen to the right, a short streak behind it as it gathers
  * speed, while one quiet viewing note, set small at the center ("BEST
  * EXPERIENCED ON DESKTOP"), comes in and holds, fully legible, until the
- * marker arrives. V1.2 (Creator Marketing V1.2, Part One): the note no longer
- * simply appears. Its letters come up one after another, left to right, each
- * rising a fraction of its height out of a soft blur into focus, while the
- * line's tracking settles from open to its resting width; the whole entrance
- * takes 0.6 seconds, then the complete line holds for 1.63 seconds before it
- * leaves. No cursor, sound, bounce, overshoot, scrambling or particles, and
- * nothing flashes. The marker stays the primary motion and keeps its timing.
+ * marker arrives. V1.4 (Creator Marketing V1.4, Part One): the note is coded
+ * into place. It resolves once, left to right: each position, as the leading
+ * edge reaches it, cycles for a moment through a few monospace code glyphs in
+ * the accent, then settles into its letter, which never changes again; the
+ * scramble stays at the edge (two or three positions at a time), and the whole
+ * line is legible 0.74 seconds in, then holds for 1.53 seconds before it
+ * leaves. No cursor, caret, blinking, flashes, tearing, color fringes, scan
+ * lines or particles, nothing after the line has resolved, and no change of
+ * spacing, so a resolved letter never moves. The marker stays the primary
+ * motion: it now gathers speed as it goes (V1.4), setting off at a
+ * controlled, readable pace, quickening through the middle third and covering
+ * the last quarter of the path quickest, arriving at the end at full speed,
+ * with no overshoot, bounce or pause, as the hero comes in; its streak
+ * lengthens with the speed. A pace, not a measure of loading.
  * When the marker reaches the end of its path the note and the path leave,
  * the ground dissolves and the hero comes up in layers (Hero.astro and
  * Header.astro): the photograph, the name, the descriptor, the navigation,
  * then the rule and the arrow, overlapping, in 0.6 seconds. About 2.9 seconds
- * in all, unchanged by V1.2. No percentage: the marker is a pace, not a
+ * in all, unchanged since V1.1. No percentage: the marker is a pace, not a
  * measure, and nothing here claims to count anything.
  *
  * It plays on the homepage only, once per browsing session (the tab's session
@@ -30,7 +37,8 @@
  * preloaded, see index.astro), and scrolling, a click, a tap or a key dismisses
  * it at once. With reduced motion there is no travel and no words: the ground
  * clears in a fifth of a second, straight to the hero (were the note ever shown
- * there, it would only fade in, with no letter-by-letter movement).
+ * there, it would only fade in, with no scramble and no letter-by-letter
+ * movement).
  *
  * The timing lives in custom properties on the document (`--intro-*`, below),
  * which the hero (Hero.astro) and the header (Header.astro) read for their
@@ -41,8 +49,8 @@
 import home from '@data/home.json';
 
 const { note } = home.intro;
-// The note letter by letter (V1.2), word by word so a word never breaks; every
-// letter carries its place in the line for its moment in the entrance.
+// The note letter by letter, word by word so a word never breaks; every letter
+// carries its place in the line for its moment in the resolve (V1.4).
 let at = 0;
 const words = note.split(' ').map((w) => Array.from(w).map((ch) => ({ ch, c: at++ })));
 const letters = at;
@@ -115,6 +123,45 @@ const letters = at;
     overlay.addEventListener('animationend', (event) => {
       if (event.target === overlay) finish();
     });
+
+    // The note's coded resolve (V1.4). The stylesheet reveals each letter at its
+    // moment (intro-resolve), so the line reads in full even if this never runs;
+    // here, for the moment before it, the position cycles through a few code
+    // glyphs, timed from that same animation (its delay and its clock), so the
+    // two never drift and a paused or background tab pauses both (the stylesheet
+    // also takes each glyph away at its letter's moment, on that same clock, so a
+    // glyph and its letter never show together, even for a frame). Only the
+    // leading edge scrambles; a letter that has resolved is never touched again.
+    // A fixed sequence, not chance: the same every time. Never with reduced
+    // motion (the note is not shown then).
+    if (!root.classList.contains('intro-still')) {
+      const GLYPHS = '<>/_{}[]=+*#01';
+      const STEP = 32; // ms per glyph, about every other frame
+      const glyphMs = parseFloat(getComputedStyle(root).getPropertyValue('--intro-glyph')) || 0;
+      const slots = Array.from(overlay.querySelectorAll<HTMLElement>('.intro__ch'))
+        .map((ch, i) => ({ ch, i, a: ch.getAnimations?.().find((x) => (x as CSSAnimation).animationName === 'intro-resolve') }))
+        .filter((s) => s.a);
+      const tick = () => {
+        if (!overlay.isConnected || root.classList.contains('intro-skip')) {
+          for (const { ch } of slots) delete ch.dataset.g;
+          return;
+        }
+        let pending = false;
+        for (const { ch, i, a } of slots) {
+          const at = Number(a!.effect?.getTiming().delay) || 0;
+          const t = Number(a!.currentTime) || 0;
+          if (t < at) pending = true;
+          if (t >= at - glyphMs && t < at) {
+            const g = GLYPHS[(i * 5 + Math.floor((t - (at - glyphMs)) / STEP) * 3) % GLYPHS.length];
+            if (ch.dataset.g !== g) ch.dataset.g = g;
+          } else if (ch.dataset.g !== undefined) {
+            delete ch.dataset.g;
+          }
+        }
+        if (pending) requestAnimationFrame(tick);
+      };
+      if (glyphMs > 0 && slots.length) requestAnimationFrame(tick);
+    }
   } else {
     overlay?.remove();
   }
@@ -123,20 +170,20 @@ const letters = at;
 <style>
   /* ---- the timing --------------------------------------------------------------
      On the document, so the hero and the header can read their part of the
-     handoff. The ground alone for a moment; the note arrives (130 ms), settles
-     and holds, fully legible, for 2.1 s while the marker travels from just after
-     the start to the end of its path, arriving as the hold ends: --intro-reveal
-     (2.27 s, where V1.6's run ended at 2.85 s), where the note and the path
-     leave, the ground starts to clear and the hero's layers begin (--intro-hero,
-     read by Hero.astro and Header.astro; they take 0.6 s, so the hero is in
-     place at about 2.9 s), so the ground clears onto nothing. The same on
-     phones, where the note matters most. */
+     handoff. The ground alone for a moment; the note resolves, left to right,
+     in 0.7 s (V1.4) and holds, fully legible, for 1.53 s while the marker
+     travels from just after the start to the end of its path, gathering speed,
+     arriving as the hold ends: --intro-reveal (2.27 s, since V1.1), where the
+     note and the path leave, the ground starts to clear and the hero's layers
+     begin (--intro-hero, read by Hero.astro and Header.astro; they take 0.6 s,
+     so the hero is in place at about 2.9 s), so the ground clears onto
+     nothing. The same on phones, where the note matters most. */
   :global(html.intro-hold) {
     --intro-lead: 40ms; /* the ground alone, before the note */
-    --intro-in: 600ms; /* the note arriving, letter by letter (V1.2; was 130 ms) */
-    --intro-letter: 380ms; /* each letter's own rise into focus */
+    --intro-in: 700ms; /* the note resolving, left to right (V1.4; V1.2's letter rise took 600 ms) */
+    --intro-glyph: 80ms; /* each position's moment of code glyphs before its letter (V1.4) */
     --intro-out: 130ms; /* the note leaving, as the ground starts to clear */
-    --intro-hold: 1630ms; /* the complete note, fully legible (V1.2; was 2.1 s, so the sequence keeps its length) */
+    --intro-hold: 1530ms; /* the complete note, fully legible (V1.4; the sequence keeps its length) */
     --intro-go: 120ms; /* the marker sets off */
     --intro-clear: 400ms; /* the ground dissolving */
 
@@ -288,11 +335,14 @@ const letters = at;
   }
 
   /* ---- the motion ---------------------------------------------------------------- */
-  /* The note leaving fades promptly as it moves on (V1.6). */
+  /* The note leaving fades promptly as it moves on (V1.6). The marker's run
+     gathers speed (V1.4): about a third of its average pace as it sets off, a
+     doubling through the middle third, the last quarter of the path in the last
+     tenth of the time, arriving at three times the average pace; no overshoot,
+     no bounce and no easing into a pause at the end. */
   :global(html.intro) .intro__stage {
-    --intro-arrive: cubic-bezier(0.22, 1, 0.36, 1);
     --intro-leave: cubic-bezier(0.3, 0.3, 0.6, 1);
-    --intro-run: cubic-bezier(0.37, 0, 0.63, 1);
+    --intro-run: cubic-bezier(0.4, 0.12, 0.82, 0.45);
   }
 
   /* The path and the marker come up with the ground's first moment, and go as
@@ -304,8 +354,8 @@ const letters = at;
   }
 
   /* The marker and its streak, from the left end of the path to the right one,
-     easing in and out (a sine curve, no overshoot); the streak grows with the
-     speed and is gone as the marker settles. */
+     gathering speed (V1.4); the streak lengthens with the speed, longest as the
+     marker arrives, and leaves with the path. */
   :global(html.intro) .intro__run,
   :global(html.intro) .intro__marker {
     animation: intro-travel calc(var(--intro-reveal) - var(--intro-go)) var(--intro-run) var(--intro-go) both;
@@ -315,13 +365,14 @@ const letters = at;
     animation: intro-streak calc(var(--intro-reveal) - var(--intro-go)) linear var(--intro-go) both;
   }
 
-  /* The note (V1.2): its tracking settles from open to its resting width over the
-     entrance while its letters come up one after another, left to right, each
-     rising out of a soft blur into focus; once it has been read it leaves to the
-     right, the way the marker runs, as the ground starts to clear. */
+  /* The note (V1.4): the line is there, at its resting spacing, from the start of
+     the resolve, its letters held back until their moments; each comes in, left to
+     right, when the leading edge has passed it (the script fills the moment before
+     with code glyphs). Once read, the line leaves to the right, the way the marker
+     runs, as the ground starts to clear. */
   :global(html.intro) .intro__note {
     animation:
-      intro-note-in var(--intro-in) var(--intro-arrive) var(--intro-lead) both,
+      intro-fade-in 1ms linear var(--intro-lead) both,
       intro-word-out var(--intro-out) var(--intro-leave) var(--intro-reveal) forwards;
   }
 
@@ -330,14 +381,42 @@ const letters = at;
   }
 
   .intro__ch {
+    position: relative;
     display: inline-block;
   }
 
+  /* Each letter at its moment, in reading order: the edge reaches it, it scrambles
+     for --intro-glyph, it resolves; the last resolves as the entrance ends. A
+     change of color only, so the letter's place never moves. */
   :global(html.intro) .intro__ch {
-    animation: intro-letter-in var(--intro-letter) cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--intro-lead) + var(--c) * (var(--intro-in) - var(--intro-letter)) / max(1, var(--letters) - 1)) both;
+    animation: intro-resolve 1ms linear calc(var(--intro-lead) + var(--c) * (var(--intro-in) - var(--intro-glyph)) / max(1, var(--letters) - 1) + var(--intro-glyph)) both;
   }
 
-  /* Reduced motion never shows the note (above); were it shown, it would only fade. */
+  /* The glyph in a letter's place while it scrambles: a monospace code glyph in the
+     accent, centered on the letter (the letter's own tracking left aside), and only
+     while the script sets one. */
+  .intro__ch::after {
+    content: attr(data-g);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - 0.22em);
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-align: center;
+    color: var(--c-aqua-light);
+    opacity: 0.85;
+  }
+
+  /* The glyph goes at the letter's moment, on the same clock, so the two never
+     show together, not even for a frame while the script catches up. */
+  :global(html.intro) .intro__ch::after {
+    animation: intro-glyph-out 1ms linear calc(var(--intro-lead) + var(--c) * (var(--intro-in) - var(--intro-glyph)) / max(1, var(--letters) - 1) + var(--intro-glyph)) both;
+  }
+
+  /* Reduced motion never shows the note (above); were it shown, it would only fade,
+     with no scramble (the script never runs then). */
   @media (prefers-reduced-motion: reduce) {
     :global(html.intro) .intro__ch {
       animation-name: intro-fade-in;
@@ -383,28 +462,20 @@ const letters = at;
     animation-play-state: paused !important;
   }
 
-  /* The line itself is there from the start of the entrance; its letters bring it in. */
-  @keyframes intro-note-in {
+  /* A letter held back until its moment (V1.4): the color only, so it keeps its place. */
+  @keyframes intro-resolve {
     from {
-      opacity: 1;
-      letter-spacing: 0.34em;
-    }
-    to {
-      opacity: 1;
-      letter-spacing: 0.22em;
+      color: transparent;
     }
   }
 
-  @keyframes intro-letter-in {
+  /* Its glyph, gone at the same moment (V1.4). */
+  @keyframes intro-glyph-out {
     from {
-      opacity: 0;
-      transform: translate3d(0, 0.42em, 0);
-      filter: blur(4px);
+      opacity: 0.85;
     }
     to {
-      opacity: 1;
-      transform: none;
-      filter: blur(0);
+      opacity: 0;
     }
   }
 
@@ -432,19 +503,33 @@ const letters = at;
     }
   }
 
-  /* The streak's length follows the marker's speed on the sine curve: nothing
-     at rest, longest in the middle of the run. */
+  /* The streak's length follows the marker's speed on its accelerating curve
+     (V1.4): short as it sets off, lengthening through the run, longest as it
+     arrives (the speed of --intro-run at each moment, as a share of its last). */
   @keyframes intro-streak {
     0% {
-      transform: scaleX(0);
-      animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+      transform: scaleX(0.1);
     }
-    50% {
-      transform: scaleX(1);
-      animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+    20% {
+      transform: scaleX(0.16);
+    }
+    40% {
+      transform: scaleX(0.23);
+    }
+    60% {
+      transform: scaleX(0.32);
+    }
+    75% {
+      transform: scaleX(0.43);
+    }
+    85% {
+      transform: scaleX(0.55);
+    }
+    92% {
+      transform: scaleX(0.69);
     }
     to {
-      transform: scaleX(0);
+      transform: scaleX(1);
     }
   }
 

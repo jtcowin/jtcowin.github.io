@@ -115,12 +115,10 @@ const forbidden = [
 // else, or in a reworded credit, still fails.
 const STREAM = /<span class="stream"[\s\S]*?<\/span>\s*<\/h1>/g;
 const FOOTER_CREDIT = /(<p class="site-footer__meta[^"]*"[^>]*>)© \d{4} John Cowin — Built end to end\.(<\/p>)/g;
-// One confirmed title is a creator's own, from John's roster for the Creator
-// Marketing and Partnerships network (Version 1.0), not one invented for him:
-// Raj, "Head of Ecosystem at Abstract". It is excised only in that exact form,
-// as a creator's affiliations in the credits (Version 1.3, where the roster now
-// appears), so "Head of" anywhere else still fails.
-const CONFIRMED_TITLE = /(<span class="cmc__person-name"[^>]*>Raj<\/span> <span class="cmc__person-aff"[^>]*>)Head of Ecosystem at Abstract(<\/span>)/g;
+// Creator Marketing and Partnerships V1.4: the credits name the creators by
+// their public X handles only, so the one confirmed creator title that V1.0 to
+// V1.3 excised here (Raj's, among his affiliations in the credits) appears
+// nowhere any more and its exemption is gone: "Head of" anywhere fails.
 // Creator Marketing and Partnerships V1.1 approves one figure that the guardrail
 // above had retired: "524%", only as the Trezor Dare Ad's first creator-account
 // highlight, its value immediately followed by its exact label (the framing note
@@ -130,7 +128,7 @@ const TREZOR_HIGHLIGHT = /(<strong class="cmz__value"[^>]*>)524%(<\/strong><span
 
 for (const f of htmlFiles) {
   const raw = fs.readFileSync(f, 'utf8');
-  const html = raw.replace(STREAM, '').replace(FOOTER_CREDIT, '$1$2').replace(CONFIRMED_TITLE, '$1$2').replace(TREZOR_HIGHLIGHT, '$1$2');
+  const html = raw.replace(STREAM, '').replace(FOOTER_CREDIT, '$1$2').replace(TREZOR_HIGHLIGHT, '$1$2');
   for (const { re, why } of forbidden) {
     const m = html.match(re);
     if (m) failures.push(`[guardrail] ${path.relative(dist, f)} contains "${m[0]}" (${why})`);
@@ -1254,13 +1252,20 @@ if (textOf(norm(docsP[2])) !== DOCS_CONTRIBUTION || norm(tpmData.documentation.c
 if (/Bob/.test(docsP[2])) failures.push("[tpm] 05 does not repeat Bob's name in the contribution");
 if (!/\btpm-case__contribution--center\b/.test(docsP[1])) failures.push('[tpm] the 05 contribution is centered beneath the metadata');
 if (/tpm-display/.test(docsHtml) || !/class="tpm-browser\b/.test(docsHtml)) failures.push('[tpm] 05 reads in a frameless browser frame, not a second device');
-walkCheck(docsHtml, 'documentation', 'bolt-docs-walkthrough.mp4', 'bolt-docs-walkthrough-720.mp4');
-fileCheck('bolt-docs-walkthrough.mp4', 2560, 1440, 9, [28, 35], 'the documentation edit runs 28 to 35 s');
-fileCheck('bolt-docs-walkthrough-720.mp4', 1280, 720, 3, [28, 35], 'the documentation edit runs 28 to 35 s');
+// Creator Marketing V1.4 (04): the documentation walkthrough without the 0.35 s still in the SDK page (21 frames
+// identical to the one before them, between a short scroll and the scroll that follows it), under new names so no
+// browser keeps the older cut; 32.85 s (33.2 before). The website's two pauses and the documentation home's are left:
+// the page's own animation runs through each (see the README).
+walkCheck(docsHtml, 'documentation', 'bolt-docs-walkthrough-v14.mp4', 'bolt-docs-walkthrough-v14-720.mp4');
+fileCheck('bolt-docs-walkthrough-v14.mp4', 2560, 1440, 9, [32.8, 32.9], 'V1.4: the documentation edit runs 32.85 s, the SDK page pause taken out');
+fileCheck('bolt-docs-walkthrough-v14-720.mp4', 1280, 720, 3, [32.8, 32.9], 'V1.4: the documentation edit runs 32.85 s, the SDK page pause taken out');
+for (const old of ['bolt-docs-walkthrough.mp4', 'bolt-docs-walkthrough-720.mp4']) if (fs.existsSync(path.join(root, 'public/media', old))) failures.push(`[tpm] V1.4: the older documentation cut is gone (${old})`);
+const docsWalk = cardManifest.find((x) => x.id === 'tm-docs-walkthrough') || {};
+if (!/V1\.4 takes out the 0\.35 s pause at 0:42\.43 to 0:42\.78 of the take, 21 frames identical to the one before them/.test(docsWalk.source || '') || !/Edited to 32\.85 s/.test(docsWalk.source || '') || docsWalk.file !== 'bolt-docs-walkthrough-v14.mp4' || docsWalk.fileSmall !== 'bolt-docs-walkthrough-v14-720.mp4') failures.push('[tpm] V1.4: the manifest records the documentation pause taken out, and the new length');
 posterAt('bolt-docs-walkthrough-poster.jpg', 2560, 1440, 'the documentation poster (its home page)');
 const chapterItems = [...docsHtml.matchAll(/<li class="tpm-chapter"[^>]*data-start="([\d.]+)"[\s\S]*?<\/li>/g)];
 const chapterTitles = chapterItems.map((m) => textOf((m[0].match(/<h3[^>]*>([\s\S]*?)<\/h3>/) || [, ''])[1]));
-const docsSec = fs.existsSync(path.join(root, 'public/media/bolt-docs-walkthrough.mp4')) ? mp4Seconds(path.join(root, 'public/media/bolt-docs-walkthrough.mp4')) : 0;
+const docsSec = fs.existsSync(path.join(root, 'public/media/bolt-docs-walkthrough-v14.mp4')) ? mp4Seconds(path.join(root, 'public/media/bolt-docs-walkthrough-v14.mp4')) : 0;
 const starts = chapterItems.map((m) => Number(m[1]));
 if (chapterTitles.join(' | ') !== 'Documentation overview | Interactive architecture | Developer SDK') failures.push(`[tpm] the walkthrough's three chapters are Documentation overview, Interactive architecture and Developer SDK (found ${chapterTitles.join(' | ')})`);
 // Introduced as selected views from a broader system: no page count, no
@@ -1583,7 +1588,15 @@ const flowSrc = tpmSrc('TpmFlow.astro');
 const flowPhases = [...((flowSrc.match(/const PHASES: Array<\[string, number\]> = \[([\s\S]*?)\];/) || [, ''])[1]).matchAll(/\['(\w+)',\s*([\d.]+)\]/g)].map((m) => [m[1], Number(m[2])]);
 const flowRun = flowPhases.reduce((s, [, v]) => s + v, 0);
 const flowFallback = Number((flowSrc.match(/var\(--flow-run,\s*([\d.]+)\)/) || [])[1]);
-if (!flowPhases.length || flowPhases[0][0] === 'settle' || flowPhases.some(([k]) => k === 'settle') || (flowPhases.find(([k]) => k === 'hold') || [, 9])[1] > 0.5 || Math.abs(flowRun - flowFallback) > 0.001 || flowRun > 4) failures.push(`[tpm] the Foundation's stage moves from the first pixel of its entry (no still stretch), holds the statement briefly, and releases without a dead stretch (found ${flowPhases.map(([k, v]) => `${k} ${v}`).join(', ')}; ${flowRun} screens, the CSS fallback ${flowFallback})`);
+// Creator Marketing V1.4 (03): once the frame has pinned and the stack has settled, the whole stack holds for a short
+// stretch of scrolling before it spreads (the 'stack' phase, 0.12 to 0.18 of a screen, first), so it reads as one
+// object; a phase of the scroll, not a timer (the script's one timeout is the resize debounce). The spread then eases
+// in and out (smooth), so the hold ends without a jolt; the rail, the exit, the statement and its short hold (half a
+// screen at most) are as they were, with no dead stretch at the release; the pin's length and its CSS fallback agree.
+const flowNames = flowPhases.map(([k]) => k).join(' ');
+const stackHold = (flowPhases.find(([k]) => k === 'stack') || [, 0])[1];
+if (flowNames !== 'stack spread rail exit statement hold' || !(stackHold >= 0.12 && stackHold <= 0.18) || (flowPhases.find(([k]) => k === 'hold') || [, 9])[1] > 0.5 || Math.abs(flowRun - flowFallback) > 0.001 || flowRun > 4) failures.push(`[tpm] V1.4: the Foundation holds its whole stack for 0.12 to 0.18 of a screen once pinned, then spreads, runs its rail, exits, states and releases without a dead stretch (found ${flowPhases.map(([k, v]) => `${k} ${v}`).join(', ')}; ${flowRun} screens, the CSS fallback ${flowFallback})`);
+if (!/const tSpread = phase\(p, 'spread'\);/.test(flowSrc) || !/const q = smooth\(clamp\(\(tSpread - i \* 0\.07\) \/ \(1 - \(IN_PILE - 1\) \* 0\.07\)\)\);/.test(flowSrc) || (flowSrc.match(/setTimeout/g) || []).length !== 1 || !/addEventListener\('resize', \(\) => \{\s*window\.clearTimeout\(t\);\s*t = window\.setTimeout/.test(flowSrc)) failures.push('[tpm] V1.4: the stack spreads from the end of its hold, eased in and out, driven by the scroll alone (no timer)');
 if (!/const fade = span\(p, 0(?:\.0\d)?, [\d.]+\);/.test(tpmSrc('TpmHero.astro')) || !/const lift = easeOut\(p\);/.test(tpmSrc('TpmHero.astro'))) failures.push('[tpm] the hero answers the very first movement of the scroll: its fade starts at once and its lift eases out from the start');
 for (const [f, re] of [['TpmWebsite.astro', /addRise\(/], ['TpmDocs.astro', /addRise\(/], ['TpmCampaign.astro', /addRise\(/]]) {
   const s = tpmSrc(f);
@@ -2475,6 +2488,29 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const copyRule = cmRules(/^\.cmx__copy$/).filter((r) => !r.at).map((r) => r.body).join(';');
   if (!/font-size:\s*var\(--text-(?:base|sm)\)/.test(rosterRule) || !/font-size:\s*var\(--text-lg\)/.test(copyRule) || !/color:\s*var\(--ink-3\)/.test(rosterRule) || !/color:\s*var\(--ink-2\)/.test(copyRule)) failures.push('[creator] V1.3: the roster line is smaller and quieter than the paragraph it supports');
   if (/<svg\b|cmx__route|data-cmx-route/.test(ctx) || cmRules(/\.cmx__route/).length) failures.push('[creator] V1.2: no drawn route leads out of the program context (the network is no longer a ring)');
+  // V1.4 (08): one full-width, centered editorial composition in place of the split headline and paragraph: the
+  // headline at the top center in a narrow, balanced measure (12ch to 16ch; this face sets it in three lines at 16ch),
+  // the paragraph beneath it at a readable measure (44 to 50rem), then a short centered rule (a 1px line no wider than
+  // 3rem) and the roster line, smaller and quieter; no card, pill, badge or box, and no two-column grid at any width.
+  // On phones the paragraph and the roster line set left in the same order while the headline stays centered. The
+  // headline rises first, the paragraph follows with a short upward fade and the roster line comes last, only with
+  // motion allowed; nothing in it takes focus.
+  const ctxInner = cmRules(/^\.cmx__inner$/);
+  const ctxTitle = cmRules(/^\.cmx__title$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const ctxWordsRule = cmRules(/^\.cmx__words$/).filter((r) => !r.at).map((r) => r.body).join(';');
+  const ctxTitleCh = Number((ctxTitle.match(/max-width:\s*([\d.]+)ch/) || [])[1]);
+  const ctxWordsRem = Number((ctxWordsRule.match(/max-width:\s*([\d.]+)rem/) || [])[1]);
+  const ctxRuleLine = cmRules(/^\.cmx__roster::?before$/).map((r) => r.body).join(';');
+  const ctxPhone = (re) => cmRules(re).filter((r) => /max-width:\s*39\.99rem|width\s*<=\s*39\.99rem/.test(r.at)).map((r) => r.body).join(';');
+  if (!ctxInner.some((r) => !r.at && /display:\s*grid/.test(r.body) && /justify-items:\s*center/.test(r.body) && /text-align:\s*center/.test(r.body)) || ctxInner.some((r) => /grid-template-columns|grid-template-areas/.test(r.body)) || cmRules(/^\.cmx__(?:title|words|copy|roster)$/).some((r) => /grid-column|grid-area/.test(r.body))) failures.push('[creator] V1.4: the program introduction is one centered composition, not a split layout, at every width');
+  if (!(ctxTitleCh >= 12 && ctxTitleCh <= 16) || !/text-wrap:\s*balance/.test(ctxTitle) || !/margin:\s*0 auto/.test(ctxTitle) || !(ctxWordsRem >= 44 && ctxWordsRem <= 50)) failures.push(`[creator] V1.4: the headline sits at the top center in a narrow, balanced measure (12ch to 16ch, found ${ctxTitleCh}ch) and the paragraph beneath it at a readable one (44 to 50rem, found ${ctxWordsRem}rem)`);
+  if (!/content:\s*(?:''|"")/.test(ctxRuleLine) || !/height:\s*1px/.test(ctxRuleLine) || !(Number((ctxRuleLine.match(/width:\s*([\d.]+)rem/) || [])[1]) <= 3) || !/background:\s*var\(--line(?:-strong)?\)/.test(ctxRuleLine) || cmRules(/^\.cmx(?:__inner|__words|__copy|__roster)?$/).some((r) => /box-shadow|border(?:-[\w-]+)?\s*:|border-radius|outline|background-color/.test(r.body) || (/background:/.test(r.body) && !/background:\s*var\(--bg\)/.test(r.body)))) failures.push('[creator] V1.4: a short centered rule sets the roster line apart, with no card, pill, badge or box');
+  if (!/text-align:\s*left/.test(ctxPhone(/^\.cmx__words$/)) || !/text-align:\s*left/.test(ctxPhone(/^\.cmx__roster$/)) || cmRules(/^\.cmx__title$/).some((r) => r.at && /text-align:\s*(?:left|start)/.test(r.body))) failures.push('[creator] V1.4: on phones the paragraph and the roster line set left, the headline stays centered');
+  const revealDelay = (re) => Number((cmRules(re).filter((r) => MOTION_OK.test(r.at)).map((r) => r.body).join(';').match(/transition:\s*opacity\s+[\d.]+m?s\s+(?:(?:ease(?:-in|-out|-in-out)?|linear)\s+)?([\d.]+)s/) || [])[1]);
+  const copyDelay = revealDelay(/^html\.js \.cmx__copy$/);
+  const rosterDelay = revealDelay(/^html\.js \.cmx__roster$/);
+  if (!(copyDelay > 0 && rosterDelay > copyDelay) || !/<h2 id="cm-context-title"[^>]*data-cm-reveal/.test(ctx) || !/<p class="cmx__copy"[^>]*data-cm-reveal/.test(ctx) || !/<p class="cmx__roster"[^>]*data-cm-reveal/.test(ctx) || !CSS_RULES.some((r) => MOTION_OK.test(r.at) && /:is\(\.cmx__copy,\s*\.cmx__roster\):not\(\.is-in\)/.test(bare(r.sel)) && /opacity:\s*0/.test(r.body) && /translate/.test(r.body))) failures.push(`[creator] V1.4: the headline rises first, the paragraph follows with a short upward fade, the roster line last, only with motion allowed (delays ${copyDelay} s and ${rosterDelay} s)`);
+  if (/<(?:a|button|input|select|textarea)\b|tabindex=/.test(ctx)) failures.push('[creator] V1.4: the program introduction is not interactive');
   // John's collaborators (V1.2): named only in the credits, there exactly; never "Manav", "Porwal" alone, or a capitalized "Van Der".
   for (const [re, want] of [[/\bMa+nav\b[^.,;]*?\b\w+/g, /^Maanav Porwal\b/], [/\bBob\s+\w+(?:\s+\w+){0,2}/g, /^Bob van der Meer\b/]]) {
     for (const m of cmSpaced.matchAll(re)) if (!want.test(m[0])) failures.push(`[creator] collaborators are named exactly ("Maanav Porwal", "Bob van der Meer"): found "${m[0]}"`);
@@ -2493,8 +2529,10 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   }
 
   // ---- 07 The creator network (V1.3): gone, with nothing in its place (no carousel, grid, logo wall, marquee or
-  // roster). The eight creators John confirmed (V1.1), with their confirmed affiliations, now appear only in the credits
-  // (checked there); their handles nowhere; their portraits stay in the repository but the page never asks for them.
+  // roster). V1.4: the eight creators appear only in the credits, by their public X handles and nothing else (checked
+  // there): no names, employers, partnerships, affiliations, descriptors, follower counts or travel histories anywhere
+  // on the page; their portraits stay in the repository but the page never asks for them. (The affiliations below are
+  // the V1.3 roll's, kept here only so the check can prove none of them is left.)
   const ROSTER = [
     ['eva', 'Eva', '@evaedxn', ['Rainbet', 'Kick and Twitch streamer']],
     ['the-blonde-broker', 'The Blonde Broker', '@theblondebroker', ['VP of Financial Services at Corgi', 'Host of The Market Runup', 'Not Your Average Bros']],
@@ -2512,17 +2550,25 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const pageAstro = fs.readFileSync(path.join(root, 'src/pages/work/creator-campaigns.astro'), 'utf8');
   if (/mountNetwork|STEP_SECONDS|S_MIN|EXIT_GONE|data-cmn|cm-network|keyFocused|setPointerCapture|pointerleave/.test(cmSource) || /data-cm-network|data-cmn-/.test(cmScripts) || /mountNetwork|CmNetwork/.test(pageAstro)) failures.push('[creator] V1.3: the network\'s script is gone: nothing initializes it, and no listener of its portrait field is left');
   if (/Creator network|The creators who made it travel|Select a creator for details|Eight creators spanning/i.test(cmSpaced) || /Creator network|made it travel|Select a creator/i.test(decode(cmNoCode))) failures.push('[creator] V1.3: none of the network\'s words remain (its kicker, headline, line or instruction)');
-  for (const [, , handle] of ROSTER) if (decode(cmPage).includes(handle)) failures.push(`[creator] V1.3: no creator handle appears on the page (found ${handle})`);
+  for (const [, , handle] of ROSTER) {
+    const onPage = decode(cmPage).split(handle).length - 1;
+    const inCredits = decode(cmSec('cmc')).split(handle).length - 1;
+    if (onPage !== 1 || inCredits !== 1) failures.push(`[creator] V1.4: each creator's public X handle appears once on the page, in the credits (${handle}: ${onPage} on the page, ${inCredits} in the credits)`);
+  }
   const pfpRe = new RegExp(`/(?:${ROSTER.map(([id]) => id).join('|')})\\.[\\w-]+\\.(?:jpe?g|png|webp|avif)`, 'i');
   if (pfpRe.test(cmPage)) failures.push(`[creator] V1.3: the page never requests or preloads a creator's portrait (found ${cmPage.match(pfpRe)[0]})`);
   for (const [id, name] of ROSTER) {
     const a = cmAsset(`cm-creator-${id}`);
     if (a.permission !== 'approved' || !a.file || !fs.existsSync(path.join(root, 'src/assets', a.file)) || !/Not on the page since V1\.3/.test(a.source || '')) failures.push(`[creator] ${name}: the profile picture stays in the repository as John's file, recorded as no longer on the page (V1.3)`);
   }
-  // The creators and their affiliations appear only in the credits: nowhere else in the page's words.
-  const affOutside = ROSTER.flatMap(([, , , affs]) => affs).find((x) => outsideCredits.includes(x));
-  const nameOutside = outsideCredits.match(new RegExp(`\\b(?:${ROSTER.map(([, n]) => n).join('|')})\\b`));
-  if (affOutside || nameOutside) failures.push(`[creator] V1.3: the creators and their affiliations appear only in the credits ("${affOutside || nameOutside[0]}" appears elsewhere)`);
+  // V1.4: the creators' names and the V1.3 affiliations appear nowhere in the page's words, the credits included (the
+  // descriptions of the footage may still say who is in a shot), and creator.json keeps none of them.
+  const affOnPage = ROSTER.flatMap(([, , , affs]) => affs).find((x) => cmSpaced.includes(x) || decode(cmNoCode).includes(x));
+  // (the handles set aside first: "@Arcanic" is a handle, not a name)
+  const nameOnPage = ROSTER.reduce((t, [, , h]) => t.split(h).join(' '), cmSpaced).match(new RegExp(`\\b(?:${ROSTER.map(([, n]) => n).join('|')})\\b`));
+  const cmJsonWords = JSON.stringify(cmData).replace(/"_\w+":\s*"(?:[^"\\]|\\.)*"/g, '');
+  const affInData = ROSTER.flatMap(([, , , affs]) => affs).find((x) => cmJsonWords.includes(x));
+  if (affOnPage || nameOnPage || affInData) failures.push(`[creator] V1.4: no creator's name, employer, partnership or affiliation is left on the page or in creator.json, the credits included ("${affOnPage || (nameOnPage && nameOnPage[0]) || affInData}")`);
   // Nothing that takes focus sits inside a part of the page hidden from assistive technology.
   for (const tag of ['div', 'span', 'p', 'figure', 'ul', 'li', 'section']) {
     for (const m of cmNoCode.matchAll(new RegExp(`<${tag}\\b[^>]*aria-hidden="true"[^>]*>`, 'g'))) {
@@ -2530,7 +2576,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
       if (/<(?:button|a|input|select|textarea)\b|tabindex="0"/.test(hiddenBlock.slice(m[0].length))) failures.push(`[creator] a focusable control sits inside a part hidden from assistive technology (${m[0].slice(0, 70)})`);
     }
   }
-  // The qualifiers the brief rules out, anywhere on the page: the affiliations are confirmed.
+  // The qualifiers the brief rules out, anywhere on the page (V1.4: with the affiliations gone, none may come back).
   const qualifier = cmSpaced.match(/user[- ]reported|self[- ]described|self[- ]reported|\binferred\b|\bapparent(?:ly)?\b|\bunverified\b|\breportedly\b|\ballegedly\b|claims? to be|said to be/i);
   if (qualifier) failures.push(`[creator] the affiliations are John's confirmed ones, stated plainly: no "${qualifier[0]}"`);
   if (/\bfollowers?\b|\bsubscribers?\b/i.test(cmSpaced)) failures.push('[creator] no follower or subscriber counts on the page');
@@ -2663,28 +2709,34 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   ];
   const shownBrief = [...brief.matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(m[1]), textOf(norm(m[2]))]);
   if (JSON.stringify(shownBrief) !== JSON.stringify(BRIEF.map(([l, t]) => [l, norm(t)])) || JSON.stringify((cmData.trezor?.brief || []).map((b) => [b.label, b.text])) !== JSON.stringify(BRIEF)) failures.push(`[creator] V1.2: the Trezor section states the assignment, the objective and the approach, word for word (found ${shownBrief.map((b) => b[0]).join(', ') || 'none'})`);
-  // The three performance highlights (V1.1): the post's results on the creator's own account against that account's
-  // preceding three months, as a rate, a multiple and a ranking with its percentile; never a raw total, and never
-  // presented as Trezor's complete campaign performance.
+  // The three performance highlights (V1.1): the post's results on the creator's account, as a rate, a multiple and a
+  // ranking with its percentile; never a raw total, and never presented as Trezor's complete campaign performance.
+  // V1.4: measured against the account's preceding 56 posts (V1.1 to V1.3 said three months); the multiple reads
+  // "2.2x" (a screen reader hears "2.2 times"); the note is one sentence, the creator-account-results sentence gone.
   const HIGHLIGHTS = [
     ['524%', "above the account's average impressions", ''],
-    ['2.2 times', "the account's average total engagement", ''],
+    ['2.2x', "the account's average total engagement", ''],
     // V1.2: by reach, never "most-viewed"; the 98th-percentile line kept.
     ['#2', 'by reach out of 56 posts', 'Ranked in the 98th percentile for reach during the sample period.'],
   ];
   // (the data's documentation notes, the keys that begin with "_", may say what is ruled out)
   const cmDataWords = JSON.stringify(cmData).replace(/"_\w+":\s*"(?:[^"\\]|\\.)*"/g, '');
   if (/most[- ]viewed/i.test(cmNoCode) || /most[- ]viewed/i.test(cmDataWords) || cmAssets.filter((a) => /^cm-/.test(a.id)).some((a) => /most[- ]viewed/i.test(JSON.stringify(a)))) failures.push('[creator] V1.2: the ranking is "#2 by reach", never "most-viewed", in the page, the data or the manifest');
-  const HL_NOTE = "Measured on the creator's own account against that account's preceding three months. These are creator-account results, not Trezor's total campaign performance.";
+  const HL_NOTE = "Measured on the creator's account against its preceding 56 posts.";
   const results = cmBlock(tz, '<div class="cmz__results"');
   const shownMetrics = cmBlocks(tz, '<li class="cmz__metric');
-  const gotHl = shownMetrics.map((m) => [cmOne(m, /<strong class="cmz__value"[^>]*>([\s\S]*?)<\/strong>/), cmOne(m, /<span class="cmz__metric-label"[^>]*>([\s\S]*?)<\/span>/)]);
+  // The figure as it is seen (what a screen reader is given instead, in an sr-only span, set aside).
+  const valueHtml = (m) => (m.match(/<strong class="cmz__value"[^>]*>([\s\S]*?)<\/strong>/) || [, ''])[1];
+  const gotHl = shownMetrics.map((m) => [textOf(norm(valueHtml(m).replace(/<span class="sr-only"[^>]*>[\s\S]*?<\/span>/g, ''))), cmOne(m, /<span class="cmz__metric-label"[^>]*>([\s\S]*?)<\/span>/)]);
+  const spokenHl = shownMetrics.map((m) => cmOne(valueHtml(m), /<span class="sr-only"[^>]*>([\s\S]*?)<\/span>/));
+  if (JSON.stringify(spokenHl) !== JSON.stringify(['', '2.2 times', '']) || !/^<span aria-hidden="true"[^>]*>2\.2x<\/span><span class="sr-only"[^>]*>2\.2 times<\/span>$/.test(valueHtml(shownMetrics[1] || '').trim())) failures.push(`[creator] V1.4: the multiple reads "2.2x" and a screen reader hears "2.2 times"; the other figures are read as they are (found ${JSON.stringify(spokenHl)})`);
+  if (/creator-account results|not Trezor's total campaign performance|preceding three months/.test(cmSpaced) || cmData.trezor?.metricsNote !== HL_NOTE) failures.push('[creator] V1.4: the note is one sentence, "Measured on the creator\'s account against its preceding 56 posts.", with no creator-account-results sentence');
   // V1.3: the ranking's percentile reads as a quieter line under the row, so the three columns stay even.
   const hlLines = [...results.matchAll(/<p class="cmz__results-line"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => textOf(norm(m[1])));
   if (JSON.stringify(gotHl) !== JSON.stringify(HIGHLIGHTS.map(([v, l]) => [v, l])) || JSON.stringify(hlLines) !== JSON.stringify(HIGHLIGHTS.map((h) => h[2]).filter(Boolean).map(norm)) || /cmz__metric-note/.test(results)) failures.push(`[creator] the Trezor section shows the three approved highlights, exactly, the percentile under the row (found ${gotHl.map((h) => h.join(' ')).join(' | ')}; ${hlLines.join(' | ')})`);
   const metricIds = cmData.trezor?.metrics || [];
   const hlAssets = metricIds.map((id) => cmAsset(id));
-  if (hlAssets.length !== 3 || hlAssets.some((a, k) => a.permission !== 'approved' || a.type !== 'metric' || a.value !== HIGHLIGHTS[k][0] || a.metricLabel !== HIGHLIGHTS[k][1] || (a.metricNote || '') !== HIGHLIGHTS[k][2] || !/creator's own account/.test(a.source || '') || !/not Trezor's total campaign performance/.test(a.source || ''))) failures.push('[creator] the three highlights are approved metrics in the manifest, each recorded as a creator-account result, not Trezor\'s total campaign performance');
+  if (hlAssets.length !== 3 || hlAssets.some((a, k) => a.permission !== 'approved' || a.type !== 'metric' || a.value !== HIGHLIGHTS[k][0] || a.metricLabel !== HIGHLIGHTS[k][1] || (a.metricNote || '') !== HIGHLIGHTS[k][2] || (a.metricSpoken || '') !== (k === 1 ? '2.2 times' : '') || !/measured on the creator's own account against its preceding 56 posts/.test(a.source || '') || !/never a raw total/.test(a.source || ''))) failures.push('[creator] the three highlights are approved metrics in the manifest, each recorded as measured on the creator\'s own account against its preceding 56 posts (V1.4), never a raw total; the multiple spoken as "2.2 times"');
   if (cmOne(results, /<p class="cmz__label"[^>]*>([\s\S]*?)<\/p>/) !== 'Performance highlights' || cmOne(results, /<p class="cmz__results-note"[^>]*>([\s\S]*?)<\/p>/) !== HL_NOTE) failures.push(`[creator] the highlights are labeled "Performance highlights" and framed: "${HL_NOTE}"`);
   // V1.3: the scale and centered composition of the results under the Technical Product Marketing film, in this page's
   // palette and type: the label centered over one balanced row of three equal columns on wide screens (stacked on
@@ -2782,12 +2834,13 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     if (!cues || JSON.stringify(cues) !== JSON.stringify(f.cues || []) || !cues.length || cues[0].at !== 0 || cues.some((c, k) => (k && c.at <= cues[k - 1].at) || c.at >= (e.duration || 0) || !Object.values(PLACES).includes(c.place))) failures.push(`[creator] ${label}: its destination cues run in order from 0 within the edit, each at one of the three destinations`);
     if (e.permission !== 'approved' || e.type !== 'video' || !/^Selected content: /.test(e.label || '') || !new RegExp(`^SELECTED CONTENT, ${label.toUpperCase()}`).test(e.source || '')) failures.push(`[creator] ${label}: an approved edit in the manifest, its excerpts on record`);
     // V1.2: every edit dissolves back into its own opening (its reset as long as the script's), and the recut media
-    // carry new names, so no browser shows a cached older cut (V1.3: the creator ads and the new podcasts are -v13).
+    // carry new names, so no browser shows a cached older cut (V1.3: the creator ads are -v13; V1.4: Destination films,
+    // Sponsor integrations, Podcasts and Game show are -v14).
     const reset = Number((String(e.source || '').match(/([\d.]+) second dissolve reset/) || [])[1]);
     const libReset = Number((cmSource.match(/const LIB_RESET = ([\d.]+);/) || [])[1]);
     if (!(reset > 0) || reset !== libReset || !(libReset >= 0.25 && libReset <= 0.6)) failures.push(`[creator] ${label}: the edit's last moment dissolves into its own opening, ${libReset} seconds, as the script expects (found ${reset || 'none'} in the manifest)`);
-    const ver = ['ads', 'podcasts'].includes(key) ? 'v13' : 'v12';
-    const olderFiles = [`cm-library-${key}.mp4`, `cm-library-${key}-540.mp4`, ...(ver === 'v13' ? [`cm-library-${key}-v12.mp4`, `cm-library-${key}-v12-540.mp4`] : [])];
+    const ver = ['destination', 'sponsor', 'podcasts', 'gameshow'].includes(key) ? 'v14' : key === 'ads' ? 'v13' : 'v12';
+    const olderFiles = [`cm-library-${key}.mp4`, `cm-library-${key}-540.mp4`, ...['v12', 'v13'].filter((v) => v < ver).flatMap((v) => [`cm-library-${key}-${v}.mp4`, `cm-library-${key}-${v}-540.mp4`])];
     if (e.file !== `cm-library-${key}-${ver}.mp4` || e.fileSmall !== `cm-library-${key}-${ver}-540.mp4` || olderFiles.some((f) => fs.existsSync(path.join(root, 'public/media', f)))) failures.push(`[creator] ${label}: the edit carries its version in its name (-${ver}), and the older files are gone`);
     for (const [file, h, maxMb] of [[e.file, 720, 5], [e.fileSmall, 540, 2.5]]) {
       const ff = path.join(root, 'public/media', file || 'missing');
@@ -2914,8 +2967,8 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const swellH = (swellRule.match(/height:\s*clamp\(([\d.]+)rem,\s*([\d.]+)vw,\s*([\d.]+)rem\)/) || []).slice(1).map(Number);
   if (room.length !== 3 || swellH.length !== 3 || room.some((v, k) => !(v >= swellH[k] * 1.3))) failures.push(`[creator] V1.2: the first sentence keeps room below it for the taller wave and its swell at every width (found ${room.join('/')} against ${swellH.join('/')})`);
 
-  // ---- 13 The credits (V1.1): the team, each with what they owned or collaborated on, then the roll (V1.3: the eight
-  // creators each with their confirmed affiliations, the one place the roster appears)
+  // ---- 13 The credits (V1.1): the team, each with what they owned or collaborated on, then the roll (V1.4: the eight
+  // creators by their public X handles only, the one place the roster appears)
   const cr = cmSec('cmc');
   const TEAM = [
     ['John Cowin', 'Co-led program planning; led campaign strategy with co-sponsors, sponsor coordination, creative direction, on-site shoot management, approvals, distribution, campaign tracking, reporting, and ongoing creator and partner communication.'],
@@ -2930,17 +2983,19 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (cmOne(cr, /<p class="cmc__kicker"[^>]*>([\s\S]*?)<\/p>/) !== 'Credits' || cmOne(cr, /<h2 id="cm-credits-title"[^>]*>([\s\S]*?)<\/h2>/) !== 'Many hands, one program.') failures.push('[creator] the credits read "Credits", "Many hands, one program."');
   const team = [...cr.matchAll(/<div class="cmc__member"[^>]*>\s*<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
   if (JSON.stringify(team) !== JSON.stringify(TEAM)) failures.push(`[creator] the credits open with the team, word for word: John Cowin, Maanav Porwal, Bob van der Meer (found ${team.map((t) => t[0]).join(', ')})`);
-  const rows = [...cr.matchAll(/<div class="cmc__row(?! cmc__row--people)[^"]*"[^>]*>\s*<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
+  const rows = [...cr.matchAll(/<div class="cmc__row(?! cmc__row--handles)[^"]*"[^>]*>\s*<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => [textOf(norm(m[1])), textOf(norm(m[2]))]);
   if (JSON.stringify(rows) !== JSON.stringify(ROLL)) failures.push(`[creator] then the roll: the creators, the co-sponsors (Phi Labs among them), the brand and the hero's illustrative photography (found ${rows.map((r) => r[0]).join(', ')})`);
-  // V1.3: the creators open the roll, in order, each by name with their confirmed affiliations and nothing else (no
-  // handle, picture, count or category): with the network gone, this is the one place the roster appears.
-  const peopleRow = cmBlock(cr, '<div class="cmc__row cmc__row--people"');
-  const people = [...peopleRow.matchAll(/<li class="cmc__person"[^>]*>\s*<span class="cmc__person-name"[^>]*>([\s\S]*?)<\/span>\s*<span class="cmc__person-aff"[^>]*>([\s\S]*?)<\/span>\s*<\/li>/g)].map((m) => [textOf(norm(m[1])), norm(m[2]).trim()]);
+  // V1.4: the creators open the roll, in order, each by their public X handle and nothing else: no name, employer,
+  // partnership, affiliation, descriptor, follower count or travel history, as plain text (no link, icon, picture or
+  // card), one handle a line in the roll's type.
+  const handleRow = cmBlock(cr, '<div class="cmc__row cmc__row--handles"');
+  const handles = [...handleRow.matchAll(/<li class="cmc__handle"[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
   const firstRow = cr.indexOf('<div class="cmc__row');
-  if (!peopleRow || cr.indexOf('<div class="cmc__row cmc__row--people"') !== firstRow || cmOne(peopleRow, /<dt\b[^>]*>([\s\S]*?)<\/dt>/) !== 'Creators' || JSON.stringify(people) !== JSON.stringify(ROSTER.map(([, n, , affs]) => [n, affs.join(', ')])) || /<img\b|<a\b|@/.test(peopleRow)) failures.push(`[creator] V1.3: the credits open their roll with the eight creators, in order, each with their confirmed affiliations and nothing else (found ${people.map((x) => x[0]).join(', ') || 'none'})`);
-  if (JSON.stringify(cmData.credits?.rows?.[0]) !== JSON.stringify({ role: 'Creators', people: ROSTER.map(([, name, , affiliations]) => ({ name, affiliations })) })) failures.push('[creator] V1.3: creator.json keeps the roster in the credits: the eight creators, in order, with their confirmed affiliations and no handles');
-  const personRules = cmRules(/^\.cmc__person-(?:name|aff)$/).map((r) => r.body).join(';');
-  if (!/font-weight:\s*600/.test(personRules) || !/font-weight:\s*400/.test(personRules) || /background|border|box-shadow|border-radius/.test(personRules)) failures.push('[creator] V1.3: in the credits each name leads in the roll\'s type and its affiliations follow, quieter; no badges or pills');
+  if (!handleRow || cr.indexOf('<div class="cmc__row cmc__row--handles"') !== firstRow || cmOne(handleRow, /<dt\b[^>]*>([\s\S]*?)<\/dt>/) !== 'Creators' || JSON.stringify(handles) !== JSON.stringify(ROSTER.map(([, , h]) => h)) || /<img\b|<a\b|<svg\b|<span\b|<p\b/.test(handleRow) || textOf(cmBlock(handleRow, '<dd')) !== ROSTER.map(([, , h]) => h).join('')) failures.push(`[creator] V1.4: the credits open their roll with the eight creators' public X handles, in order, as plain text and nothing else (found ${handles.join(', ') || 'none'})`);
+  if (JSON.stringify(cmData.credits?.rows?.[0]) !== JSON.stringify({ role: 'Creators', handles: ROSTER.map(([, , h]) => h) })) failures.push('[creator] V1.4: creator.json keeps the roster in the credits as the eight handles, in order, and nothing else');
+  if (/cmc__person|cmc__people|cmc__row--people/.test(cr) || cmRules(/\.cmc__(?:person|people)/).length) failures.push('[creator] V1.4: nothing is left of the V1.3 names-and-affiliations roll (markup or styles)');
+  const handleRules = cmRules(/^\.cmc__handles?$/).map((r) => r.body).join(';');
+  if (/background|border(?:-[\w-]+)?\s*:|box-shadow|border-radius|outline|text-decoration|::before/.test(handleRules) || !/list-style:\s*none/.test(handleRules)) failures.push('[creator] V1.4: the handles are plain text: no badges, pills, bullets, underlines or boxes');
   if (/Internal collaborators|design, editing, and legal teams|cmc__note/.test(cr) || 'note' in (cmData.credits || {})) failures.push('[creator] V1.1: no generic "internal collaborators" row and no closing note');
   const johnRole = (team.find((t) => t[0] === 'John Cowin') || [])[1] || '';
   if (/\b(?:edit(?:ed|ing|or)?|film(?:ed|ing)?|shot\b|camera|cinematograph|photograph|design(?:ed|er)?|animat)/i.test(johnRole)) failures.push('[creator] John\'s credit never claims editing, filming, photography or design');
@@ -2982,8 +3037,9 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (!/^\s+fallback: \["activations", null, "cosponsors"\]$/m.test(mdxFront)) failures.push('[creator] V1.2: the homepage card\'s middle slot has no typographic stand-in (null), never the retired impressions figure');
   const panelsSrc = fs.readFileSync(path.join(root, 'src/components/WorkPanels.astro'), 'utf8');
   if (/impressions|1\.25M|fb--metric|fb__metric/.test(panelsSrc) || !/const cosponsors = \['trezor', 'bitrefill', 'rayls-labs', 'phi-labs'\]/.test(panelsSrc)) failures.push('[creator] V1.2: the card panels keep no impressions stand-in, and the co-sponsor stand-in includes Phi Labs');
-  // creator.json: no placeholders, categories, testimonials or collaboration rows; its notes speak for V1.2.
-  if (/"text":\s*null|Placeholder|"category"|"voices"|"creditsLabel"|"owner"|"handle"/.test(JSON.stringify(cmData)) || !/^Creator Marketing and Partnerships, Version 1\.3\b/.test(cmData._readme || '')) failures.push('[creator] V1.3: creator.json carries no placeholders, categories, testimonials, collaboration rows or handles, and its notes are for Version 1.3');
+  // creator.json: no placeholders, categories, testimonials, collaboration rows or people (V1.4: the credits' roster is
+  // handles only); its notes speak for V1.4.
+  if (/"text":\s*null|Placeholder|"category"|"voices"|"creditsLabel"|"owner"|"handle"|"people"|"affiliations"/.test(JSON.stringify(cmData)) || !/^Creator Marketing and Partnerships, Version 1\.4\b/.test(cmData._readme || '')) failures.push('[creator] V1.4: creator.json carries no placeholders, categories, testimonials, collaboration rows, names or affiliations, and its notes are for Version 1.4');
 
   // ---- the excerpts (V1.1): no moment twice across the loops, the edits and the fragments; the closing shot of a
   // creator running into the surf, the shot in a Bolt Liquidity shirt outside ION Orchard and the party-bus still with
@@ -3024,6 +3080,14 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     ['Singapore Spending Spree.mp4', 27.6, 28.6, 'the arrival under the ION Orchard sign (V1.3 removed it from the Singapore loop)'],
     ['Singapore Spending Spree.mp4', 47.2, 48.8, 'the Louis Vuitton and Prada storefronts (V1.3 removed them from the Singapore loop)'],
     ['Mykonos Aftermovie.mp4', 78.56, 78.74, "the camera operator's printed shirt"],
+    // V1.4: destination films lose both shots with Club Zero branding (nothing cropped or blurred: the shots are gone),
+    // and sponsor integrations lose Shiv's quick Trezor-box sequence.
+    ['Costa Rica Aftermovie.mp4', 49.6, 50.46, 'the villa pool from above with Club Zero branding (V1.4 removed it from destination films)'],
+    ['Mykonos Aftermovie.mp4', 40.95, 42.92, 'the infinity pool with Club Zero branding (V1.4 removed it from destination films)'],
+    ['Shiv Costa Rica Vlog.mp4', 6.8, 8.3, "Shiv's quick Trezor-box sequence (V1.4 removed it from sponsor integrations)"],
+    // The aftermovie's Trezor sequence recaps the Trezor ads: its paper airplane and its Take Control card are the
+    // creator ads' own moments (from the Trezor Paper Airplane ad), so they stay out of every other edit (V1.4).
+    ['Costa Rica Aftermovie.mp4', 101.12, 102.88, "the aftermovie's paper airplane and Take Control card, which the creator ads show from the Trezor ad itself"],
   ]) {
     const hit = excerpts.find((x) => x.file === file && Math.min(x.b, b) - Math.max(x.a, a) >= 0 && !(x.a === x.b && (x.a < a || x.a > b)));
     if (hit) failures.push(`[creator] ${hit.id} uses ${file} ${clock(hit.a)}: ${what} stays out`);
@@ -3041,33 +3105,61 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (adsEx.some((x) => x.file === 'Jungle Talk.mp4') || dare.length !== 2 || !(dareTotal >= 2 && dareTotal <= 4) || !dare.some((x) => x.a <= 13.2 && x.b >= 13.9) || !dare.some((x) => x.a >= 24.4 && x.b <= 28.9) || excerpts.some((x) => x.file === 'Trezor Dare Ad.mp4' && x.id !== 'cm-library-ads')) failures.push(`[creator] V1.3: the creator ads carry a concise Trezor Dare Ad excerpt in place of Jungle Talk, the dare and then the device and its app, two to four seconds in all, and the Dare Ad appears in no other edit or loop (found ${dare.length} clip(s), ${dareTotal.toFixed(2)} s)`);
   const ADS_KEEP = [['Bitrefill Pool Ad.mp4', 16, 19.4], ['Trezor Paper Airplane.mp4', 2.75, 4.22], ['Trezor Paper Airplane.mp4', 16.9, 18.25], ['Singapore Slippage Ad.mp4', 0.4, 1.95]];
   if (ADS_KEEP.some(([f, a, b]) => !adsEx.some((x) => x.file === f && Math.abs(x.a - a) < 0.005 && Math.abs(x.b - b) < 0.005)) || adsEx.length !== ADS_KEEP.length + dare.length) failures.push('[creator] V1.3: the creator ads keep every other clip as it was');
-  // V1.3, Podcasts: the four shows, each long enough to read (two seconds or more), the Lock In Podcast never in an
-  // excerpt the Mykonos loop or behind the scenes already shows (the general no-moment-twice rule).
+  // V1.3, Podcasts: the four shows, each long enough to read, the Lock In Podcast never in an excerpt the Mykonos loop or
+  // behind the scenes already shows (the general no-moment-twice rule). V1.4: it no longer opens on the Lock In Podcast
+  // (behind the scenes, just before it, ends on it): Jungle Talk or Food Talk first, then the other, in a clearly
+  // different setting, the Lock In Podcast in the middle and Pool Talk to close; each show a little longer (2.8 seconds
+  // of footage or more).
   const podEx = exOf('cm-library-podcasts');
   const SHOWS = ['Lock In Podcast.mp4', 'Pool Talk.mp4', 'Jungle Talk.mp4', 'Food Talk.mp4'];
   const showTime = SHOWS.map((f) => podEx.filter((x) => x.file === f).reduce((n, x) => n + x.b - x.a, 0));
-  if (podEx.some((x) => !SHOWS.includes(x.file)) || showTime.some((t) => !(t >= 2))) failures.push(`[creator] V1.3: Podcasts is the Lock In Podcast, Pool Talk, Jungle Talk and Food Talk, each long enough to read (found ${SHOWS.map((f, i) => `${f.replace('.mp4', '')} ${showTime[i].toFixed(1)} s`).join(', ')})`);
+  if (podEx.some((x) => !SHOWS.includes(x.file)) || showTime.some((t) => !(t >= 2.8))) failures.push(`[creator] V1.4: Podcasts is the Lock In Podcast, Pool Talk, Jungle Talk and Food Talk, each long enough to read (found ${SHOWS.map((f, i) => `${f.replace('.mp4', '')} ${showTime[i].toFixed(1)} s`).join(', ')})`);
+  const showOrder = podEx.map((x) => x.file).filter((f, i, all) => !i || f !== all[i - 1]);
+  const OPENERS = ['Jungle Talk.mp4', 'Food Talk.mp4'];
+  if (showOrder.length !== 4 || !OPENERS.includes(showOrder[0]) || !OPENERS.includes(showOrder[1]) || showOrder[0] === showOrder[1] || showOrder[2] !== 'Lock In Podcast.mp4' || showOrder[3] !== 'Pool Talk.mp4') failures.push(`[creator] V1.4: Podcasts opens with Jungle Talk or Food Talk, then the other, the Lock In Podcast in the middle and Pool Talk to close, each show once (found ${showOrder.map((f) => f.replace('.mp4', '')).join(', ')})`);
   if (excerpts.some((x) => ['Pool Talk.mp4', 'Food Talk.mp4', 'Jungle Talk.mp4'].includes(x.file) && x.id !== 'cm-library-podcasts')) failures.push('[creator] V1.3: Jungle Talk, Food Talk and Pool Talk appear only among the podcasts');
   const podSrc = cmAsset('cm-library-podcasts').source || '';
   if (!/framed above their burned-in subtitles/.test(podSrc) || !/crew's shadows/.test(podSrc) || !/microphone/.test(podSrc)) failures.push('[creator] V1.3: the podcasts are clear of their burned-in subtitles, show their microphones and give one production angle (the crew\'s shadows on the terrace)');
   // V1.3, the Singapore loop: the city, the party-bus game show and high tea on the 56th floor, with the girls
-  // photographing the food long enough to read (nearly a second), one shopping moment and no retail signage.
+  // photographing the food long enough to read (nearly a second), one shopping moment and no retail signage. V1.4: the
+  // shopping moment, the eyewear store, is two shots, Eva and Ashley at the display and then Eva trying on glasses, the
+  // whole of her shot (its 17 frames, slowed and motion-interpolated, no frozen frame), fully visible for 0.8 to 1.2
+  // seconds before it dissolves into Marina Bay, which opens the loop.
   const sgEx = exOf('cm-loop-singapore');
   const photo = sgEx.find((x) => x.file === 'Singapore Slippage Ad.mp4' && x.a <= 6.9 && x.b >= 7.75);
   const bus = sgEx.find((x) => x.file === 'Singapore Spending Spree.mp4' && x.a >= 15.95 && x.b <= 16.95);
   const tea = sgEx.filter((x) => x.file === 'Singapore Slippage Ad.mp4' || (x.file === 'Singapore Spending Spree.mp4' && x.a >= 80 && x.b <= 84));
   const shopping = sgEx.filter((x) => x.file === 'Singapore Spending Spree.mp4' && !(x.a >= 15.95 && x.b <= 16.95) && !(x.a >= 80 && x.b <= 84));
-  if (!photo || !bus || tea.length < 4 || shopping.length > 1 || !sgEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 144.5)) failures.push(`[creator] V1.3: the Singapore loop is the city, the party bus and high tea (the girls photographing the food among it), with one shopping moment at most (found ${sgEx.length} excerpts, ${tea.length} at high tea, ${shopping.length} shopping)`);
+  if (!photo || !bus || tea.length < 4 || shopping.length !== 2 || shopping.some((x) => x.a < 75 || x.b > 76.5) || !sgEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 144.5)) failures.push(`[creator] V1.3: the Singapore loop is the city, the party bus and high tea (the girls photographing the food among it), with one shopping moment, the eyewear store (found ${sgEx.length} excerpts, ${tea.length} at high tea, ${shopping.length} at the store)`);
+  const sgSrc = cmAsset('cm-loop-singapore').source || '';
+  const evaHold = Number((sgSrc.match(/fully visible for ([\d.]+) seconds before a ([\d.]+) second dissolve into Marina Bay/) || [])[1]);
+  const lastSg = sgEx[sgEx.length - 1] || {};
+  if (lastSg.file !== 'Singapore Spending Spree.mp4' || Math.abs(lastSg.a - 75.7) > 0.005 || Math.abs(lastSg.b - 76.41) > 0.005 || !(evaHold >= 0.8 && evaHold <= 1.2) || !/motion-interpolated \(no frozen frame/.test(sgSrc) || !(sgEx[0]?.file === 'Mykonos Aftermovie.mp4' && sgEx[0].a >= 144.5)) failures.push(`[creator] V1.4: Eva's glasses shot, the whole of it, closes the Singapore loop just before Marina Bay, fully visible for 0.8 to 1.2 seconds before the dissolve (found ${evaHold || 'no'} seconds)`);
   // V1.3, the Mykonos loop: its water, villa and dinner as before, and the aftermovie's Lock In Podcast production moment.
   const mkEx = exOf('cm-loop-mykonos');
-  const MK_KEEP = [[114.15, 114.98], [119.98, 120.9], [115.96, 117.25], [58.96, 61.16], [61.2, 62.95]];
+  // V1.4: the catamaran and the swimmers each end a frame earlier (114.96 and 120.88, not 114.98 and 120.90): each had
+  // kept the first frame of the aftermovie's next shot, which flashed through the dissolve after it.
+  const MK_KEEP = [[114.15, 114.96], [119.98, 120.88], [115.96, 117.25], [58.96, 61.16], [61.2, 62.95]];
   if (MK_KEEP.some(([a, b]) => !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && Math.abs(x.a - a) < 0.005 && Math.abs(x.b - b) < 0.005)) || !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 78.5 && x.b <= 79.5 && x.b - x.a >= 0.5) || mkEx.length !== MK_KEEP.length + 1) failures.push('[creator] V1.3: the Mykonos loop keeps its water, villa and dinner and adds the aftermovie\'s Lock In Podcast production moment');
   if (cmAsset('cm-loop-costa-rica').file !== 'cm-costa-rica-loop-v11.mp4') failures.push('[creator] V1.3: the Costa Rica loop is unchanged');
+  // V1.4: sponsor integrations without Shiv's quick Trezor-box sequence (no stacked microcuts, no speed effects): Ashley
+  // holding her Trezor device at the full length of its shot, the Trezor integration as before (the device by the pool,
+  // then the app) and the Bolt Liquidity invitation to Mykonos with time to read it, each on screen long enough for the
+  // person and the product to register (every excerpt 1.5 seconds or more, the invitation 2.5 or more).
   const sponsorEx = exOf('cm-library-sponsor');
-  if (!sponsorEx.some((x) => x.file === 'Ashley Costa Rica Vlog.mp4' && x.a < 10 && x.b - x.a <= 2.5) || !sponsorEx.some((x) => x.file === 'Shiv Costa Rica Vlog.mp4' && x.a < 10 && x.b - x.a <= 2.5)) failures.push('[creator] V1.2: sponsor integrations show Ashley holding the Trezor device and Shiv holding the Trezor box, concise, from the beginnings of their vlogs');
+  const ashleyEx = sponsorEx.find((x) => x.file === 'Ashley Costa Rica Vlog.mp4' && x.a < 10);
+  const trezorEx = sponsorEx.find((x) => x.file === 'Costa Rica Aftermovie.mp4' && Math.abs(x.a - 102.9) < 0.005 && Math.abs(x.b - 104.54) < 0.005);
+  const inviteEx = sponsorEx.find((x) => x.file === 'Mykonos Aftermovie.mp4' && Math.abs(x.a - 15.3) < 0.005);
+  if (sponsorEx.some((x) => x.file === 'Shiv Costa Rica Vlog.mp4') || !ashleyEx || !(ashleyEx.b - ashleyEx.a >= 1.8) || !trezorEx || !inviteEx || !(inviteEx.b - inviteEx.a >= 2.5) || inviteEx.b > 20 || sponsorEx.length !== 4 || sponsorEx.some((x) => x.b - x.a < 1.5)) failures.push(`[creator] V1.4: sponsor integrations drop Shiv's box sequence and give the calmer moments time: Ashley's Trezor, the Trezor integration and the invitation to Mykonos, every excerpt 1.5 seconds or more (found ${sponsorEx.map((x) => `${x.file.replace('.mp4', '')} ${(x.b - x.a).toFixed(2)} s`).join(', ')})`);
+  // V1.4, destination films: the two Club Zero shots out (checked above), unbranded destination footage in their places:
+  // the alternate aerial pool shot and a villa terrace above the sea.
+  const destEx = exOf('cm-library-destination');
+  if (destEx.length !== 5 || !destEx.some((x) => x.file === 'Costa Rica Aftermovie.mp4' && Math.abs(x.a - 89.16) < 0.005 && Math.abs(x.b - 89.95) < 0.005) || !destEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && Math.abs(x.a - 56.88) < 0.005 && Math.abs(x.b - 57.95) < 0.005) || !/Club Zero branding/.test(cmAsset('cm-library-destination').source || '') || /crop|blur/i.test((cmAsset('cm-library-destination').source || '').replace('nothing cropped or blurred', ''))) failures.push('[creator] V1.4: destination films replace the Club Zero shots with unbranded footage (the alternate aerial pool shot, a villa terrace above the sea), never cropping or blurring a mark');
+  // V1.4, game show: the second trailer excerpt ends a frame earlier (9.42, not 9.43), clear of the trailer's next shot.
+  if (!exOf('cm-library-gameshow').some((x) => x.file === 'Bolt Bus Trailer.mp4' && Math.abs(x.a - 8.47) < 0.005 && Math.abs(x.b - 9.42) < 0.005)) failures.push('[creator] V1.4: the game show\'s second trailer excerpt ends at 0:09.42, clear of the next shot');
   if (!exOf('cm-library-bts').some((x) => x.file === 'Costa Rica Aftermovie.mp4' && x.a <= 109.2 && x.b >= 110.2)) failures.push('[creator] V1.2: behind the scenes includes the Costa Rica crew around 1:49 to 1:50 of the aftermovie (the exterior setup and the bathroom crew laughing)');
   // The changed media carry new names, so no browser shows a cached V1.0 cut.
-  for (const [id, old] of [['cm-loop-costa-rica', 'cm-costa-rica-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v11.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop.mp4']]) {
+  for (const [id, old] of [['cm-loop-costa-rica', 'cm-costa-rica-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v11.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v13.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop-v13.mp4']]) {
     if (cmAsset(id).file === old || fs.existsSync(path.join(root, 'public/media', old))) failures.push(`[creator] ${id}: the recut loop has a new name (not ${old})`);
   }
 
@@ -3194,21 +3286,26 @@ if (!delays.some((d) => d > 0 && d <= 150) || !delays.some((d) => d >= 200 && d 
 // clarity. / Strategy, executed. are gone, with no replacement); a small
 // marker travelling a hairline from the left end of the screen to the right
 // meanwhile, arriving as the note's hold ends; no loading percentage. Since
-// Creator Marketing V1.2 (Part One) the note comes in letter by letter, left
-// to right, each letter rising a little out of a soft blur into focus while
-// the line's tracking settles, in 0.45 to 0.7 seconds, then holds, the whole
-// line legible, until the marker arrives: the sequence keeps its length (the
-// note's arrival and hold together as long as V1.1's 0.13 and 2.1 seconds),
-// with no cursor, typewriter, bounce, overshoot, scramble or flash; it leaves
-// in 0.12 to 0.16 seconds. The whole loader with the dissolve and the hero's
-// layered entrance (0.6 to 0.8 in V1.5's brief) takes about 2.6 to 3.2
-// seconds; the layers in the brief's order (the ambient photograph, the name,
-// the descriptor, the navigation, then the rule and the arrow), overlapping.
-// The same on phones. Once
-// per browsing session, decided before the first paint, never for a return
-// from a case study, a visit that began inside the site or a link to a
-// section; near-instant with reduced motion; dismissed by any intent; hidden
-// from assistive technology; the hero photograph and the faces preloaded.
+// Creator Marketing V1.4 (01) the note is coded into place, once: it resolves
+// left to right, each position cycling for a moment through a small set of
+// monospace code glyphs in the accent before its letter settles, the scramble
+// only at the leading edge and a resolved letter never touched again; centered,
+// restrained, in 0.45 to 0.8 seconds, then the whole line holds, legible, until
+// the marker arrives (the sequence keeps its length); no cursor, caret,
+// blinking, flash, tearing, color fringe, scan line or particle, nothing after
+// the line has resolved, no change of spacing, and a fixed glyph sequence, not
+// chance. Since V1.4 (02) the marker gathers speed: a controlled start, quicker
+// through the middle, quickest over the last stretch, arriving with no
+// overshoot, bounce or pause as the hero comes in. The note leaves in 0.12 to
+// 0.16 seconds. The whole loader with the dissolve and the hero's layered
+// entrance (0.6 to 0.8 in V1.5's brief) takes about 2.6 to 3.2 seconds; the
+// layers in the brief's order (the ambient photograph, the name, the
+// descriptor, the navigation, then the rule and the arrow), overlapping. The
+// same on phones. Once per browsing session, decided before the first paint,
+// never for a return from a case study, a visit that began inside the site or a
+// link to a section; near-instant with reduced motion (no scramble and no
+// travel); dismissed by any intent; hidden from assistive technology; the hero
+// photograph and the faces preloaded.
 const introRules = (re) => CSS_RULES.filter((r) => r.sel.split(',').some((x) => re.test(bare(x).trim())));
 const introHeadOf = (html) => [...((html.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0]).matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('jc-intro')) || '';
 const INTRO_MOMENTS = [];
@@ -3268,12 +3365,13 @@ if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.i
   const heroEnd = Math.max(...LAYERS.map((l) => l.off + l.dur));
   const total = reveal + heroEnd;
   INTRO_MOMENTS.push(Math.round(T.lead + T.in + T.hold * 0.25), Math.round(T.lead + T.in + T.hold * 0.75));
-  // Creator Marketing V1.2, Part One: the note's letter-by-letter entrance takes 0.45 to 0.7 seconds, then the whole
-  // line holds long enough to read comfortably (at least 1.5 seconds), the two together exactly as long as V1.1's
-  // arrival and hold (40 + 130 + 2100 ms to the reveal: the loader keeps its length); it leaves in 0.12 to 0.16
-  // seconds; the whole loader, the hero's layers included, runs about 2.6 to 3.2 seconds.
-  const letterMs = ms(holdVars.letter);
-  if (!(T.in >= 450 && T.in <= 700) || !(letterMs > 0 && letterMs < T.in)) failures.push(`[intro] the note comes in, letter by letter, in 0.45 to 0.7 seconds, each letter's own rise shorter than the whole (found ${T.in} ms, letters ${letterMs} ms)`);
+  // Creator Marketing V1.4 (01): the note's coded resolve takes 0.45 to 0.8 seconds, each position's moment of code
+  // glyphs a brief part of it (40 to 120 ms), then the whole line holds long enough to read comfortably (at least 1.5
+  // seconds), the two together exactly as long as V1.1's arrival and hold (40 + 130 + 2100 ms to the reveal: the loader
+  // keeps its length); it leaves in 0.12 to 0.16 seconds; the whole loader, the hero's layers included, runs about 2.6
+  // to 3.2 seconds. (V1.2's letter rise and its --intro-letter are gone.)
+  const glyphMs = ms(holdVars.glyph);
+  if (!(T.in >= 450 && T.in <= 800) || !(glyphMs >= 40 && glyphMs <= 120) || holdVars.letter) failures.push(`[intro] V1.4: the note resolves in 0.45 to 0.8 seconds, each position scrambling for a brief moment (40 to 120 ms) before its letter (found ${T.in} ms, glyphs ${glyphMs} ms${holdVars.letter ? ', and a letter rise' : ''})`);
   if (!(T.hold >= 1500) || reveal !== 2270) failures.push(`[intro] the complete note holds at least 1.5 seconds and the loader keeps its length: the reveal at 2.27 seconds, as in V1.1 (found a ${T.hold} ms hold, the reveal at ${reveal} ms)`);
   if (!(T.out >= 120 && T.out <= 160)) failures.push(`[intro] the note leaves in 0.12 to 0.16 seconds (found ${T.out} ms)`);
   if (!(heroEnd >= 550 && heroEnd <= 800)) failures.push(`[intro] the dissolve and the hero's layered entrance take about 0.6 to 0.8 seconds (found ${heroEnd} ms)`);
@@ -3291,41 +3389,55 @@ const travelRule = CSS_RULES.find((r) => r.sel.split(',').some((x) => /^html\.in
 const travelVal = travelRule ? (travelRule.body.match(/animation:\s*([^;]*)/) || [])[1] : '';
 if (!/(?:from|0%)\s*\{\s*transform:\s*translate(?:X)?\(0(?:px)?\)/.test(travel) || !/to\s*\{\s*transform:\s*translate(?:X)?\(100cqi\)/.test(travel) || !/^intro-travel calc\(var\(--intro-reveal\)\s*-\s*var\(--intro-go\)\)\s+var\(--intro-run\)\s+var\(--intro-go\)/.test(travelVal.trim())) failures.push('[intro] the marker travels the whole path, left to right, and arrives as the last phrase ends');
 if (!introRules(/^\.intro__track$/).some((r) => /container-type:\s*inline-size/.test(r.body))) failures.push('[intro] the path is the measure of the marker\'s run (100cqi)');
+// V1.4 (02): the marker gathers speed: a controlled, readable start (at most half its average pace), quicker through
+// the middle and quickest over the last stretch (at least twice its average pace as it arrives), so it never eases into
+// a pause at the end; no bounce or overshoot (both control points inside the box); a pace, not a measure of loading.
+// Its streak lengthens with the speed, longest as the marker arrives.
 const runEase = (introRules(/^html\.intro \.intro__stage$/).map((r) => r.body).join(';').match(/--intro-run:\s*cubic-bezier\(([^)]*)\)/) || [, ''])[1].split(',').map(Number);
-if (runEase.length !== 4 || runEase[1] < 0 || runEase[1] > 1 || runEase[3] < 0 || runEase[3] > 1) failures.push('[intro] the marker eases without bounce or overshoot');
+const startPace = runEase[1] / runEase[0];
+const endPace = (1 - runEase[3]) / (1 - runEase[2]);
+if (runEase.length !== 4 || runEase.some((v) => !(v >= 0 && v <= 1)) || !(startPace <= 0.5) || !(endPace >= 2)) failures.push(`[intro] V1.4: the marker sets off at a controlled pace and gathers speed to the end, quickest as it arrives, with no bounce, overshoot or pause (found cubic-bezier(${runEase.join(', ')}): ${startPace.toFixed(2)}x its average pace at the start, ${endPace.toFixed(2)}x at the end)`);
+const streakKf = keyframesOf('intro-streak');
+const streakScales = [...streakKf.matchAll(/scaleX\(([\d.]+)\)/g)].map((m) => Number(m[1]));
+const streakRule = introRules(/^html\.intro \.intro__trail$/).map((r) => r.body).join(';');
+if (streakScales.length < 4 || streakScales.some((v, i) => i && !(v > streakScales[i - 1])) || streakScales[streakScales.length - 1] !== 1 || !(streakScales[0] <= 0.2) || !/intro-streak\s+calc\(var\(--intro-reveal\)\s*-\s*var\(--intro-go\)\)\s+linear\s+var\(--intro-go\)/.test(streakRule)) failures.push(`[intro] V1.4: the streak lengthens with the marker's speed, longest as it arrives (found ${streakScales.join(', ')})`);
 const wordOut = keyframesOf('intro-word-out');
 const stopsOf = (k) => [...k.matchAll(/(^|\})\s*([^{}]+)\{/g)].map((m) => m[2].trim());
 // V1.6: the leaving note may be gone before its drift ends (an opacity-only stop), never overshooting.
 const outStops = [...wordOut.matchAll(/([^{}]+)\{([^}]*)\}/g)].map((m) => [m[1].trim(), m[2]]);
 const midOut = outStops.filter(([x]) => !/^(from|to|0%|100%)$/.test(x));
 if (!/to\s*\{[^}]*translate(?:X)?\([\d.]+em\)/.test(wordOut) || midOut.length > 1 || midOut.some(([, b]) => !/^\s*opacity:\s*0;?\s*$/.test(b))) failures.push('[intro] the note leaves to the right, the way the marker runs, with no overshoot');
-// Creator Marketing V1.2, Part One: the note comes in letter by letter, in reading order. Each letter rises a
-// fraction of its height out of a soft blur into focus (opacity, a small upward move and the blur only, from and to,
-// no stop between: no bounce or overshoot), while the line's tracking settles from open to its resting width; one
-// letter after another across the entrance, so the last is in focus as it ends. Words stay whole (a word never
-// breaks), the line reads exactly as before, and nothing types, blinks, scrambles or flashes.
+// Creator Marketing V1.4 (01): the note is coded into place, once, left to right. The line is set letter by letter
+// in reading order (its four words kept whole), at its resting spacing from the start: each letter is held back (its
+// color only, so nothing moves) until the leading edge has passed it, and in the moment before (--intro-glyph) the
+// script puts a monospace code glyph in its place, in the accent, from a small fixed set; a resolved letter is never
+// touched again, and nothing changes once the line has resolved. The glyphs are timed from the letters' own
+// animation (its delay and its clock), so the two never drift; a fixed sequence, never chance; the script stops when
+// the last letter has resolved, clears the glyphs if the visitor skips, and never runs with reduced motion.
+const introSrc = fs.readFileSync(path.join(root, 'src/components/Intro.astro'), 'utf8');
+const introBundle = scriptsText.find((t) => t.includes('intro-skip')) || '';
 const introNoteHtml = (introHtml.match(/<p class="intro__note[^"]*"[^>]*>[\s\S]*?<\/p>/) || [''])[0];
 const introLetters = [...introNoteHtml.matchAll(/<span class="intro__ch"[^>]*style="--c: (\d+)"[^>]*>([^<]*)<\/span>/g)].map((m) => [Number(m[1]), m[2].trim()]);
 const introWords = (introNoteHtml.match(/<span class="intro__word"/g) || []).length;
 const noteChars = 'BESTEXPERIENCEDONDESKTOP';
 if (introLetters.map((l) => l[1]).join('') !== noteChars || introLetters.some((l, i) => l[0] !== i) || !new RegExp(`<p class="intro__note"[^>]*style="--letters: ${noteChars.length}"`).test(introNoteHtml) || introWords !== 4) failures.push(`[intro] the note is set letter by letter in reading order, its four words kept whole (found ${introLetters.length} letters in ${introWords} words)`);
-const letterIn = keyframesOf('intro-letter-in');
-const noteIn = keyframesOf('intro-note-in');
-const letterFrom = (letterIn.match(/(?:from|0%)\s*\{([^}]*)\}/) || [, ''])[1];
-const letterTo = (letterIn.match(/(?:to|100%)\s*\{([^}]*)\}/) || [, ''])[1];
-if (stopsOf(letterIn).some((x) => !/^(from|to|0%|100%)$/.test(x)) || !/opacity:\s*0(?![.\d])/.test(letterFrom) || !/translate(?:3d)?\(0(?:px)?,\s*\.?\d[\d.]*em(?:,\s*0(?:px)?)?\)|translateY\(\.?\d[\d.]*em\)/.test(letterFrom) || !/filter:\s*blur\([1-6](?:\.\d+)?px\)/.test(letterFrom) || !/opacity:\s*1/.test(letterTo) || !/transform:\s*none/.test(letterTo) || !/filter:\s*blur\((?:0(?:px)?)?\)/.test(letterTo) || /scale|rotate|skew/.test(letterIn)) failures.push('[intro] each letter rises a little out of a soft blur into focus, with no bounce, overshoot or other movement');
-const spacingOf = (body) => Number((body.match(/letter-spacing:\s*(\.?\d[\d.]*)em/) || [])[1]);
-const noteFrom = (noteIn.match(/(?:from|0%)\s*\{([^}]*)\}/) || [, ''])[1];
-const noteTo = (noteIn.match(/(?:to|100%)\s*\{([^}]*)\}/) || [, ''])[1];
-const restSpacing = spacingOf(introRules(/^\.intro__note$/).map((r) => r.body).join(';'));
-if (stopsOf(noteIn).some((x) => !/^(from|to|0%|100%)$/.test(x)) || !(spacingOf(noteFrom) > spacingOf(noteTo)) || spacingOf(noteTo) !== restSpacing || spacingOf(noteFrom) - restSpacing > 0.2) failures.push(`[intro] the line's tracking settles from a little open to its resting width as the letters come in (found ${spacingOf(noteFrom)} to ${spacingOf(noteTo)}em, resting ${restSpacing}em)`);
+const resolveKf = keyframesOf('intro-resolve');
+if (!/^(?:from|0%)\s*\{\s*color:\s*(?:transparent|#0000|#00000000|rgba\(0,\s*0,\s*0,\s*0\));?\s*\}$/.test(resolveKf.trim()) || keyframesOf('intro-letter-in') || keyframesOf('intro-note-in')) failures.push(`[intro] V1.4: a letter waits for its moment by its color alone (nothing moves, blurs or changes spacing), and V1.2's letter rise and tracking are gone (found ${resolveKf.trim() || 'no intro-resolve'})`);
 const noteAnim = introRules(/^html\.intro \.intro__note$/).filter((r) => !r.at).map((r) => r.body).join(';');
 const chAnim = (introRules(/^html\.intro \.intro__ch$/).filter((r) => !r.at).map((r) => r.body).join(';').match(/animation:\s*([^;]+)/) || [, ''])[1];
-const chEase = (chAnim.match(/cubic-bezier\(([^)]*)\)/) || [, ''])[1].split(',').map(Number);
-if (!/intro-note-in\s+var\(--intro-in\)\s+var\(--intro-arrive\)\s+var\(--intro-lead\)/.test(noteAnim) || !/^intro-letter-in\s+var\(--intro-letter\)\s+cubic-bezier\([^)]*\)\s+calc\(var\(--intro-lead\)\s*\+\s*var\(--c\)\s*\*\s*\(var\(--intro-in\)\s*-\s*var\(--intro-letter\)\)\s*\/\s*max\(1,\s*var\(--letters\)\s*-\s*1\)\)\s+both$/.test(chAnim.trim()) || chEase.length !== 4 || chEase.some((v, i) => i % 2 === 1 && (v < 0 || v > 1))) failures.push('[intro] the letters come in one after another across the entrance, each easing into place without overshoot, and the last arrives as the entrance ends');
-if (/steps\(|caret|cursor|intro__cursor|Math\.random/.test(introRules(/\.intro/).map((r) => r.body).join(';') + introHtml + introHead) || /@keyframes intro-(?:blink|type|caret|scramble)/.test(cssText)) failures.push('[intro] no cursor, typewriter, blinking or scrambling in the note');
-// Reduced motion never shows the note (the ground clears at once); were it shown, it would only fade.
-if (!CSS_RULES.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /^html\.intro \.intro__ch$/.test(bare(r.sel)) && /animation-name:\s*intro-fade-in/.test(r.body)) || /transform|filter/.test(keyframesOf('intro-fade-in'))) failures.push('[intro] with reduced motion the note\'s letters would only fade in, without the rise or the blur');
+if (!/animation:\s*intro-fade-in\s+1ms\s+linear\s+var\(--intro-lead\)\s+both,/.test(noteAnim) || /letter-spacing|filter|transform/.test(introRules(/^html\.intro \.intro__(?:note|ch|word)$/).map((r) => r.body).join(';')) || !/^intro-resolve\s+1ms\s+linear\s+calc\(var\(--intro-lead\)\s*\+\s*var\(--c\)\s*\*\s*\(var\(--intro-in\)\s*-\s*var\(--intro-glyph\)\)\s*\/\s*max\(1,\s*var\(--letters\)\s*-\s*1\)\s*\+\s*var\(--intro-glyph\)\)\s+both$/.test(chAnim.trim())) failures.push('[intro] V1.4: the line is there from the start at its resting spacing; each letter resolves in reading order, the last as the entrance ends, a glyph moment after the edge reaches it');
+const glyphBox = introRules(/^\.intro__ch::?after$/).map((r) => r.body).join(';');
+if (!/content:\s*attr\(data-g\)/.test(glyphBox) || !/position:\s*absolute/.test(glyphBox) || !/font-family:\s*ui-monospace/.test(glyphBox) || !/color:\s*var\(--c-aqua-light\)/.test(glyphBox) || !introRules(/^\.intro__ch$/).some((r) => /position:\s*relative/.test(r.body))) failures.push('[intro] V1.4: the code glyph sits in its letter\'s place (absolutely, so nothing shifts), monospace, in the accent');
+// The glyph goes at its letter's moment, on the same clock (the same delay), so a glyph and its letter never show
+// together, not even for the frame the script takes to catch up.
+const glyphOut = (introRules(/^html\.intro \.intro__ch::?after$/).filter((r) => !r.at).map((r) => r.body).join(';').match(/animation:\s*([^;]+)/) || [, ''])[1];
+const glyphOutKf = keyframesOf('intro-glyph-out');
+if (glyphOut.trim().replace(/^intro-glyph-out/, 'intro-resolve') !== chAnim.trim() || !/(?:to|100%)\s*\{\s*opacity:\s*0;?\s*\}/.test(glyphOutKf)) failures.push('[intro] V1.4: each glyph goes at its letter\'s moment, on the letter\'s own clock, so the two never show together');
+const glyphSet = (introSrc.match(/const GLYPHS = '([^']+)';/) || [, ''])[1];
+if (!(glyphSet.length >= 6 && glyphSet.length <= 16) || /[A-Za-z]/.test(glyphSet) || !introBundle.includes(glyphSet) || !introBundle.includes('intro-resolve') || !/\.getAnimations\?\.\(\)\.find\(\(x\) => \(x as CSSAnimation\)\.animationName === 'intro-resolve'\)/.test(introSrc) || !/const at = Number\(a!\.effect\?\.getTiming\(\)\.delay\) \|\| 0;/.test(introSrc) || !/if \(t >= at - glyphMs && t < at\)/.test(introSrc) || !/if \(pending\) requestAnimationFrame\(tick\);/.test(introSrc) || !/root\.classList\.contains\('intro-skip'\)\) \{\s*for \(const \{ ch \} of slots\) delete ch\.dataset\.g;/.test(introSrc) || !/if \(!root\.classList\.contains\('intro-still'\)\) \{/.test(introSrc)) failures.push(`[intro] V1.4: a small fixed set of code glyphs (6 to 16, no letters; found "${glyphSet}"), timed from the letters' own animation, only at the leading edge, stopping when the line has resolved, cleared on a skip, never with reduced motion`);
+if (/steps\(|caret|cursor|intro__cursor|Math\.random|text-shadow|mix-blend-mode|clip-path|hue-rotate|drop-shadow/.test(introRules(/\.intro/).map((r) => r.body).join(';') + introHtml + introHead) || /@keyframes intro-(?:blink|type|caret|scramble|glitch|flicker|flash|tear|scan|shake|jitter|particle)/.test(cssText) || /setInterval|Math\.random/.test(introBundle + introSrc)) failures.push('[intro] V1.4: no cursor, caret, blinking, flash, tearing, color fringe, scan line, particle or randomness in the note');
+// Reduced motion never shows the note (the ground clears at once); were it shown, it would only fade, with no scramble.
+if (!CSS_RULES.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at) && /^html\.intro \.intro__ch$/.test(bare(r.sel)) && /animation-name:\s*intro-fade-in/.test(r.body)) || /transform|filter/.test(keyframesOf('intro-fade-in'))) failures.push('[intro] with reduced motion the note\'s letters would only fade in, with no scramble');
 const readout = introRules(/^\.intro__readout$/).map((r) => r.body).join(';');
 if (!/place-items:\s*center/.test(readout) || !/white-space:\s*nowrap/.test(introRules(/^\.intro__readout\s*>\s*p$/).map((r) => r.body).join(';'))) failures.push('[intro] the note: one line at one center');
 const noteRule = introRules(/^\.intro__note$/).map((r) => r.body).join(';');
