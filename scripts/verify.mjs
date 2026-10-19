@@ -432,7 +432,7 @@ if (/pointerenter|mouseenter|mouseover|\(hover: hover\)/.test(playback)) failure
 // below its head, and every head keeps room for a two-line subline, so the
 // three frames share one size and one aspect ratio at any width.
 const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
-const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage-fs12.mp4'];
+const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage-fs13.mp4'];
 cardsHtml.forEach((c, i) => {
   const v = (c.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
   if (!/\bdata-card-video\b/.test(v) || sourcesOf(v).join() !== CARD_MEDIA[i]) failures.push(`[claim] card ${i + 1} must play ${CARD_MEDIA[i]} (found ${sourcesOf(v).join(', ') || 'none'})`);
@@ -470,7 +470,10 @@ if (rulesFor(/\.card__panel/).length) failures.push('[claim] the supporting-pane
 // approved length, each card's one video under 5 MB (Full Site Iteration V1:
 // one video per card, so the cards together weigh less than the nine of
 // Version 2.0), and each poster at its loop's aspect ratio, so poster and loop
-// share one crop.
+// share one crop. Full Site Iteration V1.3: the events montage plays the Events
+// page's four edits whole (38.4 s), and its brief lets it pass the 5 MB rather
+// than fragment them or soften them further; it stays under 9 MB (a lighter file
+// for phones may follow).
 const mp4Seconds = (file) => {
   const buf = fs.readFileSync(file);
   const i = buf.indexOf('mvhd');
@@ -521,8 +524,9 @@ const imageSize = (file) => {
 const LOOP_SECONDS = {
   'home-creator-montage.mp4': 15.52,
   'bolt-hero-animation-loop.mp4': 11.68,
-  'home-events-montage-fs12.mp4': 15.72,
+  'home-events-montage-fs13.mp4': 38.37,
 };
+const CARD_CAP_MB = { 'home-events-montage-fs13.mp4': 9 };
 const cardManifest = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets;
 cardsHtml.forEach((c, i) => {
   for (const video of c.match(/<video\b[\s\S]*?<\/video>/g) || []) {
@@ -533,7 +537,8 @@ cardsHtml.forEach((c, i) => {
         continue;
       }
       const mb = fs.statSync(file).size / 1048576;
-      if (mb > 5) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(2)} MB; a card's one video stays under 5 MB`);
+      const cap = CARD_CAP_MB[name] || 5;
+      if (mb > cap) failures.push(`[asset] card ${i + 1}: ${name} is ${mb.toFixed(2)} MB; ${cap === 5 ? 'a card\'s one video stays under 5 MB' : `this card's video stays under ${cap} MB (Full Site Iteration V1.3)`}`);
       const sec = mp4Seconds(file);
       const want = LOOP_SECONDS[name];
       if (!want) failures.push(`[asset] card ${i + 1}: ${name} is not one of the approved loops`);
@@ -566,8 +571,8 @@ for (const id of ['cc-costa-rica-loop', 'cc-trezor-loop', 'cc-bolt-bus-loop', 't
   if (cardManifest.some((a) => a.id === id)) failures.push(`[hygiene] the manifest entry ${id} was retired in Full Site Iteration V1`);
 }
 // Full Site Iteration V1.1 re-cut the events montage (moving footage only), under a new name; V1.2 expanded it, under
-// another.
-for (const [retired, by] of [['home-events-montage.mp4', 'V1.1'], ['home-events-montage-fs11.mp4', 'V1.2']]) {
+// another; V1.3 reassembled it from the Events page's four approved edits, under a third.
+for (const [retired, by] of [['home-events-montage.mp4', 'V1.1'], ['home-events-montage-fs11.mp4', 'V1.2'], ['home-events-montage-fs12.mp4', 'V1.3']]) {
   if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was replaced in Full Site Iteration ${by} and must not ship`);
 }
 // Select Work (v1.9): on tall desktop screens the title and intro stay pinned
@@ -2353,39 +2358,39 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (finalLoop.permission !== 'approved' || !/1:09\.111 to 1:17\.953/.test(finalLoop.source || '') || !/Bolt solves slippage by providing you a deterministic price/.test(finalLoop.source || '') || !/set execution price/.test(finalLoop.source || '') || !/When things like slippage occur/.test(finalLoop.source || '') || !(Math.abs(finalSec - 8.84) < 0.05) || Math.abs(finalLoop.duration - 8.84) > 0.01 || finalFacts.handlers.includes('soun') || finalFacts.width !== 1600 || finalFacts.top.indexOf('moov') > finalFacts.top.indexOf('mdat') || !fs.existsSync(path.join(root, 'src/assets', finalLoop.poster || '-'))) failures.push(`[events] the Final loop is the two scenes alone, 1:09.111 to 1:17.953 of the film, silent, 1600 wide, with its poster (found ${finalSec}s)`);
   // Full Site Iteration V1: the homepage's events card plays one montage in this order: the production room, Sui Fest
   // and its event film, a brief creator podcast, and the live presentation last, whose title slide dissolves back into
-  // the explainer's yellow on dark (no jump in brightness). V1.1 (04): moving footage only, so the production room is
-  // the finished explainer alone (its setup was a push across the behind-the-scenes photograph, and no moving footage
-  // of the setup exists); no still image, freeze frame or move across a photograph, in this card or any other.
-  // V1.2 (01): expanded toward the creator card's length and substance, every excerpt listed in the manifest's record
-  // in playing order: the production room opens with the finished title and three more of the explainer's own camera
-  // angles (the side camera, the wide, the front camera's medium), several seconds of them; Sui Fest has six excerpts,
-  // two more of the event than before; Jungle Talk two excerpts and three angles (the wide and the film's own cut to the
-  // medium, then the close angle); the live presentation last, dissolving back into the title; the loop within a second
-  // and a half of the creator card's.
+  // the explainer's yellow on dark (no jump in brightness). V1.1 (04): moving footage only; no still image, freeze
+  // frame or move across a photograph, in this card or any other. V1.2 expanded it with more excerpts of the masters.
+  // V1.3 (the final desktop correction): the montage is the Events page's four approved edits, each a locked module
+  // played whole, at its own speed and in its own internal order, nothing taken from the raw masters: the production
+  // room's Final loop, the Sui Fest event film, the Jungle Talk podcast (at the top 80% the card has always shown, so
+  // its captions and corner marks stay out) and the live presentation (its whole frame letterboxed), in that order. The
+  // record lists the four in playing order, each with its file and length, and names the joins: clean cuts between the
+  // modules and one 0.4 second dissolve reset, the presentation into the explainer. So the loop runs the four lengths
+  // less that dissolve, between 38 and 40 seconds.
   {
     const m = evAsset('ev-events-montage');
     const src = m.source || '';
-    const secs = (t) => { const [mm, ss] = t.split(':'); return Number(mm) * 60 + Number(ss); };
-    const items = [...src.matchAll(/(?:^|[;:] )(\d+), ([^;()]+?\.mp4) (\d+:\d\d\.\d+) to (\d+:\d\d\.\d+) \(([^)]*)\)/g)].map((x) => ({ n: Number(x[1]), file: x[2].replace(/^Sui Summit\//, ''), from: secs(x[3]), to: secs(x[4]), what: x[5] }));
-    const runs = items.reduce((acc, it) => (acc.length && acc[acc.length - 1].file === it.file ? (acc[acc.length - 1].items.push(it), acc) : [...acc, { file: it.file, items: [it] }]), []);
-    const runText = runs.map((r) => `${r.file} x${r.items.length}`).join(', ');
-    const span = (list) => list.reduce((sum, it) => sum + (it.to - it.from), 0);
-    const room = runs[0]?.items.slice(1) || [];
-    const angles = room.map((it) => (/side camera/.test(it.what) ? 'side' : /\bwide\b/.test(it.what) ? 'wide' : /front camera/.test(it.what) ? 'front' : '?'));
-    const jt = runs[2]?.items || [];
-    const numbered = items.every((it, i) => it.n === i + 1);
-    if (m.file !== 'home-events-montage-fs12.mp4' || m.permission !== 'approved' || !numbered || runText !== 'Bolt Explainers - Slippage.mp4 x4, SuiFest.mp4 x6, Jungle Talk.mp4 x2, Max Presentation.mp4 x1' || runs[0].items[0].from !== secs('1:09.111') || items[items.length - 1].from !== secs('0:00.50') || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !(Math.abs(LOOP_SECONDS['home-events-montage-fs12.mp4'] - m.duration) < 0.02)) {
-      failures.push(`[events] the homepage's events montage runs the production room, Sui Fest, the creator podcast and the live presentation, every excerpt in its record in playing order, its reset dissolving the presentation into the explainer (found ${runText || 'no excerpts'})`);
+    const MODULES = [['ev-room-final-loop', 'bolt-slippage-final-loop.mp4', 8.84], ['ev-hero-event-film', 'ev-hero-event-film.mp4', 11.97], ['ev-hero-podcast', 'ev-hero-podcast.mp4', 7.72], ['ev-hero-presentation', 'ev-hero-presentation.mp4', 10.22]];
+    const listed = [...src.matchAll(/(?:^|[;:] )(\d+), [^,;()]+, (ev-[\w-]+) \(([\w.-]+\.mp4), ([\d.]+) s, whole: ([^;]*)/g)].map((x) => ({ n: Number(x[1]), id: x[2], file: x[3], sec: Number(x[4]), what: x[5] }));
+    const listText = listed.map((x) => `${x.n}, ${x.id}`).join('; ');
+    const inOrder = listed.length === MODULES.length && listed.every((x, i) => x.n === i + 1 && x.id === MODULES[i][0] && x.file === MODULES[i][1] && Math.abs(x.sec - MODULES[i][2]) < 0.005);
+    if (m.file !== 'home-events-montage-fs13.mp4' || m.permission !== 'approved' || !inOrder) failures.push(`[events] V1.3: the homepage's events montage is the Events page's four approved edits, whole and in this order: the production room, Sui Fest, Jungle Talk and the live presentation, each listed in its record with its file and length (found ${listText || 'no modules'})`);
+    for (const [id, file, sec] of MODULES) {
+      const a = evAsset(id);
+      const got = mp4Seconds(path.join(root, 'public/media', a.file || '-'));
+      if (a.permission !== 'approved' || a.file !== file || Math.abs((a.duration || 0) - sec) > 0.005 || !(Math.abs(got - sec) < 0.05)) failures.push(`[events] V1.3: the montage's module ${id} is the approved ${file}, ${sec} s (found ${a.file || 'none'}, ${a.permission || 'no permission'}, recorded ${a.duration} s, playing ${Number.isFinite(got) ? got.toFixed(2) : '?'} s)`);
     }
-    if (new Set(angles).size !== 3 || angles.includes('?') || !(span(room) >= 3)) failures.push(`[events] V1.2: the montage opens on the production room from several of its own camera angles, not one brief shot: after the title, the side camera, the wide and the front camera's medium, several seconds of them (found ${angles.join(', ') || 'none'}, ${span(room).toFixed(2)} s)`);
-    if ((runs[1]?.items.length || 0) < 6) failures.push('[events] V1.2: Sui Fest has more of its B-roll (six excerpts, two more of the event than V1.1\'s four)');
-    if (jt.length !== 2 || !/film's own cut/.test(jt[0]?.what || '') || !/medium/.test(jt[0]?.what || '') || !/close angle/.test(jt[1]?.what || '') || !(span(jt) >= 3)) failures.push(`[events] V1.2: Jungle Talk shows three angles (the wide and the film's own cut to the medium, then the close angle), long enough to read as a produced conversation (found ${jt.length} excerpts, ${span(jt).toFixed(2)} s)`);
-    if (!(Math.abs(LOOP_SECONDS['home-events-montage-fs12.mp4'] - LOOP_SECONDS['home-creator-montage.mp4']) <= 1.5)) failures.push('[events] V1.2: the events montage runs within a second and a half of the creator card\'s video');
+    if (!/top 80%/.test(listed[2]?.what || '') || !/captions and corner marks fall outside/.test(listed[2]?.what || '') || !/letterboxed/.test(listed[3]?.what || '') || !/whole 2\.157:1 frame/.test(listed[3]?.what || '')) failures.push('[events] V1.3: Jungle Talk keeps its framing (its top 80%, its captions and corner marks outside) and the presentation its whole frame, letterboxed (no crop)');
+    const sum = MODULES.reduce((s, x) => s + x[2], 0);
+    const loop = LOOP_SECONDS['home-events-montage-fs13.mp4'];
+    if (!(Math.abs(loop - (sum - 0.4)) <= 0.06) || !(loop >= 38 && loop <= 40) || !(Math.abs(loop - (m.duration || 0)) < 0.02)) failures.push(`[events] V1.3: the montage runs its four modules whole, less one 0.4 second dissolve, between 38 and 40 seconds (modules ${sum.toFixed(2)} s, loop ${loop} s, record ${m.duration} s)`);
+    if (!/Joins: clean cuts from the production room into Sui Fest, Sui Fest into Jungle Talk and Jungle Talk into the presentation/.test(src) || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !/nothing added inside a module/.test(src)) failures.push('[events] V1.3: the record names the joins: clean cuts between the modules and one 0.4 second dissolve reset, the presentation into the explainer, nothing added inside a module');
+    if (/(?:Slippage|SuiFest|Jungle Talk|Max Presentation)\.mp4 \d+:\d\d/.test(src)) failures.push('[events] V1.3: the montage takes nothing from the raw masters (no excerpt of a master is listed in its record)');
     const cardVideos = cardManifest.filter((a) => CARD_MEDIA.includes(a.file));
     for (const v of cardVideos) {
       const note = v.source || '';
-      const listed = note.replace(/No still image, freeze frame or move across a photograph/g, '');
-      if (/\.(?:jpe?g|png|webp|heic|tiff?)\b|Ken Burns|kenburns|freeze/i.test(listed) || (v.id === 'ev-events-montage' && !/No still image, freeze frame or move across a photograph/.test(note))) failures.push(`[claim] V1.1: ${v.id}: a homepage card video is moving footage only, no still image, freeze frame or move across a photograph`);
+      const listedNote = note.replace(/No still image, freeze frame or move across a photograph/g, '');
+      if (/\.(?:jpe?g|png|webp|heic|tiff?)\b|Ken Burns|kenburns|freeze/i.test(listedNote) || (v.id === 'ev-events-montage' && !/No still image, freeze frame or move across a photograph/.test(note))) failures.push(`[claim] V1.1: ${v.id}: a homepage card video is moving footage only, no still image, freeze frame or move across a photograph`);
     }
   }
   const sfPanelRule = evRules(/^(?:html\.js )?\.evd__sf-panel$/).filter((r) => !r.at).map((r) => r.body).join(';');

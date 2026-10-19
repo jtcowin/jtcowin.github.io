@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Full Site Iteration V1.2 in review.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: Full Site Iteration V1.3 in review.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
 Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
 copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
@@ -13,14 +13,16 @@ capability icons' single turn, the creator page's wider program paragraph, 60-po
 centered feedback and quiet transition, the library without its eyebrow and caption, destination films
 with John's moment and a briefer Lock In moment behind the scenes, the credits' joint logistics, the
 Technical Product Marketing documentation and conclusion copy, the Contact accent and the Events
-activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1)) and its delta, Full
+activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1)) and its deltas, Full
 Site Iteration V1.1 (a slightly quicker loader, the hero's name kept behind the portrait throughout its
 entrance, larger homepage cards that show each complete 16:9 video, the events montage with moving
 footage only, and the Events activation's paragraph centered against its headline; see [Full Site
-Iteration V1.1](#full-site-iteration-v11)), are published. Full Site Iteration V1.2 (the homepage's
-events montage expanded toward the creator card's length and substance, and the Events page's three
-chapters reordered to lead with the production room; see [Full Site Iteration
-V1.2](#full-site-iteration-v12)) is committed locally and not pushed until it has been reviewed in the
+Iteration V1.1](#full-site-iteration-v11)) and Full Site Iteration V1.2 (the homepage's events montage
+expanded toward the creator card's length and substance, and the Events page's three chapters
+reordered to lead with the production room; see [Full Site Iteration V1.2](#full-site-iteration-v12)),
+are published. Full Site Iteration V1.3 (the final desktop correction of the events montage: the
+Events page's four approved edits, each played whole, one after another; see [Full Site Iteration
+V1.3](#full-site-iteration-v13)) is committed locally and not pushed until it has been reviewed in the
 browser. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
@@ -724,7 +726,7 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   | --- | --- | --- | --- |
   | 01 | The creator montage (`cc-creator-montage`) | 15.52 s | `home-creator-montage.mp4`, 1600x900, 25 fps, 4.7 MB |
   | 02 | The hero animation (`tm-hero-animation`), unchanged | 11.68 s | `bolt-hero-animation-loop.mp4`, 1600x900, 1.4 MB |
-  | 03 | The events montage (`ev-events-montage`), expanded in V1.2 | 15.72 s | `home-events-montage-fs12.mp4`, 1600x900, 23.976 fps, 4.8 MB |
+  | 03 | The events montage (`ev-events-montage`), the Events page's four edits whole since V1.3 | 38.37 s | `home-events-montage-fs13.mp4`, 1600x900, 23.976 fps, 8.9 MB |
 
   The creator montage keeps the Costa Rica aftermovie's crescendo (1:44.56 to 1:53.20, its own cuts and
   acceleration) as its foundation, opened by slower destination imagery (Marina Bay from the air in golden
@@ -734,28 +736,29 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   podcast production (a camera on the Lock In Podcast set, then the recording under the stone arch, cut
   to stay clear of the operator stepping into frame and of the logo on his shirt). The events montage
   (moving footage only since Full Site Iteration V1.1: no still image, freeze frame or move across a
-  photograph, in this card or any other; expanded in V1.2 toward the creator montage's length and
-  substance) runs the production room (the finished explainer's title, Bolt solves slippage, at its own
-  framing, then three of the explainer's own camera angles, about 1.1 to 1.4 seconds each: the side
-  camera as the name super builds, the wide on the set, and the front camera's medium; the room's
-  cameras and light appear in no moving footage, only in the behind-the-scenes photograph, which stays
-  out), Sui Fest (its title, We're at SuiFest in Singapore, then the film's own quick B-roll: the logo,
-  the neon entrance, the Sui Cafe booth and its crowd, the crew filming on the floor, an attendee at a
-  boxing game, a smiling guest), the creator podcast (Jungle Talk from three angles: the whole table, the
-  film's own cut to the medium, then the close angle; the top 80% of its frame, so its burned-in
-  captions and corner marks fall outside) and the live presentation last (Max introducing
-  himself beside the Sui Summit title slide, the recording's whole frame letterboxed onto its own ground,
-  with its own captions and footer), whose yellow on dark dissolves back into the explainer's yellow on
-  dark, so the reset is one gesture with no jump in brightness. The loop is turned to start on the
-  title's completed frame, which is also its poster. (V1 set the explainer's title at 90% and 98 px
-  lower, the studio wall mirrored into the margins, to fit the cropped band; V1.1's whole frame needs no
-  reframe.) Both montages reset with a
-  0.4 second dissolve into their own opening (the creator montage also dissolves, 0.3 s, from Marina Bay
-  into the pool); everything else is hard cuts, every trim half a frame inside its range so no frame of a
-  neighboring shot comes along. H.264 High, `-preset slower`, CRF 26 (creator, 2.3 Mbps cap) and 23
-  (events, 3 Mbps cap), a keyframe every two seconds, no audio, fast start. `verify.mjs` holds each
-  card's one video under 5 MiB; the three together weigh 10.9 MB (each loads only as its card comes
-  near), against about 13 MB for Version 2.0's nine.
+  photograph, in this card or any other; since Full Site Iteration V1.3 the Events page's four approved
+  edits, each a locked module played whole, at its own speed and in its own internal order, nothing
+  taken from the raw masters) runs the production room (the Final loop, `bolt-slippage-final-loop.mp4`,
+  8.84 s: the finished explainer's two scenes, Bolt solves slippage by providing you a deterministic
+  price, then you have a set execution price that will be filled), Sui Fest (the event film,
+  `ev-hero-event-film.mp4`, 11.97 s: we asked our favorite teams, the film's quick run of the event, then
+  the interview it ends on), the creator podcast (Jungle Talk, `ev-hero-podcast.mp4`, 7.72 s: the wide,
+  the medium and the closer shot, at the top 80% of its frame as the card has always shown it, so its
+  burned-in captions and corner marks fall outside) and the live presentation last
+  (`ev-hero-presentation.mp4`, 10.22 s: its three excerpts and their two dissolves, the recording's whole
+  frame letterboxed onto its own dark ground), whose yellow on dark dissolves back into the explainer's
+  title as it builds, so the reset is one gesture with no jump in brightness. The joins between modules
+  are clean cuts. The loop is turned to start on the title's completed frame, which is also its poster.
+  (V1 set the explainer's title at 90% and 98 px lower, the studio wall mirrored into the margins, to
+  fit the cropped band; V1.1's whole frame needs no reframe.) Both montages reset with a 0.4 second
+  dissolve into their own opening (the creator montage also dissolves, 0.3 s, from Marina Bay into the
+  pool); everything else is hard cuts (in the creator montage every trim is half a frame inside its
+  range, so no frame of a neighboring shot comes along). H.264 High, `-preset slower`, CRF 26 (creator,
+  2.3 Mbps cap) and 27 (events, `-tune film`, 3.6 Mbps cap), a keyframe every two seconds, no audio,
+  fast start. `verify.mjs` holds each card's one video under 5 MiB and, since V1.3, the events montage
+  under 9 MiB (its four edits whole run 38.4 seconds, and the brief lets it pass the 5 MiB rather than
+  fragment them); the three together weigh 15.0 MB (each loads only as its card comes near), against
+  about 13 MB for Version 2.0's nine.
 - Posters: each video's first frame (Marina Bay; the hero animation's first frame; the explainer's
   complete title), served as a lazy AVIF or WebP picture under the video and contained in the same
   frame, so poster and video match exactly. No video carries a `poster` attribute, which browsers fetch
@@ -892,6 +895,77 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Full Site Iteration V1.3
+
+John's final desktop correction of the events montage after Full Site Iteration V1.2 (October 2026), with
+a reference recording (`Screen Recording 2026-10-19 at 12.20.22 PM.mov`: V1.2's montage on the homepage,
+cut from excerpts of the raw masters). Only the events card's video, its poster and its record change;
+everything approved in V1 through V1.2, the reordered Events chapters included, is as it was.
+
+- **The montage, from the approved edits** (`home-events-montage-fs13.mp4`, 38.37 seconds, 8.9 MB, its
+  manifest entry and poster). No new edit from the masters: the Events page's four approved edits are
+  the montage, each a locked module played whole, at its own speed, with its own cuts, dissolves,
+  pacing and framing, in this order:
+  1. The production room: the Final loop (`ev-room-final-loop`, 8.84 s), both of the explainer's
+     scenes with their kinetic type complete (Bolt solves slippage by providing you a deterministic
+     price; you have a set execution price that will be filled). Moving footage only; the
+     behind-the-scenes photograph stays out.
+  2. Sui Fest: the event film (`ev-hero-event-film`, 11.97 s), its two-cut edit: we asked our favorite
+     teams, the film's quick run of the event, and the interview it ends on. V1.2's boxing-game excerpt
+     (from another part of the master) is gone.
+  3. Jungle Talk: the podcast (`ev-hero-podcast`, 7.72 s), the wide, the medium and the closer shot,
+     not shortened, at the top 80% of its frame as the card has always shown it, so its burned-in
+     captions and corner marks stay out.
+  4. The live presentation (`ev-hero-presentation`, 10.22 s), last: its three excerpts and their two
+     restrained dissolves, the recording's whole 2.157:1 frame letterboxed onto its own dark ground as
+     before (nothing cropped).
+- **The joins.** At each of the three joins the picture changes clearly (the explainer's close-up to
+  the Sui Fest floor, the dark interview to the bright podcast table, the palms to the dark title
+  slide), so they are clean cuts, the kind of cut the V1.1 and V1.2 montages made between the same
+  scenes. The presentation's yellow on dark returns to the production room with the one restrained
+  dissolve (0.4 s, as before) into the explainer's title as it builds, and the loop is turned to start
+  on the completed title (BOLT SOLVES SLIPPAGE, the module's frame 21), which is also the poster, so the
+  last frame steps into the first like any other frame. No title card, separator or new type.
+- **Integrity, frame by frame.** Every frame of the montage was decoded and compared with the Events
+  page's own file for its module (Jungle Talk cropped and the presentation letterboxed as the montage
+  shows them): each module's frames are all there, in their own order, at offset zero (none dropped,
+  repeated, reordered or retimed; one frame either way fits far worse), apart from the frames the reset
+  dissolve blends (the presentation's last nine and the explainer's first ten). The mean difference is
+  0.4 to 1.9 levels in 255, the encode's own loss. The run is the four lengths less the dissolve: 929
+  module frames, 920 in the loop, 38.37 seconds at 23.976 fps.
+- **The encode.** The whole 16:9 frame at 1600 by 900, silent, H.264 High at CRF 27 (`-preset slower
+  -tune film`), a 3.6 Mbps cap, a keyframe every two seconds, the index first: 8.9 MB, lighter than the
+  four files it plays (10.7 MB on the Events page). Four whole modules run 38.4 seconds, so the file
+  passes the 5 MiB the other cards keep, as the brief allows rather than fragmenting them. The cap was
+  set by measuring each module against a lossless assembly (SSIM): Jungle Talk's palms are the most
+  demanding, 0.948 at 3.6 Mbps (0.926 at 2.4 Mbps, a 7.5 MB file, where the fronds soften), the other
+  three 0.989 to 0.995, which a higher cap barely moves. The card's playback is unchanged: silent
+  autoplay as the card comes to rest, the play and pause button, the file loading only as the card
+  comes near, the poster alone with reduced motion, data saving and on phones (a lighter file for
+  phones can follow).
+
+**For John to confirm.** The three joins are clean cuts; the largest change in brightness is the Sui
+Fest interview (dark, magenta) into the bright podcast table, and a short dissolve (0.25 s) can go in
+there or at any join if one reads too harsh. The file is 8.9 MB; at 7.5 MB the podcast's palms
+soften. The montage runs 38.37 seconds, within the brief's 38 to 40.
+
+**The checks** (`verify.mjs`): card 03 plays `home-events-montage-fs13.mp4`, 38.37 s and under 9 MiB
+(the other cards under 5); its record lists the four modules in playing order, numbered, each with its
+file and length, and each is that approved file at that length (as recorded and as it plays); the
+montage runs their sum less the one dissolve, between 38 and 40 seconds; Jungle Talk's framing and the
+presentation's letterbox are recorded; the record names the clean cuts, the one dissolve reset and
+nothing added inside a module, and lists no excerpt of a raw master; no still; the V1.2 file gone. A
+mutation run broke each of these and the earlier promises in turn (108 mutations), and every one was
+caught. A browser pass (97 checks, V1.1's, V1.2's and V1.3's) confirmed the montage playing at 38.37 s
+in its whole frame and coming round through its reset; played twice through in real time without
+stopping (two passes of 38.34 and 38.35 s in 76.8 s, the longest gap between frames 70 ms, none of
+1,841 dropped); loading only as its card comes near; and, with reduced motion or data saving, the
+poster with no autoplay and the button playing it on request; with V1.2's deck order, the cards, the
+hero and the rest unchanged, and no sideways scroll or page error from 360 to 2560 wide. Built side by
+side with V1.2, the site differs only in card 03's video, its poster and its label: every other page,
+stylesheet and script is identical. The accessibility scan finds nothing on all five pages at two
+widths, and `astro check` reports no errors.
 
 ### Full Site Iteration V1.2
 
