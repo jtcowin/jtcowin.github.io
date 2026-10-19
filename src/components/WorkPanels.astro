@@ -8,12 +8,15 @@
  * and its two supporting panels): the creator montage, the Technical Product
  * Marketing hero animation and the events montage, each from its case study's
  * frontmatter (`card.media.video`, an approved video entry in the asset
- * manifest; `card.media.focus` can set which part of the frame stays in view
- * where the media area crops it). The video takes the card's full media width,
- * in the same frame and treatment on every card: 16:9 on phones and tablets,
- * and on desktop the whole of the card below its head, which is the same
- * height on every card (the subline keeps room for its two lines), so the
- * three frames always share one size and one aspect ratio.
+ * manifest). The video takes the card's full media width, in the same frame
+ * and treatment on every card: since Full Site Iteration V1.1 an exact 16:9 at
+ * every width, so the complete video shows and nothing of it is cropped
+ * (object-fit: contain as a safeguard; the edits are 16:9, so nothing
+ * letterboxes). Every head keeps the same height (the subline keeps room for
+ * its two lines, and a script gives every head the tallest one's height), so
+ * the three cards always share one size. On desktop the card is as wide as the
+ * content, or, in the stack, as wide as fits the screen with its complete
+ * frame, centered (see index.astro, which sizes it).
  *
  * Desktop stacks the cards as you scroll: each one parks a little lower than
  * the one before (`--peek`), so the top edges of the earlier cards stay in view
@@ -77,14 +80,13 @@ const cards = entries.map((entry, index) => {
       alt: e.alt,
       label: e.label,
     },
-    focus: card.media.focus ? `object-position: ${card.media.focus}` : undefined,
   };
 });
 ---
 
 <div class="catalog" data-catalog>
   {
-    cards.map(({ href, num, card, video, focus }, index) => (
+    cards.map(({ href, num, card, video }, index) => (
       <article class="card" style={`--i: ${index}; --r: ${cards.length - 1 - index}`} data-card>
         <div class="card__inner">
           <header class="card__head">
@@ -110,9 +112,8 @@ const cards = entries.map((entry, index) => {
                 formats={['avif', 'webp']}
                 loading="lazy"
                 class="card__img card__poster"
-                style={focus}
               />
-              <video class="card__video" muted loop playsinline preload="none" aria-label={video.alt} style={focus} data-card-video>
+              <video class="card__video" muted loop playsinline preload="none" aria-label={video.alt} data-card-video>
                 <source src={video.src} type="video/mp4" />
               </video>
             </div>
@@ -155,7 +156,6 @@ const cards = entries.map((entry, index) => {
   //   request, and a pause from the reader holds until they play it again.
   // - Video data loads only as needed: a card's as it comes within a screen
   //   of view.
-  const wide = window.matchMedia('(min-width: 60rem)');
   const small = window.matchMedia('(max-width: 47.99rem)');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   const lessData = window.matchMedia('(prefers-reduced-data: reduce)');
@@ -301,11 +301,15 @@ const cards = entries.map((entry, index) => {
     return card.getBoundingClientRect().top <= top + 2;
   }
 
+  /** Whether the cards are stacking: sticky only on a desktop width tall enough
+   *  for a complete card, with motion allowed (the stylesheet decides). */
+  const stacking = () => cards.length > 0 && getComputedStyle(cards[0]).position === 'sticky';
+
   let raf = 0;
   function update() {
     raf = 0;
     const vh = window.innerHeight;
-    const stacked = wide.matches && !reduce.matches;
+    const stacked = stacking();
     for (let i = 0; i < cards.length; i += 1) {
       const rect = cards[i].getBoundingClientRect();
       const next = cards[i + 1] ? cards[i + 1].getBoundingClientRect() : null;
@@ -395,6 +399,30 @@ const cards = entries.map((entry, index) => {
     document.fonts?.ready.then(measure);
   }
 
+  // Every card's head keeps the tallest head's height (Full Site Iteration
+  // V1.1), so the three cards share one size, and the card's size is worked
+  // out from it (index.astro). Measured as set, from the head's top to the foot
+  // of its last line (the layout's own offsets, so a receding card's scale
+  // does not count), rounded up to whole pixels.
+  const heads = cards.map((card) => card.querySelector<HTMLElement>('.card__head')).filter((h): h is HTMLElement => Boolean(h));
+  const measureHeads = () => {
+    if (!work || !heads.length) return;
+    let tallest = 0;
+    for (const h of heads) {
+      const last = h.lastElementChild as HTMLElement | null;
+      if (last) tallest = Math.max(tallest, last.offsetTop + last.offsetHeight - h.offsetTop);
+    }
+    if (tallest > 0) work.style.setProperty('--card-head', `${Math.ceil(tallest)}px`);
+  };
+  if (work && heads.length) {
+    measureHeads();
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(measureHeads);
+      for (const h of heads) ro.observe(h);
+    }
+    document.fonts?.ready.then(measureHeads);
+  }
+
   // Keyboard focus never rests on a covered card. Going backwards through the
   // stack (Shift+Tab) reaches cards that later ones cover; when a control in
   // a covered card takes keyboard focus, the page scrolls back to where that
@@ -403,7 +431,7 @@ const cards = entries.map((entry, index) => {
     const target = event.target as HTMLElement;
     const card = target.closest<HTMLElement>('[data-card]');
     const i = card ? cards.indexOf(card) : -1;
-    if (!card || i < 0 || i === cards.length - 1 || !wide.matches || reduce.matches) return;
+    if (!card || i < 0 || i === cards.length - 1 || !stacking()) return;
     let keyboard = true;
     try {
       keyboard = target.matches(':focus-visible');
@@ -465,9 +493,10 @@ const cards = entries.map((entry, index) => {
       'head'
       'media'
       'cta';
-    gap: clamp(1rem, 0.6rem + 1vw, 1.5rem);
-    height: 100%;
-    padding: clamp(1.1rem, 0.8rem + 1.1vw, 1.9rem);
+    /* On desktop these come from the Select Work section (index.astro), which
+       works out the card's size from them; elsewhere the same values. */
+    gap: var(--card-gap, clamp(1rem, 0.6rem + 1vw, 1.5rem));
+    padding: var(--card-pad, clamp(1.1rem, 0.8rem + 1.1vw, 1.9rem));
     border: 1px solid rgba(13, 15, 16, 0.12);
     border-radius: var(--radius-lg);
     background: var(--card-bg);
@@ -522,7 +551,7 @@ const cards = entries.map((entry, index) => {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
-    font-size: clamp(1.5rem, 1.1rem + 1.3vw, 2.35rem);
+    font-size: var(--card-title, clamp(1.5rem, 1.1rem + 1.3vw, 2.35rem));
     line-height: 1.02;
     letter-spacing: -0.012em;
     color: var(--heading);
@@ -560,7 +589,7 @@ const cards = entries.map((entry, index) => {
     margin: 0.15rem 0 0;
     max-width: 36em;
     /* Three lines at most from 360px phones up, two on desktop. */
-    font-size: clamp(0.875rem, 0.78rem + 0.55vw, 1.0625rem);
+    font-size: var(--card-sub, clamp(0.875rem, 0.78rem + 0.55vw, 1.0625rem));
     line-height: 1.5;
     color: var(--ink-2);
     text-wrap: pretty;
@@ -601,10 +630,10 @@ const cards = entries.map((entry, index) => {
   }
 
   /* ---- media: one video, the card's full media width (Full Site Iteration V1) --
-     The same frame and treatment on every card: 16:9 on phones and tablets, and
-     on desktop the whole of the card below its head (the same size on all three,
-     see below). The video and its poster cover the frame, centered unless the
-     card sets a focus. */
+     The same frame and treatment on every card, and since V1.1 at every width:
+     an exact 16:9 at the card's full inner width, so the complete video shows.
+     The video and its poster are contained in it, a safeguard: the edits are
+     16:9, so they fill it exactly and nothing letterboxes or crops. */
   .card__media {
     grid-area: media;
     position: relative;
@@ -628,7 +657,7 @@ const cards = entries.map((entry, index) => {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   /* The video: the poster holds the frame, and the video, invisible until its
@@ -691,22 +720,27 @@ const cards = entries.map((entry, index) => {
 
   /* ---- desktop: one size, a stack with visible edges ---------------------- */
   @media (min-width: 60rem) {
-    /* The sizes (--card-h, --stack-top, --peek, --stack-gap) come from the
-       Select Work section, which shares them with its pinned introduction. */
+    /* The sizes (--card-w, --card-h, --stack-top, --peek, --stack-gap) come
+       from the Select Work section, which shares them with its pinned
+       introduction. */
     .catalog {
       /* The distance a card travels before the next one starts to cover it. */
       gap: var(--stack-gap, clamp(3rem, 10vh, 7rem));
     }
 
+    /* The card's width: the content's, or in the stack the widest whose head
+       and complete 16:9 frame fit the screen, centered (Full Site Iteration
+       V1.1). Its height follows: the head, then the frame. */
     .card {
-      height: var(--card-h);
+      width: var(--card-w, 100%);
+      margin-inline: auto;
     }
 
     /* A covered card recedes a little and its pictures dim; its text keeps
        full contrast, so nothing still readable ever fades. */
     .card__inner {
       grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-rows: auto auto;
       grid-template-areas:
         'head cta'
         'media media';
@@ -719,8 +753,14 @@ const cards = entries.map((entry, index) => {
         0 -22px 44px -26px rgba(0, 0, 0, 0.7);
     }
 
+    /* Every head keeps the tallest head's height (measured, see the script),
+       so the three cards share one size. */
+    .card__head {
+      min-height: var(--card-head);
+      align-content: start;
+    }
+
     .card__media {
-      aspect-ratio: auto;
       opacity: var(--dim, 1);
     }
 
@@ -728,17 +768,20 @@ const cards = entries.map((entry, index) => {
       align-self: start;
     }
 
-    /* The subline keeps room for its two lines on every card, so every head is
-       the same height and the three video frames share one size and one aspect
-       ratio (Full Site Iteration V1). */
+    /* The subline keeps room for its two lines on every card (Full Site
+       Iteration V1). */
     .card__subline {
       min-height: 3em;
     }
   }
 
   /* The stack itself, once the page's script has run: each card parks a
-     little lower than the one before, so the stack's edges stay visible. */
-  @media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
+     little lower than the one before, so the stack's edges stay visible. Only
+     where a complete card fits the screen with room to spare (at least 45rem
+     tall, Full Site Iteration V1.1); shorter screens read the cards in an
+     ordinary sequence at the content's width rather than crop or shrink them
+     further. */
+  @media (min-width: 60rem) and (min-height: 45rem) and (prefers-reduced-motion: no-preference) {
     :global(.js) .card {
       position: sticky;
       top: calc(var(--stack-top) + var(--i) * var(--peek));

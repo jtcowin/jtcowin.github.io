@@ -137,7 +137,16 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
      The section starts just below the floating header, and the Work link
      lands with it flush at the top, so the opening frame is the headline, the
      introduction and the first card. Everything that sizes the card stack
-     lives here, shared by the head and the cards. */
+     lives here, shared by the head and the cards.
+
+     The card (Full Site Iteration V1.1): its head, then the complete video in
+     an exact 16:9 frame at the card's full inner width, so nothing of the
+     video is ever cropped. Its type and spacing are set here, shared with
+     WorkPanels, so its height follows from its width (--card-h). In the stack
+     a card is as wide as the content allows, or, where the screen is not tall
+     enough for that, as wide as fits the screen below the header with its
+     complete frame: it scales down in proportion and is centered, rather
+     than cropping the video. */
   @media (min-width: 60rem) {
     .work {
       --fit: min(1vw, 1.8vh);
@@ -152,11 +161,22 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
          the edges of the cards after the first add up to --stack-rest. */
       --peek: 0.875rem;
       --stack-rest: calc((var(--cards, 3) - 1) * var(--peek));
-      --card-w: calc(min(100vw, var(--container)) - 2 * var(--gutter));
-      /* One height for every card: the screen below the header, less the
-         stack's edges, never taller than about half the canvas width, so the
-         dominant panel stays close to the 16:9 of most of the work. */
-      --card-h: clamp(30rem, min(calc(var(--view-h) - var(--nav-h) - 2rem - 2 * var(--peek)), calc(var(--card-w) * 0.52)), 47rem);
+      /* The card's parts: the content's width, its padding (with the 1px
+         border, 2px across), the gap between head and frame, and its type. */
+      --card-max: calc(min(100vw, var(--container)) - 2 * var(--gutter));
+      --card-pad: clamp(1.1rem, 0.8rem + 1.1vw, 1.9rem);
+      --card-gap: clamp(1rem, 0.6rem + 1vw, 1.5rem);
+      --card-title: clamp(1.5rem, 1.1rem + 1.3vw, 2.35rem);
+      --card-sub: clamp(0.875rem, 0.78rem + 0.55vw, 1.0625rem);
+      /* The head from its type: the number and label, one line of title and
+         room for two of subline. A script replaces it with the tallest head as
+         set, which every card's head then keeps. */
+      --card-head: calc(1.6rem + var(--card-title) * 1.02 + 3 * var(--card-sub));
+      /* The card at the content's width, but never so wide that its complete
+         frame is taller than the screen below the header: on a short screen
+         it scales down in proportion (the stack narrows it further, below). */
+      --card-w: min(var(--card-max), calc((var(--view-h) - var(--nav-h) - 2rem) * 16 / 9 + 2 * var(--card-pad) + 2px));
+      --card-h: calc(2 * var(--card-pad) + 2px + var(--card-head) + var(--card-gap) + (var(--card-w) - 2 * var(--card-pad) - 2px) * 9 / 16);
       /* Without the pinned introduction the parked stack sits centered in the
          screen below the header. */
       --stack-top: calc(var(--nav-h) + max(0.75rem, (var(--view-h) - var(--nav-h) - var(--card-h) - 2 * var(--peek)) / 2));
@@ -177,18 +197,35 @@ const S = { about: surface(), work: surface(), capabilities: surface(), contact:
     }
   }
 
+  /* ---- the stack's card size ---------------------------------------------
+     Where the cards stack (WorkPanels: a desktop width, at least 45rem of
+     height, motion allowed and the page's script run), a parked card must show
+     whole: the screen below the header, less the stack's edges, is its room,
+     and the card is the widest whose head and complete 16:9 frame fit that
+     room, never wider than the content. Shorter screens, reduced motion and no
+     JavaScript read the cards in an ordinary sequence, each at the content's
+     width or, on a short screen, as wide as keeps its frame within the screen. */
+  @media (min-width: 60rem) and (min-height: 45rem) and (prefers-reduced-motion: no-preference) {
+    :global(.js) .work {
+      --card-room: calc(var(--view-h) - var(--nav-h) - 2rem - 2 * var(--peek));
+      --card-w: min(var(--card-max), calc((var(--card-room) - 2 * var(--card-pad) - 2px - var(--card-head) - var(--card-gap)) * 16 / 9 + 2 * var(--card-pad) + 2px));
+    }
+  }
+
   /* ---- the pinned introduction --------------------------------------------
-     On screens tall enough to hold the introduction and a full card, the
-     headline and introduction stay in place while the cards arrive beneath
-     them. The cards park just below the introduction, and the head's margin
-     box ends exactly where the stack's margin boxes end (see WorkPanels), so
-     the head and the complete stack release together after the last card.
-     With JavaScript off, reduced motion, or a short or very wide screen,
-     everything reads in normal flow (or with the stack alone). */
-  @media (min-width: 60rem) and (min-height: 56rem) and (max-aspect-ratio: 2/1) and (prefers-reduced-motion: no-preference) {
+     On screens tall enough to hold the introduction and a complete card at
+     the content's width (Full Site Iteration V1.1: 82rem; the cards' complete
+     16:9 frames need the height that 56rem gave before), the headline and
+     introduction stay in place while the cards arrive beneath them. The cards
+     park just below the introduction, and the head's margin box ends exactly
+     where the stack's margin boxes end (see WorkPanels), so the head and the
+     complete stack release together after the last card. With JavaScript
+     off, reduced motion, or a shorter or very wide screen, everything reads in
+     normal flow (or with the stack alone). */
+  @media (min-width: 60rem) and (min-height: 82rem) and (max-aspect-ratio: 2/1) and (prefers-reduced-motion: no-preference) {
     :global(.js) .work {
       --stack-top: calc(var(--work-top) + var(--head-h) + var(--work-gap));
-      --card-h: clamp(24rem, min(calc(var(--view-h) - var(--stack-top) - 2 * var(--peek) - var(--work-foot)), calc(var(--card-w) * 0.52)), 47rem);
+      --card-room: calc(var(--view-h) - var(--stack-top) - 2 * var(--peek) - var(--work-foot));
       /* A short run between cards keeps the pinned sequence brief; the next
          card waits just below the frame, so the opening view is clean. */
       --stack-gap: calc(var(--work-foot) + 2 * var(--peek) + 1rem);

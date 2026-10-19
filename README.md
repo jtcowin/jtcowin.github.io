@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Full Site Iteration V1 in review.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: Full Site Iteration V1.1 in review.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6 and Creator Marketing and Partnerships Version 1.4 are
 published. Full Site Iteration V1 (John's brief of surgical refinements across the site: the hero's
 staged entrance, decided copy and a restrained emphasis system, one landscape video per homepage card
@@ -14,7 +14,11 @@ with two new montages, the capability icons' single turn, the creator page's wid
 caption, destination films with John's moment and a briefer Lock In moment behind the scenes, the
 credits' joint logistics, the Technical Product Marketing documentation and conclusion copy, the Contact
 accent and the Events activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1))
-is committed locally and not pushed until it has been reviewed in the browser. Placeholders render only in `npm run dev`;
+and its delta, Full Site Iteration V1.1 (a slightly quicker loader, the hero's name kept behind the
+portrait throughout its entrance, larger homepage cards that show each complete 16:9 video, the events
+montage with moving footage only, and the Events activation's paragraph centered against its headline;
+see [Full Site Iteration V1.1](#full-site-iteration-v11)), are committed locally and not pushed until
+they have been reviewed in the browser. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -430,16 +434,25 @@ register with the frame behind him. To change the photograph, replace both and r
 The moving name loops by duplicating its own track and translating it by exactly half, so the restart
 lands on identical pixels; changing the number of repeats per group keeps that true automatically.
 
-The staged entrance (Full Site Iteration V1): after the loader the hero arrives in four overlapping
-stages, timed from the moment the loader's ground starts to clear (`--intro-hero`, 2.27 seconds in).
-1, the photograph and its grade settle (a 3% scale and a dimmed grade easing out over 0.7 s; the
-foreground subject settles with it, still unseen). 2, the moving name and the rule behind it: the name
-fades in from 0.22 s and starts to move at that same moment, as the rule draws from the left from
-0.26 s (0.5 s, eased in and out). 3, the subject resolves above the name, 0.52 to 0.9 s, so it arrives
-in front of a name already moving. 4, the descriptor (a 6 px rise, from 0.72 s), the navigation (0.74
-s) and the arrow (0.76 s) last. Everything is complete 1.1 s after the ground starts to clear (0.7 s
-after it has gone); no bounce, no blur beyond the grade, no travel over 6 px. With reduced motion, or
-when the sequence does not run, the hero keeps its simple fade.
+The staged entrance (Full Site Iteration V1, reordered in V1.1 so the name is never in front of John):
+after the loader the hero arrives in stages, timed from the moment the loader's ground starts to clear
+(`--intro-hero`, 2.12 seconds in since V1.1; the ground dissolves over 0.4 s). 1, the photograph and
+its grade settle (a 3% scale and a dimmed grade easing out over 0.7 s). 2, the portrait: the cutout is
+in place above the rear layers from the first paint, fully opaque, settling with the photograph on the
+same clock so the two register (it has no opacity of its own, so no frame shows it see-through). 3,
+once the ground has gone, the moving name and the rule behind the portrait: the name fades in from
+0.4 s and starts to move at that same moment, as the rule draws from the left from 0.44 s (0.5 s,
+eased in and out). 4, the descriptor (a 6 px rise, from 0.76 s), the navigation (0.78 s) and the arrow
+(0.8 s) last. Everything is complete 1.14 s after the ground starts to clear; no bounce, no blur beyond
+the grade, no travel over 6 px. With reduced motion, or when the sequence does not run, the hero keeps
+its simple fade.
+
+An image still on its way occludes nothing, so the name also waits for the portrait itself (V1.1): an
+inline script right after the portrait, run as the page is parsed, marks the hero `data-subject` once
+the cutout has loaded and decoded, and until then the name's layer (the name and the rule behind it)
+is hidden. A cached portrait is ready before the first paint, so nothing changes on an ordinary visit;
+on a slow connection the name comes in with the portrait, never across John. A portrait that cannot
+load keeps them hidden (the heading is still read out); without JavaScript nothing waits.
 
 Below 75rem the subject spans the full width at the rule's height, so a rule behind him would be
 invisible end to end. At those widths the same rule is drawn in front instead. This is the one place
@@ -655,43 +668,52 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   surrounding color.
 - The opening frame (Version 1.9): from 60rem the section starts just below the floating header
   (`--work-top`, the header's height and a little more), and the Work link lands with the section flush
-  at the top, so the first view holds the headline, the introduction and the complete first card. At
-  1728x968, the review frame, the headline starts at 100px and the first card spans 284 to 914px (630px
-  tall), with the second card waiting just below the frame.
-- The stack: from 60rem the cards stack as you scroll with `position: sticky`: each parks `--peek`
-  (14px) lower than the one before, so the earlier cards' top edges stay in view and none is ever fully
-  covered. A covered card recedes 4% and its video dims; its text keeps full contrast. Every card is
-  one height, capped at 52% of the canvas width. Each card's
-  margin box ends where the last card's does (a `margin-bottom` of one `--peek` for every card after
-  it), so when the section runs out the complete stack rests for a moment and then leaves as one,
-  instead of the last card sliding over the others.
-- The pinned introduction: on screens at least 56rem tall and no wider than 2:1 (1440x900, 1512x945,
-  1728x968, 1920x1080, 2560x1440), the headline and introduction stay pinned just below the header while
-  the cards park beneath them, and nothing ever covers them. The cards take the room left under the
-  introduction, and the run between cards is short, so the pinned sequence lasts about one and a half
-  screens of scrolling (1,490px at 1728x968). The head's margin box ends exactly where the stack's margin
-  boxes end, so the head and the complete stack release together. A script measures the head's height
-  (`--head-h`); the CSS estimate it replaces matches it, so nothing shifts when the script runs. On a
-  screen much taller than the width-capped card (2560x1440) the second card shows below the first from
-  the start. On shorter or very wide desktop screens (1280x720, 1366x768, 1536x864, 2560x1080) the
-  introduction scrolls away as before and the parked stack sits centered in the screen below the header.
+  at the top. Since Full Site Iteration V1.1 the cards are taller (each shows its complete 16:9 video), so
+  the first view holds the headline, the introduction and most of the first card, which is whole once it
+  has parked, a short scroll on (at 1440x900 the headline starts at 92px and the first card at 270px;
+  parked, the card spans 97 to 857px).
+- The card (Full Site Iteration V1.1): its head (number and label, title, subline, link), then the
+  complete video in an exact 16:9 frame at its full inner width, so its height follows from its width.
+  Every head keeps the tallest head's height (a script measures the heads as set, `--card-head`), so
+  the three cards share one size. On desktop a card is as wide as the content, but never so wide that
+  its frame is taller than the screen below the header; in the stack it is the widest whose head and
+  complete frame fit that screen, and is centered, scaling down in proportion on shorter screens rather
+  than cropping the video. Measured: 1045x760 at 1440x900 (its frame 986x555), 891x668 at 1280x800,
+  749x588 at 1280x720, 829x636 at 1366x768, 982x726 at 1536x864, 1147x821 at 1728x968, 1331x924 at
+  1920x1080 and the content's full 1384x954 at 2560x1440. The sizes are worked out in `index.astro` from
+  the card's padding, border, gap and type, which it shares with `WorkPanels.astro`.
+- The stack: on screens at least 60rem wide and 45rem tall the cards stack as you scroll with
+  `position: sticky`: each parks `--peek` (14px) lower than the one before, so the earlier cards' top
+  edges stay in view and none is ever fully covered, and each card is whole once it has parked (the
+  third, two peeks lower, still ends above the screen's foot). A covered card recedes 4% and its video
+  dims; its text keeps full contrast. The parked stack sits centered in the screen below the header. The
+  run between cards follows from the card's height (each next card arrives after about a screen of
+  scrolling at 1440x900). Each card's margin box ends where the last card's does (a `margin-bottom` of
+  one `--peek` for every card after it), so when the section runs out the complete stack rests for a
+  moment and then leaves as one, instead of the last card sliding over the others.
+- The pinned introduction: on screens at least 82rem tall and no wider than 2:1 (2560x1440, 2560x1600),
+  where a complete card at the content's width fits beneath it, the headline and introduction stay
+  pinned just below the header while the cards park beneath them, and nothing ever covers them; the run
+  between cards is short there, and the head's margin box ends exactly where the stack's margin boxes
+  end, so the head and the complete stack release together. A script measures the head's height
+  (`--head-h`). On every other desktop screen (Full Site Iteration V1.1; 56rem was enough for the
+  earlier, shorter cards) the introduction scrolls away before the stack.
 - Enhancement only: the sticky rules apply once an inline script in the head has marked the page with
-  `.js`, and only without reduced motion. Without JavaScript, with reduced motion, and on phones and
-  tablets the section reads as an ordinary sequence: the headline, the introduction, then the three
-  cards.
+  `.js`, and only without reduced motion. Without JavaScript, with reduced motion, on screens under 45rem
+  tall (1366x650, say), and on phones and tablets the section reads as an ordinary sequence: the
+  headline, the introduction, then the three cards, each at the content's width or, on a short screen,
+  as wide as keeps its frame within the screen (1028px wide at 1366x650, its frame 546px tall).
 - Keyboard: going backwards through the stack (Shift+Tab) reaches cards that later ones cover. When a
   control in a covered card takes keyboard focus, the page scrolls back to where that card has just
   parked, so focus is never hidden under another card.
-- The frame (Full Site Iteration V1): one frame and treatment on every card. On phones and tablets it is
-  16:9, the whole video. On desktop it is the whole of the card below its head, and every head keeps room
-  for a two-line subline, so the three frames share one size at any width; the video covers it,
-  centered, so the frame shows a centered band of the 16:9 edit (measured): about 2.6 to 2.7:1 on most
-  screens (1920x940, 1920x1080, 2560x1440, 1536x864, 1366x768, 1280x800, and MacBook windows under 896px
-  tall, such as 1512x860), 3.0 to 3.2:1 where the introduction pins above the cards (1728x968, 1512x945,
-  1470x956), 3.33:1 at 1440x900, and 3.75:1 at the rare short or 1600-wide windows (1366x650, 1600x900).
-  The two montages were cut for that band: every face and every word sits inside the 3.3:1 band, and
-  inside the 3.75:1 band wherever the footage allows; the Technical Product Marketing animation is
-  unchanged, so at 3.3:1 and wider the very top and bottom of its type can touch the frame's edges.
+- The frame (Full Site Iteration V1, corrected in V1.1): one frame and treatment on every card, an exact
+  16:9 at every width, phones to wide screens, so every card shows its complete video: nothing of the
+  top, bottom or sides is cropped, and the Technical Product Marketing hero animation shows as designed.
+  The video and its poster are contained in it (`object-fit: contain`) as a safeguard; the edits are
+  16:9, so they fill it exactly and nothing letterboxes. (Full Site Iteration V1 showed a centered band
+  of each edit on desktop, 2.6:1 to 3.75:1 with the screen, and the montages were cut to keep faces and
+  words near the frame's center, so they read the same in the whole frame.) The card's `focus` option,
+  which steered that crop, is gone.
 - Media (Full Site Iteration V1): each card plays one edit. Each manifest entry's `source` note records
   every excerpt, its range and its order.
 
@@ -699,7 +721,7 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   | --- | --- | --- | --- |
   | 01 | The creator montage (`cc-creator-montage`) | 15.52 s | `home-creator-montage.mp4`, 1600x900, 25 fps, 4.7 MB |
   | 02 | The hero animation (`tm-hero-animation`), unchanged | 11.68 s | `bolt-hero-animation-loop.mp4`, 1600x900, 1.4 MB |
-  | 03 | The events montage (`ev-events-montage`) | 9.84 s | `home-events-montage.mp4`, 1600x900, 23.976 fps, 2.9 MB |
+  | 03 | The events montage (`ev-events-montage`), re-cut in V1.1 | 8.09 s | `home-events-montage-fs11.mp4`, 1600x900, 23.976 fps, 2.6 MB |
 
   The creator montage keeps the Costa Rica aftermovie's crescendo (1:44.56 to 1:53.20, its own cuts and
   acceleration) as its foundation, opened by slower destination imagery (Marina Bay from the air in golden
@@ -708,32 +730,36 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   its flight, the Take Control card), the game show on wheels (the party bus under its caption) and
   podcast production (a camera on the Lock In Podcast set, then the recording under the stone arch, cut
   to stay clear of the operator stepping into frame and of the logo on his shirt). The events montage
-  runs the production room (the finished explainer's title, Bolt solves slippage, then the setup that
-  made it, a slow push across the behind-the-scenes photograph), Sui Fest (its title, We're at SuiFest in
-  Singapore, then the film's own quick run: the logo, the neon entrance, the crew filming on the floor, a
-  guest), a brief creator podcast (Jungle Talk's table, the top 80% of its frame, so its burned-in
-  captions and corner marks fall outside) and the live presentation last (Max introducing himself beside
-  the Sui Summit title slide, the recording's whole frame letterboxed onto its own ground, its captions
-  below the desktop band), whose yellow on dark dissolves back into the explainer's yellow on dark, so the
-  reset is one gesture with no jump in brightness. The explainer's title block is taller than the
-  narrowest band, so that one shot is set at 90% and 98 px lower in the frame, the plain studio wall
-  mirrored into the margins this opens (nothing of the type or the speaker is near them); the loop is
-  turned to start on the title's completed frame, which is also its poster. Both montages reset with a
+  (moving footage only since Full Site Iteration V1.1: no still image, freeze frame or move across a
+  photograph, in this card or any other) runs the production room (the finished explainer's title, Bolt
+  solves slippage, at its own framing; V1's push across the behind-the-scenes photograph of the setup is
+  gone, and no moving footage of the setup exists, so the beat is omitted), Sui Fest (its title, We're
+  at SuiFest in Singapore, then the film's own quick run: the logo, the neon entrance, the crew filming
+  on the floor, a guest), a brief creator podcast (Jungle Talk's table, the top 80% of its frame, so its
+  burned-in captions and corner marks fall outside) and the live presentation last (Max introducing
+  himself beside the Sui Summit title slide, the recording's whole frame letterboxed onto its own ground,
+  with its own captions and footer), whose yellow on dark dissolves back into the explainer's yellow on
+  dark, so the reset is one gesture with no jump in brightness. The loop is turned to start on the
+  title's completed frame, which is also its poster. (V1 set the explainer's title at 90% and 98 px
+  lower, the studio wall mirrored into the margins, to fit the cropped band; V1.1's whole frame needs no
+  reframe.) Both montages reset with a
   0.4 second dissolve into their own opening (the creator montage also dissolves, 0.3 s, from Marina Bay
   into the pool); everything else is hard cuts, every trim half a frame inside its range so no frame of a
   neighboring shot comes along. H.264 High, `-preset slower`, CRF 26 (creator, 2.3 Mbps cap) and 23
   (events, 3 Mbps cap), a keyframe every two seconds, no audio, fast start. `verify.mjs` holds each
-  card's one video under 5 MiB; the three together weigh 9 MB, against about 13 MB for Version 2.0's
+  card's one video under 5 MiB; the three together weigh 8.7 MB, against about 13 MB for Version 2.0's
   nine.
-- Posters: each video's first frame, at its own crop (Marina Bay; the hero animation's first frame; the
-  explainer's complete title), served as a lazy AVIF or WebP picture under the video, so poster and video
-  fill the frame identically. No video carries a `poster` attribute, which browsers fetch at once.
+- Posters: each video's first frame (Marina Bay; the hero animation's first frame; the explainer's
+  complete title), served as a lazy AVIF or WebP picture under the video and contained in the same
+  frame, so poster and video match exactly. No video carries a `poster` attribute, which browsers fetch
+  at once.
 - Playback: every video sits on its poster in a frame of its own (`.card__frame`), invisible until its
   first frame is on screen (`requestVideoFrameCallback`, else the `playing` event), when it fades in
   over 0.18 seconds; whenever it stops it disappears again and returns to its first frame. Only the
-  active card's video plays on its own, muted, looping and inline: on desktop, once its card has reached
-  its resting place in the stack with at least 60% of its frame in view and clear of the next card; on
-  tablets, once 60% of the frame is in view. Never two play at once, and nothing plays on hover (the
+  active card's video plays on its own, muted, looping and inline: where the cards stack, once its card
+  has reached its resting place with at least 60% of its frame in view and clear of the next card (the
+  script reads whether they are stacking from the stylesheet); elsewhere (tablets, short desktop
+  screens), once 60% of the frame is in view. Never two play at once, and nothing plays on hover (the
   supporting panels' hover previews went with them). The play button in the frame's corner starts and
   stops the video from the keyboard or by touch, and the reader's pause holds. A hidden tab pauses it; a
   video that cannot load keeps its poster, and its button goes. A card's video loads only as the card
@@ -859,6 +885,73 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Full Site Iteration V1.1
+
+John's delta brief after Full Site Iteration V1 (October 2026), with a reference recording (`Screen
+Recording 2026-10-18 at 8.53.03 PM.mov`, in which the hero's moving name shows across John for about a
+third of a second while the portrait resolves). Only these five changes; everything else is as approved.
+
+- **01 A slightly quicker loader** (`Intro.astro`). The hero's reveal at 2.12 seconds (2.27 before): the
+  0.15 seconds come from the fully legible hold alone (1.53 to 1.38 seconds), so the coded resolve keeps
+  its 0.7 seconds and the note its legibility. The marker's run is the reveal less its start, so it keeps
+  its accelerating curve and still arrives as the hold ends, a little quicker at the finish; the ground's
+  0.4 second clear and the reduced-motion treatment are unchanged. With the hero's entrance the whole
+  sequence takes about 3.26 seconds.
+- **02 The name always behind the portrait** (`Hero.astro`, `Header.astro`). The entrance in the brief's
+  order: the photograph and its grade; the portrait, in place above the rear layers from the first paint
+  (fully opaque, settling with the photograph on one clock; V1's fade-in of the cutout, during which the
+  name showed across John, is gone); once the ground has gone (0.4 s), the moving name and the rule behind
+  the portrait (the name from 0.4 s, the rule from 0.44 s); then the descriptor, the navigation and the
+  arrow (0.76 to 0.8 s), complete 1.14 s after the ground starts to clear. The name's layer also waits for
+  the portrait image itself, hidden until the cutout has loaded and decoded (see [Hero photograph and
+  layering](#hero-photograph-and-layering)), so a slow connection never shows the name across John
+  either. The final composition is unchanged.
+- **03 Complete 16:9 videos in larger cards** (`WorkPanels.astro`, `index.astro`, `content.config.ts`).
+  Each card's frame is an exact 16:9 at every width, at the card's full inner width, the video and its
+  poster contained in it as a safeguard, so nothing is cropped and the Technical Product Marketing hero
+  animation shows whole (V1's centered band is gone, and with it the card's `focus` option). The cards
+  are taller (the head, then the complete frame); in the stack each is the widest that fits the screen
+  below the header whole, centered, scaling down in proportion on shorter screens. The stacking
+  interaction, its order and its hierarchy are as before, and the run between cards follows from the
+  taller cards. Under 45rem of height the cards read in sequence. The pinned introduction needs 82rem of
+  height now (a complete card under it, 2560x1440 for one); elsewhere it scrolls away before the stack.
+  See [Select Work](#select-work) for the sizes, measured from 1024x768 to 2560x1440.
+- **04 The events montage, moving footage only** (`home-events-montage-fs11.mp4`, 8.09 seconds, its
+  manifest entry). V1's still of the production room (a slow push across the behind-the-scenes
+  photograph) is gone. The only moving footage of the production room is the finished explainer, already
+  the montage's opening (its own opening, the empty set and Max walking in under What is slippage, is
+  mostly full-frame kinetic type), so the setup beat is omitted rather than replaced, and the explainer's
+  title is at its own framing again (V1's reframe served the cropped band). Sui Fest, the creator
+  podcast and the live presentation, the dark-to-dark reset and the loop's start on the completed title
+  are as before. No homepage card video holds a still image, freeze frame or move across a photograph.
+- **05 The activation's paragraph centered** (`EvActivation.astro`). On wide screens the headline stays in
+  the left column and the paragraph in the right, set left, and the paragraph block is centered against
+  the headline's full height (`align-items: center` on the row; V1's cap-top margin is gone): measured
+  within 0.01 px between their midpoints at 1024, 1280, 1440 and 1920. Small screens stack as before.
+
+**For John to confirm.** The pinned introduction gives way on most desktop screens, since a complete card
+needs the height. Narrower cards are centered under the left-aligned headline. The production room's
+setup beat is omitted, as the brief allows when no moving footage of it exists. The explainer's title is
+back at its own framing. If the portrait image cannot load at all, the name stays hidden.
+
+**The checks** (`verify.mjs`): the reveal at 2.10 to 2.15 seconds, the time taken from the hold alone; the
+portrait with no opacity of its own and above the name's layer, the name and its rule only once the
+ground has gone, the stages in order and complete in 0.9 to 1.2 seconds; the load gate (an inline script
+after the portrait that waits for it to decode, and the name's layer hidden until `data-subject`); the
+cards' exact 16:9 frame at every width, contained, with no `focus`; the card's height worked out from its
+width, its width in and out of the stack, no fixed height, the equalized heads and the playback reading
+the stack from the stylesheet; the stack only from 45rem of height and the pinned introduction only from
+82rem; the re-cut events montage, its order and its length, and no still in any card video's record; the
+replaced montage gone; the activation centered with no offsetting margin. A mutation run broke each of
+these and the earlier promises in turn (83 mutations), and every one was caught. A browser pass
+(65 checks) confirmed the reveal at 2.12 seconds, the portrait fully opaque at every 20 ms of the
+entrance, no pixel of the name or the rule on the portrait in eight frames through it, the name waiting
+for a late portrait on a first visit and on a return visit, the cards whole and exactly 16:9 at ten
+screen sizes, the hero animation shown whole, one video at a time, the pinned introduction only where it
+fits, the activation's midpoints level at four widths, and no sideways scroll or page error from 360 to
+2560 wide. The accessibility scan finds nothing on all five pages at two widths, and `astro check`
+reports no errors.
 
 ### Full Site Iteration V1
 

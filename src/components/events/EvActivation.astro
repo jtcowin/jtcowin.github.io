@@ -347,22 +347,17 @@ const glow = JSON.stringify({ rate: stage.rate, spill: stage.spill, lum: stage.l
     column-span: all;
   }
 
-  /* Full Site Iteration V1: on wide screens the headline and the paragraph begin
-     together, top-aligned (V1.6 set them on the row's foot), with the same widths
-     and gap; the paragraph moves by the difference in where each first line's
-     capitals begin, so its first line stands level with the headline's (the
-     headline's capitals start 0.1365 of its size below its line's top, the
-     paragraph's 0.4986 of its own: Archivo at the display line height of 0.98,
-     Manrope at 1.7). The rendering keeps its place and width. */
+  /* Full Site Iteration V1.1: on wide screens the headline stays in the left
+     column and the paragraph in the right, set left, and the paragraph block is
+     centered against the full height of the multi-line headline: the row's
+     items centered, so the paragraph's midpoint meets the headline's (V1.6 set
+     them on the row's foot, Full Site Iteration V1 on its top). The widths and
+     the gap are as before; the rendering keeps its place and width. */
   @media (min-width: 60rem) {
     .eva__head {
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       column-gap: clamp(2.5rem, 5vw, 6rem);
-      align-items: start;
-    }
-
-    .eva__copy {
-      margin-top: calc(0.1365 * var(--text-2xl) - 0.4986 * var(--text-md));
+      align-items: center;
     }
 
     .eva__kit {

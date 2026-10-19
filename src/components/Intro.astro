@@ -11,8 +11,9 @@
  * edge reaches it, cycles for a moment through a few monospace code glyphs in
  * the accent, then settles into its letter, which never changes again; the
  * scramble stays at the edge (two or three positions at a time), and the whole
- * line is legible 0.74 seconds in, then holds for 1.53 seconds before it
- * leaves. No cursor, caret, blinking, flashes, tearing, color fringes, scan
+ * line is legible 0.74 seconds in, then holds for 1.38 seconds before it
+ * leaves (1.53 until Full Site Iteration V1.1, which took the 0.15 seconds
+ * from the hold alone, so the resolve keeps its pace). No cursor, caret, blinking, flashes, tearing, color fringes, scan
  * lines or particles, nothing after the line has resolved, and no change of
  * spacing, so a resolved letter never moves. The marker stays the primary
  * motion: it now gathers speed as it goes (V1.4), setting off at a
@@ -21,12 +22,13 @@
  * with no overshoot, bounce or pause, as the hero comes in; its streak
  * lengthens with the speed. A pace, not a measure of loading.
  * When the marker reaches the end of its path the note and the path leave,
- * the ground dissolves and the hero builds in four overlapping stages
- * (Hero.astro and Header.astro; Full Site Iteration V1): the photograph and
- * its grade; the moving name, its stream setting off as the rule behind it
- * draws across the frame; the subject, resolving in front of the name; then
- * the descriptor, the arrow and the navigation, the whole composition settled
- * 1.1 seconds after the ground begins to clear. About 3.4 seconds in all. No
+ * the ground dissolves and the hero builds in stages (Hero.astro and
+ * Header.astro; Full Site Iteration V1, reordered in V1.1): the photograph and
+ * its grade, with the portrait already in place above the rear layers; then,
+ * once the ground has gone, the moving name and the rule behind the portrait;
+ * then the descriptor, the arrow and the navigation, the whole composition
+ * settled 1.14 seconds after the ground begins to clear. About 3.3 seconds in
+ * all. No
  * percentage: the marker is a pace, not a measure, and nothing here claims to
  * count anything.
  *
@@ -174,20 +176,22 @@ const letters = at;
   /* ---- the timing --------------------------------------------------------------
      On the document, so the hero and the header can read their part of the
      handoff. The ground alone for a moment; the note resolves, left to right,
-     in 0.7 s (V1.4) and holds, fully legible, for 1.53 s while the marker
+     in 0.7 s (V1.4) and holds, fully legible, for 1.38 s while the marker
      travels from just after the start to the end of its path, gathering speed,
-     arriving as the hold ends: --intro-reveal (2.27 s, since V1.1), where the
+     arriving as the hold ends: --intro-reveal (2.12 s since Full Site Iteration
+     V1.1, which took 0.15 s from the hold; 2.27 s from V1.1 to V1), where the
      note and the path leave, the ground starts to clear and the hero's stages
-     begin (--intro-hero, read by Hero.astro and Header.astro; since Full Site
-     Iteration V1 they take 1.1 s, so the hero is settled at about 3.4 s), so
-     the ground clears onto nothing. The same on phones, where the note matters
-     most. */
+     begin (--intro-hero, read by Hero.astro and Header.astro; they take 1.14 s,
+     so the hero is settled at about 3.26 s), so the ground clears onto nothing.
+     The marker's run is the reveal less its start, so it keeps its curve,
+     gathering speed to a slightly quicker finish. The same on phones, where the
+     note matters most. */
   :global(html.intro-hold) {
     --intro-lead: 40ms; /* the ground alone, before the note */
     --intro-in: 700ms; /* the note resolving, left to right (V1.4; V1.2's letter rise took 600 ms) */
     --intro-glyph: 80ms; /* each position's moment of code glyphs before its letter (V1.4) */
     --intro-out: 130ms; /* the note leaving, as the ground starts to clear */
-    --intro-hold: 1530ms; /* the complete note, fully legible (V1.4; the sequence keeps its length) */
+    --intro-hold: 1380ms; /* the complete note, fully legible (1530 ms from V1.4 until Full Site Iteration V1.1) */
     --intro-go: 120ms; /* the marker sets off */
     --intro-clear: 400ms; /* the ground dissolving */
 

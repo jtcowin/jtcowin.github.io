@@ -44,15 +44,12 @@ const work = defineCollection({
          * approved video entry in the asset manifest. It takes the card's full
          * media width in the same frame and treatment as the other cards, sits
          * on its own poster (the entry's still) until it plays, and plays muted,
-         * on its own only while its card is the active one in the stack.
+         * on its own only while its card is the active one in the stack. Since
+         * Full Site Iteration V1.1 the frame is an exact 16:9 at every width and
+         * the video shows whole, so there is no crop to steer (the `focus`
+         * option that steered it is gone).
          */
         video: z.string(),
-        /**
-         * Optional CSS object-position for the video and its poster: which part
-         * of the frame stays in view where the card's media area crops it (the
-         * wide desktop frame). Omitted means centered.
-         */
-        focus: z.string().optional(),
       }),
     }),
   }),

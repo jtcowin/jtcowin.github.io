@@ -432,15 +432,36 @@ if (/pointerenter|mouseenter|mouseover|\(hover: hover\)/.test(playback)) failure
 // below its head, and every head keeps room for a two-line subline, so the
 // three frames share one size and one aspect ratio at any width.
 const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
-const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage.mp4'];
+const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage-fs11.mp4'];
 cardsHtml.forEach((c, i) => {
   const v = (c.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
   if (!/\bdata-card-video\b/.test(v) || sourcesOf(v).join() !== CARD_MEDIA[i]) failures.push(`[claim] card ${i + 1} must play ${CARD_MEDIA[i]} (found ${sourcesOf(v).join(', ') || 'none'})`);
   if (/object-position/.test(c)) failures.push(`[claim] card ${i + 1} keeps the frame centered (no per-card focus is set)`);
 });
 if (/class="fb[ "]/.test(cardsHtml.join(''))) failures.push('[claim] no typographic stand-in may render on the Select Work cards');
-if (!rulesFor(/^\.card__media(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => !r.at && /aspect-ratio:\s*16\s*\/\s*9/.test(r.body))) failures.push('[claim] every card video frame is 16:9 on phones and tablets');
-if (!rulesFor(/^\.card__media(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => DESKTOP.test(r.at) && /aspect-ratio:\s*auto/.test(r.body))) failures.push('[claim] on desktop every card video fills the card below its head');
+// Full Site Iteration V1.1 (03): the complete video in every card, at every width: an exact 16:9 frame at the card's
+// full inner width (no other aspect ratio anywhere, desktop included), the video and its poster contained in it as a
+// safeguard (never covering, so never cropped), and no per-card focus. On desktop the card is the content's width or,
+// in the stack, the widest whose head and complete frame fit the screen below the header, centered; its height
+// follows from its width, every head kept at the tallest one's height.
+if (!rulesFor(/^\.card__media(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => !r.at && /aspect-ratio:\s*16\s*\/\s*9/.test(r.body)) || rulesFor(/\.card__media(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => /aspect-ratio:\s*(?!16\s*\/\s*9)/.test(r.body))) failures.push('[claim] V1.1: every card video frame is an exact 16:9 at every width, desktop included');
+const fitRules = rulesFor(/^\.card__media (?:picture )?\.card__img|^\.card__media(?:\[data-astro-cid-[\w-]+\])? \.card__img|^\.card__video(?:\[data-astro-cid-[\w-]+\])?$/);
+if (!fitRules.some((r) => /object-fit:\s*contain/.test(r.body)) || CSS_RULES.some((r) => /\.card__(?:img|video|poster)\b/.test(r.sel) && /object-fit:\s*cover/.test(r.body))) failures.push('[claim] V1.1: the card video and its poster are contained in the frame, never covering (cropping) it');
+if (/\bfocus\s*:/.test(fs.readFileSync(path.join(root, 'src/content.config.ts'), 'utf8').split('media: z.object')[1]?.split('})')[0] || '')) failures.push('[claim] V1.1: the cards have no crop to steer (card.media.focus is gone)');
+{
+  const work = rulesFor(/^\.work(?:\[data-astro-cid-[\w-]+\])?$/).filter((r) => DESKTOP.test(r.at) && !/min-height|max-aspect/.test(r.at)).map((r) => r.body).join(';');
+  const stack = CSS_RULES.filter((r) => /^\.js \.work$/.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '').trim()) && DESKTOP.test(r.at) && /min-height:\s*45rem|height\s*>=\s*45rem/.test(r.at) && MOTION_OK.test(r.at)).map((r) => r.body).join(';');
+  const norm = (v) => v.replace(/\s+/g, ' ');
+  if (!/--card-h:\s*calc\(2 ?\* ?var\(--card-pad\) ?\+ ?2px ?\+ ?var\(--card-head\) ?\+ ?var\(--card-gap\) ?\+ ?\(var\(--card-w\) ?- ?2 ?\* ?var\(--card-pad\) ?- ?2px\) ?\* ?9 ?\/ ?16\)/.test(norm(work))) failures.push('[claim] V1.1: the card\'s height follows from its width: its padding and border, its head, the gap, and a 16:9 frame at its inner width');
+  if (!/--card-w:\s*min\(var\(--card-max\), ?calc\(\(var\(--view-h\) ?- ?var\(--nav-h\) ?- ?2rem\) ?\* ?16 ?\/ ?9/.test(norm(work))) failures.push('[claim] V1.1: on desktop a card is the content\'s width, but never so wide that its complete frame is taller than the screen below the header');
+  if (!/--card-room:/.test(stack) || !/--card-w:\s*min\(var\(--card-max\), ?calc\(\(var\(--card-room\) ?- ?2 ?\* ?var\(--card-pad\) ?- ?2px ?- ?var\(--card-head\) ?- ?var\(--card-gap\)\) ?\* ?16 ?\/ ?9/.test(norm(stack))) failures.push('[claim] V1.1: in the stack a card is the widest whose head and complete 16:9 frame fit the room below the header, never wider than the content');
+  const cardDesk = rulesFor(/^\.card(?:\[data-astro-cid-[\w-]+\])?$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+  if (!/width:\s*var\(--card-w/.test(cardDesk) || !/margin-inline:\s*auto/.test(cardDesk) || /(?:^|;)\s*height:/.test(cardDesk)) failures.push('[claim] V1.1: a desktop card takes the stack\'s width, centered, and its own height (no fixed height cropping the frame)');
+  const headDesk = rulesFor(/^\.card__head(?:\[data-astro-cid-[\w-]+\])?$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
+  const stackJs = scriptsText.find((t) => t.includes('data-catalog') && t.includes('--card-head')) || '';
+  if (!/min-height:\s*var\(--card-head\)/.test(headDesk) || !/align-content:\s*start/.test(headDesk) || !/offsetTop/.test(stackJs) || !/ResizeObserver/.test(stackJs)) failures.push('[claim] V1.1: every card head keeps the tallest head\'s height, measured as set (the layout\'s own offsets), so the three cards share one size');
+  if (!/getComputedStyle\(\w+\[0\]\)\.position\s*===?\s*['"`]sticky['"`]/.test(stackJs)) failures.push('[claim] V1.1: the playback reads whether the cards are stacking from the stylesheet (a short screen reads them in sequence)');
+}
 if (!rulesFor(/^\.card__subline(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => DESKTOP.test(r.at) && /min-height:\s*3em/.test(r.body))) failures.push('[claim] on desktop every card head keeps room for a two-line subline, so the three frames share one size');
 if (rulesFor(/\.card__panel/).length) failures.push('[claim] the supporting-panel styles were retired with the panels');
 // The card videos are web derivatives made for the homepage, never the
@@ -500,7 +521,7 @@ const imageSize = (file) => {
 const LOOP_SECONDS = {
   'home-creator-montage.mp4': 15.52,
   'bolt-hero-animation-loop.mp4': 11.68,
-  'home-events-montage.mp4': 9.84,
+  'home-events-montage-fs11.mp4': 8.09,
 };
 const cardManifest = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets;
 cardsHtml.forEach((c, i) => {
@@ -544,6 +565,10 @@ for (const retired of ['creator-campaigns/creator-costa-rica-aftermovie-poster.j
 for (const id of ['cc-costa-rica-loop', 'cc-trezor-loop', 'cc-bolt-bus-loop', 'tm-architecture-loop', 'ev-slippage-preview', 'ev-suifest-loop', 'ev-max-loop']) {
   if (cardManifest.some((a) => a.id === id)) failures.push(`[hygiene] the manifest entry ${id} was retired in Full Site Iteration V1`);
 }
+// Full Site Iteration V1.1 re-cut the events montage (moving footage only), under a new name.
+for (const retired of ['home-events-montage.mp4']) {
+  if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was replaced in Full Site Iteration V1.1 and must not ship`);
+}
 // Select Work (v1.9): on tall desktop screens the title and intro stay pinned
 // beneath the header while the cards park under them, and both release
 // together after the last card. It is an enhancement only: the inline head
@@ -567,6 +592,10 @@ for (const r of stickyWork) {
     failures.push(`[claim] "${r.sel}" is sticky without the .js class, a 60rem minimum width and prefers-reduced-motion: no-preference`);
   }
   if (/\.work__head\b/.test(r.sel) && !TALL.test(r.at)) failures.push('[claim] the pinned Select Work intro must be limited to screens tall enough to hold it');
+  // Full Site Iteration V1.1: the cards stack only where a complete card fits with room to spare (45rem of height), and
+  // the introduction stays pinned only where it and a complete card at the content's width fit together (82rem).
+  if (/\.card\b(?!-)/.test(r.sel) && !/min-height:\s*45rem|height\s*>=\s*45rem/.test(r.at)) failures.push('[claim] V1.1: the cards stack only on screens at least 45rem tall');
+  if (/\.work__head\b/.test(r.sel) && !/min-height:\s*82rem|height\s*>=\s*82rem/.test(r.at)) failures.push('[claim] V1.1: the introduction stays pinned only on screens at least 82rem tall, where a complete card fits beneath it');
 }
 // Keyboard focus never rests on a covered card: the stack script brings a
 // covered card back into view when one of its controls takes keyboard focus.
@@ -2003,13 +2032,13 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // V1.6: the approved wider scope of the work, and the headline's second half in the page's teal, the color alone.
   const ACT_COPY = 'Before the doors open, I shape the strategy and coordinate every part of the activation, from sponsorships, speaking opportunities, and merchandise to event assets, on-site content, and post-event distribution.';
   if (one(act, /<p class="eva__copy[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== ACT_COPY || evData.activation?.copy !== ACT_COPY) failures.push('[events] the activation carries the V1.6 paragraph: the strategy and every part of the activation, before the doors open');
-  // Full Site Iteration V1 (24): on wide screens the headline and the paragraph are top-aligned (never aligned to
-  // their ends), the paragraph's first line moved so its cap top sits level with the headline's (the two faces'
-  // measured metrics: Archivo's cap top 0.1365em into its line at 0.98, Manrope's 0.4986em at 1.7); widths,
-  // gap and rendering as before; stacked on small screens.
+  // Full Site Iteration V1.1 (05): on wide screens the headline stays left and the paragraph right, set left, and
+  // the paragraph block is centered against the full height of the multi-line headline: the row's items centered
+  // (never their tops or feet), with no margin offsetting the paragraph; widths, gap and rendering as before;
+  // stacked on small screens.
   const evaHeadWide = evRules(/^\.eva__head$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
   const evaCopyWide = evRules(/^\.eva__copy$/).filter((r) => DESKTOP.test(r.at)).map((r) => r.body).join(';');
-  if (!/align-items:\s*start/.test(evaHeadWide) || evRules(/^\.eva__head$/).some((r) => /align-items:\s*(?:end|flex-end|baseline|last baseline)/.test(r.body)) || !/grid-template-columns:\s*minmax\(0(?:px)?,\s*5fr\)\s+minmax\(0(?:px)?,\s*7fr\)/.test(evaHeadWide) || !/margin-top:\s*calc\(\s*\.1365\s*\*\s*var\(--text-2xl\)\s*-\s*\.4986\s*\*\s*var\(--text-md\)\s*\)/.test(evaCopyWide) || evRules(/^\.eva__head$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push('[events] the activation\'s headline and paragraph are top-aligned on wide screens, the paragraph\'s first line level with the headline\'s cap top, and stacked on small screens');
+  if (!/align-items:\s*center/.test(evaHeadWide) || evRules(/^\.eva__head$/).some((r) => /align-items:\s*(?:start|end|flex-start|flex-end|baseline|last baseline)/.test(r.body)) || evRules(/^\.eva__copy$/).some((r) => /margin-top:|align-self:|text-align:\s*(?:center|right)/.test(r.body)) || /margin-top:|padding-top:/.test(evaCopyWide) || !/grid-template-columns:\s*minmax\(0(?:px)?,\s*5fr\)\s+minmax\(0(?:px)?,\s*7fr\)/.test(evaHeadWide) || evRules(/^\.eva__head$/).some((r) => !r.at && /grid-template-columns/.test(r.body))) failures.push('[events] V1.1: the activation\'s paragraph is centered against the headline\'s full height on wide screens (the row\'s items centered, no offsetting margin), the headline left and the paragraph right, set left, and stacked on small screens');
   const actTitle = (act.match(/<h2 id="ev-activation-title"[\s\S]*?<\/h2>/) || [''])[0];
   const actAccent = [...actTitle.matchAll(/<span class="eva__accent"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(m[1]));
   const accentRule = evRules(/^\.eva__accent$/).map((r) => r.body).join(';');
@@ -2310,15 +2339,23 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const finalSec = mp4Seconds(path.join(root, 'public/media', finalLoop.file || '-'));
   const finalFacts = mp4Facts(path.join(root, 'public/media', finalLoop.file || '-'));
   if (finalLoop.permission !== 'approved' || !/1:09\.111 to 1:17\.953/.test(finalLoop.source || '') || !/Bolt solves slippage by providing you a deterministic price/.test(finalLoop.source || '') || !/set execution price/.test(finalLoop.source || '') || !/When things like slippage occur/.test(finalLoop.source || '') || !(Math.abs(finalSec - 8.84) < 0.05) || Math.abs(finalLoop.duration - 8.84) > 0.01 || finalFacts.handlers.includes('soun') || finalFacts.width !== 1600 || finalFacts.top.indexOf('moov') > finalFacts.top.indexOf('mdat') || !fs.existsSync(path.join(root, 'src/assets', finalLoop.poster || '-'))) failures.push(`[events] the Final loop is the two scenes alone, 1:09.111 to 1:17.953 of the film, silent, 1600 wide, with its poster (found ${finalSec}s)`);
-  // Full Site Iteration V1: the homepage's events card plays one montage in this order: the production room (the
-  // finished explainer, then its setup), Sui Fest and its event film, a brief creator podcast, and the live
-  // presentation last, whose title slide dissolves back into the explainer's yellow on dark (no jump in brightness).
+  // Full Site Iteration V1: the homepage's events card plays one montage in this order: the production room, Sui Fest
+  // and its event film, a brief creator podcast, and the live presentation last, whose title slide dissolves back into
+  // the explainer's yellow on dark (no jump in brightness). V1.1 (04): moving footage only, so the production room is
+  // the finished explainer alone (its setup was a push across the behind-the-scenes photograph, and no moving footage
+  // of the setup exists); no still image, freeze frame or move across a photograph, in this card or any other.
   {
     const m = evAsset('ev-events-montage');
     const src = m.source || '';
-    const order = ['Bolt Explainers - Slippage.mp4 1:09.111', 'Sui Summit BTS.jpeg', 'SuiFest.mp4 0:00.90', 'Jungle Talk.mp4', 'Max Presentation.mp4 0:00.50'].map((t) => src.indexOf(t));
-    if (m.file !== 'home-events-montage.mp4' || m.permission !== 'approved' || order.some((x) => x < 0) || order.some((x, i) => i && x < order[i - 1]) || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !(Math.abs(LOOP_SECONDS['home-events-montage.mp4'] - m.duration) < 0.02)) {
+    const order = ['Bolt Explainers - Slippage.mp4 1:09.111', 'SuiFest.mp4 0:00.90', 'Jungle Talk.mp4', 'Max Presentation.mp4 0:00.50'].map((t) => src.indexOf(t));
+    if (m.file !== 'home-events-montage-fs11.mp4' || m.permission !== 'approved' || order.some((x) => x < 0) || order.some((x, i) => i && x < order[i - 1]) || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !(Math.abs(LOOP_SECONDS['home-events-montage-fs11.mp4'] - m.duration) < 0.02)) {
       failures.push('[events] the homepage\'s events montage runs production room, Sui Fest, creator podcast, live presentation, its reset dissolving the presentation into the explainer');
+    }
+    const cardVideos = cardManifest.filter((a) => CARD_MEDIA.includes(a.file));
+    for (const v of cardVideos) {
+      const note = v.source || '';
+      const listed = note.replace(/No still image, freeze frame or move across a photograph/g, '');
+      if (/\.(?:jpe?g|png|webp|heic|tiff?)\b|Ken Burns|kenburns|freeze/i.test(listed) || (v.id === 'ev-events-montage' && !/No still image, freeze frame or move across a photograph/.test(note))) failures.push(`[claim] V1.1: ${v.id}: a homepage card video is moving footage only, no still image, freeze frame or move across a photograph`);
     }
   }
   const sfPanelRule = evRules(/^(?:html\.js )?\.evd__sf-panel$/).filter((r) => !r.at).map((r) => r.body).join(';');
@@ -3504,8 +3541,7 @@ const varsOf = (body) => Object.fromEntries([...body.matchAll(/--intro-([a-z0-9]
 const holdVars = varsOf(rulesFor(/^html\.intro-hold$/).filter((r) => !r.at).map((r) => r.body).join(';'));
 // Creator Marketing V1.0, Part I: the note held fully legible (hold), then the reveal; no phrases.
 const T = Object.fromEntries(['lead', 'in', 'out', 'hold', 'go', 'clear'].map((k) => [k, ms(holdVars[k])]));
-// An animation shorthand may list several animations (Full Site Iteration V1: the subject settles with the
-// photograph, then resolves above the name), and the minifier may reorder each one's parts.
+// An animation shorthand may list several animations, and the minifier may reorder each one's parts.
 const splitTop = (v) => {
   const out = [];
   let depth = 0;
@@ -3582,30 +3618,43 @@ if (Object.values(T).some((x) => Number.isNaN(x)) || LAYERS.some((l) => Number.i
   // to 3.2 seconds. (V1.2's letter rise and its --intro-letter are gone.)
   const glyphMs = ms(holdVars.glyph);
   if (!(T.in >= 450 && T.in <= 800) || !(glyphMs >= 40 && glyphMs <= 120) || holdVars.letter) failures.push(`[intro] V1.4: the note resolves in 0.45 to 0.8 seconds, each position scrambling for a brief moment (40 to 120 ms) before its letter (found ${T.in} ms, glyphs ${glyphMs} ms${holdVars.letter ? ', and a letter rise' : ''})`);
-  if (!(T.hold >= 1500) || reveal !== 2270) failures.push(`[intro] the complete note holds at least 1.5 seconds and the loader keeps its length: the reveal at 2.27 seconds, as in V1.1 (found a ${T.hold} ms hold, the reveal at ${reveal} ms)`);
+  // Full Site Iteration V1.1 (01): a little quicker, the reveal at about 2.10 to 2.15 seconds (2.27 before), the time
+  // taken from the fully legible hold alone (the resolve keeps its 0.7 seconds), the hold still comfortably long.
+  if (!(T.hold >= 1300 && T.hold < 1530) || !(reveal >= 2100 && reveal <= 2150) || T.in !== 700 || T.lead !== 40) failures.push(`[intro] V1.1: the reveal at about 2.10 to 2.15 seconds, the time taken from the hold alone (at least 1.3 seconds still), the note's resolve unhurried (found a ${T.hold} ms hold, the reveal at ${reveal} ms, the resolve ${T.in} ms after ${T.lead} ms)`);
   if (!(T.out >= 120 && T.out <= 160)) failures.push(`[intro] the note leaves in 0.12 to 0.16 seconds (found ${T.out} ms)`);
   // Full Site Iteration V1: the hero's staged entrance completes about 0.9 to 1.2 seconds after the loading screen
-  // starts to clear, so the whole sequence runs about 3.2 to 3.5 seconds.
+  // starts to clear; with V1.1's quicker reveal the whole sequence runs about 3.1 to 3.35 seconds.
   if (!(heroEnd >= 900 && heroEnd <= 1200)) failures.push(`[intro] the hero's staged entrance completes 0.9 to 1.2 seconds after the loader starts to clear (found ${heroEnd} ms)`);
-  if (!(total >= 3170 && total <= 3470)) failures.push(`[intro] the whole sequence runs about 3.2 to 3.5 seconds, the hero's entrance included (found ${total} ms)`);
+  if (!(total >= 3100 && total <= 3350)) failures.push(`[intro] the whole sequence runs about 3.1 to 3.35 seconds, the hero's entrance included (found ${total} ms)`);
   const noteOut = (introRules(/^html\.intro \.intro__note$/).map((r) => r.body).join(';').match(/intro-word-out\s+var\(--intro-out\)\s+var\(--intro-leave\)\s+([^,;]+?)\s+forwards/) || [])[1];
   if (noteOut !== 'var(--intro-reveal)') failures.push(`[intro] the note holds its full time and leaves as the ground starts to clear (found ${noteOut})`);
   if (!(T.go > 0 && T.go < 200) || !(T.clear >= 300 && T.clear <= 500)) failures.push(`[intro] the marker sets off at once, and the ground dissolves in 0.3 to 0.5 seconds (found ${T.go} and ${T.clear} ms)`);
-  // Full Site Iteration V1, the staged entrance, overlapping: (1) the photograph and its grade settle (the subject
-  // settles with it, unseen); (2) the moving name and the rule behind it, the name starting as the rule draws; (3) the
-  // foreground subject resolves above the name; (4) the descriptor, the arrow and the navigation last.
+  // Full Site Iteration V1.1 (02), the staged entrance reordered so the name is never in front of John: (1) the
+  // photograph and its grade settle; (2) the portrait (the cutout above the name) is in place from the first paint,
+  // settling with the photograph on the same clock and nothing else: no opacity of its own, so never see-through;
+  // (3) once the ground has gone (--intro-clear), the moving name and the rule behind the portrait, the name starting
+  // as the rule draws; (4) the descriptor, the arrow and the navigation last, together.
   const L = Object.fromEntries(LAYERS.map((l) => [l.label, l]));
-  const resolve = (L['the subject'].anims || []).find((a) => a.name === 'hero-resolve');
+  const subjectAnims = L['the subject'].anims || [];
   const lastFour = ['the descriptor', 'the arrow', 'the navigation'].map((k) => L[k]);
   const stageOk =
     L['the photograph'].off === 0 &&
-    (L['the subject'].anims || []).some((a) => a.off === 0 && a.name === L['the photograph'].name) &&
-    L['the name'].off > 0 &&
+    subjectAnims.length === 1 && subjectAnims[0].off === 0 && subjectAnims[0].name === L['the photograph'].name &&
+    L['the name'].off >= T.clear &&
     Math.abs(L['the rule'].off - L['the name'].off) <= 100 &&
-    resolve && resolve.off > Math.max(L['the name'].off, L['the rule'].off) && resolve.off < L['the name'].end &&
-    lastFour.every((l) => l.off > resolve.off && l.off < resolve.off + resolve.dur) &&
+    lastFour.every((l) => l.off > L['the name'].off && l.off < L['the name'].end + 120) &&
     Math.max(...lastFour.map((l) => l.off)) - Math.min(...lastFour.map((l) => l.off)) <= 120;
-  if (!stageOk) failures.push(`[intro] the hero arrives in four overlapping stages: the photograph, then the name and its rule together, then the subject above the name, then the descriptor, arrow and navigation (found ${LAYERS.map((l) => `${l.label} +${l.off}`).join(', ')}${resolve ? `, the subject resolving at +${resolve.off}` : ''})`);
+  if (!stageOk) failures.push(`[intro] V1.1: the hero arrives in stages: the photograph, the portrait in place above the rear layers from the first paint (its settle and nothing else), then, once the ground has gone, the name and its rule behind the portrait, then the descriptor, arrow and navigation (found ${LAYERS.map((l) => `${l.label} +${l.off}`).join(', ')}; the subject's ${subjectAnims.map((a) => a.name).join(', ')})`);
+  // The portrait has no animation of its opacity anywhere, and sits above the name's layer.
+  if (CSS_RULES.some((r) => /\.hero__subject\b/.test(r.sel) && (/opacity:\s*0(?![.\d])/.test(r.body) || /hero-resolve|hero-fade/.test(r.body)))) failures.push('[intro] V1.1: the portrait is never transparent: no opacity of its own and no fade');
+  const zOf = (re) => Number((rulesFor(re).filter((r) => !r.at).map((r) => r.body).join(';').match(/z-index:\s*(\d+)/) || [])[1]);
+  if (!(zOf(/^\.hero__subject(?:\[data-astro-cid-[\w-]+\])?$/) > zOf(/^\.hero__behind(?:\[data-astro-cid-[\w-]+\])?$/))) failures.push('[intro] the portrait sits above the moving name and the rule behind it');
+  // And it waits for the portrait itself: until the cutout has loaded and decoded, the name's layer is hidden (an
+  // image still on its way occludes nothing). An inline script in the hero, run as the page is parsed, marks the
+  // section; without JavaScript nothing waits.
+  const heroSec = (home.match(/<section class="hero"[\s\S]*?<\/section>/) || [''])[0];
+  const gate = [...heroSec.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).find((t) => t.includes('data-subject')) || '';
+  if (!gate || heroSec.indexOf(gate) < heroSec.indexOf('hero__subject') || !/\.decode\(/.test(gate) || !/naturalWidth/.test(gate) || !/addEventListener\(['"]load['"]/.test(gate) || !rulesFor(/^html\.js \.hero(?:\[data-astro-cid-[\w-]+\])?:not\(\[data-subject\]\) \.hero__behind(?:\[data-astro-cid-[\w-]+\])?$/).some((r) => /visibility:\s*hidden/.test(r.body))) failures.push('[intro] V1.1: the name waits for the portrait: hidden until the cutout has loaded and decoded (the section marked data-subject by an inline script after the portrait)');
   const trackDelay = introRules(/^html\.intro-hold \.stream__track$/).filter((r) => MOTION_OK.test(r.at)).map((r) => (r.body.match(/animation-delay:\s*calc\(var\(--intro-hero\)\s*\+\s*([\d.]+m?s)\)/) || [])[1]).find(Boolean);
   if (ms(trackDelay || '') !== L['the name'].off) failures.push(`[intro] the name's movement begins with the name's arrival, as the rule draws (found the stream at +${ms(trackDelay || '')} ms)`);
   // No bounce, no heavy blur, no large travel: opacity, a slight settle of the photograph, a short rise.
