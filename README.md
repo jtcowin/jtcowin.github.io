@@ -685,12 +685,13 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - The frame (Full Site Iteration V1): one frame and treatment on every card. On phones and tablets it is
   16:9, the whole video. On desktop it is the whole of the card below its head, and every head keeps room
   for a two-line subline, so the three frames share one size at any width; the video covers it,
-  centered, so the frame shows a centered band of the 16:9 edit, from 2.58:1 at most widths (1920x940,
-  2560x1440, MacBook windows) to 3.3:1 at 1440x900 and 3.75:1 at the rare short or 1600-wide windows
-  (1366x650, 1600x900). The two montages were cut for that band: every face and every word sits inside
-  the 3.3:1 band, and inside the 3.75:1 band wherever the footage allows; the Technical Product
-  Marketing animation is unchanged, so at 3.3:1 and wider the very top and bottom of its type can touch
-  the frame's edges.
+  centered, so the frame shows a centered band of the 16:9 edit (measured): about 2.6 to 2.7:1 on most
+  screens (1920x940, 1920x1080, 2560x1440, 1536x864, 1366x768, 1280x800, and MacBook windows under 896px
+  tall, such as 1512x860), 3.0 to 3.2:1 where the introduction pins above the cards (1728x968, 1512x945,
+  1470x956), 3.33:1 at 1440x900, and 3.75:1 at the rare short or 1600-wide windows (1366x650, 1600x900).
+  The two montages were cut for that band: every face and every word sits inside the 3.3:1 band, and
+  inside the 3.75:1 band wherever the footage allows; the Technical Product Marketing animation is
+  unchanged, so at 3.3:1 and wider the very top and bottom of its type can touch the frame's edges.
 - Media (Full Site Iteration V1): each card plays one edit. Each manifest entry's `source` note records
   every excerpt, its range and its order.
 
