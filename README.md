@@ -5,20 +5,23 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Full Site Iteration V1.1 in review.** Version 2.0, Technical Product Marketing Version 1.6,
-Events and Multimedia Production Version 1.6 and Creator Marketing and Partnerships Version 1.4 are
-published. Full Site Iteration V1 (John's brief of surgical refinements across the site: the hero's
-staged entrance, decided copy and a restrained emphasis system, one landscape video per homepage card
-with two new montages, the capability icons' single turn, the creator page's wider program paragraph,
-60-post Trezor sample, centered feedback and quiet transition, the library without its eyebrow and
-caption, destination films with John's moment and a briefer Lock In moment behind the scenes, the
-credits' joint logistics, the Technical Product Marketing documentation and conclusion copy, the Contact
-accent and the Events activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1))
-and its delta, Full Site Iteration V1.1 (a slightly quicker loader, the hero's name kept behind the
-portrait throughout its entrance, larger homepage cards that show each complete 16:9 video, the events
-montage with moving footage only, and the Events activation's paragraph centered against its headline;
-see [Full Site Iteration V1.1](#full-site-iteration-v11)), are committed locally and not pushed until
-they have been reviewed in the browser. Placeholders render only in `npm run dev`;
+**Status: Full Site Iteration V1.2 in review.** Version 2.0, Technical Product Marketing Version 1.6,
+Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
+Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
+copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
+capability icons' single turn, the creator page's wider program paragraph, 60-post Trezor sample,
+centered feedback and quiet transition, the library without its eyebrow and caption, destination films
+with John's moment and a briefer Lock In moment behind the scenes, the credits' joint logistics, the
+Technical Product Marketing documentation and conclusion copy, the Contact accent and the Events
+activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1)) and its delta, Full
+Site Iteration V1.1 (a slightly quicker loader, the hero's name kept behind the portrait throughout its
+entrance, larger homepage cards that show each complete 16:9 video, the events montage with moving
+footage only, and the Events activation's paragraph centered against its headline; see [Full Site
+Iteration V1.1](#full-site-iteration-v11)), are published. Full Site Iteration V1.2 (the homepage's
+events montage expanded toward the creator card's length and substance, and the Events page's three
+chapters reordered to lead with the production room; see [Full Site Iteration
+V1.2](#full-site-iteration-v12)) is committed locally and not pushed until it has been reviewed in the
+browser. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -721,7 +724,7 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   | --- | --- | --- | --- |
   | 01 | The creator montage (`cc-creator-montage`) | 15.52 s | `home-creator-montage.mp4`, 1600x900, 25 fps, 4.7 MB |
   | 02 | The hero animation (`tm-hero-animation`), unchanged | 11.68 s | `bolt-hero-animation-loop.mp4`, 1600x900, 1.4 MB |
-  | 03 | The events montage (`ev-events-montage`), re-cut in V1.1 | 8.09 s | `home-events-montage-fs11.mp4`, 1600x900, 23.976 fps, 2.6 MB |
+  | 03 | The events montage (`ev-events-montage`), expanded in V1.2 | 15.72 s | `home-events-montage-fs12.mp4`, 1600x900, 23.976 fps, 4.8 MB |
 
   The creator montage keeps the Costa Rica aftermovie's crescendo (1:44.56 to 1:53.20, its own cuts and
   acceleration) as its foundation, opened by slower destination imagery (Marina Bay from the air in golden
@@ -731,12 +734,16 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   podcast production (a camera on the Lock In Podcast set, then the recording under the stone arch, cut
   to stay clear of the operator stepping into frame and of the logo on his shirt). The events montage
   (moving footage only since Full Site Iteration V1.1: no still image, freeze frame or move across a
-  photograph, in this card or any other) runs the production room (the finished explainer's title, Bolt
-  solves slippage, at its own framing; V1's push across the behind-the-scenes photograph of the setup is
-  gone, and no moving footage of the setup exists, so the beat is omitted), Sui Fest (its title, We're
-  at SuiFest in Singapore, then the film's own quick run: the logo, the neon entrance, the crew filming
-  on the floor, a guest), a brief creator podcast (Jungle Talk's table, the top 80% of its frame, so its
-  burned-in captions and corner marks fall outside) and the live presentation last (Max introducing
+  photograph, in this card or any other; expanded in V1.2 toward the creator montage's length and
+  substance) runs the production room (the finished explainer's title, Bolt solves slippage, at its own
+  framing, then three of the explainer's own camera angles, about 1.1 to 1.4 seconds each: the side
+  camera as the name super builds, the wide on the set, and the front camera's medium; the room's
+  cameras and light appear in no moving footage, only in the behind-the-scenes photograph, which stays
+  out), Sui Fest (its title, We're at SuiFest in Singapore, then the film's own quick B-roll: the logo,
+  the neon entrance, the Sui Cafe booth and its crowd, the crew filming on the floor, an attendee at a
+  boxing game, a smiling guest), the creator podcast (Jungle Talk from three angles: the whole table, the
+  film's own cut to the medium, then the close angle; the top 80% of its frame, so its burned-in
+  captions and corner marks fall outside) and the live presentation last (Max introducing
   himself beside the Sui Summit title slide, the recording's whole frame letterboxed onto its own ground,
   with its own captions and footer), whose yellow on dark dissolves back into the explainer's yellow on
   dark, so the reset is one gesture with no jump in brightness. The loop is turned to start on the
@@ -747,8 +754,8 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   into the pool); everything else is hard cuts, every trim half a frame inside its range so no frame of a
   neighboring shot comes along. H.264 High, `-preset slower`, CRF 26 (creator, 2.3 Mbps cap) and 23
   (events, 3 Mbps cap), a keyframe every two seconds, no audio, fast start. `verify.mjs` holds each
-  card's one video under 5 MiB; the three together weigh 8.7 MB, against about 13 MB for Version 2.0's
-  nine.
+  card's one video under 5 MiB; the three together weigh 10.9 MB (each loads only as its card comes
+  near), against about 13 MB for Version 2.0's nine.
 - Posters: each video's first frame (Marina Bay; the hero animation's first frame; the explainer's
   complete title), served as a lazy AVIF or WebP picture under the video and contained in the same
   frame, so poster and video match exactly. No video carries a `poster` attribute, which browsers fetch
@@ -885,6 +892,76 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Full Site Iteration V1.2
+
+John's delta brief after Full Site Iteration V1.1 (October 2026): two changes; everything else is as
+approved.
+
+- **01 The events montage, expanded** (`home-events-montage-fs12.mp4`, 15.72 seconds, 4.8 MB, its
+  manifest entry and poster). V1.1's 8.09 seconds felt short beside the creator card's 15.52. Now, in
+  the brief's order:
+  - The production room opens the loop with a developed sequence in place of one brief shot: the
+    finished title (Bolt solves slippage, the loop's first frame and its poster), then three of the
+    explainer's own camera angles, 1.1 to 1.4 seconds each: the side camera as the name super (Max
+    McKendry, Bolt Foundation) builds, the wide on the set (the room, the light and the subject), and
+    the front camera's medium. That is 4.3 seconds of the room before Sui Fest, and the title builds
+    again as the loop closes. The room's cameras and light appear in no moving footage (only in the
+    behind-the-scenes photograph, which stays out of the card), so the multi-camera setup reads through
+    the cuts between its own angles.
+  - Sui Fest gains two shots of the event, each a kind of moment it did not have: the Sui Cafe booth
+    and its crowd, and an attendee at a boxing game (the film's own quick B-roll, about half a second
+    each), among the title, the logo and neon entrance, the crew filming and the smiling guest: 4.8
+    seconds in all (3.7 before). A third candidate, two attendees waving at the camera, says what the
+    smiling guest already says, so it is left out.
+  - Jungle Talk shows three angles in 4 seconds: the whole table, the film's own cut to the medium on
+    the conversation, then the close angle on the speaker (its top 80%, as before, so its captions and
+    corner marks stay out).
+  - The live presentation still ends it (2.2 seconds), its title slide dissolving back into the
+    explainer's title, and the loop starts on the completed title with no seam (the last frame steps
+    into the first like any other frame).
+  - Every trim is half a frame inside its range and the edit was scanned frame by frame (no stray
+    frame from a neighboring shot); the whole 16:9 frame; H.264 at V1.1's settings (CRF 23, a 3 Mbps
+    cap), silent, the index first.
+- **02 The Events chapters reordered** (`events.json`; notes in `EvDeck.astro`, `EvHero.astro` and
+  `events-video.astro`). The deck leads with its strongest visual work: 01 PRODUCTION ROOM, 02 EVENT
+  FILM, 03 LIVE PRESENTATION (it opened on the live presentation before). The order is the data's, so
+  everything that depends on it follows at once: the numbers and labels, the chapter open as the deck
+  arrives (the production room, on Final, its Setup and Final control on the top line), each header's
+  region, the assistive heading that names the three, the arrow keys, Home and End, the Tab order (each
+  chapter's controls after its own header), the reading order, and the scroll-assisted turns: the
+  reader's scrolling opens the event film, then the live presentation, and after the live
+  presentation's interval the deck lets go into the conclusion (The room clears. The work keeps
+  moving.). Phones and reduced motion keep the manual accordion, in the same order. The hero's reel
+  already ran the three in this order (the explainer first, then the Sui Fest film, the creator podcast
+  and the live presentation), and `verify.mjs` now holds the two to one order. The way in reads as one
+  sequence: the activation's planning (The work starts before anyone enters the room.) hands on to the
+  room where the explainer was made, and the live presentation hands on to the conclusion. Each
+  chapter's words, media and inner layout are unchanged; no transition copy names the order, so none
+  had to change.
+
+**For John to confirm.** The production room's opening is the explainer's own three angles after its
+title; the cameras and light themselves appear only in the behind-the-scenes photograph, which the card
+cannot use. The title stays the loop's first frame and poster, so the reset still dissolves yellow into
+yellow. The montage runs 15.72 seconds and weighs 4.8 MB (V1.1's 2.6 MB), within the 5 MiB a card is
+allowed; it loads only as its card comes near. While the event film is open on a laptop screen it is
+taller than the room on screen, so, as the scroll-assisted deck has done for any long chapter since
+V1.6, the header above it passes under the site's header while the film's foot comes into view.
+
+**The checks** (`verify.mjs`): the montage's file and length (15.72 s, within 1.5 s of the creator
+card's), its record's excerpts in playing order (the explainer four times, the side, wide and front
+angles after the title and at least 3 seconds of them; Sui Fest six times; Jungle Talk twice, with the
+film's own cut and the close angle; the presentation last), no still; the V1.1 montage gone; the deck's
+order in the data and on the page (production room, event film, live presentation), the production room
+open first, the numbered labels, the hero's reel in the same order, and every chapter's words, credits
+and media found by its key rather than its place. A mutation run broke each of these and the earlier
+promises in turn (101 mutations), and every one was caught. A browser pass (90 checks, V1.1's and
+V1.2's) confirmed the montage playing whole at 15.72 s and coming round through its reset, the deck's
+order on screen, in the markup and in the assistive name with motion allowed, with reduced motion and on
+a phone, the production room open first, the arrow keys, Tab and Enter, the scroll-assisted turns
+forward and back and the release into the conclusion, and the hero's reel in the same order; and no
+sideways scroll or page error from 360 to 2560 wide. The accessibility scan finds nothing on all five
+pages at two widths, and `astro check` reports no errors.
 
 ### Full Site Iteration V1.1
 
@@ -2592,7 +2669,8 @@ the hero's cut points.
   crops moved (`pos` 50% 92% and 50% 86%) so the burned-in captions stay whole and clear of the rail at
   both of the frame's proportions.
 - **09 The cards' headers and rhythm**: the labels are stable (01 LIVE PRESENTATION, 02 PRODUCTION
-  ROOM, 03 EVENT FILM, whatever the state). On wide screens an open card's media and words start from
+  ROOM, 03 EVENT FILM, whatever the state; since Full Site Iteration V1.2, 01 PRODUCTION ROOM, 02 EVENT
+  FILM, 03 LIVE PRESENTATION). On wide screens an open card's media and words start from
   one top line, with no minimum height and nothing centered or stretched to the media's height; the
   words run top to bottom with fixed gaps (up to 1.5rem after the headline and 2.75rem between the
   others, a little less on shorter screens; 0.9 and 1.35rem on narrow ones). The band between a card's

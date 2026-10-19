@@ -432,7 +432,7 @@ if (/pointerenter|mouseenter|mouseover|\(hover: hover\)/.test(playback)) failure
 // below its head, and every head keeps room for a two-line subline, so the
 // three frames share one size and one aspect ratio at any width.
 const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
-const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage-fs11.mp4'];
+const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage-fs12.mp4'];
 cardsHtml.forEach((c, i) => {
   const v = (c.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
   if (!/\bdata-card-video\b/.test(v) || sourcesOf(v).join() !== CARD_MEDIA[i]) failures.push(`[claim] card ${i + 1} must play ${CARD_MEDIA[i]} (found ${sourcesOf(v).join(', ') || 'none'})`);
@@ -521,7 +521,7 @@ const imageSize = (file) => {
 const LOOP_SECONDS = {
   'home-creator-montage.mp4': 15.52,
   'bolt-hero-animation-loop.mp4': 11.68,
-  'home-events-montage-fs11.mp4': 8.09,
+  'home-events-montage-fs12.mp4': 15.72,
 };
 const cardManifest = JSON.parse(fs.readFileSync(path.join(root, 'src/data/assets.json'), 'utf8')).assets;
 cardsHtml.forEach((c, i) => {
@@ -565,9 +565,10 @@ for (const retired of ['creator-campaigns/creator-costa-rica-aftermovie-poster.j
 for (const id of ['cc-costa-rica-loop', 'cc-trezor-loop', 'cc-bolt-bus-loop', 'tm-architecture-loop', 'ev-slippage-preview', 'ev-suifest-loop', 'ev-max-loop']) {
   if (cardManifest.some((a) => a.id === id)) failures.push(`[hygiene] the manifest entry ${id} was retired in Full Site Iteration V1`);
 }
-// Full Site Iteration V1.1 re-cut the events montage (moving footage only), under a new name.
-for (const retired of ['home-events-montage.mp4']) {
-  if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was replaced in Full Site Iteration V1.1 and must not ship`);
+// Full Site Iteration V1.1 re-cut the events montage (moving footage only), under a new name; V1.2 expanded it, under
+// another.
+for (const [retired, by] of [['home-events-montage.mp4', 'V1.1'], ['home-events-montage-fs11.mp4', 'V1.2']]) {
+  if (fs.existsSync(path.join(root, 'public/media', retired)) || fs.existsSync(path.join(dist, 'media', retired))) failures.push(`[hygiene] ${retired} was replaced in Full Site Iteration ${by} and must not ship`);
 }
 // Select Work (v1.9): on tall desktop screens the title and intro stay pinned
 // beneath the header while the cards park under them, and both release
@@ -2122,6 +2123,9 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // production room's Setup and Final inside its chapter.
   if (/<section class="(?:evm|evs|evf)"|id="ev-room"|id="ev-setup"|id="ev-suifest"|class="ev-credits|class="ev-cue\b/.test(evPage)) failures.push('[events] the deck replaces the three separate sections (the session, the production room and Sui Fest), with their tallies and credit blocks');
   const deckSec = evSection('evd');
+  // Full Site Iteration V1.2: the production room first, then the event film and
+  // the live presentation, in the data and on the page alike (it led with the live
+  // presentation before), so every number, label and order below follows it.
   // V1.5: the approved words for each chapter, the live presentation without
   // its full film (its preview only), Bob van der Meer credited for the edit in
   // the fine print only, and the participating teams on a line of their own.
@@ -2129,15 +2133,6 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // own presentation edit; the event film's preview the hero's Sui Fest edit and
   // no film with sound; the production room's Final its two-scene loop.
   const DECK = [
-    {
-      key: 'live', label: 'Live presentation', headline: 'From live presentation to lasting content.',
-      context: 'I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.',
-      points: ['Secured the slot, helped shape the subject, and promoted the session', 'Directed the deck, presentation setup, and live slides', 'Captured the presentation from multiple angles and repackaged it for continued distribution'],
-      outcome: 'Event-led introductions and follow-through helped secure three aggregator integrations and opened strategic discussions with ecosystem leadership.',
-      credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer',
-      participants: '',
-      preview: 'ev-hero-presentation', full: null,
-    },
     {
       key: 'room', label: 'Production room', headline: 'Build the set. Direct the take. Shape the final cut.',
       context: 'At ETHDenver, I turned a production room and a minimal kit into a repeatable technical explainer series.',
@@ -2156,11 +2151,27 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
       participants: 'With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus',
       preview: 'ev-hero-event-film', full: null,
     },
+    {
+      key: 'live', label: 'Live presentation', headline: 'From live presentation to lasting content.',
+      context: 'I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.',
+      points: ['Secured the slot, helped shape the subject, and promoted the session', 'Directed the deck, presentation setup, and live slides', 'Captured the presentation from multiple angles and repackaged it for continued distribution'],
+      outcome: 'Event-led introductions and follow-through helped secure three aggregator integrations and opened strategic discussions with ecosystem leadership.',
+      credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer',
+      participants: '',
+      preview: 'ev-hero-presentation', full: null,
+    },
   ];
   if (!/data-surface="dark"/.test((deckSec.match(/<section[^>]*>/) || [''])[0]) || !/<h2 id="ev-deck-title" class="sr-only"[^>]*>[^<]+<\/h2>/.test(deckSec)) failures.push('[events] the deck is on the dark ground of the screens, its section named for assistive technology');
   const deckChs = [...deckSec.matchAll(/<article class="evd__ch[^"]*"[^>]*data-deck-ch="([\w-]+)"[^>]*>([\s\S]*?)<\/article>/g)].map((m) => ({ key: m[1], html: m[2], open: /class="evd__ch is-open"/.test(m[0]) }));
-  if (JSON.stringify(deckChs.map((c) => c.key)) !== JSON.stringify(DECK.map((c) => c.key)) || JSON.stringify((evData.deck?.chapters || []).map((c) => c.key)) !== JSON.stringify(DECK.map((c) => c.key))) failures.push(`[events] the deck's three chapters in order: live presentation, production room, event film (found ${deckChs.map((c) => c.key).join(', ')})`);
-  if (JSON.stringify(deckChs.map((c) => c.open)) !== JSON.stringify([true, false, false])) failures.push('[events] one chapter open at a time, the live presentation to begin with');
+  if (JSON.stringify(deckChs.map((c) => c.key)) !== JSON.stringify(DECK.map((c) => c.key)) || JSON.stringify((evData.deck?.chapters || []).map((c) => c.key)) !== JSON.stringify(DECK.map((c) => c.key))) failures.push(`[events] V1.2: the deck's three chapters in order: production room, event film, live presentation (found ${deckChs.map((c) => c.key).join(', ')})`);
+  if (JSON.stringify(deckChs.map((c) => c.open)) !== JSON.stringify([true, false, false])) failures.push('[events] V1.2: one chapter open at a time, the production room to begin with');
+  // ... and wherever the three chapters appear together: the hero's reel plays the same three in the same order (the
+  // explainer from the production room, the Sui Fest film, the live presentation; the creator podcast between them is
+  // the reel's own).
+  const reelKeys = (evData.hero?.chapters || []).map((c) => c.key);
+  const reelOrder = { room: 'explainer', film: 'event-film', live: 'presentation' };
+  const reelPos = DECK.map((c) => reelKeys.indexOf(reelOrder[c.key]));
+  if (reelPos.some((x) => x < 0) || reelPos.some((x, i) => i && x < reelPos[i - 1])) failures.push(`[events] V1.2: the hero's reel and the deck run the three chapters in one order (the reel has ${reelKeys.join(', ')})`);
   for (const [i, want] of DECK.entries()) {
     const ch = deckChs[i];
     if (!ch) continue;
@@ -2286,8 +2297,9 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const tcScript = deckScript.includes('data-deck-tc-value') ? deckScript.slice(deckScript.indexOf('data-deck-tc-value') - 200, deckScript.indexOf('data-deck-tc-value') + 1400) : '';
   if (!tcScript || !/currentTime/.test(tcScript) || !/requestAnimationFrame/.test(tcScript) || !/is-running/.test(tcScript) || /Math\.random|Date\.now|performance\.now/.test(tcScript)) failures.push('[events] the deck\'s timecode reads the clip shown in the frame, frame by frame while it runs, and makes nothing up');
   // The live presentation and the event film play the hero's own edits (the same files); the presentation in its own wide frame.
-  const liveHtml = deckChs[0]?.html || '';
-  const filmHtml = deckChs[2]?.html || '';
+  const chOf = (key) => deckChs.find((c) => c.key === key)?.html || '';
+  const liveHtml = chOf('live');
+  const filmHtml = chOf('film');
   if (!liveHtml.includes('/media/ev-hero-presentation.mp4') || !/data-asset="ev-hero-presentation"[^>]*>/.test(liveHtml) || !/class="ev-slot ev-slot--loop[^"]*"[^>]*style="aspect-ratio:\s*2\.157\s*\/\s*1"[^>]*data-asset="ev-hero-presentation"/.test(liveHtml) || !filmHtml.includes('/media/ev-hero-event-film.mp4') || !hero.includes('/media/ev-hero-presentation.mp4') || !hero.includes('/media/ev-hero-event-film.mp4') || /suifest-interview-loop|sui-summit-max-presentation-loop|suifest-interviews\.mp4/.test(deckSec)) failures.push('[events] the live presentation and the event film play the hero\'s own edits, the presentation in its own wide frame (V1.6)');
   // V1.6: the scroll-assisted deck. It pins below the site's header inside its
   // runway (the browser's own sticky positioning; a chapter taller than the room
@@ -2344,13 +2356,31 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // the explainer's yellow on dark (no jump in brightness). V1.1 (04): moving footage only, so the production room is
   // the finished explainer alone (its setup was a push across the behind-the-scenes photograph, and no moving footage
   // of the setup exists); no still image, freeze frame or move across a photograph, in this card or any other.
+  // V1.2 (01): expanded toward the creator card's length and substance, every excerpt listed in the manifest's record
+  // in playing order: the production room opens with the finished title and three more of the explainer's own camera
+  // angles (the side camera, the wide, the front camera's medium), several seconds of them; Sui Fest has six excerpts,
+  // two more of the event than before; Jungle Talk two excerpts and three angles (the wide and the film's own cut to the
+  // medium, then the close angle); the live presentation last, dissolving back into the title; the loop within a second
+  // and a half of the creator card's.
   {
     const m = evAsset('ev-events-montage');
     const src = m.source || '';
-    const order = ['Bolt Explainers - Slippage.mp4 1:09.111', 'SuiFest.mp4 0:00.90', 'Jungle Talk.mp4', 'Max Presentation.mp4 0:00.50'].map((t) => src.indexOf(t));
-    if (m.file !== 'home-events-montage-fs11.mp4' || m.permission !== 'approved' || order.some((x) => x < 0) || order.some((x, i) => i && x < order[i - 1]) || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !(Math.abs(LOOP_SECONDS['home-events-montage-fs11.mp4'] - m.duration) < 0.02)) {
-      failures.push('[events] the homepage\'s events montage runs production room, Sui Fest, creator podcast, live presentation, its reset dissolving the presentation into the explainer');
+    const secs = (t) => { const [mm, ss] = t.split(':'); return Number(mm) * 60 + Number(ss); };
+    const items = [...src.matchAll(/(?:^|[;:] )(\d+), ([^;()]+?\.mp4) (\d+:\d\d\.\d+) to (\d+:\d\d\.\d+) \(([^)]*)\)/g)].map((x) => ({ n: Number(x[1]), file: x[2].replace(/^Sui Summit\//, ''), from: secs(x[3]), to: secs(x[4]), what: x[5] }));
+    const runs = items.reduce((acc, it) => (acc.length && acc[acc.length - 1].file === it.file ? (acc[acc.length - 1].items.push(it), acc) : [...acc, { file: it.file, items: [it] }]), []);
+    const runText = runs.map((r) => `${r.file} x${r.items.length}`).join(', ');
+    const span = (list) => list.reduce((sum, it) => sum + (it.to - it.from), 0);
+    const room = runs[0]?.items.slice(1) || [];
+    const angles = room.map((it) => (/side camera/.test(it.what) ? 'side' : /\bwide\b/.test(it.what) ? 'wide' : /front camera/.test(it.what) ? 'front' : '?'));
+    const jt = runs[2]?.items || [];
+    const numbered = items.every((it, i) => it.n === i + 1);
+    if (m.file !== 'home-events-montage-fs12.mp4' || m.permission !== 'approved' || !numbered || runText !== 'Bolt Explainers - Slippage.mp4 x4, SuiFest.mp4 x6, Jungle Talk.mp4 x2, Max Presentation.mp4 x1' || runs[0].items[0].from !== secs('1:09.111') || items[items.length - 1].from !== secs('0:00.50') || !/0\.4 second dissolve reset, the presentation into the explainer/.test(src) || !(Math.abs(LOOP_SECONDS['home-events-montage-fs12.mp4'] - m.duration) < 0.02)) {
+      failures.push(`[events] the homepage's events montage runs the production room, Sui Fest, the creator podcast and the live presentation, every excerpt in its record in playing order, its reset dissolving the presentation into the explainer (found ${runText || 'no excerpts'})`);
     }
+    if (new Set(angles).size !== 3 || angles.includes('?') || !(span(room) >= 3)) failures.push(`[events] V1.2: the montage opens on the production room from several of its own camera angles, not one brief shot: after the title, the side camera, the wide and the front camera's medium, several seconds of them (found ${angles.join(', ') || 'none'}, ${span(room).toFixed(2)} s)`);
+    if ((runs[1]?.items.length || 0) < 6) failures.push('[events] V1.2: Sui Fest has more of its B-roll (six excerpts, two more of the event than V1.1\'s four)');
+    if (jt.length !== 2 || !/film's own cut/.test(jt[0]?.what || '') || !/medium/.test(jt[0]?.what || '') || !/close angle/.test(jt[1]?.what || '') || !(span(jt) >= 3)) failures.push(`[events] V1.2: Jungle Talk shows three angles (the wide and the film's own cut to the medium, then the close angle), long enough to read as a produced conversation (found ${jt.length} excerpts, ${span(jt).toFixed(2)} s)`);
+    if (!(Math.abs(LOOP_SECONDS['home-events-montage-fs12.mp4'] - LOOP_SECONDS['home-creator-montage.mp4']) <= 1.5)) failures.push('[events] V1.2: the events montage runs within a second and a half of the creator card\'s video');
     const cardVideos = cardManifest.filter((a) => CARD_MEDIA.includes(a.file));
     for (const v of cardVideos) {
       const note = v.source || '';
@@ -2390,17 +2420,17 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // Credits (V1.5): one fine-print line per chapter, the participating teams on a
   // second; Bob van der Meer's edit credited there and nowhere above it; titles
   // never invented. Names stay whole in the fine print.
-  const deckCredits = deckChs.map((c) => one(c.html, /<p class="evd__credit"[^>]*>([\s\S]*?)<\/p>/));
-  if (!deckCredits[0]?.includes('Speaker Max McKendry') || !deckCredits[0]?.includes('Deck design and video edit by Bob van der Meer') || !deckCredits[1]?.includes('On-camera Max McKendry') || !deckCredits[1]?.includes('Final edit Bob van der Meer') || !deckCredits[2]?.includes('Final edit Bob van der Meer') || !/With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus/.test(one(deckChs[2]?.html || '', /<p class="evd__credit evd__credit--with"[^>]*>([\s\S]*?)<\/p>/))) failures.push('[events] each chapter credits its collaborators in the fine print: the speaker and on-camera subject, the deck design, the final edit, and the participating teams on a line of their own');
+  const creditOf = (key) => one(chOf(key), /<p class="evd__credit"[^>]*>([\s\S]*?)<\/p>/) || '';
+  if (!creditOf('live').includes('Speaker Max McKendry') || !creditOf('live').includes('Deck design and video edit by Bob van der Meer') || !creditOf('room').includes('On-camera Max McKendry') || !creditOf('room').includes('Final edit Bob van der Meer') || !creditOf('film').includes('Final edit Bob van der Meer') || !/With Cetus, Bluefin, 7K DeFi, NAVI & Astros, FlowX Finance, DoubleUp, Claynosaurz and Talus/.test(one(chOf('film'), /<p class="evd__credit evd__credit--with"[^>]*>([\s\S]*?)<\/p>/))) failures.push('[events] each chapter credits its collaborators in the fine print: the speaker and on-camera subject, the deck design, the final edit, and the participating teams on a line of their own');
   for (const c of deckChs) {
     const above = textOf(norm(c.html.replace(/<div class="evd__credits"[\s\S]*?<\/div>/, ' ')));
     if (/Bob van der Meer|edited by/i.test(above)) failures.push(`[events] chapter ${c.key}: Bob van der Meer's credit only in the fine print`);
   }
-  if (!/\u00a0/.test((deckChs[2]?.html.match(/<div class="evd__credits"[\s\S]*?<\/div>/) || [''])[0]) || !evRules(/^\.evd__credit$/).some((r) => /text-wrap:\s*pretty/.test(r.body)) || !evRules(/^\.evd__keep$/).some((r) => /white-space:\s*nowrap/.test(r.body)) || !/<span class="evd__keep"[^>]*>On-camera Max McKendry<\/span>/.test(deckChs[1]?.html || '') || !/video edit by\u00a0Bob\u00a0van\u00a0der\u00a0Meer/.test(deckChs[0]?.html || '')) failures.push('[events] the fine print keeps names whole (V1.6: every name after "by")');
+  if (!/\u00a0/.test((chOf('film').match(/<div class="evd__credits"[\s\S]*?<\/div>/) || [''])[0]) || !evRules(/^\.evd__credit$/).some((r) => /text-wrap:\s*pretty/.test(r.body)) || !evRules(/^\.evd__keep$/).some((r) => /white-space:\s*nowrap/.test(r.body)) || !/<span class="evd__keep"[^>]*>On-camera Max McKendry<\/span>/.test(chOf('room')) || !/video edit by\u00a0Bob\u00a0van\u00a0der\u00a0Meer/.test(chOf('live'))) failures.push('[events] the fine print keeps names whole (V1.6: every name after "by")');
   // The event film's framing (V1.5): an ecosystem and distribution strategy, no
   // longer the angle of a company that was not a sponsor or did not own the
   // stage, and no rounded or estimated reach.
-  const filmText = textOf(norm(deckChs[2]?.html || ''));
+  const filmText = textOf(norm(chOf('film')));
   if (/sponsor|own the stage|opportunity had to be made/i.test(filmText) || /impressions|likes|tens of thousands|hundreds of/i.test(filmText)) failures.push('[events] the event film is framed as ecosystem positioning and distribution, with no sponsorship angle and no estimated reach');
   if (/Max McKendry,\s*(?:Head|Chief|Director|Founder|Co-founder|CEO|CTO|VP)/i.test(evText)) failures.push('[events] no titles are invented for the collaborators');
 
