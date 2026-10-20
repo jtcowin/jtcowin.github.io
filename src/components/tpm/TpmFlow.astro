@@ -41,6 +41,18 @@
  * (with scripts) the Foundation crossfades in as it arrives; the highlight
  * sweeps in once the statement is in view, or simply stands with reduced
  * motion.
+ *
+ * Phones (Mobile Optimization V1, below 48rem): in place of the library, one
+ * composed stack of four representative documents (tpm.json `stack`: the
+ * Strategic Foundation Brief in front, then Target Buyer Analysis, Market Pain
+ * Points Research and Competitor Analysis behind it, each a little offset and
+ * turned, as the desktop's stack holds before it spreads), and one line
+ * beneath it on what the work became. Nothing opens the rest; the library
+ * stays in the page, out of sight, for assistive technology. In the
+ * statement, the colon after the highlighted clause never wraps away from
+ * "follows": outside the live stage the words are plain text, so "follows:"
+ * is one word to the line breaker (the live stage, wide screens only, sets it
+ * on a fixed 20em measure where it falls mid-line).
  */
 import tpm from '@data/tpm.json';
 import { emphasize } from '@lib/tpm-copy';
@@ -49,6 +61,24 @@ import DocIcon, { type DocIconName } from './DocIcon.astro';
 const { foundation, statement } = tpm;
 const docs = foundation.documents.map((doc) => ({ ...doc, icon: doc.icon as DocIconName }));
 const depth = Array.from({ length: foundation.depth }, (_, k) => k);
+// Mobile Optimization V1: the phone's composed stack, from the back (the top of
+// the stack) to the front, each card a few pixels to one side and a degree or
+// so off square, so the stack reads as set down by hand.
+const POSE = [
+  { dx: -2, r: -0.8 },
+  { dx: 2, r: 0.6 },
+  { dx: -2, r: -0.5 },
+  { dx: 1, r: 0.3 },
+];
+const stack = foundation.stack.documents.map((number, k) => {
+  const doc = docs.find((d) => d.number === number);
+  if (!doc) throw new Error(`[tpm] the phone stack's document ${number} is not in the library`);
+  return { ...doc, ...POSE[k], z: k + 1 };
+});
+if (stack.length < 3 || stack.length > POSE.length) throw new Error('[tpm] the phone stack holds three or four documents');
+// The line under the stack never breaks a hyphenated compound ("multi-document").
+const wrapCompounds = (text: string) =>
+  text.split(/(\S+-\S+)/).filter(Boolean).map((part) => ({ text: part, keep: /^\S+-\S+$/.test(part) }));
 // The headline's accent sits in whichever line carries it.
 const accentLine = foundation.headline.findIndex((line) => line.includes(foundation.accent));
 if (accentLine < 0) throw new Error('[tpm] the Foundation accent must be in its headline');
@@ -98,6 +128,32 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
           <p class="tpm-foundation__copy">{copy.map(({ text, em }) => (em ? <strong class="tpm-em">{text}</strong> : text))}</p>
           <p class="tpm-foundation__copy">{restCopy}</p>
         </div>
+      </div>
+
+      {/* Phones only (Mobile Optimization V1): the stack is a picture of four of
+          the documents, so it is hidden from assistive technology, which reads
+          the whole library below; the line under it is read. */}
+      <div class="container tpm-stack" data-tpm-stack>
+        <ul class="tpm-stack__cards" aria-hidden="true">
+          {
+            stack.map((doc) => (
+              <li class="tpm-stack__doc" style={`--doc: ${doc.color}; --z: ${doc.z}; --dx: ${doc.dx}px; --r: ${doc.r}deg`} data-stack-doc={doc.number}>
+                <span class="tpm-stack__sheet">
+                  <span class="tpm-doc__strip" />
+                  <span class="tpm-doc__face">
+                    <DocIcon name={doc.icon} class="tpm-doc__icon" />
+                  </span>
+                </span>
+                <span class="tpm-stack__head">
+                  <span class="tpm-doc__num">{doc.number}</span>
+                  <span class="tpm-doc__title">{doc.title}</span>
+                </span>
+                <span class="tpm-doc__sub">{doc.subline}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="tpm-stack__line">{wrapCompounds(foundation.stack.line).map((p) => (p.keep ? <span class="tpm-nowrap">{p.text}</span> : p.text))}</p>
       </div>
 
       <div class="container tpm-library">
@@ -601,6 +657,108 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
     }
   }
 
+  /* ---- 02 on a phone: one composed stack (Mobile Optimization V1) -------------------
+     Four of the documents, one laid over the next: each card behind shows its
+     number and its title, however many lines the title takes (a card's sheet
+     hangs below its own heading and the next card covers the rest), and the
+     front card shows whole. Each sits a few pixels to one side and a degree or
+     so off square. The line beneath it; the library stays in the page for
+     assistive technology, out of sight, and nothing opens it. Wider screens
+     never show the stack. */
+  .tpm-stack {
+    display: none;
+  }
+
+  @media (max-width: 47.99rem) {
+    .tpm-stack {
+      display: grid;
+      justify-items: center;
+      gap: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+    }
+
+    .tpm-stack__cards {
+      display: grid;
+      width: min(16.5rem, 100%);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tpm-stack__doc {
+      position: relative;
+      z-index: var(--z);
+      transform: translate(var(--dx), 0) rotate(var(--r));
+    }
+
+    .tpm-stack__doc:last-child {
+      aspect-ratio: 10 / 13;
+    }
+
+    /* The card itself, the library's own (its color strip and faded icon),
+       always a whole card, from the top of its heading down. */
+    .tpm-stack__sheet {
+      position: absolute;
+      inset: 0 0 auto;
+      aspect-ratio: 10 / 13;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #13171a;
+      box-shadow:
+        inset 0 0 0 1px rgba(237, 240, 239, 0.08),
+        0 -10px 22px -14px rgba(0, 0, 0, 0.8);
+    }
+
+    .tpm-stack__head {
+      position: relative;
+      display: grid;
+      row-gap: 0.55rem;
+      padding: 1rem 1rem 0.8rem 1.35rem;
+    }
+
+    .tpm-stack__head .tpm-doc__title {
+      min-height: 0;
+    }
+
+    /* Only the front card shows its icon and its subline (at its foot): the
+       cards behind are covered below their headings. */
+    .tpm-stack__doc:not(:last-child) .tpm-doc__face,
+    .tpm-stack__doc .tpm-doc__sub {
+      display: none;
+    }
+
+    .tpm-stack__doc:last-child .tpm-doc__sub {
+      position: absolute;
+      inset: auto 1rem 1rem 1.35rem;
+      display: block;
+    }
+
+    .tpm-nowrap {
+      white-space: nowrap;
+    }
+
+    .tpm-stack__line {
+      max-width: 20rem;
+      margin: 0;
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
+      text-align: center;
+      text-wrap: balance;
+      color: var(--ink-2);
+    }
+
+    .tpm-library {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+
   /* ---- 03 the statement (still layout) ------------------------------------------ */
   .tpm-statement {
     padding-block: calc(var(--section-y) * 0.9) calc(var(--section-y) * 1.4);
@@ -619,8 +777,12 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
     text-wrap: pretty;
   }
 
+  /* Plain text outside the live stage (Mobile Optimization V1): nothing may
+     break a word from the punctuation after it, so the colon split off
+     "follows" (its own piece, revealed with it) always stays on its line.
+     The live stage sets the words as boxes, each rising into place. */
   .tpm-word {
-    display: inline-block;
+    display: inline;
   }
 
   /* The one animated highlight (V1.3): a translucent teal band behind the
@@ -749,6 +911,7 @@ const after = pieces.slice(pieces.findIndex((q) => q.mark) + inside.length);
     }
 
     .tpm-flow.is-live .tpm-word {
+      display: inline-block;
       opacity: 0;
     }
   }

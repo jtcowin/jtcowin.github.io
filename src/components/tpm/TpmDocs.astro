@@ -16,7 +16,8 @@
  * each carry one line on what it shows and who did what; the one playing is
  * marked, its line filling as it plays, and each starts the walkthrough from
  * its own point. Nothing is laid over the documentation itself. On phones the
- * frame runs edge to edge.
+ * frame runs edge to edge, and (Mobile Optimization V1) the selected views
+ * and their controls are not shown: the walkthrough plays on its own.
  *
  * V1.3: the walkthrough runs continuously, as the website's does: through to
  * its final page, a moment on the last frame, a fade back to the first (its
@@ -194,6 +195,14 @@ const chapters = docs.chapters.map((c, i) => ({ ...c, number: String(i + 1).padS
     width: 100%;
     max-width: 90rem;
     margin: 0 auto;
+  }
+
+  /* Phones (Mobile Optimization V1): the walkthrough alone, without the selected
+     views and their controls beneath it, and without the room they took. */
+  @media (max-width: 47.99rem) {
+    .tpm-chapters__wrap {
+      display: none;
+    }
   }
 
   /* The line that introduces them: selected views from a broader system,

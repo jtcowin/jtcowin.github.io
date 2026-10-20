@@ -20,6 +20,7 @@
   "reel": {
     "_note": "Version 1.8: a purely visual transition after Select Work. The 24 approved pieces in `pool` are shuffled on each fresh visit (kept for the rest of the browser session) and dealt into three rows of `perRow`; a row is repeated only as far as it takes to leave no blank edge. The images are decorative: empty alt text, no captions or labels. Excluded by decision: the 2:53 PM screenshot (financial comparison claims), the 2:59 PM screenshot (live figures that age), Discord.jpeg and Educational.jpeg.",
     "perRow": 8,
+    "phoneRows": 4,
     "pool": [
       "reel-ambur-1",
       "reel-ambur-2",
@@ -45,6 +46,30 @@
       "reel-bolt-explainer-composition",
       "reel-archway-under-the-arch",
       "reel-archway-jackal-outpost"
+    ],
+    "_alike": "Mobile Optimization V1: on phones the pool is dealt into `phoneRows` rows instead of three (about six to a row, no piece repeated), and the pieces in one `alike` group, which would read as duplicates stacked one above the other, are kept out of neighboring rows and from sitting side by side: the two explainer stills, the two Ambur frames, the two orange Archway fields, the two yellow Bolt fields, and the three white Archway announcements.",
+    "alike": [
+      [
+        "reel-bolt-explainer-opaque-logic",
+        "reel-bolt-explainer-composition"
+      ],
+      [
+        "reel-ambur-1",
+        "reel-ambur-2"
+      ],
+      [
+        "reel-archway-3",
+        "reel-archway-under-the-arch"
+      ],
+      [
+        "reel-bolt-7",
+        "reel-bolt-10"
+      ],
+      [
+        "reel-archway-2",
+        "reel-archway-7",
+        "reel-archway-jackal-outpost"
+      ]
     ]
   },
   "practice": {

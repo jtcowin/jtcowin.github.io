@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Social Share V1.1.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: Mobile Optimization V1.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
 Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
 copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
@@ -26,7 +26,12 @@ V1.3](#full-site-iteration-v13)), the approved two-page resume (October 2026) an
 (the homepage's link preview: its own title and description, decoupled from the browser title; see
 [Social Share Polish V1](#social-share-polish-v1)) are published. Social Share V1.1 (a crop-safe portrait
 card, John Cowin Portfolio as every preview's site name, and every canonical and share URL on
-johncowin.com; see [Social Share V1.1](#social-share-v11)) follows them. Placeholders render only in `npm run dev`;
+johncowin.com; see [Social Share V1.1](#social-share-v11)) follows them, and Mobile Optimization V1 (the
+first pass made for phones: the homepage hero's name higher and its arrow and descriptor as one lockup, a
+four-row work reel, the creator page's centered openings, the Technical Product Marketing system shown
+complete, its Foundation as one stack of documents and "follows:" kept whole, the Events sequence numbered
+in two columns, and the Stack read as a strict grid at every width; see [Mobile Optimization
+V1](#mobile-optimization-v1)) follows that. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -800,8 +805,8 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   The screenshots were converted from their display profile to sRGB and saved as 1600px JPEGs; the
   build serves every piece as responsive AVIF and WebP.
 - Order: on each fresh visit an inline script shuffles all 24 (Fisher-Yates on
-  `crypto.getRandomValues`) and deals them into three rows of eight before the reel is ever on
-  screen. The order is kept in `sessionStorage` (`jc-reel-order`), so reloads, resizes, scrolling,
+  `crypto.getRandomValues`) and deals them into three rows of eight (four rows of six on phones, since
+  Mobile Optimization V1) before the reel is ever on screen. The order is kept in `sessionStorage` (`jc-reel-order`), so reloads, resizes, scrolling,
   reduced motion and returning from a case study never reshuffle it; a new visit may bring a new
   order, and occasional clusters are left as they fall. Without JavaScript the HTML's own fixed,
   seeded shuffle is shown.
@@ -810,9 +815,10 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - Frames keep each image's own proportions at one row height, so nothing is cropped and nothing shifts
   as images load. Reduced motion and no JavaScript show the same rows, in the same order, as a still
   collage.
-- Capacity: the reel stays at three rows of eight until eight more approved pieces are supplied (32 in
-  all), and only then gains a fourth row. Excluded pieces never return, and no piece repeats to fill a
-  row.
+- Capacity: wider screens stay at three rows of eight until eight more approved pieces are supplied (32
+  in all), and only then gain a fourth row. Phones deal the same 24 into four rows of six instead (Mobile
+  Optimization V1), so their fourth row repeats nothing. Excluded pieces never return, and no piece
+  repeats to fill a row.
 
 ### From positioning to production
 
@@ -828,9 +834,14 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   logos are the approved SVGs in `src/assets/stack/`, served as images so each keeps its own colors
   and internal ids; the marks remain their owners' trademarks. Phones and tablets wrap the tiles into
   a grid of comfortable touch targets, and a long name wraps onto two balanced lines rather than
-  shrinking. Since Version 1.9 each group centers its heading and its tiles, and a short last row sits
-  centered too; the tiles keep one width (a third of the row on phones, 6.25rem on tablets, about 8.4
-  times the label size on desktop) rather than stretching to fill a row.
+  shrinking. Since Version 1.9 each group centers its heading and its tiles. Since Mobile Optimization V1
+  each collection is a strict grid, read left to right and top to bottom, so a short last row starts
+  under the first column rather than centering: Google Analytics under Linear, Slack under Mintlify and
+  Microsoft Teams under GitBook in the four columns of Systems and measurement, Typefully under Figma
+  and Grammarly under Photoshop (on phones, three across, Microsoft Teams under Grafana). From 40rem a
+  group keeps its own column count, half its tools rounded up. The cells keep one width (a third of the
+  row on phones, 6.25rem on tablets, about 8.4 times the label size on desktop) rather than stretching
+  to fill a row.
 - The capability rows respond to hover and keyboard focus alike (Full Site Iteration V1): when a fine
   pointer arrives on a row, its icon makes one full turn (360 degrees in 560 ms, easing out), once; it
   never loops while the pointer stays, and leaving resets it without turning backwards (the class that
@@ -902,6 +913,101 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Mobile Optimization V1
+
+John's brief (October 2026), from screenshots and a screen recording on his phone: the first pass made
+for phones, improving hierarchy, spacing, density and the phone's own interactions without redesigning
+what already works. Phones here means below 48rem (768px); tablets and desktops keep their layouts, and
+the one change made at every width is the Stack's order. The Creative Instinct section and the
+homepage's case-study cards are unchanged.
+
+- **The homepage hero** (`Hero.astro`). The moving name runs higher, its letters starting 0.6rem under
+  the header row, through the hair and above the brows, the way a masthead sits behind a cover portrait:
+  more of the lettering shows beside the head, none of it crosses the face, and it still runs behind the
+  portrait. It is a little smaller (15vw, was 17vw), so whole words pass through the open wall, and the
+  grade's darker band moves up with it while the wall stays as dark as before down to the shoulders. The
+  rule across the chest is gone. The arrow, 20px (was about 26px) and drawn as heavy as before, now leads
+  the descriptor as one lockup at the lower right, the two lines set left against it. With reduced motion
+  the still name starts in the open wall beside the head, so its first word reads whole. The portrait's
+  crop, the menu and the dark treatment are unchanged.
+- **The work reel** (`WorkReel.astro`, `home.json` `reel.phoneRows` and `reel.alike`). Four rows of six,
+  moving right, left, right, left (the fourth at its own rate, 0.9), at the same row height (about
+  104px), every tile large enough to make out. The same 24 pieces are dealt again rather than repeated:
+  the squarer pieces first, one to a row in turn (so every row runs longer than the screen and never
+  repeats on a phone), then the look-alikes (the two explainer stills, the two Ambur frames, the two
+  orange Archway fields, the two yellow Bolt fields and the three white Archway announcements), by a
+  short search that keeps every group out of neighboring rows (a group of three must share one row
+  once, and then sits at that row's two ends), then the rest, each to the row with the most room. Each
+  row keeps the visit's own order, so the deal stays put for the session; a turn of the screen across
+  48rem deals again. Wider screens keep three rows of eight, and without JavaScript a phone keeps the
+  HTML's three rows. A fifth row was not needed: four leave no empty space.
+- **The Stack** (`Capabilities.astro`, every width). See [From positioning to
+  production](#from-positioning-to-production): a strict grid, short last rows starting under the first
+  column. Full rows sit exactly where they were.
+- **Creator Marketing and Partnerships** (`CmHero.astro`, `CmContext.astro`). The hero's label and
+  paragraph are centered under the centered headline (they set left before), the paragraph held a little
+  in from the gutters (at most 22rem) in balanced lines. The campaign introduction is centered whole,
+  headline, paragraph and roster line, on a slightly wider measure (1rem at the sides, was 1.25rem). In
+  both, a hyphenated compound ("on-site", "co-sponsors") never splits across two centered lines, and a
+  no-break space keeps "I" from ending one ("I led campaign strategy"); wider screens set the same lines
+  as before.
+- **Technical Product Marketing.** The hero's system (`TpmHero.astro`) needs nothing done on a phone:
+  once it has assembled it opens and stays open, complete (the layers apart, the conduits lit, the
+  signals running, the parts named in the legend beneath it), and the Show the system's parts control
+  is gone, with no room kept for it; with reduced motion it shows complete at once. Tablets keep their
+  visible control, and a mouse still engages it on desktop. The Foundation (`TpmFlow.astro`,
+  `tpm.json` `foundation.stack`) shows one composed stack of four documents in place of the whole
+  library: the Strategic Foundation Brief, Target Buyer Analysis and Market Pain Points Research behind,
+  each showing its number and title, and Competitor Analysis whole in front, each card a few pixels to
+  one side and a degree or so off square; beneath it one line, "The work grew into a multi-document
+  marketing foundation." No button opens the rest and nothing turns it into a carousel. The stack is a
+  picture to assistive technology, which reads the full library, kept in the page out of sight. In the
+  statement, "follows:" never breaks: outside the live stage the words are plain text, so the colon is
+  part of the word to the line breaker (the live stage, wide screens only, keeps its boxes and sets the
+  line on a fixed 20em measure where the colon falls mid-line); the type size is unchanged. The
+  technical documentation (`TpmDocs.astro`) plays its walkthrough alone, without the selected views and
+  their controls beneath it, or the room they took.
+- **Events and Multimedia Production** (`EvTransition.astro`). SECURE. BUILD. CAPTURE. CUT. AMPLIFY. no
+  longer pins or fills the screen on a phone: the five words are a compact sequence numbered 01 to 05
+  (the page's small numerals, in the accent), two columns of two, AMPLIFY. and its broadcast signal
+  across the last row, the whole section well within one screen (about 45%). The same face, case and
+  color, and the same motion: as the sequence comes into view each number and word wipes in, in turn (a
+  wipe alone, so every letter shows at full strength once uncovered) and the signal plays its sequence
+  once after AMPLIFY.; after that it stays. With reduced motion it is simply there. The numbers are
+  hidden from assistive technology with the words; the phrase is read once. The production room, event
+  film and presentation cards are unchanged.
+
+**Tested** (beyond `verify.mjs`, in Chromium with phones emulated by touch): no page scrolls sideways at
+twelve widths from 320 to 1920, top to bottom; at 360, 375, 390, 402, 414 and 430 (and 402x720 and
+375x640, about a phone browser's visible height) the hero's name starts under the menu and ends above
+the brows (on the smallest phone, 320x568, it reaches them); the reel's four rows over 3,000 random
+visit orders (no piece twice, no look-alikes in neighboring rows or side by side, rows of six, the
+squarer pieces two, two, two and one) and its deal again across 48rem and back; the Stack's columns at nine widths (every full desktop row exactly where it
+was); the creator openings centered at seven phone widths with nothing changed at 768, 1440 and 1920;
+the system open by itself at every phone width (and a tap never closing it), at rest on a touch tablet
+and engaged by a mouse on desktop; the stack's headings clear of the cards in front of them; "follows:"
+together at 76 widths, every 7px from 320 to 767 and the live stage from 960 to 2560; the documentation
+frame with nothing beneath it; the Events sequence in its grid, revealed and complete at every phone
+width, still with reduced motion, and pinned exactly as before at 768, 1440 and 1920; no clipped or
+offscreen headline, no line that opens on punctuation, no heading under the header and every link and
+control at least 24 by 24px on a phone; the earlier full-site behavior suite (97 checks) unchanged.
+Built side by side with the commit before, at 1440 and 1920 with reduced motion the pages match pixel
+for pixel except the Stack's second rows (and, on the creator page, sub-pixel shifts in two lines where
+the compounds and the no-break space sit); with motion, the Technical Product Marketing stage matches
+at every sampled scroll position.
+
+**The checks** (`verify.mjs`, `[mobile]`): the hero's name, rule, lockup, grade and still name on phones,
+and its place wider; the reel's fourth row, marked for phones and shown only where the phone deal has
+run, the HTML's three rows of eight, the deal's pieces (shape and look-alike group) and its data; the
+Stack's strict grids and column counts; the creator openings centered, their compounds and the bound
+"I"; the system's missing control and its opening by itself; the Foundation's stack (its four
+documents in order, hidden from assistive technology, its line, no button, phones only) and the library
+kept for assistive technology; "follows:" set directly together and the still layout's plain words;
+the documentation without its selected views; the Events sequence's numbers, grid, wipe-only reveal and
+48rem pin. The existing checks now expect four reel rows in the HTML (the fourth empty), centered phone
+openings on the creator page, and the sequence numbers as the transition's one exception to "no
+numbers". A mutation run broke each new check in turn (41 mutations), and every one was caught.
 
 ### Social Share V1.1
 

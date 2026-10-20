@@ -329,6 +329,28 @@ const DESKTOP = /min-width:\s*60rem|width\s*>=\s*60rem/;
 const TALL = /min-height:\s*[\d.]+rem|height\s*>=\s*[\d.]+rem/;
 const MOTION_OK = /prefers-reduced-motion:\s*no-preference/;
 
+// Mobile Optimization V1, the homepage hero on phones (below 48rem): the name
+// runs higher, its letters starting just under the header row (through the
+// hair, above the brows, behind the portrait as everywhere), a little smaller
+// (15vw); the grade's band moves up with it; no rule across the chest; the
+// arrow, a little smaller and as heavy, leads the descriptor as one lockup
+// (both set left, the lockup still at the lower right); with reduced motion
+// the still name starts in the open wall beside the head. Tablets and
+// desktops keep the composition: the name at 31% (24% from 60rem), the rule,
+// the arrow above the right-set descriptor.
+const heroPhone = (re) => CSS_RULES.filter((r) => re.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && /max-width:\s*47\.99rem|width\s*<=\s*47\.99rem/.test(r.at));
+const heroBase = (re) => CSS_RULES.filter((r) => re.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && !r.at).map((r) => r.body).join(';');
+const nameP = heroPhone(/^\.hero__name$/).map((r) => r.body).join(';');
+if (!/--name-size:\s*15vw/.test(nameP) || !/top:\s*calc\(var\(--header-row\)\s*\+\s*\.?0?\.6rem\s*-\s*\.?0?\.1\s*\*\s*var\(--name-size\)\)/.test(nameP) || !/font-size:\s*var\(--name-size\)/.test(nameP)) failures.push('[mobile] on phones the hero name runs just under the header row, at 15vw (found "' + nameP + '")');
+if (!/top:\s*31%/.test(heroBase(/^\.hero__name$/)) || !CSS_RULES.some((r) => /^\.hero__name$/.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && DESKTOP.test(r.at) && /top:\s*24%/.test(r.body))) failures.push('[mobile] tablets and desktops keep the hero name where it was (31%, 24% from 60rem)');
+if (!heroPhone(/^\.hero__rule--front$/).some((r) => /display:\s*none/.test(r.body))) failures.push('[mobile] on phones no rule crosses the chest');
+const infoP = heroPhone(/^\.hero__info$/).map((r) => r.body).join(';');
+const arrowP = heroPhone(/^\.hero__arrow$/).map((r) => r.body).join(';');
+if (!/grid-auto-flow:\s*column/.test(infoP) || !/text-align:\s*left/.test(infoP) || !/width:\s*1\.25rem/.test(arrowP) || !/stroke-width:\s*1\.75/.test(arrowP)) failures.push('[mobile] on phones the arrow, a little smaller and as heavy, leads the descriptor as one lockup');
+if (!/justify-items:\s*end/.test(heroBase(/^\.hero__info$/)) || !/text-align:\s*right/.test(heroBase(/^\.hero__info$/))) failures.push('[mobile] wider screens keep the arrow above the right-set descriptor');
+if (!heroPhone(/^\.hero__grade$/).length) failures.push('[mobile] on phones the grade\'s band moves up with the name');
+if (!CSS_RULES.some((r) => /^\.stream__track$/.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && /47\.99rem/.test(r.at) && /prefers-reduced-motion:\s*reduce/.test(r.at) && /translate(?:3d)?\(60vw/.test(r.body))) failures.push('[mobile] with reduced motion a phone\'s still name starts beside the head, its first word whole');
+
 // Select Work (v1.7; Full Site Iteration V1): the approved title and intro, the
 // intro's one emphasis on "strategy through execution" (slightly heavier, in the
 // surrounding color), then three cards in one template: number and category, a
@@ -615,9 +637,10 @@ if (!stackScript.includes(':focus-visible')) failures.push('[claim] the Select W
 // image has empty alt text. Three rows of eight, moving right, left, right,
 // dealt from the approved 24-piece pool, each piece once. The HTML carries a
 // fixed mixed order; the inline script shuffles once per visit and keeps that
-// order for the browser session. No video. It stays at three rows until eight
-// more approved pieces arrive (32 in all): a fourth row now would have to
-// repeat pieces or bring back excluded ones.
+// order for the browser session. No video. Wider screens stay at three rows
+// until eight more approved pieces arrive (32 in all); phones (Mobile
+// Optimization V1, below) deal the same 24 into four rows of six instead, so
+// the fourth row repeats nothing and brings back nothing excluded.
 const REEL_POOL = [
   'ambur-1', 'ambur-2',
   'archway-1', 'archway-2', 'archway-3', 'archway-4', 'archway-5', 'archway-6', 'archway-7',
@@ -639,10 +662,10 @@ if (textOf(reelHtml) !== '') failures.push(`[claim] the reel must carry no text 
 const reelImgs = reelHtml.match(/<img\b[^>]*>/g) || [];
 if (!reelImgs.length || reelImgs.some((t) => !/\salt(?:="")?(?=[\s>])/.test(t))) failures.push('[claim] every reel image must have empty alt text');
 const reelDirs = [...reelHtml.matchAll(/data-reel-row data-direction="(left|right)"/g)].map((m) => m[1]).join(',');
-if (reelDirs !== 'right,left,right') failures.push(`[claim] the reel rows must move right, left, right (found ${reelDirs || 'none'})`);
+if (reelDirs !== 'right,left,right,left') failures.push(`[claim] the reel rows must move right, left, right (and left, the phones' fourth row) (found ${reelDirs || 'none'})`);
 const reelRuns = [...reelHtml.matchAll(/<ul class="reel__run" data-reel-run[^>]*>([\s\S]*?)<\/ul>/g)].map((m) => [...m[1].matchAll(/data-reel-id="reel-([a-z0-9-]+)"/g)].map((x) => x[1]));
 const reelIds = reelRuns.flat();
-if (reelRuns.length !== 3 || reelRuns.some((r) => r.length !== 8)) failures.push(`[claim] the reel must deal three rows of eight (found ${reelRuns.map((r) => r.length).join('/') || 'none'})`);
+if (reelRuns.length !== 4 || reelRuns.slice(0, 3).some((r) => r.length !== 8) || reelRuns[3].length) failures.push(`[claim] the reel must deal three rows of eight, the phones' fourth row left for the script (found ${reelRuns.map((r) => r.length).join('/') || 'none'})`);
 if (new Set(reelIds).size !== reelIds.length || reelIds.length !== REEL_POOL.length || REEL_POOL.some((id) => !reelIds.includes(id))) {
   failures.push(`[claim] the reel must use the approved 24-piece pool, each piece once (found ${reelIds.length} pieces, ${new Set(reelIds).size} unique)`);
 }
@@ -668,6 +691,30 @@ const reelGap = home.slice(home.indexOf('</section>', at('id="work"')), home.las
 if (textOf(reelGap.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/<style\b[\s\S]*?<\/style>/g, '')) !== '') {
   failures.push('[claim] nothing but the reel may sit between Select Work and the combined section');
 }
+// Mobile Optimization V1: on phones (below 48rem) four rows of six, moving
+// right, left, right, left. The HTML's fourth row is empty and marked for
+// phones; the deal fills it only where the script runs on a phone (the reel
+// is then marked data-reel-four), so wider screens and no JavaScript keep the
+// three rows. The phone deal spreads the squarer pieces one to a row first,
+// keeps every look-alike group (home.json reel.alike) out of neighboring rows
+// and from sitting side by side, and deals again across 48rem.
+const PHONE = /max-width:\s*47\.99rem|width\s*<=\s*47\.99rem/;
+const reelRowTags = [...reelHtml.matchAll(/<div class="reel__row"[^>]*>/g)].map((m) => m[0]);
+if (reelRowTags.length !== 4 || reelRowTags.slice(0, 3).some((t) => /data-reel-phone/.test(t)) || !/data-reel-phone/.test(reelRowTags[3] || '') || !/data-speed="(?!1"|0\.8"|1\.2")[\d.]+"/.test(reelRowTags[3] || '')) failures.push('[mobile] the reel carries a fourth row for phones only, marked and at a rate of its own');
+const reelPhoneHide = rulesFor(/\.reel__row/).filter((r) => /\[data-reel-phone\]/.test(r.sel));
+if (!reelPhoneHide.some((r) => !r.at && !/data-reel-four/.test(r.sel) && /display:\s*none/.test(r.body)) || !reelPhoneHide.some((r) => /\.reel(?:\[[^\]]*\])*\[data-reel-four\]/.test(r.sel) && /display:\s*flex/.test(r.body))) failures.push('[mobile] the fourth row shows only where the phone deal has run (data-reel-four), never wider or without JavaScript');
+const reelInline = scriptsText.find((t) => t.includes('jc-reel-order')) || '';
+for (const token of ['(max-width: 47.99rem)', 'data-reel-four', 'data-reel-phone', 'data-reel-shape', 'data-reel-alike', 'reelDeal']) {
+  if (!reelInline.includes(token)) failures.push(`[mobile] the reel's phone deal is missing "${token}"`);
+}
+if (!scriptsText.some((t) => t.includes('reelDeal') && t.includes('data-reel-clone') && t.includes('47.99rem'))) failures.push('[mobile] across 48rem the reel deals again and repeats its rows afresh');
+const reelFrames = [...reelHtml.matchAll(/<li class="reel__frame"[^>]*>/g)].map((m) => m[0]);
+if (reelFrames.length !== 24 || reelFrames.some((t) => !/data-reel-shape="(?:square|wide)"/.test(t))) failures.push('[mobile] every reel piece says whether it is square or wide, for the phone deal');
+const reelData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8')).reel || {};
+const alikeIds = (reelData.alike || []).flat();
+if (reelData.phoneRows !== 4 || !(reelData.alike || []).length || (reelData.alike || []).some((g) => g.length < 2 || g.length > 3) || new Set(alikeIds).size !== alikeIds.length || alikeIds.some((id) => !(reelData.pool || []).includes(id))) failures.push('[mobile] home.json deals phones four rows and names its look-alike groups (two or three pieces each, every one in the pool, none in two groups)');
+const alikeHtml = new Map(reelFrames.map((t) => [(t.match(/data-reel-id="([^"]+)"/) || [])[1], (t.match(/data-reel-alike="(\d+)"/) || [])[1]]));
+if ((reelData.alike || []).some((g, k) => g.some((id) => alikeHtml.get(id) !== String(k))) || [...alikeHtml.values()].filter((v) => v !== undefined).length !== alikeIds.length) failures.push('[mobile] each look-alike piece carries its group in the page, and only those');
 
 // From positioning to production (v1.7, Stack rebuilt in v1.8): What I Do and
 // How I Work in one frame. AI appears only as an enabler, in a short
@@ -730,6 +777,20 @@ if (!toolRows.some((r) => /justify-content:\s*center/.test(r.body))) failures.pu
 if (toolRows.some((r) => /justify-content:\s*(?:space-|stretch)/.test(r.body)) || rulesFor(/\.tool\b(?!__|--)/).some((r) => /(?:^|;)\s*flex(?:-grow)?:\s*(?:[1-9]|auto)/.test(r.body))) {
   failures.push('[claim] Stack tiles must keep their own width, not stretch to fill a row');
 }
+// Mobile Optimization V1 (desktop and phones alike): each Stack collection is
+// a strict grid, filled left to right and top to bottom, so a short last row
+// starts under the first column instead of centering: three across on phones;
+// from 40rem the group's own column count (half its tools, rounded up: 3, 4
+// and 3), so Google Analytics sits under Linear, Slack under Mintlify and
+// Microsoft Teams under GitBook (on phones Teams under Grafana), Typefully
+// under Figma and Grammarly under Photoshop. The grid itself stays centered
+// in its group, under its centered heading.
+const toolsBase = toolRows.filter((r) => !r.at).map((r) => r.body).join(';');
+if (!/display:\s*grid/.test(toolsBase) || !/grid-template-columns:\s*repeat\(3,\s*minmax\(0(?:px)?,\s*1fr\)\)/.test(toolsBase) || toolRows.some((r) => /flex-wrap|display:\s*flex/.test(r.body))) failures.push('[mobile] each Stack collection is a strict grid, three across on phones, never a centered wrapping row');
+if (!toolRows.some((r) => /min-width:\s*40rem|width\s*>=\s*40rem/.test(r.at) && /grid-template-columns:\s*repeat\(var\(--cols\),\s*6\.25rem\)/.test(r.body)) || !toolRows.some((r) => /min-width:\s*64rem|width\s*>=\s*64rem/.test(r.at) && /grid-template-columns:\s*repeat\(var\(--cols\),\s*minmax\(0(?:px)?,\s*1fr\)\)/.test(r.body))) failures.push('[mobile] from 40rem each Stack group keeps its own column count, in cells of one width');
+if (rulesFor(/\.tool\b(?!__|--)/).some((r) => /(?:^|;)\s*(?:width|flex):/.test(r.body))) failures.push('[mobile] the Stack tiles take their grid cells, with no widths of their own that could set a short row apart');
+const stackCols = [...prHtml.matchAll(/<div class="stack__group"[^>]*style="--cols:\s*(\d+)"/g)].map((m) => Number(m[1]));
+if (JSON.stringify(stackCols) !== JSON.stringify(STACK.map((g) => Math.ceil(g.length / 2)))) failures.push(`[mobile] each Stack group's column count is half its tools, rounded up (3, 4 and 3), so every last row starts under the first column (found ${stackCols.join(', ') || 'none'})`);
 // The capability rows answer the pointer and the keyboard alike.
 const capRows = prHtml.match(/<li class="cap"[^>]*>/g) || [];
 if (capRows.length !== 4 || capRows.some((t) => !/tabindex="0"/.test(t) || !/\bdata-cap\b/.test(t))) failures.push('[claim] the four capability rows must be reachable by keyboard');
@@ -1124,6 +1185,10 @@ if (heroButtons.length !== 1 || !/\bdata-iso-toggle\b/.test(toggleTag) || !/type
 const toggleWords = [...(heroButtons[0] || '').matchAll(/<span data-iso-(?:show|hide)[^>]*>([\s\S]*?)<\/span>/g)].map((m) => textOf(norm(m[1])));
 if (JSON.stringify(toggleWords) !== JSON.stringify([norm(SYSTEM.toggle?.show), norm(SYSTEM.toggle?.hide)]) || !toggleWords[0]) failures.push(`[tpm] the control reads "${SYSTEM.toggle?.show}" and, open, "${SYSTEM.toggle?.hide}"`);
 if (!tpmRules(/^\.iso__toggle:not\(:focus-visible\)$/).some((r) => /hover:\s*hover/.test(r.at) && /clip-path:\s*inset\(50%\)/.test(r.body)) || !tpmRules(/^\.iso__toggle$/).some((r) => /hover:\s*none/.test(r.at) && /position:\s*static/.test(r.body))) failures.push('[tpm] with a mouse the control is out of sight until keyboard focus reaches it; on touch screens it stays in view');
+// Mobile Optimization V1: on a phone (below 48rem) the system shows complete
+// without being asked: once it stands it opens and stays open, and the
+// control is gone, with no room kept for it. Tablets keep the visible control.
+if (!tpmRules(/^\.iso__toggle$/).some((r) => PHONE.test(r.at) && /display:\s*none/.test(r.body))) failures.push('[mobile] on phones the system needs no control, and none is shown or kept room for');
 // Without JavaScript, hover or focus opens it; reduced motion keeps every
 // movement out (the media query above) and shows it complete.
 if (!tpmRules(/^html:not\(\.js\) \.iso:is\(:hover,\s*:focus-within\) \.iso__labels$/).some((r) => /visibility:\s*visible/.test(r.body))) failures.push('[tpm] without JavaScript the system opens on hover or focus');
@@ -1244,8 +1309,32 @@ if (covers.some((c) => !/aria-hidden="true"/.test(c) || spaced(c) || /<svg\b/.te
 // subline in a fixed area at the bottom.
 const textRule = tpmRules(/^\.tpm-doc__text$/).find((r) => /grid-template-rows/.test(r.body));
 if (!textRule || !/grid-template-rows:\s*[\d.]+rem\s+auto\s+1fr\s+calc\(/.test(textRule.body)) failures.push('[tpm] every card shares one internal grid (number row, title area, open space, subline area)');
-const words02 = spaced(((tpmPage.match(/<section class="tpm-foundation"[\s\S]*?<\/section>/) || [''])[0]).replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<span class="tpm-doc__title[^"]*"[^>]*>[\s\S]*?<\/span>/g, '').replace(/<span class="tpm-doc__num[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')).split(' ').filter(Boolean).length;
-if (words02 > 80) failures.push(`[tpm] 02 keeps to about 50 to 80 words outside its titles (found ${words02})`);
+// (Counted as each screen reads it: wide, the opening and the library; on a phone, the opening and the line under
+// its stack of documents, Mobile Optimization V1.)
+const sec02 = (tpmPage.match(/<section class="tpm-foundation"[\s\S]*?<\/section>/) || [''])[0];
+const stack02 = (sec02.match(/<div class="container tpm-stack"[\s\S]*?<\/p>\s*<\/div>/) || [''])[0];
+const count02 = (h) => spaced(h.replace(/<h2[\s\S]*?<\/h2>/, '').replace(/<span class="tpm-doc__title[^"]*"[^>]*>[\s\S]*?<\/span>/g, '').replace(/<span class="tpm-doc__num[^"]*"[^>]*>[\s\S]*?<\/span>/g, '')).split(' ').filter(Boolean).length;
+const words02 = count02(sec02.replace(stack02, ''));
+const words02Phone = count02(sec02.replace(/<div class="container tpm-library"[\s\S]*$/, '').replace(/<ul class="tpm-stack__cards"[\s\S]*?<\/ul>/, ''));
+if (words02 > 80 || words02Phone > 80) failures.push(`[tpm] 02 keeps to about 50 to 80 words outside its titles (found ${words02}, ${words02Phone} on a phone)`);
+// Mobile Optimization V1: on phones one composed stack of four representative documents stands in for the
+// library (the Strategic Foundation Brief, Target Buyer Analysis, Market Pain Points Research and Competitor
+// Analysis, from the back of the stack to the front: each card behind shows its number and title, the front card
+// shows whole), with one line beneath it on what the work became; no button opens the rest and nothing turns it
+// into a carousel. The stack is a picture (hidden from assistive technology); the library stays in the page, out
+// of sight, and is read instead. Wider screens never show the stack.
+const STACK_DOCS = [['01', 'Strategic Foundation Brief'], ['02', 'Target Buyer Analysis'], ['03', 'Market Pain Points Research'], ['05', 'Competitor Analysis']];
+const stackDocs = [...stack02.matchAll(/<li class="tpm-stack__doc"[^>]*data-stack-doc="(\d+)"[^>]*>[\s\S]*?<\/li>/g)].map((m) => [m[1], textOf((m[0].match(/<span class="tpm-doc__title[^"]*"[^>]*>([\s\S]*?)<\/span>/) || [, ''])[1])]);
+if (JSON.stringify(stackDocs) !== JSON.stringify(STACK_DOCS) || JSON.stringify(tpmData.foundation?.stack?.documents) !== JSON.stringify(STACK_DOCS.map((d) => d[0]))) failures.push(`[mobile] on phones the Foundation shows one stack of the four representative documents, in order (found ${stackDocs.map((d) => d.join(' ')).join(', ') || 'none'})`);
+if (!/<ul class="tpm-stack__cards"[^>]*aria-hidden="true"/.test(stack02)) failures.push('[mobile] the phone\'s stack of documents is a picture, hidden from assistive technology (the library is read instead)');
+const stackLine = textOf((stack02.match(/<p class="tpm-stack__line"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1]);
+if (!stackLine || stackLine !== tpmData.foundation?.stack?.line || !/\bmulti-document marketing foundation\b/.test(stackLine) || stackLine.split(' ').length > 12 || !/<span class="tpm-nowrap"[^>]*>multi-document<\/span>/.test(stack02) || /\u2014/.test(stackLine)) failures.push(`[mobile] one concise line under the stack says the work became a multi-document marketing foundation, its compound never split (found "${stackLine}")`);
+if (/<button\b|<a\b|aria-expanded|data-expand|carousel|tabindex=/i.test(stack02)) failures.push('[mobile] no button opens the rest of the library and nothing turns the stack into a carousel');
+const tpmPhone = (re) => tpmRules(re).filter((r) => PHONE.test(r.at)).map((r) => r.body).join(';');
+if (!tpmRules(/^\.tpm-stack$/).some((r) => !r.at && /display:\s*none/.test(r.body)) || !/display:\s*grid/.test(tpmPhone(/^\.tpm-stack$/))) failures.push('[mobile] the stack of documents shows on phones only');
+const libPhone = tpmPhone(/^\.tpm-library$/);
+if (!/position:\s*absolute/.test(libPhone) || !/clip-path:\s*inset\(50%\)/.test(libPhone) || !/width:\s*1px/.test(libPhone) || /display:\s*none/.test(libPhone)) failures.push('[mobile] on phones the library leaves the screen but stays in the page for assistive technology');
+if (!/position:\s*absolute/.test(tpmPhone(/^\.tpm-stack__sheet$/)) || !/aspect-ratio:\s*10\s*\/\s*13/.test(tpmPhone(/^\.tpm-stack__sheet$/)) || !/position:\s*relative/.test(tpmPhone(/^\.tpm-stack__head$/))) failures.push('[mobile] each card in the stack is a whole card hanging below its own heading, so the next card covers the rest and never a title');
 
 // ---- 03 the statement: the one block of type, nothing else; read in full by
 // assistive technology, revealed word by word on screen.
@@ -1257,6 +1346,11 @@ const stmtPieces = [...stmtHtml.matchAll(/<span class="tpm-word"([^>]*)>([\s\S]*
 const stmtWords = stmtPieces.reduce((out, p) => (p.joined && out.length ? [...out.slice(0, -1), out[out.length - 1] + p.text] : [...out, p.text]), []);
 if (stmtSr !== TPM.statement) failures.push('[tpm] 03 must carry the statement word for word');
 if (stmtWords.join(' ') !== TPM.statement) failures.push('[tpm] 03 reveals the statement word by word, every word in order');
+// Mobile Optimization V1: "follows:" never breaks. The colon is its own piece, revealed with "follows", set with no
+// space between them; outside the live stage the words are plain text, so the two are one word to the line breaker
+// (the type is not reduced to manage it); the live stage, on wide screens, sets each word as a box that rises.
+if (!/>follows<\/span><\/span><span class="tpm-word"[^>]*\bdata-with-previous\b[^>]*>:<\/span>/.test(stmtHtml)) failures.push('[mobile] the colon after "follows" follows it directly, revealed with it');
+if (!tpmRules(/^\.tpm-word$/).some((r) => !r.at && /display:\s*inline(?:;|$)/.test(r.body)) || tpmRules(/^\.tpm-word$/).some((r) => /inline-block/.test(r.body)) || !tpmRules(/^\.tpm-flow\.is-live \.tpm-word$/).some((r) => DESKTOP.test(r.at) && /display:\s*inline-block/.test(r.body))) failures.push('[mobile] outside the live stage the statement\'s words are plain text, so "follows:" never breaks; the live stage still sets each word as a box');
 // The page's one animated highlight (V1.3): a restrained translucent teal
 // behind the clause on how the shared language guides every expression,
 // swept in once the statement is complete; not a marker, no bold, no color.
@@ -1387,6 +1481,7 @@ if (chapterTitles.join(' | ') !== 'Documentation overview | Interactive architec
 // spotlight.
 const chaptersLabel = (docsHtml.match(/<p id="tpm-chapters-label"[^>]*>([\s\S]*?)<\/p>/) || [, ''])[1];
 if (textOf(chaptersLabel) !== 'Selected views from a broader documentation system' || !/<ol class="tpm-chapters[^"]*"[^>]*aria-labelledby="tpm-chapters-label"/.test(docsHtml)) failures.push('[tpm] the chapters are introduced as "Selected views from a broader documentation system", which also names the list');
+if (!tpmRules(/^\.tpm-chapters__wrap$/).some((r) => PHONE.test(r.at) && /display:\s*none/.test(r.body))) failures.push('[mobile] on phones the documentation walkthrough plays alone: no selected views, no controls, no room kept for them');
 if (!tpmRules(/^\.tpm-chapters__label$/).some((r) => /text-align:\s*center/.test(r.body)) || !tpmRules(/^\.tpm-chapters__wrap$/).some((r) => /max-width:\s*90rem/.test(r.body) && /margin:\s*0 auto/.test(r.body)) || !tpmRules(/^\.tpm-browser$/).some((r) => /max-width:\s*90rem/.test(r.body))) failures.push('[tpm] "Selected views from a broader documentation system" is centered on the frame (V1.3)');
 if (/\b\d+\s*(?:\+\s*)?pages?\b|Architecture Spotlight/i.test(spaced(docsHtml))) failures.push('[tpm] 05 gives no page count and no Architecture Spotlight');
 if (starts[0] !== 0 || starts.some((s, i) => i && s <= starts[i - 1]) || starts.some((s) => s >= docsSec)) failures.push('[tpm] the chapters start at 0 and in order, inside the walkthrough');
@@ -1685,6 +1780,7 @@ if (!/\{threshold:\.55,cycle:\{hold:(?:1e3|1000|1[0-5]\d\d),fade:(?:[5-9]\d\d)\}
 // under the rising Foundation, closed and without its idle life.
 if (/webgl|getContext\(/i.test(tpmScripts)) failures.push('[tpm] no WebGL and no canvas: the system is SVG and CSS');
 for (const token of ['[data-iso]', '[data-iso-hit]', '[data-iso-toggle]', 'aria-expanded', 'Escape', 'pointerleave', 'pointerup', 'pointerdown', 'animationend', 'is-quick', 'is-asleep', 'is-flow', 'IntersectionObserver', '(hover: hover) and (pointer: fine)']) if (!tpmScripts.includes(token)) failures.push(`[tpm] the system's script is missing ${token}`);
+if (!tpmScripts.includes('(max-width: 47.99rem)') || !/\(?\w+\.matches\s*&&\s*\w+\)?\s*\|\|/.test(tpmScripts)) failures.push('[mobile] on phones the system opens by itself once it stands, and stays open');
 if (!/pointerType===?[`"']touch[`"']/.test(tpmScripts)) failures.push('[tpm] the system never follows a touch pointer: a tap toggles it');
 if (/data-tpm-field|tpm-signal|SignalField/.test(tpmScripts)) failures.push('[tpm] nothing is left of the signal field\'s script');
 if (!tpmScripts.includes('is-held')) failures.push('[tpm] the hero script stills the system while the Foundation rises over it');
@@ -1905,7 +2001,27 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (!/data-surface="dark"/.test((tr.match(/<div class="evx"[^>]*>/) || [''])[0])) failures.push('[events] the transition carries the hero\'s dark ground');
   // (V1.3: its one icon is the broadcast signal after AMPLIFY., checked below.)
   const trBare = tr.replace(/<span class="evx__signal"[^>]*>[\s\S]*?<\/svg><\/span><\/span>/, '');
-  if (/<svg\b|<img\b|<video\b|<h2\b|<a\b|<ol\b|<ul\b|<button\b/.test(trBare) || /\d/.test(textOf(tr))) failures.push('[events] the transition has no other icon, lines, nodes, numbers, links or paragraphs: only the phrase and its signal');
+  // (Mobile Optimization V1: the phone's sequence numbers, 01 to 05, are the one exception, checked below; they are
+  // never shown wider and never read out.)
+  const trNoNums = tr.replace(/<span class="evx__num"[^>]*>\d{2}<\/span>/g, '');
+  if (/<svg\b|<img\b|<video\b|<h2\b|<a\b|<ol\b|<ul\b|<button\b/.test(trBare) || /\d/.test(textOf(trNoNums))) failures.push('[events] the transition has no other icon, lines, nodes, numbers, links or paragraphs: only the phrase and its signal');
+  // Mobile Optimization V1, phones (below 48rem): no pin and no full screen. The five words become a compact numbered
+  // sequence, 01 to 05, in two columns (AMPLIFY. and its signal across the last row), the section well within one
+  // screen. The same face, case and color; the words wipe in, in turn, as the sequence comes into view (a wipe alone,
+  // only with motion allowed) and the signal plays once after AMPLIFY.; with reduced motion it is simply there. The
+  // numbers are hidden from assistive technology with the words (the phrase is read once), and never shown wider.
+  const trNums = [...tr.matchAll(/<span class="evx__num"[^>]*>(\d{2})<\/span>/g)].map((m) => m[1]);
+  const trCells = tr.match(/<span class="evx__cell[^"]*"[^>]*>/g) || [];
+  if (trNums.join(',') !== '01,02,03,04,05' || trCells.length !== 5 || trCells.some((t) => !/aria-hidden="true"/.test(t)) || !/evx__cell--last/.test(trCells[4] || '')) failures.push(`[mobile] the phone's sequence numbers the five words 01 to 05, each with its word, hidden from assistive technology (found ${trNums.join(', ') || 'none'})`);
+  const evPhone = (re) => evRules(re).filter((r) => PHONE.test(r.at)).map((r) => r.body).join(';');
+  if (!evRules(/^\.evx__num$/).some((r) => !r.at && /display:\s*none/.test(r.body)) || !/display:\s*block/.test(evPhone(/^\.evx__num$/)) || !/color:\s*var\(--accent-ink\)/.test(evPhone(/^\.evx__num$/))) failures.push('[mobile] the numbers show on phones only, as the page\'s small numerals in the accent');
+  const phrasePhone = evPhone(/^\.evx__phrase$/);
+  if (!/display:\s*grid/.test(phrasePhone) || !/grid-template-columns:\s*repeat\(2,\s*minmax\(0(?:px)?,\s*1fr\)\)/.test(phrasePhone) || !/display:\s*contents/.test(evPhone(/^\.evx__line$/)) || !/grid-column:\s*1\s*\/\s*-1/.test(evPhone(/^\.evx__cell--last$/)) || !/min-height:\s*0/.test(evPhone(/^\.evx__pin$/))) failures.push('[mobile] on phones the five words sit in two columns, AMPLIFY. across the last row, in a section no taller than it needs');
+  const trSrc = fs.readFileSync(path.join(root, 'src/components/events/EvTransition.astro'), 'utf8');
+  if (!/const live = motion && wide\.matches/.test(trSrc) || !/matchMedia\('\(min-width: 48rem\)'\)/.test(trSrc) || !/is-reveal/.test(trSrc) || !/is-shown/.test(trSrc)) failures.push('[mobile] the phrase pins and follows the scroll only from 48rem; a phone reveals its sequence once as it comes into view');
+  const revealWipe = evRules(/^\.evx\.is-reveal :is\(\.evx__num,\s*\.evx__word\)$/).filter((r) => MOTION_OK.test(r.at)).map((r) => r.body).join(';');
+  if (!/clip-path:\s*inset\(-\.?0?\.2em 100% -\.?0?\.2em 0(?:px)?\)/.test(revealWipe) || /opacity/.test(revealWipe) || !/transition:\s*clip-path/.test(revealWipe) || evRules(/\.is-reveal/).some((r) => !MOTION_OK.test(r.at))) failures.push('[mobile] on phones each number and word wipes in, in turn (a wipe alone, every letter at full strength once uncovered), only with motion allowed');
+  if (!evRules(/^\.evx\.is-reveal\.is-shown \.evx__tile$/).some((r) => MOTION_OK.test(r.at) && /evx-tile/.test(r.body)) || !evRules(/^\.evx\.is-reveal\.is-shown \.evx__g--far$/).some((r) => /evx-far/.test(r.body))) failures.push('[mobile] on phones the signal plays its sequence once, after AMPLIFY. lands');
   if (!evRules(/^\.evx__phrase$/).some((r) => /text-transform:\s*uppercase/.test(r.body) && /text-align:\s*center/.test(r.body)) || !evRules(/^\.evx__line$/).some((r) => /min-width:\s*48rem|width\s*>=\s*48rem/.test(r.at) && /display:\s*inline/.test(r.body)) || !evRules(/^\.evx__line$/).some((r) => !r.at && /display:\s*block/.test(r.body))) failures.push('[events] one centered uppercase line where it fits; two deliberate lines on a small screen');
   const trRun = Number((evRules(/^\.evx\.is-live$/).map((r) => r.body).join(';').match(/var\(--evx-run,\s*([\d.]+)\)/) || [])[1]);
   if (!(trRun >= 2.1 && trRun <= 2.4) || !evRules(/^\.evx\.is-live \.evx__pin$/).some((r) => /position:\s*sticky/.test(r.body))) failures.push(`[events] the phrase holds at the middle of the screen while it is read (V1.6: the section about 2.1 to 2.4 screens tall, found ${trRun || 'none'})`);
@@ -2676,7 +2792,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   // the paragraph beneath it at a readable measure (Full Site Iteration V1: 54 to 60rem, at the same type size, so it
   // sets in fewer, longer lines), then a short centered rule (a 1px line no wider than
   // 3rem) and the roster line, smaller and quieter; no card, pill, badge or box, and no two-column grid at any width.
-  // On phones the paragraph and the roster line set left in the same order while the headline stays centered. The
+  // On phones (Mobile Optimization V1) all three stay centered, on a slightly wider measure (1rem at the sides). The
   // headline rises first, the paragraph follows with a short upward fade and the roster line comes last, only with
   // motion allowed; nothing in it takes focus.
   const ctxInner = cmRules(/^\.cmx__inner$/);
@@ -2689,7 +2805,15 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   if (!ctxInner.some((r) => !r.at && /display:\s*grid/.test(r.body) && /justify-items:\s*center/.test(r.body) && /text-align:\s*center/.test(r.body)) || ctxInner.some((r) => /grid-template-columns|grid-template-areas/.test(r.body)) || cmRules(/^\.cmx__(?:title|words|copy|roster)$/).some((r) => /grid-column|grid-area/.test(r.body))) failures.push('[creator] V1.4: the program introduction is one centered composition, not a split layout, at every width');
   if (!(ctxTitleCh >= 12 && ctxTitleCh <= 16) || !/text-wrap:\s*balance/.test(ctxTitle) || !/margin:\s*0 auto/.test(ctxTitle) || !(ctxWordsRem >= 54 && ctxWordsRem <= 60)) failures.push(`[creator] V1.4: the headline sits at the top center in a narrow, balanced measure (12ch to 16ch, found ${ctxTitleCh}ch) and the paragraph beneath it at a wider one (Full Site Iteration V1: 54 to 60rem, found ${ctxWordsRem}rem)`);
   if (!/content:\s*(?:''|"")/.test(ctxRuleLine) || !/height:\s*1px/.test(ctxRuleLine) || !(Number((ctxRuleLine.match(/width:\s*([\d.]+)rem/) || [])[1]) <= 3) || !/background:\s*var\(--line(?:-strong)?\)/.test(ctxRuleLine) || cmRules(/^\.cmx(?:__inner|__words|__copy|__roster)?$/).some((r) => /box-shadow|border(?:-[\w-]+)?\s*:|border-radius|outline|background-color/.test(r.body) || (/background:/.test(r.body) && !/background:\s*var\(--bg\)/.test(r.body)))) failures.push('[creator] V1.4: a short centered rule sets the roster line apart, with no card, pill, badge or box');
-  if (!/text-align:\s*left/.test(ctxPhone(/^\.cmx__words$/)) || !/text-align:\s*left/.test(ctxPhone(/^\.cmx__roster$/)) || cmRules(/^\.cmx__title$/).some((r) => r.at && /text-align:\s*(?:left|start)/.test(r.body))) failures.push('[creator] V1.4: on phones the paragraph and the roster line set left, the headline stays centered');
+  if (cmRules(/^\.cmx(?:__inner|__title|__words|__copy|__roster)$/).some((r) => /text-align:\s*(?:left|start)|justify-items:\s*(?:start|left)/.test(r.body)) || !/padding-inline:\s*1rem/.test(ctxPhone(/^\.cmx__inner$/))) failures.push('[mobile] on phones the campaign introduction stays centered, headline, paragraph and roster line alike, on a slightly wider measure (1rem at the sides)');
+  // Mobile Optimization V1: on phones the hero's label and paragraph are centered under the centered headline (they
+  // set left before), the paragraph at a readable measure held in from the gutters, in balanced lines; a hyphenated
+  // compound never splits across two centered lines, and "I" never ends one.
+  const cmPhone = (re) => cmRules(re).filter((r) => /max-width:\s*47\.99rem|width\s*<=\s*47\.99rem/.test(r.at)).map((r) => r.body).join(';');
+  if (cmRules(/^\.cmh__(?:foot|label|copy)$/).some((r) => /text-align:\s*(?:left|start)|justify-items:\s*(?:start|left)/.test(r.body)) || !/max-width:\s*min\(22rem,\s*100%\s*-\s*1\.25rem\)/.test(cmPhone(/^\.cmh__copy$/)) || !/text-wrap:\s*balance/.test(cmPhone(/^\.cmh__copy$/))) failures.push('[mobile] on phones the creator hero\'s label and paragraph are centered, the paragraph a readable measure in from the gutters, in balanced lines');
+  const cmCompounds = [...cmPage.matchAll(/<span class="(cmh|cmx)__compound"[^>]*>([^<]+)<\/span>/g)].map((m) => `${m[1]}:${m[2]}`);
+  if (JSON.stringify(cmCompounds) !== JSON.stringify(['cmh:on-site', 'cmx:co-sponsors', 'cmx:on-site']) || !/white-space:\s*nowrap/.test(cmPhone(/^\.cmh__compound$/)) || !/white-space:\s*nowrap/.test(ctxPhone(/^\.cmx__compound$/))) failures.push(`[mobile] on phones no hyphenated compound splits across two centered lines (found ${cmCompounds.join(', ') || 'none'})`);
+  if (!/<strong class="em-key"[^>]*>I(?:\u00a0|&nbsp;|&#160;)led campaign strategy with /.test(ctx)) failures.push('[mobile] "I" never ends a line of the centered campaign introduction (a no-break space binds it to "led")');
   const revealDelay = (re) => Number((cmRules(re).filter((r) => MOTION_OK.test(r.at)).map((r) => r.body).join(';').match(/transition:\s*opacity\s+[\d.]+m?s\s+(?:(?:ease(?:-in|-out|-in-out)?|linear)\s+)?([\d.]+)s/) || [])[1]);
   const copyDelay = revealDelay(/^html\.js \.cmx__copy$/);
   const rosterDelay = revealDelay(/^html\.js \.cmx__roster$/);

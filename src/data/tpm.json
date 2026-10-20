@@ -42,7 +42,9 @@
       { "number": "11", "title": "Brand Lexicon", "subline": "Language system", "icon": "book-open-text", "accent": "violet", "color": "#8f85d6" }
     ],
     "_depth": "Unlabeled, neutral covers after the last named document: no number, title, subline or icon, only the suggestion that the library runs deeper.",
-    "depth": 2
+    "depth": 2,
+    "_stack": "Mobile Optimization V1: on phones (below 48rem) one composed stack of these documents (by number, from the back of the stack to the front: each card behind shows its number and title, the front card shows whole) stands in for the whole library, with `line` beneath it; the full library stays in the page for assistive technology. No control opens the rest.",
+    "stack": { "documents": ["01", "02", "03", "05"], "line": "The work grew into a multi-document marketing foundation." }
   },
   "statement": {
     "copy": "Once the product language is clear, it guides every expression that follows: the website, technical documentation, articles, campaigns, and content that bring the product to market.",

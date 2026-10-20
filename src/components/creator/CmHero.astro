@@ -75,7 +75,7 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
 
   <div class="container cmh__foot">
     <p class="cmh__label">{hero.label}</p>
-    <p class="cmh__copy">{hero.copy}</p>
+    <p class="cmh__copy">{hero.copy.split(/(\S+-\S+)/).filter(Boolean).map((t) => (/^\S+-\S+$/.test(t) ? <span class="cmh__compound">{t}</span> : t))}</p>
   </div>
 </section>
 
@@ -401,14 +401,23 @@ const sceneSizes = '(max-aspect-ratio: 1585/1000) 159vh, 100vw';
       background: linear-gradient(to bottom, rgba(243, 239, 232, 0) 0%, rgba(243, 239, 232, 0.84) 30%, var(--c-bone) 52%);
     }
 
+    /* Mobile Optimization V1: the label and the paragraph centered under the
+       centered headline (they set left before); the paragraph at a readable
+       measure in balanced lines, held a little in from the gutters. */
     .cmh__copy {
+      max-width: min(22rem, 100% - 1.25rem);
       font-size: 1.0625rem;
+      text-wrap: balance;
     }
 
     .cmh__foot {
       bottom: 2.6rem;
-      justify-items: start;
-      text-align: left;
+      text-wrap: balance;
+    }
+
+    /* A hyphenated compound ("on-site") stays on one line. */
+    .cmh__compound {
+      white-space: nowrap;
     }
   }
 </style>

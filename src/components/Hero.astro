@@ -19,6 +19,14 @@
  * rather than repeating it. The loop is a duplicated track translated by half
  * its own width, which has no seam. Under prefers-reduced-motion the stream
  * renders as one static instance and nothing moves.
+ *
+ * Phones (Mobile Optimization V1, below 48rem): the name runs higher, through
+ * the hair just under the header row, the way a masthead sits behind a cover
+ * portrait, so more of the lettering shows beside the head and none of it
+ * crosses the face; it is a little smaller (15vw), so whole words pass through
+ * the open wall, and the grade's band moves up with it. The rule across the
+ * chest is gone, and the arrow sits to the left of the descriptor as one
+ * compact lockup. Tablets and desktops keep the composition as it was.
  */
 import { Picture } from 'astro:assets';
 import home from '@data/home.json';
@@ -217,6 +225,25 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     }
   }
 
+  /* Phones (Mobile Optimization V1): the name runs just under the header row,
+     so the band starts at the top (where it also carries the navigation) and
+     keeps the wall as dark as before down to the shoulders. */
+  @media (max-width: 47.99rem) {
+    .hero__grade {
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(8, 10, 12, 0.42) 0%,
+          rgba(8, 10, 12, 0.5) 9%,
+          rgba(8, 10, 12, 0.5) 17%,
+          rgba(8, 10, 12, 0.44) 27%,
+          rgba(8, 10, 12, 0.4) 44%,
+          rgba(8, 10, 12, 0) 56%
+        ),
+        linear-gradient(to top, rgba(8, 10, 12, 0.58) 0%, rgba(8, 10, 12, 0.2) 22%, rgba(8, 10, 12, 0) 36%);
+    }
+  }
+
   /* ---- 2. moving name and rule ----------------------------------------- */
   .hero__behind {
     position: absolute;
@@ -372,6 +399,42 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     color: #f2f1ec;
     line-height: 1.7;
     max-width: 22ch;
+  }
+
+  /* ---- phones (Mobile Optimization V1) ------------------------------------
+     The name's letters start 0.6rem under the header row: in this face their
+     tops sit 0.1em below the top of the line, so the line starts that much
+     higher. They run through the hair, above the brows, behind the portrait.
+     No rule across the chest; the arrow, a little smaller, leads the
+     descriptor as one lockup (the two lines set left against it, the lockup
+     still at the lower right). */
+  @media (max-width: 47.99rem) {
+    .hero__name {
+      --name-size: 15vw;
+      top: calc(var(--header-row) + 0.6rem - 0.1 * var(--name-size));
+      font-size: var(--name-size);
+    }
+
+    .hero__rule--front {
+      display: none;
+    }
+
+    .hero__info {
+      grid-auto-flow: column;
+      align-items: start;
+      justify-items: start;
+      column-gap: 0.7rem;
+      text-align: left;
+    }
+
+    /* Its stroke spans the capitals of the first line, as heavy as it was at
+       its larger size. */
+    .hero__arrow {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-top: 0.06rem;
+      stroke-width: 1.75;
+    }
   }
 
   /* ---- wide screens ---------------------------------------------------- */
@@ -548,6 +611,14 @@ const group = Array.from({ length: PHRASES_PER_GROUP }, () => `${hero.name} ${he
     /* One static instance of the name behind the subject, no travel. */
     .stream__track {
       animation: none;
+    }
+  }
+
+  /* On a phone the head covers the left of the line, so the still name starts
+     in the open wall beside it, where its first word reads whole. */
+  @media (max-width: 47.99rem) and (prefers-reduced-motion: reduce) {
+    .stream__track {
+      transform: translate3d(60vw, 0, 0);
     }
   }
 </style>

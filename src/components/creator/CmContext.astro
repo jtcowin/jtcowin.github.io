@@ -21,9 +21,9 @@
  * centered rule and, under it, the roster line, smaller and quieter (no card,
  * pill, badge or box). More room above and below than V1.3, so it opens the
  * chapter with confidence, and an ordinary section end straight into Costa
- * Rica. On phones the headline stays centered and the paragraph and the roster
- * line set left, where centered lines would be hard to scan, in the same
- * order. The headline rises into place first, the paragraph follows with a
+ * Rica. On phones (Mobile Optimization V1) all three stay centered, as one
+ * composition, on a slightly wider measure (1rem at the sides); before, the
+ * paragraph and the roster line set left there. The headline rises into place first, the paragraph follows with a
  * short upward fade and the roster line comes last; with reduced motion they
  * are simply there.
  *
@@ -43,6 +43,12 @@ const sentences = c.headline.split(/(?<=[.!?])\s+/);
 const lines = sentences.map((line) => (line.includes(c.accent) ? emphasize(line, c.accent, 'creator context headline') : [{ text: line, em: false }]));
 if (/\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+creators\b/i.test(c.roster)) throw new Error('[creator] the roster line names no count of creators (Full Site Iteration V1)');
 const copy = emphasize(c.copy, c.emphasis, 'creator program paragraph');
+// Mobile Optimization V1: "I" never ends a line alone (a no-break space binds it
+// to the word after it), which a centered line on a phone would make plain.
+const bindI = (text: string) => text.replace(/(^|\s)I (?=\S)/g, '$1I\u00a0');
+// On a phone a hyphenated compound ("co-sponsors") is not split across two
+// centered lines; elsewhere the span changes nothing.
+const parts = (text: string) => bindI(text).split(/(\S+-\S+)/).filter(Boolean).map((t) => ({ t, compound: /^\S+-\S+$/.test(t) }));
 ---
 
 <section class="cmx" data-surface="light" aria-labelledby="cm-context-title">
@@ -58,7 +64,14 @@ const copy = emphasize(c.copy, c.emphasis, 'creator program paragraph');
       }
     </h2>
     <div class="cmx__words">
-      <p class="cmx__copy" data-cm-reveal>{copy.map(({ text, em }) => (em ? <strong class="em-key">{text}</strong> : text))}</p>
+      <p class="cmx__copy" data-cm-reveal>
+        {
+          copy.map(({ text, em }) => {
+            const run = parts(text).map((p) => (p.compound ? <span class="cmx__compound">{p.t}</span> : p.t));
+            return em ? <strong class="em-key">{run}</strong> : run;
+          })
+        }
+      </p>
       <p class="cmx__roster" data-cm-reveal>{c.roster}</p>
     </div>
   </div>
@@ -136,13 +149,17 @@ const copy = emphasize(c.copy, c.emphasis, 'creator program paragraph');
     background: var(--line-strong);
   }
 
-  /* Phones: the headline stays centered; the paragraph and the roster line set
-     left, the same order. */
+  /* Phones (Mobile Optimization V1): the headline, the paragraph and the roster
+     line all centered, one composition as on wider screens (the paragraph and
+     the roster line set left before), on a slightly wider measure, so the
+     centered lines run longer. */
   @media (max-width: 39.99rem) {
-    .cmx__words,
-    .cmx__roster {
-      justify-items: start;
-      text-align: left;
+    .cmx__inner {
+      padding-inline: 1rem;
+    }
+
+    .cmx__compound {
+      white-space: nowrap;
     }
   }
 

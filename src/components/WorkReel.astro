@@ -24,13 +24,26 @@
  * is cropped and nothing shifts as images load. Reduced motion and no
  * JavaScript show the same rows, in the same order, as a still collage.
  * Phones get a shorter travel.
+ *
+ * Phones (Mobile Optimization V1, below 48rem): four rows of six, moving
+ * right, left, right, left, the fourth at its own rate. The same 24 pieces are
+ * dealt again rather than repeated, so no piece shows twice: the squarer
+ * pieces one to a row first (every row then runs long enough that it never
+ * repeats on a phone); then the look-alikes (`reel.alike` in home.json: pieces
+ * that would read as duplicates stacked one above the other), no group in
+ * neighboring rows (a group of three shares one row once, at its two ends);
+ * then the rest, each into the row with the most room; no two look-alikes
+ * side by side. The deal follows the visit's own shuffle, so it too stays put
+ * for the session, and a turn of the screen across 48rem deals again. Wider
+ * screens keep their three rows of eight; the fourth row is not shown there,
+ * nor without JavaScript.
  */
 import type { ImageMetadata } from 'astro';
 import { Picture } from 'astro:assets';
 import home from '@data/home.json';
 import { getAsset, hasAsset, isIdVisible, resolveImage } from '@lib/assets';
 
-const { reel } = home as unknown as { reel: { perRow: number; pool: string[] } };
+const { reel } = home as unknown as { reel: { perRow: number; phoneRows: number; pool: string[]; alike: string[][] } };
 
 type Piece = { id: string; img: ImageMetadata };
 const pieces: Piece[] = reel.pool
@@ -56,12 +69,28 @@ for (let i = order.length - 1; i > 0; i -= 1) {
 }
 
 const perRow = reel.perRow;
+// The fourth row runs on phones only (Mobile Optimization V1); the HTML deals
+// the wide screens' three rows of eight and leaves it empty.
 const ROWS = [
   { direction: 'right', speed: 1 },
   { direction: 'left', speed: 0.8 },
   { direction: 'right', speed: 1.2 },
+  { direction: 'left', speed: 0.9, phone: true },
 ];
-const rows = ROWS.map((r, i) => ({ ...r, pieces: order.slice(i * perRow, (i + 1) * perRow) }));
+const rows = ROWS.map((r, i) => ({ ...r, pieces: r.phone ? [] : order.slice(i * perRow, (i + 1) * perRow) }));
+if (reel.phoneRows !== ROWS.length) throw new Error('[reel] phones deal the pool into four rows');
+
+// Look-alikes (each piece in at most one group, every one in the pool), kept
+// out of neighboring rows on phones.
+const alikeOf = new Map<string, number>();
+reel.alike.forEach((group, k) =>
+  group.forEach((id) => {
+    if (!reel.pool.includes(id) || alikeOf.has(id)) throw new Error(`[reel] "${id}" must be in the pool and in one look-alike group`);
+    alikeOf.set(id, k);
+  }),
+);
+// Squarer pieces (narrower than 3:2) are dealt first on phones, one to a row.
+const shape = (img: ImageMetadata) => (img.width / img.height < 1.5 ? 'square' : 'wide');
 
 // Frames are one row height wide times their ratio; the height caps at 15rem.
 const sizes = (ratio: number) => `(min-width: 130rem) ${Math.round(240 * ratio)}px, calc((4.6rem + 8vw) * ${ratio.toFixed(3)})`;
@@ -71,10 +100,16 @@ const sizes = (ratio: number) => `(min-width: 130rem) ${Math.round(240 * ratio)}
   <div class="reel__rows">
     {
       rows.map((row) => (
-        <div class="reel__row" data-reel-row data-direction={row.direction} data-speed={row.speed}>
+        <div class="reel__row" data-reel-row data-direction={row.direction} data-speed={row.speed} data-reel-phone={row.phone ? '' : undefined}>
           <ul class="reel__run" data-reel-run>
             {row.pieces.map((p) => (
-              <li class="reel__frame" data-reel-id={p.id} style={`aspect-ratio: ${p.img.width} / ${p.img.height}`}>
+              <li
+                class="reel__frame"
+                data-reel-id={p.id}
+                data-reel-shape={shape(p.img)}
+                data-reel-alike={alikeOf.has(p.id) ? alikeOf.get(p.id) : undefined}
+                style={`aspect-ratio: ${p.img.width} / ${p.img.height}`}
+              >
                 <Picture
                   src={p.img}
                   alt=""
@@ -142,10 +177,187 @@ const sizes = (ratio: number) => `(min-width: 130rem) ${Math.round(240 * ratio)}
     frames.forEach(function (f) {
       byId[f.getAttribute('data-reel-id')] = f;
     });
-    var per = Math.ceil(order.length / runs.length);
-    for (var r = 0; r < runs.length; r++) {
-      for (var k = r * per; k < Math.min(order.length, (r + 1) * per); k++) runs[r].appendChild(byId[order[k]]);
+    var all = [].slice.call(runs);
+    var wideRuns = all.filter(function (run) {
+      return !run.parentNode.hasAttribute('data-reel-phone');
+    });
+    var phone = window.matchMedia('(max-width: 47.99rem)');
+    var alike = function (id) {
+      return byId[id].getAttribute('data-reel-alike');
+    };
+    // Wide screens: three rows of eight, in the visit's order.
+    function wide() {
+      var per = Math.ceil(order.length / wideRuns.length);
+      return wideRuns.map(function (_, r) {
+        return order.slice(r * per, (r + 1) * per);
+      });
     }
+    // Phones (Mobile Optimization V1): four rows of six, every piece once.
+    //  1. The squarer pieces, one to a row in turn, so every row runs long.
+    //  2. The look-alikes, the largest group first, by a short search: no
+    //     two of a group in neighboring rows, a row of their own where one is
+    //     free (a group of three must share one row, and then sits at its ends).
+    //  3. The rest, each to the row with the most room.
+    //  4. Each row in the visit's order, a shared row's look-alikes at its ends.
+    // Where the visit's order leaves a choice it decides, so the deal stays put.
+    function phoneRows() {
+      var n = all.length;
+      var cap = Math.ceil(order.length / n);
+      var rows = all.map(function () {
+        return [];
+      });
+      var at = function (id) {
+        return order.indexOf(id);
+      };
+      var square = function (id) {
+        return byId[id].getAttribute('data-reel-shape') === 'square';
+      };
+      var holds = function (r, k) {
+        return (
+          r >= 0 &&
+          r < n &&
+          rows[r].some(function (o) {
+            return alike(o) === k;
+          })
+        );
+      };
+      var turn = 0;
+      order.filter(square).forEach(function (id) {
+        for (var s = 0; s < n; s++) {
+          var r = (turn + s) % n;
+          if (rows[r].length < cap) {
+            rows[r].push(id);
+            turn = (r + 1) % n;
+            return;
+          }
+        }
+      });
+      var groups = {};
+      order.forEach(function (id) {
+        var k = alike(id);
+        if (k !== null && !square(id)) (groups[k] = groups[k] || []).push(id);
+      });
+      var members = Object.keys(groups)
+        .sort(function (a, b) {
+          return groups[b].length - groups[a].length || at(groups[a][0]) - at(groups[b][0]);
+        })
+        .reduce(function (list, k) {
+          return list.concat(groups[k]);
+        }, []);
+      // A group of two takes two rows; a larger group shares one row once at
+      // most. Only if that leaves no deal at all may a pair share a row too.
+      var choices = function (id, strict) {
+        var k = alike(id);
+        var open = [];
+        for (var s = 0; s < n; s++) {
+          var r = (at(id) + s) % n;
+          if (rows[r].length >= cap || holds(r - 1, k) || holds(r + 1, k)) continue;
+          if (strict && holds(r, k) && (groups[k].length < 3 || rows.some(function (row) {
+            return row.filter(function (o) {
+              return alike(o) === k;
+            }).length > 1;
+          }))) continue;
+          open.push(r);
+        }
+        return open
+          .filter(function (r) {
+            return !holds(r, k);
+          })
+          .concat(
+            open.filter(function (r) {
+              return holds(r, k);
+            }),
+          );
+      };
+      var search = function (i, strict) {
+        if (i === members.length) return true;
+        var options = choices(members[i], strict);
+        for (var c = 0; c < options.length; c++) {
+          rows[options[c]].push(members[i]);
+          if (search(i + 1, strict)) return true;
+          rows[options[c]].pop();
+        }
+        return false;
+      };
+      var rest = order.filter(function (id) {
+        return !square(id) && rows.every(function (row) {
+          return row.indexOf(id) < 0;
+        });
+      });
+      if (search(0, true) || search(0, false)) {
+        rest = rest.filter(function (id) {
+          return members.indexOf(id) < 0;
+        });
+      }
+      rest.forEach(function (id) {
+        var pick = -1;
+        for (var s = 0; s < n; s++) {
+          var r = (at(id) + s) % n;
+          if (rows[r].length < cap && (pick < 0 || rows[r].length < rows[pick].length)) pick = r;
+        }
+        rows[pick].push(id);
+      });
+      // Within a row: the visit's order, unless look-alikes share it; then the
+      // arrangement that holds them farthest apart, nearest that order.
+      var spread = function (row) {
+        var pairs = [];
+        row.forEach(function (a, i) {
+          row.forEach(function (b, j) {
+            if (j > i && alike(a) !== null && alike(a) === alike(b)) pairs.push([a, b]);
+          });
+        });
+        if (!pairs.length) return row;
+        var best = row;
+        var bestGap = -1;
+        var bestShift = Infinity;
+        var visit = function (head, tail) {
+          if (!tail.length) {
+            var gap = Math.min.apply(
+              null,
+              pairs.map(function (p) {
+                return Math.abs(head.indexOf(p[0]) - head.indexOf(p[1]));
+              }),
+            );
+            var shift = head.reduce(function (sum, id, i) {
+              return sum + Math.abs(row.indexOf(id) - i);
+            }, 0);
+            if (gap > bestGap || (gap === bestGap && shift < bestShift)) {
+              best = head;
+              bestGap = gap;
+              bestShift = shift;
+            }
+            return;
+          }
+          tail.forEach(function (id, i) {
+            visit(head.concat(id), tail.slice(0, i).concat(tail.slice(i + 1)));
+          });
+        };
+        visit([], row);
+        return best;
+      };
+      return rows.map(function (row) {
+        return spread(
+          row.sort(function (a, b) {
+            return at(a) - at(b);
+          }),
+        );
+      });
+    }
+
+    // Deals the pieces into the rows for this screen; the script below deals
+    // again (and repeats the rows afresh) when the screen crosses 48rem.
+    function deal() {
+      var narrow = phone.matches;
+      var lanes = narrow ? all : wideRuns;
+      reel.toggleAttribute('data-reel-four', narrow);
+      (narrow ? phoneRows() : wide()).forEach(function (row, r) {
+        row.forEach(function (id) {
+          lanes[r].appendChild(byId[id]);
+        });
+      });
+    }
+    deal();
+    reel.reelDeal = deal;
   })();
 </script>
 
@@ -212,6 +424,14 @@ const sizes = (ratio: number) => `(min-width: 130rem) ${Math.round(240 * ratio)}
       onScroll();
     }, { passive: true });
     reduce.addEventListener?.('change', () => {
+      fill();
+      onScroll();
+    });
+    // Across 48rem the pieces are dealt again (four rows on a phone, three
+    // wider) and every row is repeated afresh from its new run.
+    window.matchMedia('(max-width: 47.99rem)').addEventListener?.('change', () => {
+      (reel as HTMLElement & { reelDeal?: () => void }).reelDeal?.();
+      for (const clone of reel.querySelectorAll('[data-reel-clone]')) clone.remove();
       fill();
       onScroll();
     });
@@ -299,6 +519,15 @@ const sizes = (ratio: number) => `(min-width: 130rem) ${Math.round(240 * ratio)}
     .reel {
       --travel: 0.1;
     }
+  }
+
+  /* The fourth row runs only where the script has dealt four (a phone). */
+  .reel__row[data-reel-phone] {
+    display: none;
+  }
+
+  .reel[data-reel-four] .reel__row[data-reel-phone] {
+    display: flex;
   }
 
   /* Reduced motion: a still collage, each row centered. */

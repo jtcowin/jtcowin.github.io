@@ -30,6 +30,11 @@
  *   inputs and then to all three expressions, and seven short labels arrive
  *   (on the floor, and on the glass for the foundation). Leaving, it settles
  *   back calmly. A touch screen gets a quicker version and a visible control.
+ * - On a phone (below 48rem, Mobile Optimization V1) nothing has to be done:
+ *   once it has assembled it opens and stays open, complete (the layers
+ *   apart, the conduits lit, the signals running, the parts named beneath
+ *   it), and the control is gone, with no room kept for it. Wider screens
+ *   keep the interaction.
  * - Reduced motion shows it complete and still; engaging it shows the labels
  *   and the lit conduits without movement. Without JavaScript it assembles
  *   all the same, and opens on hover or focus within it.
@@ -296,10 +301,13 @@ const isoVars = [
     // The pointer engages it once the foundation stands (the canopy has set
     // down); a deliberate tap or the control does at any time.
     let ready = reducedMotion();
+    // Mobile Optimization V1: on a phone it opens by itself once it stands and
+    // stays open (off screen too, where it only pauses), with no control.
+    const phone = window.matchMedia('(max-width: 47.99rem)');
 
     const isOpen = () => iso.classList.contains('is-open');
     const render = (quick = false) => {
-      const open = enabled && ((hovered && ready) || toggled);
+      const open = (phone.matches && ready) || (enabled && ((hovered && ready) || toggled));
       if (open === isOpen()) return;
       iso.classList.toggle('is-quick', quick);
       iso.classList.toggle('is-open', open);
@@ -367,6 +375,15 @@ const isoVars = [
         render();
       }
     });
+    // Turned across 48rem: a phone opens it (once it stands); wider, it rests
+    // until engaged.
+    phone.addEventListener?.('change', () => {
+      toggled = false;
+      hovered = false;
+      render();
+    });
+    // With reduced motion it stands from the start, so a phone shows it open now.
+    render();
 
     return {
       // Off screen, or while the Foundation covers the hero, it rests closed.
@@ -964,6 +981,14 @@ const isoVars = [
       justify-self: center;
       margin-top: 0.75rem;
       transform: none;
+    }
+  }
+
+  /* A phone shows the system complete without being asked (Mobile Optimization
+     V1), so there is no control, and no room is kept for one. */
+  @media (max-width: 47.99rem) {
+    .iso__toggle {
+      display: none;
     }
   }
 
