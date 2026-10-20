@@ -684,8 +684,8 @@
       "label": "Social preview, home",
       "filename": "og/home.jpg",
       "file": "og/home.jpg",
-      "alt": "John Cowin portfolio social preview featuring his portrait and selected Web3 marketing disciplines.",
-      "source": "Generated portrait-led card (scripts/og.mjs; Social Share Polish V1): the hero's photograph and foreground layer (hero-portrait, hero-foreground) on the right, the eyebrow, the name and the disciplines from site.json's homeShare on the left; a JPEG, 1200 by 630.",
+      "alt": "Portrait of John Cowin for his Web3 marketing and production portfolio.",
+      "source": "Generated crop-safe portrait card (scripts/og.mjs; Social Share Polish V1.1): the hero's photograph and foreground layer (hero-portrait, hero-foreground), the face on the card's vertical center line so a centered 630 by 630 crop (Slack's compact thumbnail) is a clean portrait with no type; the eyebrow (upper left) and the disciplines (lower right) from site.json's homeShare, both outside that square; a JPEG, 1200 by 630.",
       "permission": "approved",
       "credit": null
     },

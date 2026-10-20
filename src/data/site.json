@@ -9,9 +9,9 @@
   "resumeLabel": "Download resume",
   "locale": "en_US",
   "ogDefault": "og-home",
+  "ogSiteName": "John Cowin Portfolio",
   "homeShare": {
-    "_note": "Social Share Polish V1: the homepage's link preview (Open Graph and X), decoupled from its browser title (browserTitle, unchanged). siteName is the homepage's og:site_name; name, the JSON-LD name and the page's heading are unchanged, and the case studies keep their own previews. image is the text on the portrait-led card that scripts/og.mjs renders (og-home); the name on it comes from name.",
-    "siteName": "John Cowin Portfolio",
+    "_note": "Social Share Polish V1 and V1.1: the homepage's link preview (Open Graph and X), decoupled from its browser title (browserTitle, unchanged). title and description are the homepage's share title and description; the site name for every page's preview is ogSiteName. image is the small text on the crop-safe portrait card that scripts/og.mjs renders (og-home): the eyebrow at the upper left and the disciplines at the lower right, both outside the central 630 by 630 square.",
     "title": "Web3 Marketing, Strategy & Production",
     "description": "Selected work across positioning, technical content, creator campaigns, events, and multimedia production.",
     "image": {

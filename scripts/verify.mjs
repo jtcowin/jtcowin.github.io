@@ -3783,14 +3783,16 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
 }
 
-// ------------------------------------------------- Social Share Polish V1
+// ------------------------------------------------- Social Share Polish V1 and V1.1
 // The homepage's link preview is its own, from site.json's homeShare, decoupled from the browser title (checked above,
-// unchanged) and from the meta description: og:site_name, og:title and og:description, the same title and description
-// for X with the large image, and the portrait-led card (og-home: public/og/home.jpg, exactly 1200 by 630, a JPEG
-// under 300 KB, which WhatsApp's previews are known to accept), its URL carrying the first ten hex digits of the
-// file's SHA-1, so a new card always gets a new URL. Its alt text describes it. The global name, the JSON-LD name and
-// the hero's heading are unchanged, and the case studies keep their own previews: the site name, their title with
-// "| John Cowin", their own description and card.
+// unchanged) and from the meta description: og:title and og:description, the same title and description for X with
+// the large image, and the crop-safe portrait card (og-home: public/og/home.jpg, exactly 1200 by 630, a JPEG under
+// 300 KB, which WhatsApp's previews are known to accept), its URL carrying the first ten hex digits of the file's
+// SHA-1, so a new card always gets a new URL. Its alt text describes it. V1.1: every page's preview names the site
+// John Cowin Portfolio, from a dedicated setting (ogSiteName), while the global name, the JSON-LD name and the hero's
+// heading stay John Cowin; and every canonical and share URL is on the public domain (public/CNAME: johncowin.com),
+// none on jtcowin.github.io, the sitemap and robots.txt included. The case studies keep their own previews: their title
+// with "| John Cowin", their own description and card.
 {
   const siteData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/site.json'), 'utf8'));
   const share = siteData.homeShare || {};
@@ -3798,13 +3800,46 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   const prop = (html, p) => ent((html.match(new RegExp(`<meta property="${p}" content="([^"]*)"`)) || [])[1]);
   const named = (html, n) => ent((html.match(new RegExp(`<meta name="${n}" content="([^"]*)"`)) || [])[1]);
   const sha1 = (file) => createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 10);
-  const WANT = { siteName: 'John Cowin Portfolio', title: 'Web3 Marketing, Strategy & Production', description: 'Selected work across positioning, technical content, creator campaigns, events, and multimedia production.' };
-  const ALT = 'John Cowin portfolio social preview featuring his portrait and selected Web3 marketing disciplines.';
-  if (share.siteName !== WANT.siteName || share.title !== WANT.title || share.description !== WANT.description) failures.push('[share] site.json homeShare holds the approved homepage share metadata (site name, title and description)');
-  if (prop(home, 'og:site_name') !== WANT.siteName || prop(home, 'og:title') !== WANT.title || prop(home, 'og:description') !== WANT.description) failures.push(`[share] the homepage's og:site_name, og:title and og:description are its share metadata, not its browser title (found ${prop(home, 'og:site_name')} | ${prop(home, 'og:title')} | ${prop(home, 'og:description')})`);
+  const ORIGIN = 'https://johncowin.com/';
+  const SITE_NAME = 'John Cowin Portfolio';
+  const WANT = { title: 'Web3 Marketing, Strategy & Production', description: 'Selected work across positioning, technical content, creator campaigns, events, and multimedia production.' };
+  const ALT = 'Portrait of John Cowin for his Web3 marketing and production portfolio.';
+  if (share.title !== WANT.title || share.description !== WANT.description) failures.push('[share] site.json homeShare holds the approved homepage share title and description');
+  if (prop(home, 'og:title') !== WANT.title || prop(home, 'og:description') !== WANT.description) failures.push(`[share] the homepage's og:title and og:description are its share metadata, not its browser title (found ${prop(home, 'og:title')} | ${prop(home, 'og:description')})`);
   if (named(home, 'twitter:title') !== WANT.title || named(home, 'twitter:description') !== WANT.description || named(home, 'twitter:card') !== 'summary_large_image') failures.push('[share] X takes the same title and description, with the large image');
   if (named(home, 'description') !== siteData.description) failures.push('[share] the homepage meta description is unchanged (the share description is for link previews)');
   if (siteData.name !== 'John Cowin' || !/"@type":"Person","name":"John Cowin"/.test(home) || !/<h1 class="hero__name"/.test(home)) failures.push('[share] the global name, the JSON-LD name and the hero heading stay John Cowin');
+  // V1.1: one site name for every preview, from its own setting.
+  if (siteData.ogSiteName !== SITE_NAME || 'siteName' in share) failures.push('[share] V1.1: the previews\' site name is its own setting, site.json ogSiteName: John Cowin Portfolio (not a homepage override)');
+  for (const f of htmlFiles) {
+    const page = fs.readFileSync(f, 'utf8');
+    if (prop(page, 'og:site_name') !== SITE_NAME) failures.push(`[share] V1.1: ${path.relative(dist, f)}: og:site_name is ${SITE_NAME} (found ${prop(page, 'og:site_name')})`);
+  }
+  // V1.1: the public domain everywhere a URL is written for others to follow.
+  const cname = fs.existsSync(path.join(root, 'public/CNAME')) ? fs.readFileSync(path.join(root, 'public/CNAME'), 'utf8') : null;
+  if (cname !== 'johncowin.com' || !fs.existsSync(path.join(dist, 'CNAME')) || fs.readFileSync(path.join(dist, 'CNAME'), 'utf8') !== 'johncowin.com' || SITE_ORIGIN !== 'https://johncowin.com') failures.push(`[share] V1.1: public/CNAME holds exactly johncowin.com and the site builds for https://johncowin.com (found ${JSON.stringify(cname)}, ${SITE_ORIGIN})`);
+  for (const f of htmlFiles) {
+    const page = fs.readFileSync(f, 'utf8');
+    const rel = path.relative(dist, f);
+    const head = (page.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
+    const urls = {
+      canonical: (head.match(/<link rel="canonical" href="([^"]*)"/) || [])[1],
+      'og:url': prop(page, 'og:url'),
+      'og:image': prop(page, 'og:image'),
+      'twitter:image': named(page, 'twitter:image'),
+    };
+    const noindex = /<meta name="robots" content="noindex/.test(head);
+    for (const [k, v] of Object.entries(urls)) {
+      if (v == null && noindex && (k === 'canonical' || k === 'og:url')) continue;
+      if (!v || !v.startsWith(ORIGIN)) failures.push(`[share] V1.1: ${rel}: ${k} begins with ${ORIGIN} (found ${v})`);
+    }
+    if (/jtcowin\.github\.io/.test(head)) failures.push(`[share] V1.1: ${rel}: no canonical or share URL uses jtcowin.github.io`);
+  }
+  const robots = fs.existsSync(path.join(dist, 'robots.txt')) ? fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8') : '';
+  const maps = fs.readdirSync(dist).filter((n) => /^sitemap.*\.xml$/.test(n)).map((n) => fs.readFileSync(path.join(dist, n), 'utf8')).join('\n');
+  const locs = [...maps.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
+  if (!/^Sitemap: https:\/\/johncowin\.com\/sitemap-index\.xml$/m.test(robots) || !locs.length || locs.some((u) => !u.startsWith(ORIGIN))) failures.push('[share] V1.1: robots.txt and the sitemap point at johncowin.com');
+  // The homepage card.
   const ogHome = cardManifest.find((a) => a.id === 'og-home') || {};
   const card = path.join(root, 'public', ogHome.file || '-');
   const cardSize = fs.existsSync(card) ? imageSize(card) : null;
@@ -3812,8 +3847,8 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   const isJpeg = cardSize ? fs.readFileSync(card).subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) : false;
   if (ogHome.file !== 'og/home.jpg' || siteData.ogDefault !== 'og-home' || !cardSize || cardSize.width !== 1200 || cardSize.height !== 630 || !isJpeg || !(cardKb < 300)) failures.push(`[share] the homepage card is public/og/home.jpg, a JPEG of exactly 1200 by 630 under 300 KB (found ${ogHome.file}, ${cardSize ? `${cardSize.width}x${cardSize.height}` : 'missing'}, ${Math.round(cardKb)} KB)`);
   const img = prop(home, 'og:image') || '';
-  if (!cardSize || !img.endsWith(`/og/home.jpg?v=${sha1(card)}`) || named(home, 'twitter:image') !== img || prop(home, 'og:image:width') !== '1200' || prop(home, 'og:image:height') !== '630') failures.push(`[share] the card's URL carries the hash of the file, so a new card gets a new URL, the same for X, at 1200 by 630 (found ${img})`);
-  if (ogHome.alt !== ALT || prop(home, 'og:image:alt') !== ALT || named(home, 'twitter:image:alt') !== ALT) failures.push('[share] the card carries its alt text: John Cowin portfolio social preview featuring his portrait and selected Web3 marketing disciplines.');
+  if (!cardSize || img !== `${ORIGIN}og/home.jpg?v=${sha1(card)}` || named(home, 'twitter:image') !== img || prop(home, 'og:image:width') !== '1200' || prop(home, 'og:image:height') !== '630') failures.push(`[share] the card's URL carries the hash of the file, so a new card gets a new URL, the same for X, at 1200 by 630 (found ${img})`);
+  if (ogHome.alt !== ALT || prop(home, 'og:image:alt') !== ALT || named(home, 'twitter:image:alt') !== ALT) failures.push(`[share] the card carries its alt text: ${ALT}`);
   if (fs.existsSync(path.join(root, 'public/og/home.png')) || fs.existsSync(path.join(dist, 'og/home.png'))) failures.push('[hygiene] og/home.png was replaced by og/home.jpg in Social Share Polish V1 and must not ship');
   for (const slug of ['creator-campaigns', 'technical-marketing', 'events-video']) {
     const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
@@ -3821,7 +3856,7 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
     const desc = named(page, 'description');
     const file = path.join(root, 'public/og', `${slug}.png`);
     const own = cardManifest.find((a) => a.id === `og-${slug}`) || {};
-    if (prop(page, 'og:site_name') !== 'John Cowin' || !/ \| John Cowin$/.test(t || '') || prop(page, 'og:title') !== t || named(page, 'twitter:title') !== t || prop(page, 'og:description') !== desc || named(page, 'twitter:description') !== desc || !fs.existsSync(file) || !(prop(page, 'og:image') || '').endsWith(`/og/${slug}.png?v=${sha1(file)}`) || prop(page, 'og:image:alt') !== own.alt) failures.push(`[share] ${slug}: the case study keeps its own preview (the site name John Cowin, its title and description, its card)`);
+    if (!/ \| John Cowin$/.test(t || '') || prop(page, 'og:title') !== t || named(page, 'twitter:title') !== t || prop(page, 'og:description') !== desc || named(page, 'twitter:description') !== desc || !fs.existsSync(file) || prop(page, 'og:image') !== `${ORIGIN}og/${slug}.png?v=${sha1(file)}` || prop(page, 'og:image:alt') !== own.alt) failures.push(`[share] ${slug}: the case study keeps its own preview (its title and description, its card)`);
   }
 }
 

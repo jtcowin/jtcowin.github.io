@@ -26,9 +26,10 @@ interface Props {
    * Social-share overrides (Open Graph and X) for a page whose link preview
    * should not repeat its browser title (Social Share Polish V1: the homepage,
    * from site.json's homeShare). Each falls back to the page's own value: the
-   * site name, the browser title and the meta description.
+   * browser title and the meta description. The site name every preview
+   * carries is site.json's ogSiteName (V1.1), never the person's name.
    */
-  share?: { siteName?: string; title?: string; description?: string };
+  share?: { title?: string; description?: string };
 }
 
 const {
@@ -46,7 +47,7 @@ const {
 // page name plus the site name.
 const fullTitle = title ? `${title} | ${site.name}` : site.browserTitle;
 // What a shared link shows can differ from the tab and the search snippet.
-const shareSiteName = share.siteName ?? site.name;
+const shareSiteName = site.ogSiteName;
 const shareTitle = share.title ?? fullTitle;
 const shareDescription = share.description ?? description;
 const canonical = absoluteUrl(pagePath(path), Astro.site);

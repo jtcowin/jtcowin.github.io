@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Social Share Polish V1.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: Social Share V1.1.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
 Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
 copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
@@ -22,10 +22,11 @@ expanded toward the creator card's length and substance, and the Events page's t
 reordered to lead with the production room; see [Full Site Iteration V1.2](#full-site-iteration-v12))
 and Full Site Iteration V1.3 (the final desktop correction of the events montage: the Events page's
 four approved edits, each played whole, one after another; see [Full Site Iteration
-V1.3](#full-site-iteration-v13)), and the approved two-page resume (October 2026), are published. Social
-Share Polish V1 (the homepage's link preview: its own site name, title and description, decoupled from
-the browser title, and a portrait-led card; see [Social Share Polish V1](#social-share-polish-v1))
-follows them. Placeholders render only in `npm run dev`;
+V1.3](#full-site-iteration-v13)), the approved two-page resume (October 2026) and Social Share Polish V1
+(the homepage's link preview: its own title and description, decoupled from the browser title; see
+[Social Share Polish V1](#social-share-polish-v1)) are published. Social Share V1.1 (a crop-safe portrait
+card, John Cowin Portfolio as every preview's site name, and every canonical and share URL on
+johncowin.com; see [Social Share V1.1](#social-share-v11)) follows them. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -208,25 +209,23 @@ Deployment is automated by `.github/workflows/deploy.yml`: every push to `main` 
 publishes it to GitHub Pages.
 
 One-time setup in the repository settings: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-After the first successful run the site is live at `https://jtcowin.github.io/`.
+The site is live at `https://johncowin.com/` (the custom domain, below); `https://jtcowin.github.io/`
+redirects there.
 
 Because the repository is named `jtcowin.github.io`, GitHub treats it as a **user site** and serves it from
 the root of the domain. The build reflects that: the base path is `/`, so pages are at `/work/...`, not
 `/<repo>/work/...`. `site.config.mjs` derives this from the repository name, so renaming the repo to
 something else (making it a project site) only requires updating `GITHUB_REPO` there.
 
-### Custom domain (later)
+### Custom domain
 
-1. Point the domain's DNS at GitHub Pages: four `A` records for the apex domain
-   (`185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`) and a `CNAME`
-   record for `www` pointing at `jtcowin.github.io`.
-2. In the repository: **Settings → Pages → Custom domain**, enter the domain, save, and tick
-   **Enforce HTTPS** once GitHub finishes verifying DNS.
-3. Create `public/CNAME` containing the bare domain, e.g. `johncowin.com`, and push. The build detects
-   that file and switches the canonical site URL to `https://<domain>/`. The base path is already `/`,
-   so no links change. Nothing in `src/` needs editing.
-
-Steps 2 and 3 should happen close together so the canonical URLs and the served domain agree.
+johncowin.com is set up: GitHub Pages serves it (its DNS points at GitHub Pages, and the domain is set
+under **Settings → Pages → Custom domain**, with **Enforce HTTPS**), and `jtcowin.github.io` redirects to
+it. Since Social Share V1.1, `public/CNAME` holds exactly `johncowin.com`, so the build knows it too:
+`site.config.mjs` reads that file and builds for `https://johncowin.com/` at base `/`, and every canonical
+URL, `og:url`, share image, the structured data's `url`, the sitemap and `robots.txt` use it. No links
+change and nothing in `src/` names the domain. To change the domain, update DNS and the Pages setting,
+then this file, together, so the canonical URLs and the served domain agree.
 
 `site.config.mjs` holds this logic. `SITE_URL` and `BASE_PATH` environment variables override it if ever needed.
 
@@ -417,9 +416,9 @@ tokens and photographs by `npm run og`: every card, or one with `npm run og -- h
 study's slug); `--out=<dir>` renders them somewhere else, to compare a fresh render with the committed
 files. The manifest entries (`og-home`, `og-creator-campaigns`, …) point at them, and each page's
 preview URL carries a short hash of its card's file (`?v=`, in `BaseLayout.astro`), so a regenerated
-card gets a fresh URL and platforms fetch it anew. Since Social Share Polish V1 the homepage card is
-portrait-led and a JPEG (`og/home.jpg`; see [Social Share Polish V1](#social-share-polish-v1)); the
-three case-study cards are typographic PNGs. The renderer's output is not byte-for-byte stable across
+card gets a fresh URL and platforms fetch it anew. The homepage card is a crop-safe portrait and a
+JPEG (`og/home.jpg`; see [Social Share V1.1](#social-share-v11)); the three case-study cards are
+typographic PNGs. The renderer's output is not byte-for-byte stable across
 machines, so commit only the card that changed: the events card was regenerated with the case study's
 new title, Events and Multimedia Production, in Events Version 1.0, and in Social Share Polish V1 a
 full regeneration reproduced the creator and events cards byte for byte and the technical-marketing
@@ -539,8 +538,8 @@ section), the innermost one on the line wins, and the one around it takes over a
 - The hero name keeps its approved Archivo Medium 500 at normal width.
 - The serif and the monospace face are retired, and their packages were removed. `scripts/og.mjs`
   renders the social-preview cards in Archivo and Manrope on the same palette: the home card (since
-  Social Share Polish V1) sets the name in Archivo capitals beside the hero's own photograph, and each
-  case-study card uses the tone of its Select Work card. Case-study card titles come from the current
+  Social Share V1.1) is the hero's own photograph as a crop-safe portrait with two small Manrope labels,
+  and each case-study card uses the tone of its Select Work card. Case-study card titles come from the current
   page titles, so rerun `npm run og` for that card whenever a title changes.
 
 ## Content guardrails
@@ -904,6 +903,52 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
 
+### Social Share V1.1
+
+John's delta brief (October 2026): the wide card looked good, but Slack's compact unfurl crops it
+around its center and showed fragments of JOHN COWIN beside the face. The card is now crop-safe, every
+preview names the site the same way, and every address the build writes for others to follow is on
+johncowin.com. The homepage's share title and description, the browser title, the visible copy, the
+case-study cards' designs, the hashing and the 1200 by 630 size are as they were.
+
+- **A crop-safe card** (`scripts/og.mjs`, `npm run og -- home`; `og/home.jpg`, 68 KB). No name or
+  headline in the image: the preview's own text carries those. The hero's own photograph (the wall
+  toned toward the slate) and its foreground layer over it, scaled 0.94, John's face on the card's
+  vertical center line (x 600) with his head 44 px from the top; both layers fade out toward the sides
+  (opaque from 420 to 780 px, gone by 250 and 950) and the wall fades in from the top, over a dark ground
+  with a soft slate glow behind him. The central 630 by 630 square, about what Slack's compact thumbnail
+  shows, is therefore a complete, vignetted head-and-shoulders portrait with no type in it at all. Outside
+  it, two small notes that nothing depends on: PORTFOLIO / SELECTED WORK in teal at the upper left, on
+  two lines, and the disciplines at the lower right, stacked (POSITIONING, CONTENT, CAMPAIGNS,
+  PRODUCTION: one line would cross into the square), each 72 px from the edges and at least 24 px
+  clear of the square; the renderer stops if either would enter it. JPEG quality 92 with full chroma,
+  inside the brief's 65 to 150 KB. Alt text: Portrait of John Cowin for his Web3 marketing and
+  production portfolio.
+- **One site name** (`site.json` `ogSiteName`: John Cowin Portfolio) for every page's `og:site_name`,
+  the homepage, the three case studies, the 404 page and any page to come; the homepage-only override is
+  gone. `site.name`, the structured data's Person name and the visible name stay John Cowin.
+- **The public domain** (`public/CNAME`: exactly `johncowin.com`). The build now resolves its site to
+  `https://johncowin.com`, so every canonical URL, `og:url`, `og:image` and X image, the Person's `url`,
+  the sitemap and `robots.txt` use it, and nothing in the build names `jtcowin.github.io`. The deployment
+  workflow and the domain's behavior are unchanged (the domain was already set in GitHub; no DNS change).
+- **Dependencies.** On the Mac, `npm ci` restored the pinned versions from `package-lock.json` (Astro
+  7.3.1; 7.4.1 had been installed there, and its builds wrote the font preloads as file paths); nothing
+  was upgraded and the lockfile is unchanged. The cards were rendered in the cloud copy, which runs the
+  same pinned versions.
+
+**Tested** (beyond `verify.mjs`): the whole card, the centered 630 by 630 crop, and both at the sizes
+apps show them (the card at about 330 px across, the square at 75 and 150 px); every card regenerated
+(the creator and events cards byte for byte, the technical-marketing card with sub-pixel differences in
+its type only, so all three stay as committed); built side by side with the commit before, the only
+differences are the share tags' domain and site name, the homepage card and its alt text, the Person's
+`url`, the sitemap, `robots.txt` and the new `CNAME`.
+
+**The checks** (`verify.mjs`): every page's `og:site_name` is John Cowin Portfolio, from `ogSiteName`;
+`public/CNAME` and the built `CNAME` hold exactly `johncowin.com`; every page's canonical URL, `og:url`,
+`og:image` and X image begin with `https://johncowin.com/` and no head names `jtcowin.github.io`;
+`robots.txt` and the sitemap point at johncowin.com; and V1's checks stand, the card's new alt text
+included. A mutation run broke each in turn (32 mutations), and every one was caught.
+
 ### Social Share Polish V1
 
 John's brief (October 2026): the homepage's link preview, as WhatsApp and other apps show it, repeated
@@ -947,7 +992,8 @@ container, stripe and URL line are WhatsApp's.)
 **For John to confirm.** The new site name is on the homepage only; one line makes it site-wide if you
 want the case studies' previews to say John Cowin Portfolio too. The canonical and `og:url` addresses
 still use `jtcowin.github.io` (which redirects to johncowin.com); a `public/CNAME` would switch every
-page to johncowin.com, a site-wide change left for its own pass.
+page to johncowin.com, a site-wide change left for its own pass. (Both were done in [Social Share
+V1.1](#social-share-v11), which also replaced this card with a crop-safe one.)
 
 **The checks** (`verify.mjs`): the homepage's site name, title and description for Open Graph and X
 come from `homeShare`; the tab title, the search description, `site.name`, the JSON-LD name and the

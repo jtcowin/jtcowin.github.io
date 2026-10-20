@@ -9,14 +9,19 @@
 // homepage work rail, and its title comes from the page's current title
 // metadata, so the preview and the browser tab always agree.
 //
-// Social Share Polish V1: the homepage card is portrait-led and editorial
-// rather than another headline. On the dark slate-to-black ground, the hero's
-// own photograph (its wall toned down toward the slate) and, over it, the hero's
+// Social Share Polish V1.1: the homepage card is a crop-safe portrait. Apps
+// show it whole (WhatsApp, X, LinkedIn) or crop it around its center (Slack's
+// compact thumbnail takes about the central 630 x 630), so John's face sits on
+// the vertical center line and the central square holds no type at all: it
+// reads as a portrait thumbnail on its own. On the dark ground, the hero's own
+// photograph (its wall toned toward the slate) and, over it, the hero's
 // foreground layer at full strength, so John stands out; both fade into the
-// ground behind the type. On the left, a small teal eyebrow, the name in large
-// capitals on two lines and one small line of disciplines, all from site.json's
-// homeShare. It is written as a JPEG (the photograph would make a PNG several
-// times larger; WhatsApp is known to skip preview images much over 300 KB).
+// ground toward the sides, and the wall toward the top. Outside the square, two
+// small quiet notes that nothing depends on: the teal eyebrow at the upper left
+// and the disciplines at the lower right, from site.json's homeShare. No name or
+// headline in the image: the preview's own text carries those. It is written as
+// a JPEG (the photograph would make a PNG several times larger; WhatsApp is
+// known to skip preview images much over 300 KB).
 //
 // Requires Playwright (dev dependency). If the bundled browser is missing, run
 // `npx playwright install chromium` once, or point CHROMIUM_PATH at a Chromium binary.
@@ -57,6 +62,12 @@ const cases = fs
     return { slug: f.replace(/\.mdx$/, ''), order, eyebrow: get('eyebrow'), title: get('title') };
   })
   .sort((a, b) => a.order - b.order);
+
+// The homepage card's photograph: scale, and the offsets that put the face (x 510, the eyes at y 236 of the original)
+// on the card's center line with the head 44 px from the top.
+const SHARE = { scale: 0.94, left: Math.round(600 - 510 * 0.94), top: 22 };
+// The central square that compact previews crop to (Slack's thumbnail): it holds no type.
+const SQUARE = { left: 285, right: 915 };
 
 // Fonts are inlined as data URIs: pages created with setContent() cannot load file:// resources.
 const font = (pkgPath) => `data:font/woff2;base64,${fs.readFileSync(path.join(root, 'node_modules', pkgPath)).toString('base64')}`;
@@ -111,54 +122,44 @@ const css = `
   .role { display: flex; align-items: center; gap: 12px; font-size: 17px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
   .role svg { width: 30px; height: 30px; flex: none; }
 
-  /* Home (Social Share Polish V1): portrait-led. The photograph sits on the right
-     at the hero's own framing, scaled so the face reads at a WhatsApp size; its
-     wall is toned toward the slate (brightness) and its left edge fades into the
-     ground (mask), and the foreground layer (John alone) sits over it at full
-     strength, fading in a little sooner. The copy keeps a column of its own on
-     the left, inside the safe area. */
+  /* Home (Social Share Polish V1.1): the photograph at 0.94 of its size, its face
+     centered on the card's vertical center line (x 600: the face's center is at
+     x 510 of the 1536-wide original), its head 44 px from the top. Masks are drawn
+     in card coordinates and shifted onto each layer: both layers fade out toward
+     the sides (opaque from 420 to 780, gone by 250 and 950), and the wall also
+     fades in from its top edge, so no edge of the photograph shows. */
   body.share {
     padding: 0;
     display: block;
-    background: linear-gradient(160deg, ${C.slate} 0%, #172027 45%, ${C.ink} 100%);
+    background: radial-gradient(ellipse 46% 80% at 50% 38%, #2a343c 0%, #1a2228 55%, ${C.ink} 100%);
   }
   .share-photo {
-    position: absolute; left: 510px; top: 0;
-    width: ${1536 * 0.86}px; height: ${1024 * 0.86}px;
+    position: absolute; left: ${SHARE.left}px; top: ${SHARE.top}px;
+    width: ${1536 * SHARE.scale}px; height: ${1024 * SHARE.scale}px;
     background-size: 100% 100%;
+    mask-size: 1200px 630px; mask-position: ${-SHARE.left}px ${-SHARE.top}px; mask-repeat: no-repeat; mask-composite: intersect;
   }
-  .share-photo--wall { filter: brightness(.5) saturate(.8); -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 340px); }
-  .share-photo--subject { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 160px); }
-  .share-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(13, 15, 16, .55) 0%, rgba(13, 15, 16, 0) 24%); }
-  .share-copy {
-    position: absolute; left: 72px; top: 0; bottom: 0; width: 520px;
-    display: grid; grid-template-rows: auto 1fr auto; padding: 66px 0 64px;
+  .share-photo--wall {
+    filter: brightness(.6) saturate(.8);
+    mask-image: linear-gradient(90deg, transparent 250px, #000 420px, #000 780px, transparent 950px), linear-gradient(180deg, transparent ${SHARE.top}px, #000 ${SHARE.top + 70}px);
   }
-  .share-eyebrow { font-size: 17px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: ${C.aquaLight}; white-space: nowrap; }
-  .share-name {
-    align-self: center;
-    font-family: 'Archivo', sans-serif; font-weight: 700; font-stretch: 90%;
-    font-size: 132px; line-height: .86; letter-spacing: -0.01em; text-transform: uppercase; color: ${C.fog}; white-space: nowrap;
-  }
-  .share-line { font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: ${C.fog2}; white-space: nowrap; }
-  .share-line b { color: ${C.aqua}; font-weight: 700; padding: 0 .35em; }
+  .share-photo--subject { mask-image: linear-gradient(90deg, transparent 250px, #000 420px, #000 780px, transparent 950px); }
+  .share-note { position: absolute; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+  .share-eyebrow { left: 72px; top: 66px; font-size: 15px; letter-spacing: .2em; line-height: 1.55; color: ${C.aquaLight}; }
+  .share-disciplines { right: 72px; bottom: 60px; text-align: right; font-size: 14px; letter-spacing: .18em; line-height: 1.75; color: ${C.fog2}; }
 `;
 
 // Same geometry as the hero arrow (Hero.astro).
 const arrow = `<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6 L20 20"/><path d="M20 12 L20 20 L12 20"/></svg>`;
 
 function homeCard() {
-  const [first, ...rest] = site.name.split(' ');
-  const line = share.image.disciplines.map(esc).join('<b>&bull;</b>');
+  const eyebrow = esc(share.image.eyebrow).replace(' / ', ' /<br>');
+  const disciplines = share.image.disciplines.map(esc).join('<br>');
   return `<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body class="share">
     <div class="share-photo share-photo--wall" style="background-image:url('${dataUri(heroFile('hero-portrait'))}')"></div>
     <div class="share-photo share-photo--subject" style="background-image:url('${dataUri(heroFile('hero-foreground'))}')"></div>
-    <div class="share-shade"></div>
-    <div class="share-copy">
-      <div class="share-eyebrow">${esc(share.image.eyebrow)}</div>
-      <div class="share-name">${esc(first)}<br>${esc(rest.join(' '))}</div>
-      <div class="share-line">${line}</div>
-    </div>
+    <div class="share-note share-eyebrow">${eyebrow}</div>
+    <div class="share-note share-disciplines">${disciplines}</div>
   </body></html>`;
 }
 
@@ -185,23 +186,25 @@ const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, dev
 for (const card of cards) {
   await page.setContent(card.html, { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
-  // Guard against type that would clip, overflow the card or leave the safe area (72 px each side; on the homepage
-  // card the copy also keeps clear of the portrait, which begins at 600 px).
-  const overflow = await page.evaluate(() => {
+  // Guard against type that would clip, overflow the card or leave the safe area (72 px each side). On the homepage
+  // card every note also stays wholly outside the central square that compact previews crop to (with 24 px to
+  // spare), so a crop never cuts through a letter.
+  const overflow = await page.evaluate((square) => {
     const home = document.body.classList.contains('share');
-    return [...document.querySelectorAll('.title, .role, .eyebrow, .share-eyebrow, .share-name, .share-line')]
+    return [...document.querySelectorAll('.title, .role, .eyebrow, .share-note')]
       .filter((e) => {
         const range = document.createRange();
         range.selectNodeContents(e);
         const r = range.getBoundingClientRect();
-        return e.scrollWidth > e.clientWidth + 1 || r.left < 72 - 1 || r.right > (home ? 600 : 1200 - 72) + 1 || r.top < 48 || r.bottom > 630 - 48;
+        const inSquare = home && r.right > square.left - 24 && r.left < square.right + 24;
+        return e.scrollWidth > e.clientWidth + 1 || r.left < 72 - 1 || r.right > 1200 - 72 + 1 || r.top < 48 || r.bottom > 630 - 48 || inSquare;
       })
       .map((e) => e.className);
-  });
+  }, SQUARE);
   if (overflow.length) throw new Error(`og: ${card.file} overflows (${overflow.join(', ')})`);
   const png = await page.screenshot({ type: 'png' });
   const out = path.join(outDir, card.file);
-  if (card.file.endsWith('.jpg')) await sharp(png).jpeg({ quality: 88, chromaSubsampling: '4:4:4', mozjpeg: true }).toFile(out);
+  if (card.file.endsWith('.jpg')) await sharp(png).jpeg({ quality: 92, chromaSubsampling: '4:4:4', mozjpeg: true }).toFile(out);
   else fs.writeFileSync(out, png);
   console.log('og  ', card.file, `${Math.round(fs.statSync(out).size / 1024)} KB`);
 }
