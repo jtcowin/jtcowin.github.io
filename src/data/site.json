@@ -9,6 +9,21 @@
   "resumeLabel": "Download resume",
   "locale": "en_US",
   "ogDefault": "og-home",
+  "homeShare": {
+    "_note": "Social Share Polish V1: the homepage's link preview (Open Graph and X), decoupled from its browser title (browserTitle, unchanged). siteName is the homepage's og:site_name; name, the JSON-LD name and the page's heading are unchanged, and the case studies keep their own previews. image is the text on the portrait-led card that scripts/og.mjs renders (og-home); the name on it comes from name.",
+    "siteName": "John Cowin Portfolio",
+    "title": "Web3 Marketing, Strategy & Production",
+    "description": "Selected work across positioning, technical content, creator campaigns, events, and multimedia production.",
+    "image": {
+      "eyebrow": "Portfolio / Selected Work",
+      "disciplines": [
+        "Positioning",
+        "Content",
+        "Campaigns",
+        "Production"
+      ]
+    }
+  },
   "nav": [
     {
       "label": "Work",

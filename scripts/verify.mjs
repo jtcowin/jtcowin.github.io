@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { resolveSite } from '../site.config.mjs';
 
@@ -3780,6 +3781,48 @@ for (const f of htmlFiles) {
 // The resume must actually exist for v1.1.
 if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
+}
+
+// ------------------------------------------------- Social Share Polish V1
+// The homepage's link preview is its own, from site.json's homeShare, decoupled from the browser title (checked above,
+// unchanged) and from the meta description: og:site_name, og:title and og:description, the same title and description
+// for X with the large image, and the portrait-led card (og-home: public/og/home.jpg, exactly 1200 by 630, a JPEG
+// under 300 KB, which WhatsApp's previews are known to accept), its URL carrying the first ten hex digits of the
+// file's SHA-1, so a new card always gets a new URL. Its alt text describes it. The global name, the JSON-LD name and
+// the hero's heading are unchanged, and the case studies keep their own previews: the site name, their title with
+// "| John Cowin", their own description and card.
+{
+  const siteData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/site.json'), 'utf8'));
+  const share = siteData.homeShare || {};
+  const ent = (v) => (v == null ? v : v.replace(/&amp;|&#38;/g, '&').replace(/&#39;|&#x27;/g, "'").replace(/&quot;|&#34;/g, '"'));
+  const prop = (html, p) => ent((html.match(new RegExp(`<meta property="${p}" content="([^"]*)"`)) || [])[1]);
+  const named = (html, n) => ent((html.match(new RegExp(`<meta name="${n}" content="([^"]*)"`)) || [])[1]);
+  const sha1 = (file) => createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 10);
+  const WANT = { siteName: 'John Cowin Portfolio', title: 'Web3 Marketing, Strategy & Production', description: 'Selected work across positioning, technical content, creator campaigns, events, and multimedia production.' };
+  const ALT = 'John Cowin portfolio social preview featuring his portrait and selected Web3 marketing disciplines.';
+  if (share.siteName !== WANT.siteName || share.title !== WANT.title || share.description !== WANT.description) failures.push('[share] site.json homeShare holds the approved homepage share metadata (site name, title and description)');
+  if (prop(home, 'og:site_name') !== WANT.siteName || prop(home, 'og:title') !== WANT.title || prop(home, 'og:description') !== WANT.description) failures.push(`[share] the homepage's og:site_name, og:title and og:description are its share metadata, not its browser title (found ${prop(home, 'og:site_name')} | ${prop(home, 'og:title')} | ${prop(home, 'og:description')})`);
+  if (named(home, 'twitter:title') !== WANT.title || named(home, 'twitter:description') !== WANT.description || named(home, 'twitter:card') !== 'summary_large_image') failures.push('[share] X takes the same title and description, with the large image');
+  if (named(home, 'description') !== siteData.description) failures.push('[share] the homepage meta description is unchanged (the share description is for link previews)');
+  if (siteData.name !== 'John Cowin' || !/"@type":"Person","name":"John Cowin"/.test(home) || !/<h1 class="hero__name"/.test(home)) failures.push('[share] the global name, the JSON-LD name and the hero heading stay John Cowin');
+  const ogHome = cardManifest.find((a) => a.id === 'og-home') || {};
+  const card = path.join(root, 'public', ogHome.file || '-');
+  const cardSize = fs.existsSync(card) ? imageSize(card) : null;
+  const cardKb = cardSize ? fs.statSync(card).size / 1024 : 0;
+  const isJpeg = cardSize ? fs.readFileSync(card).subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) : false;
+  if (ogHome.file !== 'og/home.jpg' || siteData.ogDefault !== 'og-home' || !cardSize || cardSize.width !== 1200 || cardSize.height !== 630 || !isJpeg || !(cardKb < 300)) failures.push(`[share] the homepage card is public/og/home.jpg, a JPEG of exactly 1200 by 630 under 300 KB (found ${ogHome.file}, ${cardSize ? `${cardSize.width}x${cardSize.height}` : 'missing'}, ${Math.round(cardKb)} KB)`);
+  const img = prop(home, 'og:image') || '';
+  if (!cardSize || !img.endsWith(`/og/home.jpg?v=${sha1(card)}`) || named(home, 'twitter:image') !== img || prop(home, 'og:image:width') !== '1200' || prop(home, 'og:image:height') !== '630') failures.push(`[share] the card's URL carries the hash of the file, so a new card gets a new URL, the same for X, at 1200 by 630 (found ${img})`);
+  if (ogHome.alt !== ALT || prop(home, 'og:image:alt') !== ALT || named(home, 'twitter:image:alt') !== ALT) failures.push('[share] the card carries its alt text: John Cowin portfolio social preview featuring his portrait and selected Web3 marketing disciplines.');
+  if (fs.existsSync(path.join(root, 'public/og/home.png')) || fs.existsSync(path.join(dist, 'og/home.png'))) failures.push('[hygiene] og/home.png was replaced by og/home.jpg in Social Share Polish V1 and must not ship');
+  for (const slug of ['creator-campaigns', 'technical-marketing', 'events-video']) {
+    const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
+    const t = ent((page.match(/<title>([^<]*)<\/title>/) || [])[1]);
+    const desc = named(page, 'description');
+    const file = path.join(root, 'public/og', `${slug}.png`);
+    const own = cardManifest.find((a) => a.id === `og-${slug}`) || {};
+    if (prop(page, 'og:site_name') !== 'John Cowin' || !/ \| John Cowin$/.test(t || '') || prop(page, 'og:title') !== t || named(page, 'twitter:title') !== t || prop(page, 'og:description') !== desc || named(page, 'twitter:description') !== desc || !fs.existsSync(file) || !(prop(page, 'og:image') || '').endsWith(`/og/${slug}.png?v=${sha1(file)}`) || prop(page, 'og:image:alt') !== own.alt) failures.push(`[share] ${slug}: the case study keeps its own preview (the site name John Cowin, its title and description, its card)`);
+  }
 }
 
 // ---------------------------------------------------------- 3. manifest

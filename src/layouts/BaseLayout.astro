@@ -22,6 +22,13 @@ interface Props {
   noindex?: boolean;
   /** Surface the footer continues, so it reads as part of the last chapter. */
   footerSurface?: string;
+  /**
+   * Social-share overrides (Open Graph and X) for a page whose link preview
+   * should not repeat its browser title (Social Share Polish V1: the homepage,
+   * from site.json's homeShare). Each falls back to the page's own value: the
+   * site name, the browser title and the meta description.
+   */
+  share?: { siteName?: string; title?: string; description?: string };
 }
 
 const {
@@ -32,11 +39,16 @@ const {
   ogType = 'website',
   noindex = false,
   footerSurface = 'light',
+  share = {},
 } = Astro.props;
 
 // The homepage uses the exact approved browser-tab string; inner pages keep the
 // page name plus the site name.
 const fullTitle = title ? `${title} | ${site.name}` : site.browserTitle;
+// What a shared link shows can differ from the tab and the search snippet.
+const shareSiteName = share.siteName ?? site.name;
+const shareTitle = share.title ?? fullTitle;
+const shareDescription = share.description ?? description;
 const canonical = absoluteUrl(pagePath(path), Astro.site);
 const og = getAsset(ogAsset);
 // Social platforms cache previews by URL, so the image URL carries a short hash
@@ -87,9 +99,9 @@ const personJsonLd = {
     <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
 
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content={site.name} />
-    <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={shareSiteName} />
+    <meta property="og:title" content={shareTitle} />
+    <meta property="og:description" content={shareDescription} />
     {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content={site.locale} />
     {ogImage && <meta property="og:image" content={ogImage} />}
@@ -98,8 +110,8 @@ const personJsonLd = {
     {ogImage && <meta property="og:image:alt" content={og.alt} />}
 
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
-    <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={shareTitle} />
+    <meta name="twitter:description" content={shareDescription} />
     {ogImage && <meta name="twitter:image" content={ogImage} />}
     {ogImage && <meta name="twitter:image:alt" content={og.alt} />}
 

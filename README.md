@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Full Site Iteration V1.3 in review.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: Social Share Polish V1.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
 Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
 copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
@@ -17,13 +17,15 @@ activation's top alignment; see [Full Site Iteration V1](#full-site-iteration-v1
 Site Iteration V1.1 (a slightly quicker loader, the hero's name kept behind the portrait throughout its
 entrance, larger homepage cards that show each complete 16:9 video, the events montage with moving
 footage only, and the Events activation's paragraph centered against its headline; see [Full Site
-Iteration V1.1](#full-site-iteration-v11)) and Full Site Iteration V1.2 (the homepage's events montage
+Iteration V1.1](#full-site-iteration-v11)), Full Site Iteration V1.2 (the homepage's events montage
 expanded toward the creator card's length and substance, and the Events page's three chapters
-reordered to lead with the production room; see [Full Site Iteration V1.2](#full-site-iteration-v12)),
-are published. Full Site Iteration V1.3 (the final desktop correction of the events montage: the
-Events page's four approved edits, each played whole, one after another; see [Full Site Iteration
-V1.3](#full-site-iteration-v13)) is committed locally and not pushed until it has been reviewed in the
-browser. Placeholders render only in `npm run dev`;
+reordered to lead with the production room; see [Full Site Iteration V1.2](#full-site-iteration-v12))
+and Full Site Iteration V1.3 (the final desktop correction of the events montage: the Events page's
+four approved edits, each played whole, one after another; see [Full Site Iteration
+V1.3](#full-site-iteration-v13)), and the approved two-page resume (October 2026), are published. Social
+Share Polish V1 (the homepage's link preview: its own site name, title and description, decoupled from
+the browser title, and a portrait-led card; see [Social Share Polish V1](#social-share-polish-v1))
+follows them. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -191,7 +193,7 @@ Other scripts:
 npm run build      # production build into dist/
 npm run preview    # serve dist/ locally (same base path as production)
 npm run check      # TypeScript / Astro diagnostics
-npm run og         # regenerate social-preview images (needs Playwright's Chromium)
+npm run og         # regenerate social-preview images (needs Playwright's Chromium; `npm run og -- home` for one card)
 npm run verify     # link, guardrail, manifest, and accessibility checks against dist/ (run preview first)
 npm run shots      # screenshots at 375 / 768 / 1280 px into .verify/ (run preview first)
 python3 scripts/icons.py   # regenerate the browser icons from the favicon master (needs Pillow)
@@ -410,12 +412,18 @@ there. To replace it, overwrite that file; to rename it, change `resumePath` in 
 
 ### Social-preview images
 
-`public/og/*.png` are typographic cards generated from the site's own fonts and tokens by
-`npm run og`. Replace them with custom artwork at 1200×630 if preferred; the manifest entries
-(`og-home`, `og-creator-campaigns`, …) point at them. The events card was regenerated with the case
-study's new title, Events and Multimedia Production, in Events Version 1.0 (only that card: the
-renderer's output is not byte-for-byte stable across machines, so the other three were left as they
-were).
+`public/og/` holds the cards that link previews show (1200×630), generated from the site's own fonts,
+tokens and photographs by `npm run og`: every card, or one with `npm run og -- home` (or a case
+study's slug); `--out=<dir>` renders them somewhere else, to compare a fresh render with the committed
+files. The manifest entries (`og-home`, `og-creator-campaigns`, …) point at them, and each page's
+preview URL carries a short hash of its card's file (`?v=`, in `BaseLayout.astro`), so a regenerated
+card gets a fresh URL and platforms fetch it anew. Since Social Share Polish V1 the homepage card is
+portrait-led and a JPEG (`og/home.jpg`; see [Social Share Polish V1](#social-share-polish-v1)); the
+three case-study cards are typographic PNGs. The renderer's output is not byte-for-byte stable across
+machines, so commit only the card that changed: the events card was regenerated with the case study's
+new title, Events and Multimedia Production, in Events Version 1.0, and in Social Share Polish V1 a
+full regeneration reproduced the creator and events cards byte for byte and the technical-marketing
+card with sub-pixel differences in its type only, so all three stayed as committed.
 
 ### Browser icons
 
@@ -530,10 +538,10 @@ section), the innermost one on the line wins, and the one around it takes over a
 - Everything read closely, including navigation and labels: Manrope.
 - The hero name keeps its approved Archivo Medium 500 at normal width.
 - The serif and the monospace face are retired, and their packages were removed. `scripts/og.mjs`
-  renders the social-preview cards in Archivo and Manrope on the same palette: the home card echoes the
-  hero (name, rule, arrow and descriptor on the dark ground), and each case-study card uses the tone of
-  its Select Work card. Card titles come from the current page titles, so rerun `npm run og`
-  whenever a title changes.
+  renders the social-preview cards in Archivo and Manrope on the same palette: the home card (since
+  Social Share Polish V1) sets the name in Archivo capitals beside the hero's own photograph, and each
+  case-study card uses the tone of its Select Work card. Case-study card titles come from the current
+  page titles, so rerun `npm run og` for that card whenever a title changes.
 
 ## Content guardrails
 
@@ -895,6 +903,61 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### Social Share Polish V1
+
+John's brief (October 2026): the homepage's link preview, as WhatsApp and other apps show it, repeated
+the same words in its site name, title, description and image, so the card read as text and the image
+as another headline. The preview now has its own metadata and a portrait-led card; the browser title,
+the meta description, the page and the case studies' previews are unchanged. (WhatsApp's own green
+container, stripe and URL line are WhatsApp's.)
+
+- **Metadata** (`site.json` `homeShare`; `BaseLayout.astro` takes an optional `share` override, which
+  only the homepage passes, and every other page keeps its own values).
+
+  | | Before | Now |
+  | --- | --- | --- |
+  | `og:site_name` | John Cowin | John Cowin Portfolio |
+  | `og:title`, `twitter:title` | John Cowin - Web3 Marketing, Strategy, & Content | Web3 Marketing, Strategy & Production |
+  | `og:description`, `twitter:description` | John Cowin is a Web3 marketer working across positioning, technical content, creator programs, events, and multimedia production. Selected work, resume, and contact. | Selected work across positioning, technical content, creator campaigns, events, and multimedia production. |
+  | `og:image`, `twitter:image` | `og/home.png` (the name and the descriptor in type) | `og/home.jpg` (portrait-led), with its own hash |
+  | `og:image:alt` | John Cowin. Web3 Marketing, Strategy, & Content. | John Cowin portfolio social preview featuring his portrait and selected Web3 marketing disciplines. |
+
+  The browser tab still reads "John Cowin - Web3 Marketing, Strategy, & Content"; `site.name`, the
+  JSON-LD `name` and the hero's heading are still John Cowin; the search description is unchanged. The
+  new site name is the homepage's only, by an OG-specific field (`homeShare.siteName`): the case
+  studies keep "John Cowin", as the brief keeps their previews. The 404 page shares the homepage card,
+  as before.
+- **The card** (`scripts/og.mjs`, `npm run og -- home`). On the dark slate-to-black ground of the
+  palette, the hero's own photograph on the right (`hero-portrait`, its wall toned down toward the
+  slate) with the hero's foreground layer over it at full strength (`hero-foreground`), so John stands
+  out; both fade into the ground behind the type, and the right edge crops his far shoulder. The face
+  is large enough to read at a phone's preview width (about 330 pixels across). On the left, in a
+  column of its own inside the safe area (72 px from the edges, the copy ending before the portrait at
+  600 px): a small teal eyebrow, PORTFOLIO / SELECTED WORK (Manrope, light aqua); the name in two
+  lines of Archivo capitals, JOHN / COWIN, large but held to the left half; and one small line,
+  POSITIONING • CONTENT • CAMPAIGNS • PRODUCTION (Manrope, its separators in aqua). No title, rule or
+  arrow; no screenshots. The text comes from `homeShare.image` and `site.name`; the renderer stops if any
+  of it would clip or leave its column. A JPEG (quality 88, full chroma), 65 KB: the photograph would
+  make a PNG several times larger, and WhatsApp is known to skip preview images much over 300 KB.
+- **Caches.** The card's URL is new (`home.jpg?v=` and the file's hash), so apps fetch it fresh, but
+  WhatsApp and others also cache the page's own preview for a while: to see the new one at once, share
+  the homepage with a throwaway query (for example `https://johncowin.com/?v=share1`).
+
+**For John to confirm.** The new site name is on the homepage only; one line makes it site-wide if you
+want the case studies' previews to say John Cowin Portfolio too. The canonical and `og:url` addresses
+still use `jtcowin.github.io` (which redirects to johncowin.com); a `public/CNAME` would switch every
+page to johncowin.com, a site-wide change left for its own pass.
+
+**The checks** (`verify.mjs`): the homepage's site name, title and description for Open Graph and X
+come from `homeShare`; the tab title, the search description, `site.name`, the JSON-LD name and the
+hero heading are unchanged; the card is `og/home.jpg`, a JPEG of exactly 1200 by 630 under 300 KB,
+whose URL carries the file's hash, the same for X, with its alt text; `og/home.png` is gone; and each
+case study keeps its own preview (site name, title, description, card and hash). A mutation run broke
+each of these in turn (20 mutations), and every one was caught. Built side by side with the commit
+before, only the homepage's and the 404 page's share tags changed (the 404 page shares the homepage
+card). The accessibility scan finds nothing on all five pages at two widths, and `astro check`
+reports no errors.
 
 ### Full Site Iteration V1.3
 
