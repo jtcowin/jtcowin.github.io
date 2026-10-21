@@ -3,6 +3,13 @@
  * About: the headline, a three-paragraph narrative, the resume action and the
  * trust bar, composed so the complete section fits one desktop frame.
  *
+ * About Copy delta (October 2026): John's approved headline and paragraphs.
+ * The headline's three sentences each stay whole: one to a line on phones and
+ * tablets, and one line across the canvas on desktop, set a step smaller so
+ * the longer line still fits it. The desktop measure grew with the headline,
+ * every paragraph is balanced from 37.5rem, and the closing line keeps its
+ * last three words together.
+ *
  * Layout. The headline is static. Beneath it the story runs in one wide
  * column: where it began, what it grew into and, as the conclusion, where it
  * stands today, set a step larger and heavier on its own row with the resume
@@ -46,9 +53,14 @@ const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
  * words. Each word keeps its punctuation inside its own span, so a line can
  * break only where the plain text could; punctuation that follows a
  * highlight (a comma or a period) stays in the word's span but is set plain.
+ * `keep` holds the paragraph's last few words together on one line (About
+ * Copy delta: the closing line always ends on "and connect with." whole,
+ * never on a lone "connect with."). They share a span that does not wrap,
+ * which holds the words the same way as plain text and as the boxes they
+ * take while they flow (a no-break space would not hold the boxes).
  */
 type Part = { text: string; mark: boolean };
-function wordsHtml(text: string) {
+function wordsHtml(text: string, keep = 0) {
   const words: Part[][] = [];
   let word: Part[] = [];
   text.split('**').forEach((run, i) => {
@@ -89,18 +101,22 @@ function wordsHtml(text: string) {
     if (!parts[parts.length - 1].mark) close();
   }
   close();
+  if (keep > 1 && out.length > keep) out.push(`<span class="flow__keep">${out.splice(-keep).join(' ')}</span>`);
   return out.join(' ');
 }
 
 const KEYS = ['one', 'two', 'three'];
-const paragraphs = about.paragraphs.map((p, i) => ({ html: wordsHtml(p.text), key: KEYS[i] }));
+const paragraphs = about.paragraphs.map((p, i, all) => ({ html: wordsHtml(p.text, i === all.length - 1 ? 3 : 0), key: KEYS[i] }));
 const closing = paragraphs[paragraphs.length - 1];
 const leading = paragraphs.slice(0, -1);
+
+// The headline's sentences, each kept whole: a line breaks only between them.
+const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).map((s) => s.trim());
 ---
 
 <section id="about" class="section about" aria-labelledby="about-heading" data-about>
   <div class="container">
-    <h2 id="about-heading" class="about__heading display">{about.heading}</h2>
+    <h2 id="about-heading" class="about__heading display">{headingLines.map((line, i) => [i ? ' ' : '', <span class="about__line">{line}</span>])}</h2>
 
     <div class="flow" data-flow>
       {leading.map((p) => <p class:list={['flow__p', `flow__p--${p.key}`]}><Fragment set:html={p.html} /></p>)}
@@ -388,6 +404,13 @@ const leading = paragraphs.slice(0, -1);
     text-wrap: balance;
   }
 
+  /* About Copy delta: three short sentences, one to a line on phones and
+     tablets (none of them shares a line there, so the reading never changes
+     with the width). */
+  .about__line {
+    display: block;
+  }
+
   /* ---- the narrative ---------------------------------------------------- */
   /* One measure for the paragraphs, set in ems, so their lines break in the
      same places at every desktop size. */
@@ -404,11 +427,21 @@ const leading = paragraphs.slice(0, -1);
     letter-spacing: -0.008em;
     color: var(--flow-ink);
     /* Full Site Iteration V1: wrapping that avoids a lone word on a
-       paragraph's last line (the revised first paragraph ends "along the
-       way."). It depends only on the words and their widths, never on the
-       flow's paint, so the lines still fall the same way before, during and
-       after the flow. */
+       paragraph's last line. It depends only on the words and their widths,
+       never on the flow's paint, so the lines still fall the same way before,
+       during and after the flow. */
     text-wrap: pretty;
+  }
+
+  /* About Copy delta: from 37.5rem no paragraph runs past six lines, so each
+     is balanced, its lines of a length and none of them left short (narrower
+     screens keep the rule above). Balancing, like the rule above, reads the
+     words and their widths alone, so the lines fall the same way before,
+     during and after the flow. */
+  @media (min-width: 37.5rem) {
+    .flow__p {
+      text-wrap: balance;
+    }
   }
 
   .flow__p--two {
@@ -429,6 +462,11 @@ const leading = paragraphs.slice(0, -1);
   .flow :global(.flow__mark) {
     font-weight: 600;
     color: var(--accent);
+  }
+
+  /* The closing words that stay together (About Copy delta, see `keep`). */
+  .flow :global(.flow__keep) {
+    white-space: nowrap;
   }
 
   /* A comma or period after a highlight sits inside it (so the phrase stays
@@ -471,20 +509,31 @@ const leading = paragraphs.slice(0, -1);
     margin-top: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
   }
 
-  /* The smallest phones cannot fit "Operator discipline." at the 2.5rem floor,
-     which breaks the headline into four short lines; sizing it to the viewport
-     keeps the two-line reading every other phone gets. */
-  @media (max-width: 22rem) {
+  /* Small phones cannot fit "Operator discipline." (about 8 of its own ems) at
+     the 2.5rem floor, which would break that sentence in two; sizing the
+     headline to the canvas keeps the one-sentence-a-line reading every other
+     phone gets. About Copy delta: the size now follows the canvas itself, so it
+     changes only where the floor would not fit (below 368px; it ran to 352px
+     at 10.4vw before, and 360px phones broke the sentence). */
+  @media (max-width: 24rem) {
     .about__heading {
-      font-size: 10.4vw;
+      font-size: min(2.5rem, calc((100vw - 2.5rem) / 8.2));
     }
   }
 
-  /* One line across the canvas once it fits (the phrase runs about 15.6 of
-     its own ems at this weight and width). */
+  /* One line across the canvas once it fits. The headline runs about 21.2 of
+     its own ems at this weight and width (About Copy delta: "Built for DeFi."
+     joined a line that ran 15.6), so it is set at 4.1 units (was 5): about 87%
+     of the screen's width, 95% of the canvas. Each sentence keeps itself
+     whole, so a wider fallback face could only break the line between two
+     sentences, never push the page sideways. */
   @media (min-width: 60rem) {
     .about__heading {
-      font-size: 5vw;
+      font-size: 4.1vw;
+    }
+
+    .about__line {
+      display: inline;
       white-space: nowrap;
     }
   }
@@ -531,16 +580,23 @@ const leading = paragraphs.slice(0, -1);
       margin-block: auto;
     }
 
+    /* The cap (4rem, was 5.5rem) keeps the line inside the canvas once the
+       container stops growing at 97.5rem. */
     .about__heading {
-      font-size: min(calc(5 * var(--fit)), 5.5rem);
+      font-size: min(calc(4.1 * var(--fit)), 4rem);
       margin-bottom: clamp(1.5rem, 2.6 * var(--fit), 3rem);
     }
 
     /* The desktop measure is about the headline's width, so each paragraph
-       takes the fewest lines it can (two, three) without a word left over. */
+       takes the fewest lines it can (two, three) without a word left over.
+       About Copy delta: the headline's line grew, and the measure with it
+       (47.5em, was 44em), which gives the longer second paragraph its three
+       lines; the type stops a step sooner (1.8rem, was 1.9rem), as the
+       headline's does, so on the widest screens the measure still fits the
+       canvas and matches the headline there too. */
     .flow__p {
-      max-width: 44em;
-      font-size: clamp(1.1875rem, calc(0.38rem + 1.425 * var(--fit)), 1.9rem);
+      max-width: 47.5em;
+      font-size: clamp(1.1875rem, calc(0.38rem + 1.425 * var(--fit)), 1.8rem);
       line-height: 1.34;
     }
 

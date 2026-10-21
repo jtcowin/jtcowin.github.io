@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: Mobile Optimization V1.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: About Copy delta.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
 Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
 copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
@@ -31,7 +31,9 @@ first pass made for phones: the homepage hero's name higher and its arrow and de
 four-row work reel, the creator page's centered openings, the Technical Product Marketing system shown
 complete, its Foundation as one stack of documents and "follows:" kept whole, the Events sequence numbered
 in two columns, and the Stack read as a strict grid at every width; see [Mobile Optimization
-V1](#mobile-optimization-v1)) follows that. Placeholders render only in `npm run dev`;
+V1](#mobile-optimization-v1)) follows that, and the About Copy delta (John's approved headline and
+paragraphs for About, "Creative instincts. Operator discipline. Built for DeFi."; see [About Copy
+delta](#about-copy-delta)) follows it. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -624,11 +626,16 @@ confidential Foundation discussions, investor diligence, data rooms or fundraisi
 engagement figure and names no integration except from an approved, verified metric entry; and its
 outcomes keep the brief's public-safe wording word for word.
 
-The About checks: three paragraphs in the approved copy, every word in its own span; exactly three
-highlights, in order ("globally distributed music project", "more than 200,000 people", "market
-narratives") and nothing else emphasized or bold, Phi Labs Global included; no individual product named
+The About checks: the approved headline, its three sentences each a piece of their own; three
+paragraphs in the approved copy, every word in its own span, with the brief's retained wording named
+("Built for DeFi.", "lead social", "a product portfolio with an audience of more than 200,000 people",
+"understand and connect with."); exactly three highlights, in order ("global music project", "more than
+200,000 people", "stories"), never with a background, and nothing else emphasized or bold, Phi Labs
+Global included; the closing line's last three words held together, and nothing else; no individual
+product named
 in the narrative; the resume button on the closing row after the third paragraph; none of the earlier
-About copy or its music metrics (80+ countries, 140+ shows, "professionally managed"); no em dash; the
+About copy (the About Copy delta retired the October copy's distinctive phrases) or its music metrics
+(80+ countries, 140+ shows, "professionally managed"); no em dash; the
 lower rule and then the trust bar inside About with no surface of their own; the trust-bar heading
 "Select Companies, Products, and Partners"; and no class or attribute left over from the retired
 timeline, columns, band or type-on caret. The homepage no longer states a formal title; the only
@@ -647,10 +654,13 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   in-page link offset (`--scroll-pad`) so it lands flush with the top. Checked from 1024x768 to
   2560x1440, including 1280x720, 1366x768, 1536x864, 1728x970 and common laptop windows such as
   1536x730 and 1440x790. Phones and tablets stack and scroll naturally, with no forced full height.
-- Type: paragraphs are Archivo at 440 on a 44em desktop measure, about the headline's width, so they
-  take three, three and two lines with the same breaks at every desktop size since Full Site Iteration
-  V1's copy (36em below 64rem; `text-wrap: pretty` keeps the first paragraph from ending on one word),
-  and the whole section still fits one screen from 1024x768 to 2560x1440;
+- Type: the headline (About Copy delta) is three short sentences, one to a line on phones and tablets
+  and one line across the canvas from 60rem, at 4.1 frame units capped at 4rem (it was 5 and 5.5rem
+  before "Built for DeFi." joined the line). Paragraphs are Archivo at 440 on a 47.5em desktop measure,
+  about the headline's width, with their type capped at 1.8rem, so they take two, three and two lines
+  with the same breaks from about 1130px wide to 2560px (the second paragraph takes four even lines
+  below that); 36em below 64rem; `text-wrap: pretty` on phones and balanced lines from 37.5rem; and the
+  whole section still fits one screen from 1024x768 to 2560x1440;
   the concluding paragraph is a step larger at 560 in the heading color, with the resume button at the
   right edge of its row; the highlights are blue-teal at 600, 9.2:1 on the light surface. The trust bar
   keeps its contents, order, labels and monochrome marks, with its rhythm tightened through
@@ -913,6 +923,62 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   end." The year follows the build date. Its em dash is intentional, the one exception besides the
   hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
   footer.
+
+### About Copy delta
+
+John's delta brief (October 2026): the homepage About section ("Creative instincts") takes his approved
+copy in full, word for word, and keeps its design, animation, spacing and responsive behavior, adjusting
+only what the new copy needs. Nothing else on the site changes; the portfolio's other copy and the
+resume are untouched.
+
+- **The copy** (`home.json` `about`). The headline is "Creative instincts. Operator discipline. Built for
+  DeFi." The paragraphs: "For a decade, I built audiences and ran the business side of a global music
+  project. That work landed sponsorships, media appearances, and major bookings. In 2021, I brought those
+  skills to DeFi." / "Phi Labs Global hired me in 2024 to lead social across a product portfolio with an
+  audience of more than 200,000 people. As the company grew, so did my role. I took ownership of
+  positioning and messaging, technical documentation and websites, partnerships and KOL management, and
+  campaigns and distribution." / "Today, I turn complex products into stories people understand and
+  connect with." "Built for DeFi.", "lead social", the audience framing and "understand and connect with"
+  are kept exactly as the brief asks.
+- **Emphasis.** The headline keeps its plain display treatment. The paragraphs keep three highlights,
+  one each, in the same blue-teal at a slightly heavier weight and never with a background: "global
+  music project", "more than 200,000 people" and "stories" (where "globally distributed music project",
+  the same audience figure and "market narratives" were).
+- **The headline** (`About.astro`). Its three sentences are pieces of their own and each stays whole:
+  on phones and tablets one to a line (three lines where there were two), and from 60rem one line across
+  the canvas, as before. The longer line (about 21.2 of its own ems, was 15.6) is set at 4.1 frame units
+  (was 5), capped at 4rem (was 5.5rem) once the container stops growing, so it spans about 95% of the
+  canvas; a wider fallback face could only break it between two sentences, never push the page sideways.
+  Below 24rem it is sized to the canvas, so "Operator discipline." never breaks in two (it did at 360px
+  before; 375px and wider are unchanged).
+- **Line wrapping.** On desktop the paragraphs' measure grew with the headline (47.5em, was 44em, about
+  the headline's width) and their type stops a step sooner (1.8rem, was 1.9rem, as the headline's did), so
+  from about 1130px to 2560px they take two, three and two lines, the second paragraph's three lines even
+  (below about 1130px, where the canvas is narrower than the measure, it takes four even lines). From
+  37.5rem every paragraph is balanced (none runs past six lines there), so no line is left short; phones
+  keep `text-wrap: pretty`. The closing line holds its last three words together, so it always ends on
+  "and connect with." and never on a lone "connect with.": on desktop "Today, I turn complex products into
+  stories / people understand and connect with."; on a 390px phone "Today, I turn complex products / into
+  stories people understand / and connect with." Everything holds while the words flow in: they take
+  the same lines and places before, during and after the flow.
+
+**Tested** (beyond `verify.mjs`, in Chromium with phones emulated by touch): the headline's lines and
+width, each paragraph's lines and how full each is, and the frame at 35 sizes from 320x568 to
+2560x1440 (laptop windows such as 1440x790, 1536x730 and 1728x970 included): one sentence to a line on
+every phone and tablet, one line from 960px, never wider than the canvas; every paragraph's last line
+at least two thirds full on tablets and desktops (a third on phones); the whole section in one screen at
+every desktop size; no page scrolling sideways. The flow at nine sizes: every word on the same line and at the same place before, during and
+after it (a no-break space would not have held the closing words while they flow; a span that does not
+wrap does). Built side by side with the commit before: only the homepage and its stylesheet change, and
+outside About the homepage's HTML is identical.
+
+**The checks** (`verify.mjs`, `[claim]` and `[about]`): the headline's text and its three pieces; the
+paragraphs word for word, the retained wording, the three highlights and the held closing words; the
+retired phrases; and the layout: a line for each sentence on phones and tablets, one line from 60rem at
+4.1vw and 4.1 frame units capped at 4rem, never held whole as one run, the small-phone sizing, `pretty`
+and then balanced paragraphs, the 47.5em measure with its 1.8rem cap, the held words never wrapping, and
+no background behind a highlight. A mutation run broke each new check in turn (24 mutations), and every
+one was caught.
 
 ### Mobile Optimization V1
 

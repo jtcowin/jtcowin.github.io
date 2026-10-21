@@ -213,17 +213,17 @@
     }
   },
   "about": {
-    "_note": "About (Version 1.7; its first two paragraphs revised in Full Site Iteration V1, October 2026): the static headline, then three paragraphs (the music and business foundation, the move to Phi Labs Global and the wider scope, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three approved highlights, rendered in blue-teal at a slightly heavier weight; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
-    "heading": "Creative instincts. Operator discipline.",
+    "_note": "About (Version 1.7; its first two paragraphs revised in Full Site Iteration V1, and the headline and all three paragraphs replaced with John's approved copy in the About Copy delta, October 2026): the static headline (three short sentences, set one to a line on phones and tablets and as one line across the canvas on desktop), then three paragraphs (the music and business foundation, Phi Labs Global and the wider role, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three highlights, rendered in blue-teal at a slightly heavier weight, never with a highlighter background; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
+    "heading": "Creative instincts. Operator discipline. Built for DeFi.",
     "paragraphs": [
       {
-        "text": "I came to DeFi in 2021 after a decade of building audiences and running the business behind a **globally distributed music project**, securing sponsorships, media appearances, and major bookings along the way."
+        "text": "For a decade, I built audiences and ran the business side of a **global music project**. That work landed sponsorships, media appearances, and major bookings. In 2021, I brought those skills to DeFi."
       },
       {
-        "text": "In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching **more than 200,000 people**. As the company evolved, my role expanded into positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
+        "text": "Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of **more than 200,000 people**. As the company grew, so did my role. I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
       },
       {
-        "text": "Today, I turn product complexity into **market narratives** people understand and connect with."
+        "text": "Today, I turn complex products into **stories** people understand and connect with."
       }
     ],
     "resumeLink": {

@@ -163,7 +163,14 @@ if (!/hero__subject/.test(home)) failures.push('[claim] hero must layer the fore
 if (!/hero__rule/.test(home)) failures.push('[claim] hero must carry the lower rule');
 if (!/class="stream"/.test(home)) failures.push('[claim] hero name must render as the moving stream');
 if (/icon-192\.png"[^>]*class="brand__mark"|brand__mark/.test(home)) failures.push('[claim] no brand mark may appear in the hero header');
-if (!/Creative instincts\. Operator discipline\./.test(home)) failures.push('[claim] About must use the approved headline');
+// About Copy delta (October 2026): John's approved headline, three short
+// sentences, each its own piece of the heading and kept whole (one to a line
+// on phones and tablets, one line across the canvas on desktop).
+const aboutHeading = (home.match(/<h2 id="about-heading"[^>]*>([\s\S]*?)<\/h2>/) || [])[1] || '';
+const aboutHeadingText = aboutHeading.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const headingPieces = [...aboutHeading.matchAll(/<span class="about__line"[^>]*>([\s\S]*?)<\/span>/g)].map((m) => m[1]);
+if (aboutHeadingText !== 'Creative instincts. Operator discipline. Built for DeFi.') failures.push(`[claim] About must use the approved headline, "Creative instincts. Operator discipline. Built for DeFi." (found "${aboutHeadingText}")`);
+if (headingPieces.join('|') !== 'Creative instincts.|Operator discipline.|Built for DeFi.') failures.push(`[claim] each sentence of the About headline is its own piece, kept whole (found ${headingPieces.join(' | ') || 'none'})`);
 if (/class="eyebrow[^"]*">About</.test(home)) failures.push('[claim] the About section must have no eyebrow');
 // About (v1.7): the static headline, the three approved paragraphs
 // (every word its own span, so the flow never re-wraps a line), exactly the
@@ -178,11 +185,11 @@ const aboutHtml = aboutStart < 0 ? '' : home.slice(aboutStart, aboutEnd);
 const flow = (aboutHtml.match(/<div class="flow"[\s\S]*?<hr class="about__rule"/) || [''])[0];
 if (!flow) failures.push('[claim] the About narrative (flow, then the lower rule) was not found');
 const paragraphHtml = [...flow.matchAll(/<p class="flow__p[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
-// (Full Site Iteration V1: the first two paragraphs as John decided them; the third is unchanged.)
+// (About Copy delta, October 2026: all three paragraphs as John approved them.)
 const approvedParagraphs = [
-  'I came to DeFi in 2021 after a decade of building audiences and running the business behind a globally distributed music project, securing sponsorships, media appearances, and major bookings along the way.',
-  'In 2024, I joined Phi Labs Global to manage social across a product portfolio reaching more than 200,000 people. As the company evolved, my role expanded into positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
-  'Today, I turn product complexity into market narratives people understand and connect with.',
+  'For a decade, I built audiences and ran the business side of a global music project. That work landed sponsorships, media appearances, and major bookings. In 2021, I brought those skills to DeFi.',
+  'Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of more than 200,000 people. As the company grew, so did my role. I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
+  'Today, I turn complex products into stories people understand and connect with.',
 ];
 if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present three paragraphs (found ${paragraphHtml.length})`);
 approvedParagraphs.forEach((copy, i) => {
@@ -195,8 +202,21 @@ approvedParagraphs.forEach((copy, i) => {
 // Each highlight is one <strong> around its words; a comma or period that
 // follows it sits inside, set plain, and is not part of the phrase.
 const marks = [...flow.matchAll(/<strong class="flow__mark"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1].replace(/<span class="flow__plain">[\s\S]*?<\/span>/g, '')));
-if (marks.join(' | ') !== 'globally distributed music project | more than 200,000 people | market narratives') {
-  failures.push(`[claim] About must highlight exactly the three approved phrases, in order (found: ${marks.join(' | ') || 'none'})`);
+if (marks.join(' | ') !== 'global music project | more than 200,000 people | stories') {
+  failures.push(`[claim] About must highlight exactly the three chosen phrases, in order (found: ${marks.join(' | ') || 'none'})`);
+}
+// The brief's retained wording, named so that no later edit drops it unnoticed.
+for (const [where, text, phrase] of [
+  ['the headline', aboutHeadingText, 'Built for DeFi.'],
+  ['the second paragraph', textOf(paragraphHtml[1] || ''), 'lead social'],
+  ['the second paragraph', textOf(paragraphHtml[1] || ''), 'a product portfolio with an audience of more than 200,000 people'],
+  ['the closing paragraph', textOf(paragraphHtml[2] || ''), 'understand and connect with.'],
+]) {
+  if (!text.includes(phrase)) failures.push(`[claim] About keeps "${phrase}" in ${where} (About Copy delta)`);
+}
+// The closing line ends on its last three words together, and only it does.
+if (!/<span class="flow__keep"[^>]*>\s*<span class="w">and<\/span>\s+<span class="w">connect<\/span>\s+<span class="w">with\.<\/span>\s*<\/span>\s*$/.test(paragraphHtml[2] || '') || (flow.match(/class="flow__keep"/g) || []).length !== 1) {
+  failures.push('[claim] the closing paragraph keeps "and connect with." together, and nothing else is held');
 }
 if (/<(?:b|em|mark|u)[\s>]/.test(flow) || /<strong(?![^>]*class="flow__mark")/.test(flow)) {
   failures.push('[claim] nothing in the About narrative may be emphasized besides the three approved phrases');
@@ -240,6 +260,16 @@ const retiredAbout = [
   'understand and act on',
   // retired in Full Site Iteration V1
   'expanded into positioning, technical',
+  // retired in the About Copy delta (October 2026)
+  'I came to DeFi in 2021',
+  'globally distributed',
+  'joined Phi Labs Global',
+  'manage social',
+  'As the company evolved',
+  'my role expanded into',
+  'product complexity',
+  'market narratives',
+  'along the way',
 ];
 for (const retired of retiredAbout) {
   if (aboutHtml.includes(retired)) failures.push(`[claim] "${retired}" was retired from the About section`);
@@ -350,6 +380,36 @@ if (!/grid-auto-flow:\s*column/.test(infoP) || !/text-align:\s*left/.test(infoP)
 if (!/justify-items:\s*end/.test(heroBase(/^\.hero__info$/)) || !/text-align:\s*right/.test(heroBase(/^\.hero__info$/))) failures.push('[mobile] wider screens keep the arrow above the right-set descriptor');
 if (!heroPhone(/^\.hero__grade$/).length) failures.push('[mobile] on phones the grade\'s band moves up with the name');
 if (!CSS_RULES.some((r) => /^\.stream__track$/.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && /47\.99rem/.test(r.at) && /prefers-reduced-motion:\s*reduce/.test(r.at) && /translate(?:3d)?\(60vw/.test(r.body))) failures.push('[mobile] with reduced motion a phone\'s still name starts beside the head, its first word whole');
+
+// About Copy delta (October 2026), the longer headline and the new copy set
+// in the same design: on phones and tablets each sentence of the headline is a
+// line of its own; from 60rem the sentences share one line across the canvas,
+// each kept whole (so a wider fallback face could only break the line between
+// sentences, never push the page sideways), at 4.1 units (4.1vw, then 4.1 frame
+// units capped at 4rem from 64rem; it was 5 and 5.5rem for the shorter line);
+// below 24rem the headline is sized to the canvas, so "Operator discipline."
+// never breaks (it did at 360px). Paragraphs wrap "pretty" on phones and are
+// balanced from 37.5rem; the desktop measure grew with the headline (47.5em,
+// was 44em) and the paragraphs' type stops at 1.8rem (was 1.9rem), so the
+// second paragraph takes three full lines; the closing words that stay
+// together never wrap; and no highlight has a background.
+const aboutRules = (re, atRe) => CSS_RULES.filter((r) => re.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && (atRe ? atRe.test(r.at) : !r.at));
+const aboutBodies = (list) => list.map((r) => r.body).join(';');
+const AT64 = /min-width:\s*64rem|width\s*>=\s*64rem/;
+if (!/display:\s*block/.test(aboutBodies(aboutRules(/^\.about__line$/)))) failures.push('[about] on phones and tablets each sentence of the headline takes a line of its own');
+const aboutLineWide = aboutBodies(aboutRules(/^\.about__line$/, DESKTOP));
+if (!/display:\s*inline(?![-\w])/.test(aboutLineWide) || !/white-space:\s*nowrap/.test(aboutLineWide)) failures.push('[about] from 60rem the headline\'s sentences share one line, each kept whole');
+const aboutHeadWide = aboutBodies(aboutRules(/^\.about__heading$/, DESKTOP));
+if (!/font-size:\s*4\.1vw/.test(aboutHeadWide) || CSS_RULES.some((r) => /^\.about__heading$/.test(r.sel.replace(/\[data-astro-cid-[^\]]*\]/g, '')) && /white-space:\s*nowrap/.test(r.body))) failures.push(`[about] from 60rem the headline is set at 4.1vw and may break only between its sentences (found "${aboutHeadWide}")`);
+const aboutHead64 = aboutBodies(aboutRules(/^\.about__heading$/, AT64));
+if (!/font-size:\s*min\(calc\(4\.1\s*\*\s*var\(--fit\)\),\s*4rem\)/.test(aboutHead64)) failures.push(`[about] from 64rem the headline is 4.1 frame units, capped at 4rem, so its line fits the canvas (found "${aboutHead64}")`);
+const aboutHeadSmall = aboutBodies(aboutRules(/^\.about__heading$/, /max-width:\s*24rem|width\s*<=\s*24rem/));
+if (!/font-size:\s*min\(2\.5rem,\s*(?:calc\(\(100vw\s*-\s*2\.5rem\)\s*\/\s*8\.2\)|12\.195\d*vw\s*-\s*\.304878\d*rem)\)/.test(aboutHeadSmall)) failures.push(`[about] below 24rem the headline is sized to the canvas, so "Operator discipline." stays whole (found "${aboutHeadSmall}")`);
+if (!/text-wrap:\s*pretty/.test(aboutBodies(aboutRules(/^\.flow__p$/))) || !/text-wrap:\s*balance/.test(aboutBodies(aboutRules(/^\.flow__p$/, /min-width:\s*37\.5rem|width\s*>=\s*37\.5rem/)))) failures.push('[about] the paragraphs wrap "pretty" on phones and are balanced from 37.5rem');
+const aboutFlow64 = aboutBodies(aboutRules(/^\.flow__p$/, AT64));
+if (!/max-width:\s*47\.5em/.test(aboutFlow64) || !/font-size:\s*clamp\(1\.1875rem,\s*calc\(0?\.38rem\s*\+\s*1\.425\s*\*\s*var\(--fit\)\),\s*1\.8rem\)/.test(aboutFlow64)) failures.push(`[about] the desktop measure is 47.5em, about the headline's width, with the paragraphs' type capped at 1.8rem (found "${aboutFlow64}")`);
+if (!/white-space:\s*nowrap/.test(aboutBodies(aboutRules(/\.flow__keep$/)))) failures.push('[about] the closing words kept together never wrap');
+if (CSS_RULES.some((r) => /\.flow__mark/.test(r.sel) && /background/.test(r.body))) failures.push('[about] the highlights carry no background (no highlighter)');
 
 // Select Work (v1.7; Full Site Iteration V1): the approved title and intro, the
 // intro's one emphasis on "strategy through execution" (slightly heavier, in the
