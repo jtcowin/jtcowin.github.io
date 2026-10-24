@@ -119,9 +119,13 @@
      screen runs up under that header pulls itself up by this much. */
   --header-row: 4.25rem;
   /* The footer's height, from its own spacing and line heights (Footer.astro):
-     three rows on phones, two from 48rem. The homepage Contact subtracts it
-     so that Contact and the footer together fill the screen. */
-  --footer-h: calc(2 * var(--space-7) + 1px + 2 * var(--text-sm) * var(--leading-normal) + 2 * var(--space-4) + var(--text-xs) * var(--leading-normal));
+     four rows below 30rem, three from 30rem, two from 48rem. The homepage
+     Contact subtracts it so that Contact and the footer together fill the
+     screen. Below 30rem the links (five since Footer LinkedIn, about 25.3rem
+     in one row) take two rows, so that figure adds a line and the links'
+     0.5rem row gap; they fit in one row from about 27.8rem, and the margin up
+     to 30rem only lets the footer's min-height leave a little room at its foot. */
+  --footer-h: calc(2 * var(--space-7) + 1px + 3 * var(--text-sm) * var(--leading-normal) + 0.5rem + 2 * var(--space-4) + var(--text-xs) * var(--leading-normal));
   --scroll-pad: 5.5rem;
 
   --radius-sm: 4px;
@@ -136,6 +140,12 @@
   --dur-fast: 160ms;
   --dur: 260ms;
   --dur-slow: 700ms;
+}
+
+@media (min-width: 30rem) {
+  :root {
+    --footer-h: calc(2 * var(--space-7) + 1px + 2 * var(--text-sm) * var(--leading-normal) + 2 * var(--space-4) + var(--text-xs) * var(--leading-normal));
+  }
 }
 
 @media (min-width: 48rem) {

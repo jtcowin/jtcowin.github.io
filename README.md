@@ -5,7 +5,7 @@ Static output only: no database, CMS, authentication, or server code. All copy l
 and every image, video still, logo, and metric on the site resolves through one asset manifest, so
 content and media can be updated through GitHub without touching layout code.
 
-**Status: About Copy delta.** Version 2.0, Technical Product Marketing Version 1.6,
+**Status: Footer LinkedIn and case-study share cards.** Version 2.0, Technical Product Marketing Version 1.6,
 Events and Multimedia Production Version 1.6, Creator Marketing and Partnerships Version 1.4, Full Site
 Iteration V1 (John's brief of surgical refinements across the site: the hero's staged entrance, decided
 copy and a restrained emphasis system, one landscape video per homepage card with two new montages, the
@@ -33,7 +33,10 @@ complete, its Foundation as one stack of documents and "follows:" kept whole, th
 in two columns, and the Stack read as a strict grid at every width; see [Mobile Optimization
 V1](#mobile-optimization-v1)) follows that, and the About Copy delta (John's approved headline and
 paragraphs for About, "Creative instincts. Operator discipline. Built for DeFi."; see [About Copy
-delta](#about-copy-delta)) follows it. Placeholders render only in `npm run dev`;
+delta](#about-copy-delta)) follows it, and Footer LinkedIn with the case-study share cards (a LinkedIn
+link in the footer, its one placement, and each case study's own designed share card under a versioned
+name; see [Footer LinkedIn and case-study share cards](#footer-linkedin-and-case-study-share-cards))
+follows that. Placeholders render only in `npm run dev`;
 production builds hide any asset that is not both approved and present, so an unresolved entry never
 reaches the public site (see [Replacing placeholders](#replacing-placeholders)).
 
@@ -238,7 +241,8 @@ then this file, together, so the canonical URLs and the served domain agree.
 
 ## Editing content
 
-- **Site-wide** (name, email, nav, resume path, footer): `src/data/site.json`. The menu on Work (V1.5)
+- **Site-wide** (name, email, nav, resume path, footer, and the LinkedIn profile the footer links to,
+  `social.linkedin`): `src/data/site.json`. The menu on Work (V1.5)
   lists the case studies itself, from `src/content/work/` in their `order`, numbered and titled as on
   the homepage (each one's `card.title`); `src/components/Header.astro`.
 - **The homepage's opening sequence** (V1.5, retimed in Events V1.6, the note alone since Creator
@@ -421,15 +425,16 @@ there. To replace it, overwrite that file; to rename it, change `resumePath` in 
 `public/og/` holds the cards that link previews show (1200×630), generated from the site's own fonts,
 tokens and photographs by `npm run og`: every card, or one with `npm run og -- home` (or a case
 study's slug); `--out=<dir>` renders them somewhere else, to compare a fresh render with the committed
-files. The manifest entries (`og-home`, `og-creator-campaigns`, …) point at them, and each page's
-preview URL carries a short hash of its card's file (`?v=`, in `BaseLayout.astro`), so a regenerated
-card gets a fresh URL and platforms fetch it anew. The homepage card is a crop-safe portrait and a
-JPEG (`og/home.jpg`; see [Social Share V1.1](#social-share-v11)); the three case-study cards are
-typographic PNGs. The renderer's output is not byte-for-byte stable across
-machines, so commit only the card that changed: the events card was regenerated with the case study's
-new title, Events and Multimedia Production, in Events Version 1.0, and in Social Share Polish V1 a
-full regeneration reproduced the creator and events cards byte for byte and the technical-marketing
-card with sub-pixel differences in its type only, so all three stayed as committed.
+files. Each card is written under the file name its manifest entry gives (`og-home`,
+`og-creator-campaigns`, …), and each page's preview URL carries a short hash of its card's file (`?v=`,
+in `BaseLayout.astro`), so a regenerated card gets a fresh URL and platforms fetch it anew. The
+homepage card is a crop-safe portrait and a JPEG (`og/home.jpg`; see [Social Share
+V1.1](#social-share-v11)). Each case study has its own designed card, John's approved file, under a
+versioned name (`og/<slug>-v2.jpg`), drawn from its page's hero and five sources in `scripts/og` (see
+[Footer LinkedIn and case-study share cards](#footer-linkedin-and-case-study-share-cards)). The
+renderer's output is not byte-for-byte stable across machines, so commit only the card that changed:
+`verify.mjs` pins the three case-study cards, and a new design takes the next versioned name (in its
+manifest entry) and a new pin.
 
 ### Browser icons
 
@@ -546,8 +551,8 @@ section), the innermost one on the line wins, and the one around it takes over a
 - The serif and the monospace face are retired, and their packages were removed. `scripts/og.mjs`
   renders the social-preview cards in Archivo and Manrope on the same palette: the home card (since
   Social Share V1.1) is the hero's own photograph as a crop-safe portrait with two small Manrope labels,
-  and each case-study card uses the tone of its Select Work card. Case-study card titles come from the current
-  page titles, so rerun `npm run og` for that card whenever a title changes.
+  and each case-study card is drawn from its page's hero, its words from the page's data, so a card is
+  redrawn, under a new versioned name, when its headline or the case study's name changes.
 
 ## Content guardrails
 
@@ -877,7 +882,8 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
   (`min-height: calc(100svh - var(--footer-h))`, with `100vh` where small-viewport units are not
   supported), so at the end of the page nothing of the section before remains above Contact.
   `--footer-h` in `global.css` is the footer's height worked out from its own spacing tokens, so it
-  follows any change to them. The headline and subline hold the left and the email and resume actions
+  follows any change to them: four rows below 30rem, where its links take two, three to 48rem and two
+  above. The headline and subline hold the left and the email and resume actions
   the right, with the spare height shared out above and below (1 to 1.25), and the footer rests at the
   bottom as a quiet anchor. The top padding reserves the header's height, so the navigation never meets
   the headline. Phones and short windows let the frame grow past one screen rather than compressing
@@ -919,10 +925,102 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 - The accent (Full Site Iteration V1): "Its story shouldn't be." takes the section's accent color at the
   headline's own display weight and size, inside the one heading (so it is read as one sentence) and
   inline, so the headline wraps as before; on every page, the case studies' compact Contact included.
-- The footer carries the hero's descriptor, the links and one credit: "© 2026 John Cowin — Built end to
-  end." The year follows the build date. Its em dash is intentional, the one exception besides the
-  hero's name stream, and `verify.mjs` excuses that exact line only. John's name appears once in the
-  footer.
+- The footer carries the hero's descriptor, the links (Work, About, Resume, LinkedIn and the email) and
+  one credit: "© 2026 John Cowin — Built end to end." The year follows the build date. Its em dash is
+  intentional, the one exception besides the hero's name stream, and `verify.mjs` excuses that exact
+  line only. John's name appears once in the footer.
+
+### Footer LinkedIn and case-study share cards
+
+John's brief (October 2026): a LinkedIn link in the footer, its one placement on the portfolio, and the
+three approved thumbnails from his Desktop as the case studies' own share cards, then deploy. Two changes
+from John came first: the events card drops the signal icon after AMPLIFY. and the blue line under the
+five words (the Desktop held the earlier preview), and all three drop their case numbers (01, 02, 03,
+and the "02 /" before EVENT FILM), which read on the site but not on a thumbnail. The final cards are on
+John's Desktop and in `public/og`, byte for byte. Nothing else changes: no layout, copy, animation,
+case-study content, resume or navigation beyond the footer link.
+
+- **LinkedIn** (`Footer.astro`; `site.json` `social.linkedin`: https://www.linkedin.com/in/johncowin/).
+  A plain text link like its neighbors, after Resume and before the email: Work, About, Resume,
+  LinkedIn, the email. It opens in a new tab (`target="_blank"`, `rel="noopener noreferrer"`) and says
+  so to assistive technology (a visually hidden "(opens in a new tab)"); its hover and keyboard focus
+  are the other links' (the light-aqua hover, the site's focus ring). It is in every page's footer and
+  nowhere else: not the header, the Work menu, the hero or Contact, and not the structured data.
+- **Wrapping.** The five links take about 25.3rem in one row, so below about 27.8rem (445px) they wrap
+  to two: Work, About, Resume, LinkedIn, then the email (on 375 to 440px phones; at 320 and 360px the
+  four links already wrapped). `--footer-h`, the footer's height that the closing frame subtracts, now
+  counts that second row below 30rem: four rows there (the descriptor, two rows of links with their
+  0.5rem gap, the credit), three from 30rem, two from 48rem. So on phones Contact and the footer still
+  fill exactly one screen (Contact gives up the 29.7px the footer gains) and the grid still runs to the
+  foot of the page; this also corrects 320 and 360px, where the footer used to run 29.7px past the token
+  and the grid stopped short of it. From 445 to 480px the links fit in one row and the footer's
+  min-height leaves that much room at its foot. Tablets and desktops keep one row of links beside the
+  descriptor.
+- **The cards** (`public/og/creator-campaigns-v2.jpg`, `technical-marketing-v2.jpg`,
+  `events-video-v2.jpg`: 157, 85 and 87 KB). New, versioned names, so platforms that cached the
+  typographic PNGs (`og/<slug>.png`, now removed) fetch them fresh; the URL also keeps the file's hash
+  (`?v=`). Each case study's frontmatter names its own card (`ogAsset`), so each page writes its own
+  absolute johncowin.com URL in `og:image` and `twitter:image`, with `twitter:card`
+  summary_large_image, 1200 by 630, its own title and description, its clean canonical address, and alt
+  text that describes the card:
+  - Creator Marketing and Partnerships: "Share card for Creator Marketing and Partnerships: prints from
+    Costa Rica, Singapore, and Mykonos around an illustrative coastal villa, under the headline Creator
+    campaigns, built to travel."
+  - Technical Product Marketing: "Share card for Technical Product Marketing: an isometric system in
+    which interviews, research, and analysis feed a shared product language at its center, which carries
+    through to the website, documentation, and campaigns, beside the headline Building the system behind
+    the message."
+  - Events and Multimedia Production: "Share card for Events and Multimedia Production: a
+    program-monitor still from the Sui Fest event film, an entrance corridor in neon light, with the
+    sequence Secure, Build, Capture, Cut, Amplify."
+
+  The homepage card, and the 404 page's (the same), are unchanged.
+- **The designs.** Each card is its own, built from its page's hero: the creator card is the hero's
+  layered scene (sky, headline, villa, fronds) with prints from the three trips and a dotted route
+  between them; the Technical Product Marketing card is the hero's isometric system, opened and running,
+  labeled as the hero labels it, beside the headline; the events card is the program monitor on the event
+  floor, a still of the reel's event film under the monitor's marks (the tally, PROGRAM and the chapter's
+  title, the timecode), with SECURE. BUILD. CAPTURE. CUT. AMPLIFY. as an even lower third. What they
+  share: Archivo and Manrope, the teal accents, and each case study's name. Each is crop-safe for compact
+  previews such as Slack's: every piece of text lies wholly inside the central 630 by 630 square or
+  wholly outside it, so the square shows the headline over the villa, the system with its labels, and
+  BUILD. CAPTURE. CUT. over the corridor. JPEG quality 88, full chroma.
+- **The renderer** (`scripts/og.mjs`; `npm run og -- <slug>`) draws them from the pages' own data (the
+  headlines, the case studies' names, the system's words, the stages, the monitor's words) and five
+  sources in `scripts/og`, outside `src/assets` (whose every image the site's asset glob would bundle
+  into the build), and writes each under its manifest entry's file name; in the cloud copy it reproduces
+  the three approved files byte for byte. The sources: `creator-print-costa-rica.jpg`,
+  `creator-print-singapore.jpg` and `creator-print-mykonos.jpg`, a frame each from the destination loops
+  (`ffmpeg -ss 5.6 -i public/media/cm-costa-rica-loop-v11.mp4 -frames:v 1 -q:v 2 <file>`, and `-ss 0.2`
+  and `-ss 1.35` for `cm-singapore-loop-v14.mp4` and `cm-mykonos-loop-v14.mp4`, with ffmpeg 6.1);
+  `events-program.jpg`, the same at 4.4 s of `ev-hero-event-film.mp4` (frame 106); and `tpm-system.png`,
+  the hero's system captured with Playwright at 2x from the built page in a 1440 by 900 window, its parts
+  shown with its toggle, its labels, legend and toggle hidden and its grounds transparent, from a burst of
+  frames 140 ms apart: one with pulses running in from the inputs and one with pulses running out to the
+  outputs, joined at x 1030, where the two agree. A render on another machine differs from the approved
+  files in its bytes, so commit a case-study card only when its design changes, under the next versioned
+  name (in its manifest entry) and with its new pin in `verify.mjs`.
+
+**Tested** (beyond `verify.mjs`): each built page's share tags, each case study's its own card and none
+the homepage's; the footer at 17 widths from 320 to 1920px on the homepage and a case study: its height
+equals `--footer-h` at every one (the links in two rows from 320 to 440px, in one from 460px), nothing
+scrolls sideways, and the closing frame is exactly one screen at 360x780, 375x812, 390x844, 402x874,
+430x932, 768x1024 and 1440x900, the grid running to the foot of the page; the link's hover and keyboard
+focus; and, built side by side with the commit before, only the five pages' footers, the three case
+studies' image tags, the stylesheet's footer token and the cards in `og/` change. The accessibility scan
+finds nothing on all five pages at two widths, and `astro check` reports no errors.
+
+**The checks** (`verify.mjs`, `[share]`, `[linkedin]` and `[hygiene]`): each case study's card is John's
+approved file, byte for byte in `public` and in the build (SHA-256 pins), under its versioned name, a
+JPEG of exactly 1200 by 630 under 300 KB, named by the page's own frontmatter; its `og:image` and
+`twitter:image` are its own absolute URL with the file's hash, with the large X card, 1200 by 630 and its
+alt text; no two case studies share a card and none falls back to the homepage's; the canonical address
+and `og:url` stay clean; `public/og` and the build hold exactly the four cards, and `scripts/og` exactly
+the five sources, none of which ships; the footer's links read Work, About, Resume, LinkedIn and the
+email; the LinkedIn link has its address, the new tab, `noopener noreferrer` and its note, and it is the
+page's only mention of linkedin.com; every link that opens a new tab has `noopener noreferrer`; and the
+footer's height token counts the second row of links below 30rem. A mutation run broke each new check in
+turn (36 mutations), and every one was caught.
 
 ### About Copy delta
 

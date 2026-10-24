@@ -49,7 +49,8 @@
     "note": "Built as a static site and published with GitHub Pages."
   },
   "social": {
-    "linkedin": null,
+    "_note": "Footer LinkedIn (October 2026): the LinkedIn profile is linked from the global footer only, its one placement on the portfolio (not the header, the menu, the hero or Contact).",
+    "linkedin": "https://www.linkedin.com/in/johncowin/",
     "github": null
   },
   "browserTitle": "John Cowin - Web3 Marketing, Strategy, & Content"

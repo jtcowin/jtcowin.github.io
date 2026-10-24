@@ -19,6 +19,11 @@ const year = new Date().getFullYear();
       <li><a href={withBase('/#work')}>Work</a></li>
       <li><a href={withBase('/#about')}>About</a></li>
       <li><a href={withBase(site.resumePath)} download>Resume</a></li>
+      {/* Footer LinkedIn: the profile's one placement on the portfolio, a plain
+          text link like its neighbors that opens in a new tab. */}
+      {site.social.linkedin && (
+        <li><a href={site.social.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a></li>
+      )}
       <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
     </ul>
     {/* The em dash in this approved line is deliberate, the one exception to

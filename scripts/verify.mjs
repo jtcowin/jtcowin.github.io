@@ -3967,7 +3967,7 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   failures.push('[asset] public/resume/John-Cowin-Resume.pdf is missing');
 }
 
-// ------------------------------------------------- Social Share Polish V1 and V1.1
+// ------------------------------- Social Share Polish V1 and V1.1, Case Study Share Cards
 // The homepage's link preview is its own, from site.json's homeShare, decoupled from the browser title (checked above,
 // unchanged) and from the meta description: og:title and og:description, the same title and description for X with
 // the large image, and the crop-safe portrait card (og-home: public/og/home.jpg, exactly 1200 by 630, a JPEG under
@@ -4034,14 +4034,109 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   if (!cardSize || img !== `${ORIGIN}og/home.jpg?v=${sha1(card)}` || named(home, 'twitter:image') !== img || prop(home, 'og:image:width') !== '1200' || prop(home, 'og:image:height') !== '630') failures.push(`[share] the card's URL carries the hash of the file, so a new card gets a new URL, the same for X, at 1200 by 630 (found ${img})`);
   if (ogHome.alt !== ALT || prop(home, 'og:image:alt') !== ALT || named(home, 'twitter:image:alt') !== ALT) failures.push(`[share] the card carries its alt text: ${ALT}`);
   if (fs.existsSync(path.join(root, 'public/og/home.png')) || fs.existsSync(path.join(dist, 'og/home.png'))) failures.push('[hygiene] og/home.png was replaced by og/home.jpg in Social Share Polish V1 and must not ship');
-  for (const slug of ['creator-campaigns', 'technical-marketing', 'events-video']) {
+  // Case Study Share Cards (October 2026): each case study keeps its own preview (its title with "| John Cowin", its
+  // own description, its clean canonical address for og:url) and now its own designed card, John's approved file
+  // byte for byte (pinned here by SHA-256), under a versioned name (og/<slug>-v<n>.jpg, so platforms that cached the
+  // typographic PNGs fetch it fresh): a JPEG of exactly 1200 by 630 under 300 KB, its absolute URL on johncowin.com
+  // carrying the first ten hex digits of its SHA-1, the same for X with the large image, at 1200 by 630, with the alt
+  // text that describes it. Every page's card is its own: no case study falls back to the homepage card. public/og
+  // holds exactly the four cards (the PNGs are retired), and scripts/og exactly the five sources og.mjs reads.
+  const CASE_CARDS = {
+    'creator-campaigns': {
+      file: 'og/creator-campaigns-v2.jpg',
+      sha256: 'eae517ed215aa6b1c681b80fdf35442fe603375a0aaa0778d154121b4665e867',
+      alt: 'Share card for Creator Marketing and Partnerships: prints from Costa Rica, Singapore, and Mykonos around an illustrative coastal villa, under the headline Creator campaigns, built to travel.',
+    },
+    'technical-marketing': {
+      file: 'og/technical-marketing-v2.jpg',
+      sha256: 'd0fc1c6fbce6d8fcc9a71fb0bd1010f79c53c8434adea914a8dd1d840ddbc13f',
+      alt: 'Share card for Technical Product Marketing: an isometric system in which interviews, research, and analysis feed a shared product language at its center, which carries through to the website, documentation, and campaigns, beside the headline Building the system behind the message.',
+    },
+    'events-video': {
+      file: 'og/events-video-v2.jpg',
+      sha256: 'ded11f5a65d493dc44c6dec5a519524f079feb5b4fe08da330b4d2637f878333',
+      alt: 'Share card for Events and Multimedia Production: a program-monitor still from the Sui Fest event film, an entrance corridor in neon light, with the sequence Secure, Build, Capture, Cut, Amplify.',
+    },
+  };
+  const sha256 = (file) => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  const caseImages = [];
+  for (const [slug, want] of Object.entries(CASE_CARDS)) {
     const page = fs.readFileSync(path.join(dist, `work/${slug}/index.html`), 'utf8');
     const t = ent((page.match(/<title>([^<]*)<\/title>/) || [])[1]);
     const desc = named(page, 'description');
-    const file = path.join(root, 'public/og', `${slug}.png`);
+    const canonical = (page.match(/<link rel="canonical" href="([^"]*)"/) || [])[1];
+    if (!/ \| John Cowin$/.test(t || '') || prop(page, 'og:title') !== t || named(page, 'twitter:title') !== t || prop(page, 'og:description') !== desc || named(page, 'twitter:description') !== desc) failures.push(`[share] ${slug}: the case study keeps its own preview (its title and description)`);
+    if (canonical !== `${ORIGIN}work/${slug}/` || prop(page, 'og:url') !== canonical) failures.push(`[share] ${slug}: the canonical address and og:url stay the clean ${ORIGIN}work/${slug}/ (found ${canonical}, ${prop(page, 'og:url')})`);
     const own = cardManifest.find((a) => a.id === `og-${slug}`) || {};
-    if (!/ \| John Cowin$/.test(t || '') || prop(page, 'og:title') !== t || named(page, 'twitter:title') !== t || prop(page, 'og:description') !== desc || named(page, 'twitter:description') !== desc || !fs.existsSync(file) || prop(page, 'og:image') !== `${ORIGIN}og/${slug}.png?v=${sha1(file)}` || prop(page, 'og:image:alt') !== own.alt) failures.push(`[share] ${slug}: the case study keeps its own preview (its title and description, its card)`);
+    const fm = fs.readFileSync(path.join(root, 'src/content/work', `${slug}.mdx`), 'utf8').split('---')[1] || '';
+    if ((fm.match(/^ogAsset:\s*"([^"]*)"\s*$/m) || [])[1] !== `og-${slug}` || own.type !== 'og') failures.push(`[share] ${slug}: its frontmatter names its own card (ogAsset: og-${slug})`);
+    const file = path.join(root, 'public', own.file || '-');
+    const size = fs.existsSync(file) ? imageSize(file) : null;
+    const kb = size ? fs.statSync(file).size / 1024 : 0;
+    const jpeg = size ? fs.readFileSync(file).subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) : false;
+    if (own.file !== want.file || own.filename !== own.file || !new RegExp(`^og/${slug}-v\\d+\\.jpg$`).test(own.file || '') || !size || size.width !== 1200 || size.height !== 630 || !jpeg || !(kb < 300)) failures.push(`[share] ${slug}: its card is public/${want.file}, a versioned JPEG of exactly 1200 by 630 under 300 KB (found ${own.file}, ${size ? `${size.width}x${size.height}` : 'missing'}, ${jpeg ? 'JPEG' : 'not a JPEG'}, ${Math.round(kb)} KB)`);
+    if (!size || sha256(file) !== want.sha256 || !fs.existsSync(path.join(dist, want.file)) || sha256(path.join(dist, want.file)) !== want.sha256) failures.push(`[share] ${slug}: ${want.file} is John's approved card, byte for byte, in public and in the build (SHA-256 ${want.sha256.slice(0, 12)}…); a new design needs a new versioned name and a new pin`);
+    const img = prop(page, 'og:image') || '';
+    caseImages.push(img);
+    if (!size || img !== `${ORIGIN}${want.file}?v=${sha1(file)}` || named(page, 'twitter:image') !== img || prop(page, 'og:image:width') !== '1200' || prop(page, 'og:image:height') !== '630' || named(page, 'twitter:card') !== 'summary_large_image') failures.push(`[share] ${slug}: og:image and twitter:image are its own card's absolute URL with the file's hash, at 1200 by 630, with the large X card (found ${img})`);
+    if (own.alt !== want.alt || prop(page, 'og:image:alt') !== want.alt || named(page, 'twitter:image:alt') !== want.alt) failures.push(`[share] ${slug}: the card carries its alt text: ${want.alt}`);
   }
+  if (new Set(caseImages).size !== caseImages.length || caseImages.includes(prop(home, 'og:image'))) failures.push('[share] each case study shows its own card: no two share one, and none falls back to the homepage card');
+  const ogHave = fs.readdirSync(path.join(root, 'public/og')).filter((f) => f !== '.DS_Store').sort();
+  const ogWant = ['home.jpg', ...Object.values(CASE_CARDS).map((c) => path.basename(c.file))].sort();
+  const ogBuilt = fs.existsSync(path.join(dist, 'og')) ? fs.readdirSync(path.join(dist, 'og')).filter((f) => f !== '.DS_Store').sort() : [];
+  if (ogHave.join() !== ogWant.join() || ogBuilt.join() !== ogWant.join()) failures.push(`[hygiene] public/og and the build's og hold exactly the four cards, ${ogWant.join(', ')} (the typographic PNGs are retired; found ${ogHave.join(', ')} | ${ogBuilt.join(', ')})`);
+  // The cards' sources sit beside their renderer, outside src/assets (whose every image the site's asset glob would
+  // bundle into the build), and none of them ships.
+  const OG_SOURCES = ['creator-print-costa-rica.jpg', 'creator-print-mykonos.jpg', 'creator-print-singapore.jpg', 'events-program.jpg', 'tpm-system.png'];
+  const srcDir = path.join(root, 'scripts/og');
+  const srcHave = fs.existsSync(srcDir) ? fs.readdirSync(srcDir).filter((f) => f !== '.DS_Store').sort() : [];
+  const ogScript = fs.readFileSync(path.join(root, 'scripts/og.mjs'), 'utf8');
+  if (srcHave.join() !== OG_SOURCES.join() || OG_SOURCES.some((f) => !ogScript.includes(`'${f}'`))) failures.push(`[share] scripts/og holds exactly the case-study cards' five sources, each read by scripts/og.mjs (found ${srcHave.join(', ') || 'none'})`);
+  const stems = OG_SOURCES.map((f) => f.replace(/\.\w+$/, ''));
+  const shipped = files.map((f) => path.basename(f)).filter((b) => stems.some((st) => b === st || b.startsWith(`${st}.`)));
+  const strayDir = path.join(root, 'src/assets/og');
+  const strays = fs.existsSync(strayDir) ? fs.readdirSync(strayDir).filter((f) => f !== '.DS_Store') : [];
+  if (shipped.length || strays.length) failures.push(`[hygiene] the share cards' sources stay out of src/assets and out of the build (found ${[...shipped, ...strays.map((f) => `src/assets/og/${f}`)].join(', ')})`);
+}
+
+// ------------------------------------------------------------------------------------------------- Footer LinkedIn
+// John's brief (October 2026): one text link, LinkedIn, in the global footer's links, after Resume and before the
+// email, to https://www.linkedin.com/in/johncowin/, opening in a new tab with the safe attributes (and saying so to
+// assistive technology). The footer is its only placement: no other link to LinkedIn anywhere on a page (not the
+// header, the Work menu, the hero or Contact). Any link on the site that opens a new tab carries noopener and
+// noreferrer. Below 30rem the five links take two rows, so the footer's height token adds that row there.
+{
+  const LINKEDIN = 'https://www.linkedin.com/in/johncowin/';
+  const siteData = JSON.parse(fs.readFileSync(path.join(root, 'src/data/site.json'), 'utf8'));
+  if (siteData.social?.linkedin !== LINKEDIN) failures.push(`[linkedin] site.json social.linkedin is ${LINKEDIN}`);
+  for (const f of htmlFiles) {
+    const page = fs.readFileSync(f, 'utf8');
+    const rel = path.relative(dist, f);
+    const footer = (page.match(/<footer class="site-footer"[\s\S]*?<\/footer>/) || [''])[0];
+    const list = (footer.match(/<ul class="site-footer__links"[^>]*>([\s\S]*?)<\/ul>/) || [, ''])[1];
+    const items = [...list.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+    const labels = items.map((li) => textOf(li.replace(/<span class="sr-only"[^>]*>[\s\S]*?<\/span>/g, '')));
+    const li = items[3] || '';
+    const tag = (li.match(/<a\b[^>]*>/) || [''])[0];
+    if (labels.join(' | ') !== 'Work | About | Resume | LinkedIn | jtcowin@yahoo.com') failures.push(`[linkedin] ${rel}: the footer's links read Work, About, Resume, LinkedIn and the email, in that order (found ${labels.join(', ')})`);
+    if (!tag.includes(`href="${LINKEDIN}"`) || !/\btarget="_blank"/.test(tag) || !/\brel="noopener noreferrer"/.test(tag) || !/<span class="sr-only"[^>]*>\s*\(opens in a new tab\)<\/span>/.test(li)) failures.push(`[linkedin] ${rel}: the footer's LinkedIn link goes to ${LINKEDIN} in a new tab (target _blank, rel noopener noreferrer) and says so to assistive technology`);
+    const toLinkedin = /<a\b[^>]*\bhref="[^"]*linkedin\.com[^"]*"[^>]*>/gi;
+    const anywhere = (page.match(toLinkedin) || []).length;
+    const inFooter = (footer.match(toLinkedin) || []).length;
+    const mentions = (page.match(/linkedin\.com/gi) || []).length;
+    if (anywhere !== 1 || inFooter !== 1 || mentions !== 1) failures.push(`[linkedin] ${rel}: LinkedIn is linked from the footer only, once (found ${anywhere} links to it, ${inFooter} in the footer, ${mentions} mentions of linkedin.com)`);
+    for (const a of page.match(/<a\b[^>]*\btarget="_blank"[^>]*>/g) || []) {
+      if (!/\brel="[^"]*\bnoopener\b[^"]*"/.test(a) || !/\brel="[^"]*\bnoreferrer\b[^"]*"/.test(a)) failures.push(`[hygiene] ${rel}: a link that opens a new tab needs rel="noopener noreferrer" (${a.slice(0, 120)})`);
+    }
+  }
+  // The footer's height token: four rows below 30rem (the descriptor, the links in two rows with their 0.5rem row
+  // gap, the credit), three from 30rem, two from 48rem.
+  const footerH = (at) => CSS_RULES.filter((r) => r.sel === ':root' && at(r.at || '')).map((r) => (r.body.match(/--footer-h:\s*([^;]*)/) || [])[1]).filter(Boolean).join(' | ');
+  const hPhone = footerH((a) => a === '');
+  const hWide = footerH((a) => /min-width:\s*30rem|width\s*>=\s*30rem/.test(a));
+  const hDesk = footerH((a) => /min-width:\s*48rem|width\s*>=\s*48rem/.test(a));
+  if (!/\b3\s*\*\s*var\(--text-sm\)\s*\*\s*var\(--leading-normal\)\s*\+\s*0?\.5rem\s*\+\s*2\s*\*\s*var\(--space-4\)/.test(hPhone) || !/\b2\s*\*\s*var\(--text-sm\)\s*\*\s*var\(--leading-normal\)\s*\+\s*2\s*\*\s*var\(--space-4\)/.test(hWide) || !/1px\s*\+\s*var\(--text-sm\)\s*\*\s*var\(--leading-normal\)\s*\+\s*var\(--space-4\)/.test(hDesk)) failures.push(`[linkedin] the footer's height token counts the links' second row below 30rem (four rows; three from 30rem, two from 48rem) (found ${hPhone} / ${hWide} / ${hDesk})`);
 }
 
 // ---------------------------------------------------------- 3. manifest
