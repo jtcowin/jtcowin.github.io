@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** Cleanup V1, October 2026.
+- **Last updated:** Creator Retreat Videos (Phase 2), October 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -150,6 +150,19 @@ These are settled. Do not reopen them without a new instruction.
 - **Deployment and live status:** recorded in the changelog and confirmed on johncowin.com after the
   push.
 
+### Creator Retreat Videos (Phase 2, October 2026)
+
+- **Costa Rica and Mykonos atlas loops:** now show production work alongside the trip. Costa Rica adds the
+  crew's gimbal rig and a camera operator filming a content session. Mykonos opens its Lock In moment on the
+  crew's camera and adds Pool Talk, the poolside podcast. The new files are `cm-costa-rica-loop-v15.mp4` and
+  `cm-mykonos-loop-v15.mp4`.
+- **Singapore:** kept as it was, by John's decision. Its footage holds no behind-the-scenes material, and the
+  game-show additions tried in review were not worth the change.
+- **Rule change:** `verify.mjs` now lets an atlas loop share moments with the Behind the scenes, Game show and
+  Podcasts tabs. Every other repeat is still refused.
+- **Detail:** see the changelog. The build tooling (rebuilding a loop from its masters, with measured
+  alignment) was kept outside the repository.
+
 ### Earlier
 
 The site's full history is in [`CHANGELOG.md`](CHANGELOG.md), from Draft 1 (11 Sep 2026) to Footer
@@ -168,9 +181,10 @@ LinkedIn and case-study share cards (24 Oct 2026).
    the site's structure. Let the work speak for itself, with no motivational "lessons" framing.
 3. **Articles.** Review the published long-form articles, pick the strongest, and decide how and
    where to feature them. Nothing gets added without reviewing the actual content.
-4. **Creator retreat videos.** Add behind-the-scenes production footage (planning, coordination,
-   working with creators, event operations) so the scope of the work reads as clearly as the energy
-   does. This needs a separate brief.
+4. **Production tabs and Singapore (optional follow-up).**
+   - The Behind the scenes, Game show and Podcasts tabs could be recut so they no longer repeat the moments
+     the Costa Rica and Mykonos loops now use.
+   - Singapore needs new behind-the-scenes footage before its loop can change.
 
 ## 10. Open items and maintenance notes
 

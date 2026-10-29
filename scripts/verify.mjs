@@ -3466,6 +3466,10 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
       const x = excerpts[i];
       const y = excerpts[j];
       if (x.id === y.id || x.file !== y.file) continue;
+      // Creator Retreat Videos (October 2026): the atlas loops now carry the production work, so a loop may share a
+      // moment with the production tabs (behind the scenes, game show, podcasts); nothing else may repeat.
+      const PROD_TABS = ['cm-library-bts', 'cm-library-gameshow', 'cm-library-podcasts'];
+      if ((/^cm-loop-/.test(x.id) && PROD_TABS.includes(y.id)) || (/^cm-loop-/.test(y.id) && PROD_TABS.includes(x.id))) continue;
       if (Math.min(x.b, y.b) - Math.max(x.a, y.a) > 0.05 || (x.a === x.b && x.a > y.a && x.a < y.b) || (y.a === y.b && y.a > x.a && y.a < x.b)) failures.push(`[creator] no moment appears twice: ${x.id} and ${y.id} share ${x.file} ${clock(Math.max(x.a, y.a))}`);
     }
   }
@@ -3523,7 +3527,8 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const showOrder = podEx.map((x) => x.file).filter((f, i, all) => !i || f !== all[i - 1]);
   const OPENERS = ['Jungle Talk.mp4', 'Food Talk.mp4'];
   if (showOrder.length !== 4 || !OPENERS.includes(showOrder[0]) || !OPENERS.includes(showOrder[1]) || showOrder[0] === showOrder[1] || showOrder[2] !== 'Lock In Podcast.mp4' || showOrder[3] !== 'Pool Talk.mp4') failures.push(`[creator] V1.4: Podcasts opens with Jungle Talk or Food Talk, then the other, the Lock In Podcast in the middle and Pool Talk to close, each show once (found ${showOrder.map((f) => f.replace('.mp4', '')).join(', ')})`);
-  if (excerpts.some((x) => ['Pool Talk.mp4', 'Food Talk.mp4', 'Jungle Talk.mp4'].includes(x.file) && x.id !== 'cm-library-podcasts')) failures.push('[creator] V1.3: Jungle Talk, Food Talk and Pool Talk appear only among the podcasts');
+  // Creator Retreat Videos (October 2026): Pool Talk, the poolside podcast, also appears in the Mykonos loop.
+  if (excerpts.some((x) => ['Pool Talk.mp4', 'Food Talk.mp4', 'Jungle Talk.mp4'].includes(x.file) && x.id !== 'cm-library-podcasts' && !(x.id === 'cm-loop-mykonos' && x.file === 'Pool Talk.mp4'))) failures.push('[creator] V1.3: Jungle Talk, Food Talk and Pool Talk appear only among the podcasts (Pool Talk also in the Mykonos loop)');
   const podSrc = cmAsset('cm-library-podcasts').source || '';
   if (!/framed above their burned-in subtitles/.test(podSrc) || !/crew's shadows/.test(podSrc) || !/microphone/.test(podSrc)) failures.push('[creator] V1.3: the podcasts are clear of their burned-in subtitles, show their microphones and give one production angle (the crew\'s shadows on the terrace)');
   // V1.3, the Singapore loop: the city, the party-bus game show and high tea on the 56th floor, with the girls
@@ -3545,9 +3550,14 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const mkEx = exOf('cm-loop-mykonos');
   // V1.4: the catamaran and the swimmers each end a frame earlier (114.96 and 120.88, not 114.98 and 120.90): each had
   // kept the first frame of the aftermovie's next shot, which flashed through the dissolve after it.
-  const MK_KEEP = [[114.15, 114.96], [119.98, 120.88], [115.96, 117.25], [58.96, 61.16], [61.2, 62.95]];
-  if (MK_KEEP.some(([a, b]) => !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && Math.abs(x.a - a) < 0.005 && Math.abs(x.b - b) < 0.005)) || !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 78.5 && x.b <= 79.5 && x.b - x.a >= 0.5) || mkEx.length !== MK_KEEP.length + 1) failures.push('[creator] V1.3: the Mykonos loop keeps its water, villa and dinner and adds the aftermovie\'s Lock In Podcast production moment');
-  if (cmAsset('cm-loop-costa-rica').file !== 'cm-costa-rica-loop-v11.mp4') failures.push('[creator] V1.3: the Costa Rica loop is unchanged');
+  // Creator Retreat Videos (October 2026): the ranges as measured against the published loop (each within a frame of
+  // V1.4's record), the infinity pool two frames shorter; the production moment opens on the crew's camera and gains
+  // Pool Talk, so three production excerpts sit among the five.
+  const MK_KEEP = [[114.15, 114.96], [120.0, 120.9], [115.98, 117.27], [59.06, 61.18], [61.34, 63.09]];
+  if (MK_KEEP.some(([a, b]) => !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && Math.abs(x.a - a) < 0.005 && Math.abs(x.b - b) < 0.005)) || !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 78.5 && x.b <= 79.5 && x.b - x.a >= 0.5) || !mkEx.some((x) => x.file === 'Mykonos Aftermovie.mp4' && x.a >= 77.8 && x.b <= 78.5) || !mkEx.some((x) => x.file === 'Pool Talk.mp4') || mkEx.length !== MK_KEEP.length + 3) failures.push('[creator] V1.3: the Mykonos loop keeps its water, villa and dinner and adds the aftermovie\'s Lock In Podcast production moment');
+  // Creator Retreat Videos (October 2026): the Costa Rica loop gains the crew at work between the villa and the beach.
+  const crEx = exOf('cm-loop-costa-rica');
+  if (cmAsset('cm-loop-costa-rica').file !== 'cm-costa-rica-loop-v15.mp4' || !crEx.some((x) => x.file === 'Costa Rica Aftermovie.mp4' && x.a >= 100.2 && x.b <= 101.1) || !crEx.some((x) => x.file === 'Ashley Costa Rica Vlog.mp4' && x.a >= 25.48 && x.b <= 26.44)) failures.push('[creator] Creator Retreat Videos: the Costa Rica loop shows the crew filming between the villa and the beach');
   // V1.4: sponsor integrations without Shiv's quick Trezor-box sequence (no stacked microcuts, no speed effects): Ashley
   // holding her Trezor device at the full length of its shot, the Trezor integration as before (the device by the pool,
   // then the app) and the Bolt Liquidity invitation to Mykonos with time to read it, each on screen long enough for the
@@ -3584,7 +3594,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     if (lockSet.length !== 1 || lockPod.length !== 1 || !(lockTime >= 1.5 && lockTime <= 2.5) || prodNew.length < 4) failures.push(`[creator] behind the scenes keeps the Lock In Podcast to one camera on set and one wide angle (1.5 to 2.5 s, found ${lockTime.toFixed(2)} s) and gives the time to Costa Rica and Mykonos production (found ${prodNew.length} new production moments)`);
   }
   // The changed media carry new names, so no browser shows a cached V1.0 cut.
-  for (const [id, old] of [['cm-loop-costa-rica', 'cm-costa-rica-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v11.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v13.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop-v13.mp4']]) {
+  for (const [id, old] of [['cm-loop-costa-rica', 'cm-costa-rica-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v11.mp4'], ['cm-loop-singapore', 'cm-singapore-loop-v13.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop-v13.mp4'], ['cm-loop-costa-rica', 'cm-costa-rica-loop-v11.mp4'], ['cm-loop-mykonos', 'cm-mykonos-loop-v14.mp4']]) {
     if (cmAsset(id).file === old || fs.existsSync(path.join(root, 'public/media', old))) failures.push(`[creator] ${id}: the recut loop has a new name (not ${old})`);
   }
 

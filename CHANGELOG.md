@@ -5,6 +5,44 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## Creator Retreat Videos
+
+John's brief (October 2026, Phase 2): the destination loops in the creator page's campaign atlas should show
+the professional work behind each trip as well as its energy. Keep the existing edits and add a few genuine
+production shots from the same destination, with no captions or overlays and no large change in length.
+John approved Costa Rica and Mykonos. Singapore stays exactly as it was: its masters hold no behind-the-scenes
+footage, and the game-show additions tried in review (the quiz on screen, the bus pulling up) did not earn
+their place.
+
+- **Costa Rica** (`cm-costa-rica-loop-v15.mp4`, 7.68 s, was 6.28). Between the villa and the beach, two
+  production shots: the crew's gimbal rig on a creator in the lounge (Costa Rica Aftermovie 1:40.24 to 1:41.08,
+  the shot the homepage card already uses), then a camera operator filming the creators' content session
+  (Ashley Costa Rica Vlog 0:25.50 to 0:26.40, retimed to 25 fps). A dissolve leads in, a hard cut joins the two,
+  and a dissolve leads out to the golden-hour beach.
+- **Mykonos** (`cm-mykonos-loop-v15.mp4`, 8.34 s, was 6.72). The Lock In Podcast moment now opens on the crew's
+  camera, its screen showing the guest (Mykonos Aftermovie 1:17.86 to 1:18.44). It then cuts straight to the
+  recording under the arch, so the operator's printed shirt no longer crosses the frame. Pool Talk follows:
+  four creators recording on beanbags by the pool, the crew's shadows on the stone (Pool Talk 17:12.00 to
+  17:13.40, cropped to 1700x956 above its burned-in subtitles). The infinity pool is two frames shorter.
+- **How they were built.** Each loop was rebuilt from its masters to the manifest's record, with the
+  original dissolves and the seamless dissolve reset. The rebuild was checked against the published loop:
+  every untouched shot lands within a frame of before (the measured in-points are now the recorded ones),
+  and the Singapore bus shot's crop (1440x810 at 120,80) was confirmed by image matching. Both loops are
+  H.264 High, 1600x900, silent, index first, with 2-second keyframes, under the 4 MiB cap (3.59 and
+  3.57 MiB). Their first frames, and so their posters, are unchanged. The accessibility descriptions now
+  name the production shots.
+- **Rules changed in `verify.mjs`.**
+  - An atlas loop may now share a moment with the production tabs (behind the scenes, game show,
+    podcasts). The best production shots were already there, and the loops now carry that evidence. All
+    other repeats are still refused.
+  - Pool Talk may appear in the Mykonos loop.
+  - The Costa Rica and Mykonos checks now expect the new shots.
+  - The v11 and v14 file names are retired.
+
+**Tested:** `verify.mjs` all checks passed; `astro check` clean. Neither loop has duplicated frames, and each
+seam dissolves back into its opening. Both play in the atlas at 1440x900 and 390x844 with no horizontal
+scroll. The previous loops remain in git history.
+
 ## Cleanup V1
 
 John's brief (October 2026): a small, safe cleanup after the context-recovery audit, with no redesign.
