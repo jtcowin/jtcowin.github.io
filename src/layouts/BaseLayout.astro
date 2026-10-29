@@ -117,6 +117,11 @@ const personJsonLd = {
     {ogImage && <meta name="twitter:image:alt" content={og.alt} />}
 
     <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+    {/* GoatCounter (October 2026): privacy-friendly, cookie-free pageview counts for
+        https://jtcowin.goatcounter.com. Every page uses this layout and every page is a full
+        page load (no view transitions or in-page routing), so each visit to a page sends exactly
+        one pageview. count.js skips localhost, so dev and preview builds are not counted. */}
+    <script is:inline data-goatcounter="https://jtcowin.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
     <slot name="head" />
   </head>
   <body>

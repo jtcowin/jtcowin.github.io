@@ -1,6 +1,6 @@
 ---
 /**
- * Contact: the closing message, the email address and the resume.
+ * Contact: the closing message, the email address, the resume and LinkedIn.
  *
  * On the homepage Contact and the footer below it make one closing frame:
  * together they are at least one screen tall (`--footer-h` is the footer's
@@ -78,9 +78,14 @@ const heading = emphasize(contact.heading, contact.accent, 'Contact headline');
         <span class="contact__email-text">{site.email}</span>
         <Icon name="arrow-up-right" size={20} />
       </a>
-      <a href={resumeHref} class="btn btn--secondary" download>
-        <Icon name="download" size={14} /> {contact.secondary.label}
-      </a>
+      <div class="contact__buttons">
+        <a href={resumeHref} class="btn btn--secondary" download>
+          <Icon name="download" size={14} /> {contact.secondary.label}
+        </a>
+        <a href={site.social.linkedin} class="btn btn--secondary" target="_blank" rel="noopener noreferrer">
+          LinkedIn <Icon name="arrow-up-right" size={14} /><span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      </div>
     </div>
   </div>
 </section>
@@ -198,6 +203,13 @@ const heading = emphasize(contact.heading, contact.accent, 'Contact headline');
     gap: var(--space-5);
     justify-items: start;
     align-content: end;
+  }
+
+  /* The resume and LinkedIn buttons share one row, wrapping only if the room runs out. */
+  .contact__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
   }
 
   .contact__email {
@@ -388,6 +400,10 @@ const heading = emphasize(contact.heading, contact.accent, 'Contact headline');
     .contact__actions {
       justify-items: end;
       text-align: right;
+    }
+
+    .contact__buttons {
+      justify-content: flex-end;
     }
 
     /* The actions take only the room they need, at the right edge. */

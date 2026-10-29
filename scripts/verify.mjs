@@ -944,7 +944,8 @@ for (const f of htmlFiles) {
       failures.push(`[claim] ${rel}: Contact must carry only the approved subline (found ${paras.length} paragraph(s))`);
     }
     const actions = [...contactHtml.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((m) => m[1]);
-    if (actions.length !== 2 || !actions[0].startsWith('mailto:') || !/John-Cowin-Resume\.pdf$/.test(actions[1])) failures.push(`[claim] ${rel}: Contact keeps exactly the email and resume actions (found ${actions.join(', ')})`);
+    // Cleanup V1 (October 2026): LinkedIn joins Contact, after the resume.
+    if (actions.length !== 3 || !actions[0].startsWith('mailto:') || !/John-Cowin-Resume\.pdf$/.test(actions[1]) || actions[2] !== 'https://www.linkedin.com/in/johncowin/') failures.push(`[claim] ${rel}: Contact keeps exactly the email, resume and LinkedIn actions (found ${actions.join(', ')})`);
   }
   // Footer (v1.9): the descriptor, identical to the hero's, and the approved
   // credit, which names John once: "© <year> John Cowin — Built end to end."
@@ -4100,11 +4101,23 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   if (shipped.length || strays.length) failures.push(`[hygiene] the share cards' sources stay out of src/assets and out of the build (found ${[...shipped, ...strays.map((f) => `src/assets/og/${f}`)].join(', ')})`);
 }
 
+// ------------------------------------------------------------------------------------------------- GoatCounter
+// Cleanup V1 (October 2026): one GoatCounter tag per page, in the shared layout's head, pointing at
+// jtcowin.goatcounter.com, loaded async; no other analytics or tracking script.
+for (const f of htmlFiles) {
+  const page = fs.readFileSync(f, 'utf8');
+  const rel = path.relative(dist, f);
+  const head = (page.match(/<head>[\s\S]*?<\/head>/) || [''])[0];
+  const tags = page.match(/<script\b[^>]*data-goatcounter=[^>]*>/g) || [];
+  if (tags.length !== 1 || !head.includes(tags[0]) || !tags[0].includes('data-goatcounter="https://jtcowin.goatcounter.com/count"') || !/\basync\b/.test(tags[0]) || !tags[0].includes('src="https://gc.zgo.at/count.js"')) failures.push(`[analytics] ${rel}: exactly one async GoatCounter tag for jtcowin.goatcounter.com in the head (found ${tags.length})`);
+  if (/googletagmanager|google-analytics\.com|gtag\(|plausible\.io|umami|clarity\.ms|hotjar|facebook\.net/i.test(page)) failures.push(`[analytics] ${rel}: no analytics or tracking service besides GoatCounter`);
+}
+
 // ------------------------------------------------------------------------------------------------- Footer LinkedIn
 // John's brief (October 2026): one text link, LinkedIn, in the global footer's links, after Resume and before the
 // email, to https://www.linkedin.com/in/johncowin/, opening in a new tab with the safe attributes (and saying so to
-// assistive technology). The footer is its only placement: no other link to LinkedIn anywhere on a page (not the
-// header, the Work menu, the hero or Contact). Any link on the site that opens a new tab carries noopener and
+// assistive technology). Since Cleanup V1 (October 2026) Contact links it too, as a button beside the resume; those
+// are its only two placements (not the header, the Work menu or the hero). Any link on the site that opens a new tab carries noopener and
 // noreferrer. Below 30rem the five links take two rows, so the footer's height token adds that row there.
 {
   const LINKEDIN = 'https://www.linkedin.com/in/johncowin/';
@@ -4125,7 +4138,12 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
     const anywhere = (page.match(toLinkedin) || []).length;
     const inFooter = (footer.match(toLinkedin) || []).length;
     const mentions = (page.match(/linkedin\.com/gi) || []).length;
-    if (anywhere !== 1 || inFooter !== 1 || mentions !== 1) failures.push(`[linkedin] ${rel}: LinkedIn is linked from the footer only, once (found ${anywhere} links to it, ${inFooter} in the footer, ${mentions} mentions of linkedin.com)`);
+    const contactSec = (page.match(/<section[^>]*\bid="contact"[\s\S]*?<\/section>/) || [''])[0];
+    const contactLink = (contactSec.match(toLinkedin) || [''])[0];
+    const inContact = (contactSec.match(toLinkedin) || []).length;
+    const want = contactSec ? 2 : 1; // the 404 page has no Contact
+    if (anywhere !== want || inFooter !== 1 || inContact !== want - 1 || mentions !== want) failures.push(`[linkedin] ${rel}: LinkedIn is linked once from the footer and once from Contact (where the page has one), nowhere else (found ${anywhere} links to it, ${inFooter} in the footer, ${inContact} in Contact, ${mentions} mentions of linkedin.com)`);
+    if (contactSec && (!/\btarget="_blank"/.test(contactLink) || !/\brel="noopener noreferrer"/.test(contactLink) || !/\(opens in a new tab\)/.test(contactSec))) failures.push(`[linkedin] ${rel}: Contact's LinkedIn button opens a new tab safely and says so to assistive technology`);
     for (const a of page.match(/<a\b[^>]*\btarget="_blank"[^>]*>/g) || []) {
       if (!/\brel="[^"]*\bnoopener\b[^"]*"/.test(a) || !/\brel="[^"]*\bnoreferrer\b[^"]*"/.test(a)) failures.push(`[hygiene] ${rel}: a link that opens a new tab needs rel="noopener noreferrer" (${a.slice(0, 120)})`);
     }
