@@ -19,7 +19,8 @@ export default defineConfig({
     mdx(),
     sitemap({
       // The 404 page should not be advertised to crawlers.
-      filter: (page) => !page.endsWith('/404/') && !page.endsWith('/404'),
+      // The Road Here is an unlisted draft (Phase 3A): kept out of the sitemap until approved.
+      filter: (page) => !page.endsWith('/404/') && !page.endsWith('/404') && !page.includes('/the-road-here'),
     }),
   ],
   build: {

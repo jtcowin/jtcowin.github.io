@@ -1,0 +1,79 @@
+{
+  "_readme": "The Road Here (Phase 3A draft, October 2026): every word on the page, section by section. Placeholder copy, to be replaced in the copywriting pass. Images are asset ids in assets.json (road-*); a pending entry shows a labeled placeholder until its photograph is supplied and approved. Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata.",
+  "meta": {
+    "title": "The Road Here",
+    "description": "Before Web3, John Cowin spent eight years as a professional touring musician, running much of the business behind the music."
+  },
+  "hero": {
+    "label": "The Road Here",
+    "headline": "Before Web3, there was music.",
+    "accent": "there was music.",
+    "copy": "Before finding my way into Web3, I spent eight years building a professional career in music. What started with a passion for drumming became an education in entrepreneurship, marketing, creative work, and running a business.",
+    "chapters": [
+      { "href": "#road-school", "label": "Music school to the road" },
+      { "href": "#road-operator", "label": "More than the drummer" },
+      { "href": "#road-pivot", "label": "The 2020 pivot" },
+      { "href": "#road-led", "label": "Where it led" }
+    ],
+    "image": "road-hero-portrait"
+  },
+  "school": {
+    "index": "02",
+    "label": "From music school to the road",
+    "headline": "From practice rooms to 140+ shows a year.",
+    "paragraphs": [
+      "I studied performance, music business, and media, then put that training to work in an original music project built from the ground up.",
+      "What began as local shows grew into a professional touring career, with years spent on the road, playing festivals and building an audience one city at a time."
+    ],
+    "image": "road-live",
+    "artifact": "road-artifact",
+    "milestones": [
+      { "value": "8 years", "label": "Professional touring career" },
+      { "value": "140+", "label": "Live performances a year at peak" },
+      { "value": "Global", "label": "Distribution through The Orchard, a Sony Music subsidiary" },
+      { "value": "On air", "label": "Television, live radio, major festivals and music-industry press" }
+    ]
+  },
+  "operator": {
+    "index": "03",
+    "label": "More than the drummer",
+    "headline": "On stage at night. Running the business by day.",
+    "copy": "Before professional management and distribution came on board, I handled much of the business side myself. Even after management joined, I stayed on as tour manager.",
+    "image": "road-backstage",
+    "groups": [
+      { "title": "Touring and operations", "items": ["Booking shows", "Tour routing and scheduling", "Logistics", "Tour management", "Accounting and coordination"] },
+      { "title": "Marketing and creative", "items": ["Website design and management", "Social media", "Promotion and audience development", "Merchandise design and sourcing", "Creative assets"] },
+      { "title": "Business and relationships", "items": ["Talent buyers and booking agencies", "Management companies", "Sponsorships and endorsements", "Artist relations", "Industry networking"] },
+      { "title": "Events and distribution", "items": ["Live event production", "Show promotion", "Release coordination", "Music distribution", "Commercial operations"] }
+    ]
+  },
+  "pivot": {
+    "index": "04",
+    "label": "The 2020 pivot",
+    "headline": "Then 2020 happened.",
+    "paragraphs": [
+      "After years of near-constant touring, I was already ready for a life with more time at home. Then COVID brought live music to a stop.",
+      "Around the same time, I found DeFi. I studied the technology, joined projects as an investor and community member, and built relationships the same way I had in music: by showing up and contributing. That led to my first professional role in Web3."
+    ],
+    "timeline": [
+      { "when": "The road", "what": "Years of touring, sometimes 140+ shows a year" },
+      { "when": "2020", "what": "Live music stops" },
+      { "when": "2020", "what": "Discovering DeFi: studying the technology, investing, joining communities" },
+      { "when": "2021", "what": "First professional role in Web3" }
+    ]
+  },
+  "led": {
+    "index": "05",
+    "label": "Where it led",
+    "headline": "Different industry. Familiar instincts.",
+    "copy": "The work changed. The instincts didn't. Building an audience, promoting a product, running events, and keeping a business moving became the foundation for the marketing work I do today.",
+    "pairs": [
+      { "then": "Booking, routing and running tours", "now": "Event activations and on-site production" },
+      { "then": "Growing an audience city by city", "now": "Content, social and audience growth" },
+      { "then": "Sponsors, endorsements and industry relationships", "now": "Partnerships and KOL programs" },
+      { "then": "Running the business side of the music", "now": "Positioning, operations and go-to-market" }
+    ],
+    "cta": { "label": "See the selected work", "href": "/#work" },
+    "secondary": { "label": "Back to home", "href": "/" }
+  }
+}

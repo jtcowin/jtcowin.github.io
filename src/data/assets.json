@@ -2035,6 +2035,66 @@
       "permission": "approved",
       "credit": null,
       "variant": "dark"
+    },
+    {
+      "id": "road-hero-portrait",
+      "page": "the-road-here",
+      "section": "hero",
+      "type": "image",
+      "aspect": "4:5",
+      "label": "Studio portrait",
+      "filename": "road/road-hero-portrait.jpg",
+      "file": null,
+      "alt": "Portrait of John Cowin from his music career.",
+      "source": "The Road Here (Phase 3A draft): John's own photograph, to be selected and privacy-checked in the refinement pass (no band name, logo or identifying signage).",
+      "permission": "pending",
+      "credit": null,
+      "variant": "dark"
+    },
+    {
+      "id": "road-live",
+      "page": "the-road-here",
+      "section": "school",
+      "type": "image",
+      "aspect": "3:2",
+      "label": "Live performance or festival stage",
+      "filename": "road/road-live.jpg",
+      "file": null,
+      "alt": "John Cowin performing live on a festival stage.",
+      "source": "The Road Here (Phase 3A draft): John's own photograph, to be selected and privacy-checked in the refinement pass (no band name, logo or identifying signage).",
+      "permission": "pending",
+      "credit": null,
+      "variant": "light"
+    },
+    {
+      "id": "road-artifact",
+      "page": "the-road-here",
+      "section": "school",
+      "type": "image",
+      "aspect": "4:5",
+      "label": "Reserved: one genuine artifact",
+      "filename": "road/road-artifact.jpg",
+      "file": null,
+      "alt": "A genuine artifact from John Cowin's touring career.",
+      "source": "The Road Here (Phase 3A draft): John's own photograph, to be selected and privacy-checked in the refinement pass (no band name, logo or identifying signage).",
+      "permission": "pending",
+      "credit": null,
+      "variant": "light"
+    },
+    {
+      "id": "road-backstage",
+      "page": "the-road-here",
+      "section": "operator",
+      "type": "image",
+      "aspect": "3:2",
+      "label": "Backstage or production",
+      "filename": "road/road-backstage.jpg",
+      "file": null,
+      "alt": "Backstage production during a tour.",
+      "source": "The Road Here (Phase 3A draft): John's own photograph, to be selected and privacy-checked in the refinement pass (no band name, logo or identifying signage).",
+      "permission": "pending",
+      "credit": null,
+      "variant": "light"
     }
   ]
 }

@@ -5,6 +5,43 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## The Road Here (Phase 3A draft)
+
+John's brief (October 2026): a first working draft of a standalone page about his career before Web3, in five
+sections, built from the existing design system. It uses placeholder imagery, placeholder copy for a later
+writing pass, and no homepage link yet.
+
+- **Route:** `/the-road-here/` (`src/pages/the-road-here.astro`), on `BaseLayout`, so it gets the header,
+  footer, metadata and GoatCounter. It is a draft:
+  - `noindex, nofollow`, with no canonical link
+  - left out of the sitemap (`astro.config.mjs`)
+  - linked from no page or menu
+- **Words:** all in `src/data/road.json`.
+- **Photographs:** four pending manifest entries (`road-hero-portrait` 4:5, `road-live` 3:2,
+  `road-artifact` 4:5, `road-backstage` 3:2), drawn by `src/components/road/RoadFrame.astro`. It shows a
+  labeled hatch placeholder until an entry has a file and is approved, then the optimized photograph, so
+  swapping one in needs no layout change.
+- **Sections:**
+  - 01 Hero (dark): the headline with its accent, the lede, a chapter index and the portrait.
+  - 02 From music school to the road (light): the copy, the live photograph with the reserved artifact
+    slot overlapping its corner, and four milestones.
+  - 03 More than the drummer (soft): the intro, the backstage photograph and four capability cards.
+  - 04 The 2020 pivot (dark): the copy and an understated timeline, the road to 2021.
+  - 05 Where it led (fog): the headline, four then-to-now pairs, and the call to action to the selected
+    work (`/#work`).
+  - Then the compact Contact and the footer.
+- **Motion:**
+  - one rise-and-fade reveal per block as it comes into view
+  - a gentle drift on real photographs
+  - the timeline line drawing down once
+  - all of it off with reduced motion or without scripts
+- **Privacy:** the band is never named or linked here or in the metadata. There are no invented
+  documents. The artifact slot is reserved for one genuine, privacy-checked piece.
+
+**Tested:** `astro check` (0 errors, 0 warnings), the production build (6 pages) and `verify.mjs` (all checks
+passed, the page included). Screenshots at 1440x900, 820x1180 and 390x844 show no horizontal scroll, no
+script errors and every block revealed. The page has about 490 words.
+
 ## Creator Retreat Videos
 
 John's brief (October 2026, Phase 2): the destination loops in the creator page's campaign atlas should show

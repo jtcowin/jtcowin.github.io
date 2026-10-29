@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** Creator Retreat Videos (Phase 2), October 2026.
+- **Last updated:** The Road Here draft (Phase 3A), October 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -30,6 +30,7 @@ clients.
 | `/work/events-video/` | 03 Events and Multimedia Production |
 | `/resume/John-Cowin-Resume.pdf` | Resume download (the master resume, see section 7) |
 | `/404.html` | Not-found page |
+| `/the-road-here/` | **Draft (Phase 3A):** The Road Here, the career before Web3. Unlisted, noindex, not in the sitemap |
 
 ## 2. Technical architecture
 
@@ -149,6 +150,21 @@ These are settled. Do not reopen them without a new instruction.
   1440x900 and 375x812 with no horizontal scroll. `count.js` was confirmed to load on every page.
 - **Deployment and live status:** recorded in the changelog and confirmed on johncowin.com after the
   push.
+
+### The Road Here, draft (Phase 3A, October 2026)
+
+- **What it is:** a standalone page at `/the-road-here/` in five sections: hero, music school to the road
+  (milestones), more than the drummer (four capability cards), the 2020 pivot (timeline), and where it led
+  (call to action to the selected work).
+- **Status:** draft. It is unlinked, `noindex`, and out of the sitemap.
+- **Copy and photos:** the copy is placeholder (`src/data/road.json`). The photographs are four pending
+  `road-*` manifest entries, shown as labeled placeholders until supplied.
+- **Privacy rule:** the band is never named, linked or identifiable on this page or in its metadata.
+- **Next:**
+  - the copywriting pass
+  - photo selection
+  - choosing a genuine artifact
+  - after approval: remove `noindex`, add the page to the sitemap, and add the homepage preview
 
 ### Creator Retreat Videos (Phase 2, October 2026)
 
