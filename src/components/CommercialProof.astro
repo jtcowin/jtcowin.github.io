@@ -1,0 +1,141 @@
+---
+/**
+ * Commercial Impact (V1.3, October 2026): the homepage's commercial proof, after
+ * About and its trust bar and before Select Work, on the Select Work chapter's
+ * dark ground so it closes the credibility sequence and leads into the case
+ * studies. One dominant result ($0 to $300M+ in processed protocol volume), the
+ * paragraph, then the three direct aggregator integrations with the downstream
+ * statement attached beneath them. Not a dashboard: no cards, no fourth figure,
+ * no count for the downstream integrations. Copy: home.json `commercial`.
+ * Sui Foundation and Mysten Labs never appear here (their prospective pilot is
+ * told with its context in the Events case study).
+ */
+import home from '@data/home.json';
+import IntegrationLogos from './IntegrationLogos.astro';
+
+const c = home.commercial;
+---
+
+<section id="impact" class="section impact" aria-labelledby="impact-heading">
+  <div class="container impact__inner">
+    <div class="impact__lead">
+      <p class="impact__eyebrow">{c.eyebrow}</p>
+      <h2 id="impact-heading" class="impact__proof">
+        <span class="impact__figure" aria-hidden="true">{c.proof}</span>
+        <span class="sr-only">{c.proofSpoken}</span>
+        <span class="impact__label">{c.proofLabel}</span>
+      </h2>
+    </div>
+    <p class="impact__copy">{c.copy}</p>
+    <div class="impact__integrations">
+      <p class="impact__eyebrow impact__eyebrow--row" id="impact-integrations">{c.integrationsLabel}</p>
+      <IntegrationLogos class="impact__logos" label={c.integrationsLabel} />
+      <p class="impact__downstream"><span class="impact__plus" aria-hidden="true">+</span>{c.downstream}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .impact {
+    padding-bottom: 0;
+  }
+
+  .impact__inner {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 2vw, 3.25rem) clamp(2rem, 5vw, 6rem);
+  }
+
+  .impact__eyebrow {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .impact__proof {
+    display: grid;
+    gap: 0.9rem;
+    margin: clamp(0.9rem, 1.5vw, 1.25rem) 0 0;
+    font-weight: inherit;
+  }
+
+  /* The one dominant result: oversized white type, as Technical Product Marketing's results set theirs. */
+  .impact__figure {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(3.5rem, 1.9rem + 7vw, 8.75rem);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--heading);
+    white-space: nowrap;
+  }
+
+  .impact__label {
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .impact__copy {
+    margin: 0;
+    max-width: 38rem;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  /* The integrations, with the downstream statement attached beneath them. */
+  .impact__integrations {
+    display: grid;
+    gap: clamp(1.1rem, 1rem + 0.8vw, 1.6rem);
+    padding-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .impact__downstream {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink-2);
+  }
+
+  .impact__plus {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  @media (min-width: 64rem) {
+    .impact__inner {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      align-items: end;
+    }
+
+    .impact__copy {
+      padding-bottom: 0.4rem;
+    }
+
+    .impact__integrations {
+      grid-column: 1 / -1;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      column-gap: clamp(2rem, 4vw, 4.5rem);
+    }
+
+    .impact__eyebrow--row {
+      grid-row: 1 / span 2;
+      max-width: 11rem;
+      line-height: 1.6;
+    }
+  }
+</style>

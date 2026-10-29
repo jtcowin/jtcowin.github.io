@@ -5,6 +5,40 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.3 Commercial Proof and Case-Study Outcomes
+
+John's brief (October 2026): put the commercial result of the Bolt work on the homepage, in the resume and in
+two case studies, using his approved copy word for word.
+
+- **Homepage About:** four approved paragraphs (the music project, Phi Labs Global, Bolt Liquidity, and the
+  closing line). The closing line is set bold in the heading color (`flow__p--close`). Highlights are
+  "global music project", "more than 200,000 people" and "more than $300 million in processed volume";
+  as before, the period sits outside each highlight. On desktop screens up to 63rem (1008px) tall the frame
+  unit follows height a little sooner (`min(1vw, 1.52svh)`), so the longer story and the trust bar still fit
+  one frame from 1280x720 to 1600x900. Taller screens are unchanged.
+- **Homepage commercial proof:** new `CommercialProof.astro` (`#impact`) after the trust bar and before
+  Select Work, on the dark Select Work chapter. One figure, `$0 → $300M+`, labeled "processed protocol
+  volume", the approved paragraph, and a "Direct aggregator integrations" row with the Cetus, Aftermath and
+  FlowX logos in that order, followed by the downstream statement. No downstream count.
+- **Integration logos:** John's SVGs, copied unchanged to `src/assets/integrations/`, listed in
+  `src/data/integrations.json`, and drawn by `IntegrationLogos.astro` (one light tone, optically sized).
+- **Technical Product Marketing:** new Ecosystem Distribution section (`tpm/TpmEcosystem.astro`, copy in
+  `tpm.json` `ecosystem`) after the campaign results and before the conclusion: the approved headline and
+  copy, the $300M+ figure, the three logos as direct aggregator integrations, and downstream reach.
+- **Events and Multimedia Production:** the Live Presentation chapter's outcome is now a labeled callout,
+  "Commercial follow-through", with the approved copy. The teal callout and the credit below it are kept.
+  Sui Foundation and Mysten Labs appear only there, as strategic discussions and a potential pilot.
+- **Resume:** John's updated PDF (his commit `a531823`) carries the two approved bullets: the Bolt
+  integrations bullet (first under the Phi Labs Global role) and the Sui Foundation and Mysten Labs
+  working-group bullet (after the Sui Summit bullet). Still two pages; Earlier Experience now starts page 2.
+- **Checks (`verify.mjs`):** the approved copy for all of the above, placement and order, logo order, a
+  single figure, no downstream count, the SVGs free of scripts and external references, and an exception
+  that allows the Events callout's partner names while the rest of the page keeps its guardrails.
+- **Tested:** `astro check` (0 errors, 0 warnings); production build (6 pages); `verify.mjs` all checks
+  passed. Screenshots: the About frame fits at 1024x768, 1280x720, 1280x800, 1366x768, 1440x810,
+  1440x900, 1536x864, 1600x900, 1680x1050, 1920x1080 and 2560x1440; no horizontal scroll on the homepage,
+  Technical Product Marketing or Events pages at 1440x900 or 390x844.
+
 ## The Road Here (Phase 3A draft)
 
 John's brief (October 2026): a first working draft of a standalone page about his career before Web3, in five

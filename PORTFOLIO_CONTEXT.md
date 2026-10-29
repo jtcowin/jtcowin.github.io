@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** The Road Here draft (Phase 3A), October 2026.
+- **Last updated:** V1.3 Commercial Proof and Case-Study Outcomes, October 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -24,7 +24,7 @@ clients.
 
 | Route | Content |
 | --- | --- |
-| `/` | Hero, About and logo bar, Select Work (3 stacked cards), work reel, "From positioning to production" (capabilities and stack), Contact |
+| `/` | Hero, About and logo bar, Commercial impact ($0 → $300M+ and the direct integrations), Select Work (3 stacked cards), work reel, "From positioning to production" (capabilities and stack), Contact |
 | `/work/creator-campaigns/` | 01 Creator Marketing and Partnerships |
 | `/work/technical-marketing/` | 02 Technical Product Marketing |
 | `/work/events-video/` | 03 Events and Multimedia Production |
@@ -68,6 +68,13 @@ clients.
 - **About headline:** "Creative instincts. Operator discipline. Built for DeFi."
 - **Contact:** "Your product is complex. Its story shouldn't be." It offers the email, the resume and
   LinkedIn.
+- **About:** four paragraphs (the music project, Phi Labs Global, Bolt Liquidity) closing on "Today, I turn
+  complex products into stories people understand and connect with."
+- **Commercial proof:** $0 → $300M+ in processed protocol volume, with direct aggregator integrations with
+  Cetus, Aftermath and FlowX and downstream integrations through connected Sui applications. It appears on
+  the homepage, the Technical Product Marketing case study (Ecosystem Distribution) and the resume. Sui
+  Foundation and Mysten Labs appear only as strategic discussions and a potential pilot (Events case study
+  and resume), never as a completed partnership.
 - **Case studies:** all three cover Bolt Liquidity work at Phi Labs Global. Each credits its
   collaborators by name and states John's part precisely.
 - **Pending manifest entries:** 24 entries, which do not render in production. They include creator
@@ -106,7 +113,8 @@ clients.
 These are settled. Do not reopen them without a new instruction.
 
 - **Master resume:** the PDF at `public/resume/John-Cowin-Resume.pdf` is the authoritative version. It
-  is the 24 October 2026 edition with the LinkedIn link. Older copies elsewhere are superseded. Do not
+  is the V1.3 edition (29 October 2026): the 24 October layout with the LinkedIn link, plus the two
+  approved Bolt and Sui bullets. Older copies elsewhere are superseded. Do not
   change employment details, messaging or formatting without explicit authorization.
 - **Employment details:** dates, titles, status and related resume language change only on John's
   explicit instruction.
@@ -151,12 +159,21 @@ These are settled. Do not reopen them without a new instruction.
 - **Deployment and live status:** recorded in the changelog and confirmed on johncowin.com after the
   push.
 
+### V1.3 Commercial Proof and Case-Study Outcomes (October 2026)
+
+- **Homepage:** the four-paragraph About and the new commercial-impact module after the trust bar.
+- **Technical Product Marketing:** the Ecosystem Distribution section before the conclusion.
+- **Events:** the Live Presentation chapter's Commercial follow-through callout.
+- **Resume:** the two approved bullets; still two pages.
+- **Detail and tests:** see the changelog.
+
 ### The Road Here, draft (Phase 3A, October 2026)
 
 - **What it is:** a standalone page at `/the-road-here/` in five sections: hero, music school to the road
   (milestones), more than the drummer (four capability cards), the 2020 pivot (timeline), and where it led
   (call to action to the selected work).
-- **Status:** draft. It is unlinked, `noindex`, and out of the sitemap.
+- **Status:** draft, on hold by John's decision (October 2026). It is unlinked, `noindex`, and out of the
+  sitemap.
 - **Copy and photos:** the copy is placeholder (`src/data/road.json`). The photographs are four pending
   `road-*` manifest entries, shown as labeled placeholders until supplied.
 - **Privacy rule:** the band is never named, linked or identifiable on this page or in its metadata.
@@ -204,6 +221,9 @@ LinkedIn and case-study share cards (24 Oct 2026).
 
 ## 10. Open items and maintenance notes
 
+- **$300M figure:** stated as approved by John. No public source confirms the dollar volume yet; Bolt's
+  own site confirms routing through Cetus, Aftermath and FlowX and further downstream apps. If a public
+  figure appears (for example a DefiLlama listing), cite or re-check it.
 - `npm outdated` has not been reviewed recently. Check dependency updates in a separate, deliberate
   pass.
 - The repository grows with every committed video version. Consider Git LFS or external hosting

@@ -225,7 +225,14 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                           ))}
                         </ul>
                         <span class="evd__gap" aria-hidden="true" />
-                        <p class="evd__outcome">{ch.outcome}</p>
+                        {ch.outcomeLabel ? (
+                          <div class="evd__callout">
+                            <p class="evd__callout-label">{ch.outcomeLabel}</p>
+                            <p class="evd__outcome">{ch.outcome}</p>
+                          </div>
+                        ) : (
+                          <p class="evd__outcome">{ch.outcome}</p>
+                        )}
                         <span class="evd__gap" aria-hidden="true" />
                         <div class="evd__credits">
                           <p class="evd__credit">
@@ -1087,6 +1094,29 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     font-weight: 600;
     line-height: 1.45;
     color: var(--heading);
+  }
+
+  /* V1.3: a labeled outcome (Commercial Follow-Through) keeps the same teal rule, now running the height of
+     the label and the fuller copy together. */
+  .evd__callout {
+    display: grid;
+    gap: 0.45rem;
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--accent);
+  }
+
+  .evd__callout .evd__outcome {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .evd__callout-label {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
   }
 
   /* The fine print: the credit line, and the participating teams on a line of

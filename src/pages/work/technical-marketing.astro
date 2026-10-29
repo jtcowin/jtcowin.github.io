@@ -27,6 +27,7 @@ import TpmWebsite from '@components/tpm/TpmWebsite.astro';
 import TpmDocs from '@components/tpm/TpmDocs.astro';
 import TpmCampaign from '@components/tpm/TpmCampaign.astro';
 import TpmConclusion from '@components/tpm/TpmConclusion.astro';
+import TpmEcosystem from '@components/tpm/TpmEcosystem.astro';
 import { isoScene } from '@lib/tpm-iso';
 
 const entry = await getEntry('work', 'technical-marketing');
@@ -45,6 +46,7 @@ const isoKeyframes = isoScene().keyframes;
     <TpmWebsite />
     <TpmDocs />
     <TpmCampaign />
+    <TpmEcosystem />
     <TpmConclusion />
   </article>
 

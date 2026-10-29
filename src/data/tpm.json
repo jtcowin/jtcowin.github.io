@@ -109,6 +109,25 @@
       "supporting": ["More than **16x typical post reach**", "Recognized and amplified by **key ecosystem foundation accounts**"]
     }
   },
+  "ecosystem": {
+    "_note": "V1.3 (October 2026): Ecosystem Distribution, after the campaign's results and before the conclusion (TpmEcosystem.astro). John's approved copy, word for word. accent is the headline's phrase in the accent color. The downstream reach is never counted.",
+    "eyebrow": "ECOSYSTEM DISTRIBUTION",
+    "headline": "Product clarity carried into the market.",
+    "accent": "carried into the market.",
+    "copy": "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.",
+    "integrations": {
+      "label": "CETUS · AFTERMATH · FLOWX",
+      "text": "Direct aggregator integrations"
+    },
+    "downstream": {
+      "label": "DOWNSTREAM REACH",
+      "text": "Additional integrations through connected Sui applications"
+    },
+    "volume": {
+      "value": "$300M+",
+      "label": "Protocol volume processed"
+    }
+  },
   "conclusion": {
     "_conclusion": "07 The closing frame (V1.3, renumbered when Selected Writing left in V1.4; since V1.5 a full screen on the dark closing ground that turns into the Contact green): a synthesis, not a summary. Only the way on to the next case study follows the copy, as one linked sentence (V1.4) that names it; `next` is that case study's id, which must be the next in the collection's order. No metrics, services, credits or roles.",
     "headline": "One foundation. Every expression aligned.",

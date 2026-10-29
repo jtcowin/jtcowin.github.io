@@ -1,0 +1,8 @@
+{
+  "_readme": "V1.3 (October 2026): Bolt Liquidity's three direct aggregator integrations, always in this order (Cetus first, the most significant). The files in src/assets/integrations/ are John's supplied SVGs, unaltered; the pages draw them as light monochrome marks on dark ground. height is each mark's height in em of the row's base size, set by eye so the three carry comparable weight (their drawings differ in proportion).",
+  "logos": [
+    { "id": "cetus", "name": "Cetus", "file": "cetus.svg", "height": 1.9 },
+    { "id": "aftermath", "name": "Aftermath", "file": "aftermath.svg", "height": 1.7 },
+    { "id": "flowx", "name": "FlowX", "file": "flowx.svg", "height": 1.25 }
+  ]
+}

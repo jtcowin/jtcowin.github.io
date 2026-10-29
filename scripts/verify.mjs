@@ -186,12 +186,14 @@ const flow = (aboutHtml.match(/<div class="flow"[\s\S]*?<hr class="about__rule"/
 if (!flow) failures.push('[claim] the About narrative (flow, then the lower rule) was not found');
 const paragraphHtml = [...flow.matchAll(/<p class="flow__p[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
 // (About Copy delta, October 2026: all three paragraphs as John approved them.)
+// V1.3 (October 2026): John's approved four paragraphs, word for word.
 const approvedParagraphs = [
   'For a decade, I built audiences and ran the business side of a global music project. That work landed sponsorships, media appearances, and major bookings. In 2021, I brought those skills to DeFi.',
-  'Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of more than 200,000 people. As the company grew, so did my role. I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
+  'Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of more than 200,000 people. Over time, I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
+  'At Bolt Liquidity, I joined before launch and worked across product marketing, partnerships, content, and growth, helping drive ecosystem relationships and integrations as the protocol grew from zero to more than $300 million in processed volume.',
   'Today, I turn complex products into stories people understand and connect with.',
 ];
-if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present three paragraphs (found ${paragraphHtml.length})`);
+if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present the four approved paragraphs (found ${paragraphHtml.length})`);
 approvedParagraphs.forEach((copy, i) => {
   const html = paragraphHtml[i] || '';
   if (textOf(html) !== copy) failures.push(`[claim] About paragraph ${i + 1} must use the approved copy`);
@@ -202,7 +204,7 @@ approvedParagraphs.forEach((copy, i) => {
 // Each highlight is one <strong> around its words; a comma or period that
 // follows it sits inside, set plain, and is not part of the phrase.
 const marks = [...flow.matchAll(/<strong class="flow__mark"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1].replace(/<span class="flow__plain">[\s\S]*?<\/span>/g, '')));
-if (marks.join(' | ') !== 'global music project | more than 200,000 people | stories') {
+if (marks.join(' | ') !== 'global music project | more than 200,000 people | more than $300 million in processed volume') {
   failures.push(`[claim] About must highlight exactly the three chosen phrases, in order (found: ${marks.join(' | ') || 'none'})`);
 }
 // The brief's retained wording, named so that no later edit drops it unnoticed.
@@ -210,23 +212,25 @@ for (const [where, text, phrase] of [
   ['the headline', aboutHeadingText, 'Built for DeFi.'],
   ['the second paragraph', textOf(paragraphHtml[1] || ''), 'lead social'],
   ['the second paragraph', textOf(paragraphHtml[1] || ''), 'a product portfolio with an audience of more than 200,000 people'],
-  ['the closing paragraph', textOf(paragraphHtml[2] || ''), 'understand and connect with.'],
+  ['the third paragraph', textOf(paragraphHtml[2] || ''), 'from zero to more than $300 million in processed volume'],
+  ['the closing paragraph', textOf(paragraphHtml[3] || ''), 'understand and connect with.'],
 ]) {
   if (!text.includes(phrase)) failures.push(`[claim] About keeps "${phrase}" in ${where} (About Copy delta)`);
 }
 // The closing line ends on its last three words together, and only it does.
-if (!/<span class="flow__keep"[^>]*>\s*<span class="w">and<\/span>\s+<span class="w">connect<\/span>\s+<span class="w">with\.<\/span>\s*<\/span>\s*$/.test(paragraphHtml[2] || '') || (flow.match(/class="flow__keep"/g) || []).length !== 1) {
+if (!/<span class="flow__keep"[^>]*>\s*<span class="w">and<\/span>\s+<span class="w">connect<\/span>\s+<span class="w">with\.<\/span>\s*<\/span>\s*$/.test(paragraphHtml[3] || '') || (flow.match(/class="flow__keep"/g) || []).length !== 1) {
   failures.push('[claim] the closing paragraph keeps "and connect with." together, and nothing else is held');
 }
 if (/<(?:b|em|mark|u)[\s>]/.test(flow) || /<strong(?![^>]*class="flow__mark")/.test(flow)) {
   failures.push('[claim] nothing in the About narrative may be emphasized besides the three approved phrases');
 }
 const closing = (flow.match(/<div class="flow__close"[\s\S]*?<\/div>/) || [''])[0];
-const thirdAt = closing.indexOf('flow__p--three');
+const thirdAt = closing.indexOf('flow__p--close');
 if (thirdAt < 0 || closing.indexOf('flow__resume') < thirdAt || !/Read the full resume/.test(closing)) {
-  failures.push('[claim] the "Read the full resume" button must follow the third paragraph on the closing row');
+  failures.push('[claim] the "Read the full resume" button must follow the concluding paragraph on the closing row');
 }
-for (const product of ['Archway', 'Ambur', 'Bolt']) {
+// V1.3: Bolt Liquidity is named in the approved third paragraph; no other product is.
+for (const product of ['Archway', 'Ambur']) {
   if (flow.includes(product)) failures.push(`[claim] the About narrative must not name individual products (found "${product}")`);
 }
 // Earlier About copy, including the retired music metrics, must not return.
@@ -320,6 +324,26 @@ if (orderMarks.some(([, i]) => i < 0) || orderMarks.some(([, i], k) => k > 0 && 
   failures.push(`[claim] homepage order must be hero, about, work, reel, capabilities, contact (${orderMarks.map(([n, i]) => `${n} at ${i}`).join(', ')})`);
 }
 if (/id="how-i-work"/.test(home)) failures.push('[claim] How I Work is part of the combined section in v1.7, not a section of its own');
+// V1.3 (October 2026): the commercial proof, after About and its trust bar and before Select Work, on the Select
+// Work chapter's dark ground (so the chapters keep surfaces 02 to 05). One dominant result, John's approved
+// paragraph, then the three direct integrations in order with the downstream statement attached; no cards, no
+// count for the downstream integrations, no Sui Foundation or Mysten Labs.
+{
+  const impact = (home.match(/<section id="impact"[\s\S]*?<\/section>/) || [''])[0];
+  const impactAt = home.indexOf('<section id="impact"');
+  const t = textOf(impact);
+  const want = ['COMMERCIAL IMPACT', '$0 → $300M+', 'processed protocol volume', "I joined Bolt before launch and helped drive direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths beyond the three direct relationships. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.", 'DIRECT AGGREGATOR INTEGRATIONS', 'Additional downstream integrations through connected Sui applications'];
+  const missing = want.filter((w) => !t.includes(w));
+  if (!impact || missing.length) failures.push(`[claim] V1.3: the commercial proof carries John's approved copy word for word (missing: ${missing.join(' | ') || 'the section'})`);
+  if (!(impactAt > home.indexOf('class="logobar') && impactAt < home.indexOf('id="work"'))) failures.push('[claim] V1.3: the commercial proof sits after the trust bar and before Select Work');
+  const logos = [...impact.matchAll(/data-integration="([\w-]+)"/g)].map((m) => m[1]).join(',');
+  if (logos !== 'cetus,aftermath,flowx') failures.push(`[claim] V1.3: the integrations show Cetus, Aftermath and FlowX in that order (found ${logos})`);
+  if ((impact.match(/class="impact__figure"/g) || []).length !== 1 || /Sui Foundation|Mysten/.test(t) || /\d+\s+(?:downstream|applications|apps)/i.test(t)) failures.push('[claim] V1.3: one dominant result, no Sui Foundation or Mysten Labs, and no count for the downstream integrations');
+  for (const f of ['cetus.svg', 'aftermath.svg', 'flowx.svg']) {
+    const a = path.join(root, 'src/assets/integrations', f);
+    if (!fs.existsSync(a) || /<script|https?:\/\/(?!www\.w3\.org)/i.test(fs.readFileSync(a, 'utf8'))) failures.push(`[asset] src/assets/integrations/${f} is John's supplied SVG, local, with no script or external reference`);
+  }
+}
 const surfaceOrder = [...home.matchAll(/class="chapter"[^>]*data-surface="([a-z-]+)"|data-surface="([a-z-]+)"[^>]*class="chapter"/g)].map((m) => m[1] || m[2]);
 if (surfaceOrder.join(',') !== 'light,dark,soft,brand') {
   failures.push(`[claim] the four chapters must take surfaces 02 to 05 in order (got ${surfaceOrder.join(', ')})`);
@@ -1673,8 +1697,22 @@ if (files.some((f) => /article-(?:billion-dollar-problem|missing-price-layer)/.t
 if (CSS_RULES.some((r) => /\.tpm-(?:writing|article)\b/.test(r.sel))) failures.push('[tpm] no styles are left for Selected Writing');
 const campEnd = campHtml ? tpmPage.indexOf(campHtml) + campHtml.length : -1;
 const conclusionAt = tpmPage.indexOf('<section class="tpm-conclusion"');
+// V1.3: the Ecosystem Distribution section sits between the campaign and the conclusion, and nothing else does.
 // (The campaign's own module script may sit between them; it renders nothing.)
-if (campEnd < 0 || conclusionAt < campEnd || tpmPage.slice(campEnd, conclusionAt).replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').trim()) failures.push('[tpm] the campaign leads straight into the conclusion, with nothing (not even a spacer) between them');
+const ecoHtml = (tpmPage.match(/<section class="tpm-eco"[\s\S]*?<\/section>/) || [''])[0];
+const ecoAt = ecoHtml ? tpmPage.indexOf(ecoHtml) : -1;
+if (campEnd < 0 || ecoAt < campEnd || conclusionAt < ecoAt || tpmPage.slice(campEnd, ecoAt).replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').trim() || tpmPage.slice(ecoAt + ecoHtml.length, conclusionAt).replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '').trim()) failures.push('[tpm] V1.3: the campaign leads into Ecosystem Distribution, which leads straight into the conclusion');
+{
+  const eco = tpmData.ecosystem || {};
+  const ecoText = textOf(norm(ecoHtml));
+  const want = ['ECOSYSTEM DISTRIBUTION', 'Product clarity carried into the market.', "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.", 'CETUS · AFTERMATH · FLOWX', 'Direct aggregator integrations', 'DOWNSTREAM REACH', 'Additional integrations through connected Sui applications', '$300M+', 'Protocol volume processed'];
+  const missing = want.filter((w) => !ecoText.includes(w));
+  if (missing.length) failures.push(`[tpm] V1.3: Ecosystem Distribution carries John's approved copy word for word (missing: ${missing.join(' | ')})`);
+  const logos = [...ecoHtml.matchAll(/data-integration="([\w-]+)"/g)].map((m) => m[1]).join(',');
+  if (logos !== 'cetus,aftermath,flowx') failures.push(`[tpm] V1.3: the integrations show Cetus, Aftermath and FlowX in that order (found ${logos})`);
+  if (/tpm-results__primary/.test(ecoHtml) || /Sui Foundation|Mysten/.test(ecoText) || /\d+\s+(?:downstream|applications|apps)/i.test(ecoText)) failures.push('[tpm] V1.3: Ecosystem Distribution is no second results panel, names no Sui Foundation or Mysten Labs, and never counts the downstream reach');
+  if (eco.accent && !(ecoHtml.match(/<span class="tpm-accent"[^>]*>([^<]*)<\/span>/) || [])[1]?.includes(eco.accent)) failures.push('[tpm] V1.3: the ecosystem headline sets its accent phrase');
+}
 
 // ---- 07 the conclusion (V1.3; renumbered and its way on rewritten in V1.4):
 // straight after the campaign and before Contact; the approved headline (its
@@ -2286,10 +2324,16 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     const a = evAsset(id);
     if (!a.id || a.type !== 'metric' || a.permission !== 'approved' || !a.value) failures.push(`[events] ${id}: a figure or named outcome on the page comes only from an approved metric entry`);
   }
-  const evUnverified = evNoCode.replace(/<p class="ev-slot__metric[\s\S]*?<\/p>/g, ' ');
+  // V1.3 (October 2026): John approved one outcome that names the integrations, Sui Foundation and Mysten Labs and
+  // a potential pilot; that exact sentence, in its labeled callout, is the only exception to what follows.
+  const EV_FOLLOW = 'Event-led introductions and follow-through helped secure direct integrations with Cetus, Aftermath, and FlowX while opening strategic discussions with Sui Foundation and Mysten Labs. I created and managed the shared working group as it grew to more than 20 cross-organization stakeholders exploring a potential pilot.';
+  const evCallouts = [...evNoCode.matchAll(/<div class="evd__callout"[^>]*>\s*<p class="evd__callout-label"[^>]*>([\s\S]*?)<\/p>\s*<p class="evd__outcome"[^>]*>([\s\S]*?)<\/p>\s*<\/div>/g)];
+  if (evCallouts.length !== 1 || textOf(evCallouts[0][1]) !== 'COMMERCIAL FOLLOW-THROUGH' || textOf(norm(evCallouts[0][2])).replace(/[’‘]/g, "'") !== EV_FOLLOW) failures.push('[events] V1.3: the live presentation carries the approved Commercial Follow-Through, labeled, in its teal-ruled callout, once');
+  if (/Sui Foundation|Mysten/.test(textOf(norm(evNoCode.replace(/<div class="evd__callout"[\s\S]*?<\/div>/g, ' '))))) failures.push('[events] V1.3: Sui Foundation and Mysten Labs appear only in the Commercial Follow-Through');
+  const evUnverified = evNoCode.replace(/<p class="ev-slot__metric[\s\S]*?<\/p>/g, ' ').replace(/<div class="evd__callout"[\s\S]*?<\/div>/g, ' ');
   const evUnverifiedText = textOf(norm(evUnverified));
   for (const [re, what] of [[/\bpilot\b/i, 'an unannounced pilot'], [/\bcontract\b/i, 'contract discussions'], [/diligence/i, 'investor diligence'], [/data room/i, 'data rooms'], [/fundrais|funding round|raising/i, 'fundraising'], [/Foundation discussion/i, 'Foundation discussions'], [/youtube\.com|youtu\.be/i, 'a YouTube link (the V1.5 outcome may name the channel, as approved)'], [/Sui Network/, 'confidential Sui negotiations']]) {
-    if (re.test(evText) || re.test(evNoCode.replace(/<[^>]+>/g, ' '))) failures.push(`[events] the page never mentions ${what}`);
+    if (re.test(evText.split(EV_FOLLOW).join(' ')) || re.test(evUnverified.replace(/<[^>]+>/g, ' '))) failures.push(`[events] the page never mentions ${what}`);
   }
   if (/Aftermath/i.test(evUnverifiedText) || /Aftermath/i.test(evUnverified.replace(/<[^>]+>/g, ' '))) failures.push('[events] the page never mentions a named integration before it is verified');
   if (/\d[\d,.]*\s*[KkMm]?\+?\s+(?:impressions|likes|views|reposts|shares)/.test(evUnverifiedText)) failures.push('[events] no exact engagement figures until they are verified');
@@ -2338,7 +2382,8 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
       key: 'live', label: 'Live presentation', headline: 'From live presentation to lasting content.',
       context: 'I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.',
       points: ['Secured the slot, helped shape the subject, and promoted the session', 'Directed the deck, presentation setup, and live slides', 'Captured the presentation from multiple angles and repackaged it for continued distribution'],
-      outcome: 'Event-led introductions and follow-through helped secure three aggregator integrations and opened strategic discussions with ecosystem leadership.',
+      // V1.3 (October 2026): the Commercial Follow-Through, John's approved copy, word for word.
+      outcome: 'Event-led introductions and follow-through helped secure direct integrations with Cetus, Aftermath, and FlowX while opening strategic discussions with Sui Foundation and Mysten Labs. I created and managed the shared working group as it grew to more than 20 cross-organization stakeholders exploring a potential pilot.',
       credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer',
       participants: '',
       preview: 'ev-hero-presentation', full: null,

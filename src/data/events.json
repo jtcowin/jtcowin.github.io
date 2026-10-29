@@ -1,5 +1,5 @@
 {
-  "_readme": "Events and Multimedia Production, Version 1.6: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3, V1.4 and V1.5 delta briefs (October 16, 2026), the V1.6 delta brief (October 17, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising (V1.6's approved outcome for the live presentation, three aggregator integrations and strategic discussions with ecosystem leadership, names no integration and no organization). Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
+  "_readme": "Events and Multimedia Production, Version 1.6: the page's words and its media configuration, section by section (src/pages/work/events-video.astro and src/components/events/). Copy follows John's Combined Build Brief and the V1.1, V1.2, V1.3, V1.4 and V1.5 delta briefs (October 16, 2026), the V1.6 delta brief (October 17, 2026) and the facts in his working log; no metric is published until it has been verified, and nothing here mentions an unannounced pilot, contract or Foundation discussions, investor diligence, data rooms or fundraising (the one exception is the live presentation's Commercial follow-through callout, approved word for word in the portfolio's V1.3 brief: it names the three direct integrations and the strategic discussions with Sui Foundation and Mysten Labs, and the working group exploring a potential pilot, which is never presented as finalized). Media slots name asset ids in src/data/assets.json: to replace a placeholder, drop the file in and approve its entry there; the layout never changes, because every slot already holds its final aspect ratio. Unapproved slots show a labeled placeholder in `npm run dev` only and nothing in a production build.",
   "stages": [
     { "key": "secure", "label": "Secure" },
     { "key": "build", "label": "Build" },
@@ -89,7 +89,8 @@
           "Directed the deck, presentation setup, and live slides",
           "Captured the presentation from multiple angles and repackaged it for continued distribution"
         ],
-        "outcome": "Event-led introductions and follow-through helped secure three aggregator integrations and opened strategic discussions with ecosystem leadership.",
+        "outcomeLabel": "COMMERCIAL FOLLOW-THROUGH",
+        "outcome": "Event-led introductions and follow-through helped secure direct integrations with Cetus, Aftermath, and FlowX while opening strategic discussions with Sui Foundation and Mysten Labs. I created and managed the shared working group as it grew to more than 20 cross-organization stakeholders exploring a potential pilot.",
         "credit": "Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer",
         "preview": "ev-hero-presentation",
         "previewFit": "native"

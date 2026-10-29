@@ -1,0 +1,64 @@
+---
+/**
+ * Bolt Liquidity's direct aggregator integrations as a row of marks (V1.3,
+ * October 2026): Cetus, Aftermath, FlowX, always in that order. Shared by the
+ * homepage's commercial proof and Technical Product Marketing's ecosystem
+ * section. The supplied SVGs ship unaltered; on the dark ground they are drawn
+ * as one light monochrome (a filter, never an edit to the file), each at its
+ * own height so the three read with comparable weight. The row wraps on narrow
+ * screens rather than shrinking the marks.
+ */
+import { Image } from 'astro:assets';
+import data from '@data/integrations.json';
+
+interface Props {
+  class?: string;
+  /** Accessible name for the list. */
+  label?: string;
+}
+const { class: className, label = 'Direct aggregator integrations' } = Astro.props;
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/integrations/*.svg', { eager: true });
+const logos = data.logos.map((l) => {
+  const mod = files[`../assets/integrations/${l.file}`];
+  if (!mod) throw new Error(`[integrations] missing src/assets/integrations/${l.file}`);
+  return { ...l, src: mod.default };
+});
+---
+
+<ul class:list={['ilogos', className]} aria-label={label}>
+  {
+    logos.map((l) => (
+      <li class="ilogos__item" data-integration={l.id} style={`--h: ${l.height}`}>
+        <Image src={l.src} alt={l.name} class="ilogos__img" loading="lazy" decoding="async" />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .ilogos {
+    --base: clamp(1rem, 0.85rem + 0.6vw, 1.35rem);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(1.25rem, 1rem + 1.5vw, 2.75rem) clamp(1.75rem, 1rem + 3vw, 3.5rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ilogos__item {
+    display: flex;
+    align-items: center;
+    height: calc(var(--base) * 2);
+  }
+
+  .ilogos__img {
+    display: block;
+    height: calc(var(--base) * var(--h));
+    width: auto;
+    max-width: none;
+    /* One light monochrome on the dark ground; FlowX's half-tone stays a half-tone. */
+    filter: brightness(0) invert(0.93);
+  }
+</style>

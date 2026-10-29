@@ -1,0 +1,157 @@
+---
+/**
+ * Technical Product Marketing, Ecosystem Distribution (V1.3, October 2026): after
+ * the flagship campaign and its first-48-hours results, before the conclusion.
+ * The point is the whole of John's product fluency carried into partner and
+ * integration work, so it stands as its own section rather than under the website
+ * or the documentation. Narrative first (eyebrow, headline, body), then one
+ * dominant $300M+ beside the three direct integrations (the shared logo row) and
+ * the downstream reach, which is never counted. Not a second results panel: no
+ * four columns. On the campaign's dark ground, which the conclusion carries on.
+ * Copy: tpm.json `ecosystem`.
+ */
+import tpm from '@data/tpm.json';
+import { emphasize } from '@lib/tpm-copy';
+import IntegrationLogos from '@components/IntegrationLogos.astro';
+
+const e = tpm.ecosystem;
+const headline = emphasize(e.headline, e.accent, 'Ecosystem headline');
+---
+
+<section class="tpm-eco" data-surface="dark" aria-labelledby="tpm-eco-title" data-tpm-ecosystem>
+  <div class="container tpm-eco__inner">
+    <div class="tpm-eco__head">
+      <p class="tpm-eco__eyebrow">{e.eyebrow}</p>
+      <h2 id="tpm-eco-title" class="display tpm-eco__title">{headline.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}</h2>
+      <p class="tpm-eco__copy">{e.copy}</p>
+    </div>
+    <div class="tpm-eco__proof">
+      <div class="tpm-eco__volume">
+        <span class="tpm-eco__figure">{e.volume.value}</span>
+        <span class="tpm-eco__what">{e.volume.label}</span>
+      </div>
+      <dl class="tpm-eco__facts">
+        <div class="tpm-eco__fact">
+          <dt class="tpm-eco__eyebrow">{e.integrations.label}</dt>
+          <dd>
+            <IntegrationLogos class="tpm-eco__logos" label={e.integrations.text} />
+            <span class="tpm-eco__text">{e.integrations.text}</span>
+          </dd>
+        </div>
+        <div class="tpm-eco__fact">
+          <dt class="tpm-eco__eyebrow">{e.downstream.label}</dt>
+          <dd><span class="tpm-eco__text">{e.downstream.text}</span></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tpm-eco {
+    padding-block: clamp(5rem, 3.5rem + 6vw, 9rem);
+  }
+
+  .tpm-eco__inner {
+    display: grid;
+    gap: clamp(3rem, 2rem + 4vw, 5.5rem);
+  }
+
+  /* A fine divider takes over from the campaign's results above. */
+  .tpm-eco__head {
+    display: grid;
+    gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+    max-width: 52rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 4rem);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .tpm-eco__eyebrow {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .tpm-eco__title {
+    font-size: var(--text-2xl);
+  }
+
+  .tpm-eco__copy {
+    margin: 0;
+    max-width: 44rem;
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .tpm-eco__proof {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(2rem, 5vw, 6rem);
+  }
+
+  .tpm-eco__volume {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+  }
+
+  .tpm-eco__figure {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-stretch: var(--display-stretch);
+    font-size: clamp(4rem, 2rem + 8vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--heading);
+  }
+
+  .tpm-eco__what {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--ink-2);
+  }
+
+  .tpm-eco__facts {
+    display: grid;
+    align-content: start;
+    margin: 0;
+  }
+
+  .tpm-eco__fact {
+    display: grid;
+    gap: 0.85rem;
+    padding-block: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .tpm-eco__fact:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .tpm-eco__fact dd {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+  }
+
+  .tpm-eco__text {
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    color: var(--heading);
+  }
+
+  @media (min-width: 64rem) {
+    .tpm-eco__proof {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+</style>

@@ -213,17 +213,20 @@
     }
   },
   "about": {
-    "_note": "About (Version 1.7; its first two paragraphs revised in Full Site Iteration V1, and the headline and all three paragraphs replaced with John's approved copy in the About Copy delta, October 2026): the static headline (three short sentences, set one to a line on phones and tablets and as one line across the canvas on desktop), then three paragraphs (the music and business foundation, Phi Labs Global and the wider role, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three highlights, rendered in blue-teal at a slightly heavier weight, never with a highlighter background; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view.",
+    "_note": "About (Version 1.7; its first two paragraphs revised in Full Site Iteration V1, and the headline and all three paragraphs replaced with John's approved copy in the About Copy delta, October 2026): the static headline (three short sentences, set one to a line on phones and tablets and as one line across the canvas on desktop), then three paragraphs (the music and business foundation, Phi Labs Global and the wider role, and the concluding positioning line, set a step larger), the resume action on the concluding row, a thin rule and the trust bar, composed so the whole section fits one desktop frame. Double asterisks mark the three highlights, rendered in blue-teal at a slightly heavier weight, never with a highlighter background; nothing else is bold. The complete text is in the HTML; with JavaScript and motion allowed its words flow in once, in reading order, when About comes into view. V1.3 (October 2026): John's approved four paragraphs (the music foundation, Phi Labs Global, Bolt Liquidity and the commercial result, and the concluding line). Three highlights (global music project, more than 200,000 people, more than $300 million in processed volume); the concluding line is set bold as a whole, in the heading color, with no highlight inside it.",
     "heading": "Creative instincts. Operator discipline. Built for DeFi.",
     "paragraphs": [
       {
         "text": "For a decade, I built audiences and ran the business side of a **global music project**. That work landed sponsorships, media appearances, and major bookings. In 2021, I brought those skills to DeFi."
       },
       {
-        "text": "Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of **more than 200,000 people**. As the company grew, so did my role. I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
+        "text": "Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of **more than 200,000 people**. Over time, I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution."
       },
       {
-        "text": "Today, I turn complex products into **stories** people understand and connect with."
+        "text": "At Bolt Liquidity, I joined before launch and worked across product marketing, partnerships, content, and growth, helping drive ecosystem relationships and integrations as the protocol grew from zero to **more than $300 million in processed volume**."
+      },
+      {
+        "text": "Today, I turn complex products into stories people understand and connect with."
       }
     ],
     "resumeLink": {
@@ -231,6 +234,16 @@
       "href": "resume"
     },
     "headshot": "about-headshot"
+  },
+  "commercial": {
+    "_note": "V1.3 (October 2026): the homepage's commercial proof, after the trust bar and before Select Work (CommercialProof.astro). John's approved copy, word for word. One dominant result, the paragraph, then the direct integrations (integrations.json, in its order) with the downstream statement attached. No count for the downstream integrations; no Sui Foundation or Mysten Labs here.",
+    "eyebrow": "COMMERCIAL IMPACT",
+    "proof": "$0 → $300M+",
+    "proofSpoken": "From $0 to more than $300 million",
+    "proofLabel": "processed protocol volume",
+    "copy": "I joined Bolt before launch and helped drive direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths beyond the three direct relationships. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.",
+    "integrationsLabel": "DIRECT AGGREGATOR INTEGRATIONS",
+    "downstream": "Additional downstream integrations through connected Sui applications"
   },
   "contact": {
     "_note": "Full Site Iteration V1 (October 2026): `accent`, the headline's second sentence, is set in the section's accent color wherever Contact appears (full and compact); the heading stays one sentence for assistive technology.",

@@ -105,7 +105,7 @@ function wordsHtml(text: string, keep = 0) {
   return out.join(' ');
 }
 
-const KEYS = ['one', 'two', 'three'];
+const KEYS = ['one', 'two', 'three', 'four'];
 const paragraphs = about.paragraphs.map((p, i, all) => ({ html: wordsHtml(p.text, i === all.length - 1 ? 3 : 0), key: KEYS[i] }));
 const closing = paragraphs[paragraphs.length - 1];
 const leading = paragraphs.slice(0, -1);
@@ -121,7 +121,7 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
     <div class="flow" data-flow>
       {leading.map((p) => <p class:list={['flow__p', `flow__p--${p.key}`]}><Fragment set:html={p.html} /></p>)}
       <div class="flow__close">
-        <p class:list={['flow__p', `flow__p--${closing.key}`]}><Fragment set:html={closing.html} /></p>
+        <p class:list={['flow__p', `flow__p--${closing.key}`, 'flow__p--close']}><Fragment set:html={closing.html} /></p>
         <a href={resumeHref} class="btn btn--secondary flow__resume" download>
           {about.resumeLink.label} <Icon name="download" size={16} />
         </a>
@@ -444,7 +444,8 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
     }
   }
 
-  .flow__p--two {
+  .flow__p--two,
+  .flow__p--three:not(.flow__p--close) {
     margin-top: 0.8em;
   }
 
@@ -485,8 +486,9 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
     gap: clamp(1.25rem, 1rem + 1vw, 1.75rem);
   }
 
-  .flow__p--three {
-    --flow-weight: 560;
+  /* V1.3: the concluding line is bold as a whole (John's approved emphasis), in the heading color. */
+  .flow__p--close {
+    --flow-weight: 650;
     --flow-ink: var(--heading);
     max-width: 24em;
     font-size: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
@@ -494,7 +496,7 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
     letter-spacing: -0.012em;
   }
 
-  .flow__p--three :global(.flow__mark) {
+  .flow__p--close :global(.flow__mark) {
     font-weight: 660;
   }
 
@@ -564,6 +566,21 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
       }
     }
 
+    /* V1.3: the four-paragraph story is one paragraph longer, so on screens
+       up to 1008px tall (1280x720 to 1600x900 and most laptops) height
+       decides the frame unit a little sooner. Taller screens are unchanged. */
+    @media (max-height: 63rem) {
+      .about {
+        --fit: min(1vw, 1.52vh);
+      }
+
+      @supports (height: 1svh) {
+        .about {
+          --fit: min(1vw, 1.52svh);
+        }
+      }
+    }
+
     /* Three zones in one frame: the headline at the top, the story (the two
        paragraphs, the thesis and the resume action) centered in the room
        below it, and the trust bar anchored at the foot. The frame's spare
@@ -600,7 +617,8 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
       line-height: 1.34;
     }
 
-    .flow__p--two {
+    .flow__p--two,
+    .flow__p--three:not(.flow__p--close) {
       margin-top: 0.72em;
     }
 
@@ -616,7 +634,7 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
       gap: 1rem 2.5rem;
     }
 
-    .flow__p--three {
+    .flow__p--close {
       max-width: 24em;
       font-size: clamp(1.425rem, calc(0.475rem + 1.7575 * var(--fit)), 2.375rem);
       line-height: 1.18;
