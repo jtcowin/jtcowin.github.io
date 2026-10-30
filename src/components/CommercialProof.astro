@@ -111,9 +111,15 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     white-space: nowrap;
   }
 
+  /* V1.6 width pass: three lines on desktop. The brief suggested about 58rem,
+     but this copy sets in two lines from about 53rem up, so 50rem (800px) is
+     the widest measure that keeps three, with margin for font rendering. On
+     phones it wraps within the page padding. */
   .impact__copy {
+    width: 100%;
+    max-width: 50rem;
     margin: 0;
-    max-width: 36rem;
+    margin-inline: auto;
     font-size: var(--text-md);
     line-height: var(--leading-relaxed);
     color: var(--ink-2);

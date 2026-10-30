@@ -5,6 +5,24 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.6 width pass
+
+John's request (29 October 2026): two paragraph-width refinements and one headline break. No copy, type size,
+line height, emphasis or spacing change.
+
+- **Homepage commercial paragraph:** `width: 100%`, `margin-inline: auto`, `max-width: 50rem` (was 36rem), so
+  it sets in three lines on desktop instead of four. The request suggested about 58rem, but this copy fits in
+  two lines from about 53rem up; 50rem (800px) is the widest measure that keeps three with margin for font
+  rendering. Phones wrap within the page padding as before.
+- **Technical Product Marketing commercial-proof paragraph:** `max-width: 53rem` (was 42rem), the measure of
+  the page's other narrative paragraphs (the case contribution and the conclusion); the page has no shared
+  width token. The narrative block widened to match (53rem, was 48rem), and its top divider with it.
+- **Headline:** "Product clarity" over "carried into the market.": the accent phrase always starts its own
+  line, and wraps within it on the narrowest phones (360px) rather than overflowing.
+- **Tested:** `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed. Measured three lines
+  for the homepage paragraph at 1024 to 1920 wide; the headline in two lines from 390 to 1920 wide; no
+  horizontal scroll.
+
 ## V1.6 Commercial Proof Copy Refinement
 
 John's brief (29 October 2026): copy only. The three commercial-proof paragraphs were replaced with his approved

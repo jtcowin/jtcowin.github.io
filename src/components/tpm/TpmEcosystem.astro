@@ -63,7 +63,7 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     display: grid;
     justify-items: center;
     gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
-    width: min(100%, 48rem);
+    width: min(100%, 53rem);
     padding-top: clamp(3rem, 2rem + 3.5vw, 5rem);
     border-top: 1px solid var(--line-strong);
   }
@@ -73,9 +73,20 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     text-wrap: balance;
   }
 
+  /* "Product clarity" over "carried into the market.": the highlighted phrase
+     always starts its own line, and on the narrowest phones wraps within it
+     rather than overflowing. */
+  .tpm-eco__title :global(.tpm-accent) {
+    display: block;
+  }
+
+  /* The same measure as the page's other narrative paragraphs (the case
+     contribution and the conclusion, 53rem). */
   .tpm-eco__copy {
+    width: 100%;
+    max-width: 53rem;
     margin: 0;
-    max-width: 42rem;
+    margin-inline: auto;
     font-size: var(--text-md);
     line-height: var(--leading-relaxed);
     color: var(--ink-2);
