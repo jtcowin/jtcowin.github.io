@@ -228,7 +228,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                         {ch.outcomeLabel ? (
                           <div class="evd__callout">
                             <p class="evd__callout-label"><span class="evd__callout-icon"><Icon name="flag" size={14} /></span><span>{ch.outcomeLabel.split(' ').map((w, i) => (<>{i > 0 && ' '}<span class="evd__keep-word">{w}</span></>))}</span></p>
-                            <p class="evd__outcome">{ch.outcome}</p>
+                            <p class="evd__outcome">{ch.outcome.split('**').map((part, i) => (i % 2 === 1 ? <strong>{part}</strong> : part))}</p>
                           </div>
                         ) : (
                           <p class="evd__outcome">{ch.outcome}</p>
@@ -1106,6 +1106,12 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
     border-radius: 0.625rem;
     background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  /* V1.6: the card's copy carries two approved bold phrases, a step heavier
+     than its already semibold text. */
+  .evd__callout .evd__outcome strong {
+    font-weight: 800;
   }
 
   .evd__callout .evd__outcome {

@@ -5,6 +5,25 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.6 Commercial Proof Copy Refinement
+
+John's brief (29 October 2026): copy only. The three commercial-proof paragraphs were replaced with his approved
+copy and bold phrases. No layout, label, metric, logo, spacing, color, divider, icon or responsive change.
+
+- **Homepage (`home.json` `commercial.copy`):** "I joined Bolt before launch and helped turn **early ecosystem
+  conversations into key integrations**. As its distribution expanded, the protocol grew from zero to **more
+  than $300 million in processed volume**."
+- **Technical Product Marketing (`tpm.json` `ecosystem.copy`):** the new paragraph, with **partner
+  conversations, direct integrations, and downstream paths across Sui** and **more than $300 million in
+  processed volume** in bold.
+- **Events (`events.json`, live chapter `outcome`):** the new Commercial follow-through paragraph, with **direct
+  integrations with key aggregators** and **strategic discussions with Sui Foundation and Mysten Labs** in
+  bold. `EvDeck.astro` now sets `**bold**` in the card only, a step heavier (800) than its semibold text.
+- **Checks (`verify.mjs`):** the three paragraphs and their bold phrases word for word; no other Events outcome
+  carries bold. The one-emphasis-per-paragraph rule exempts these three approved paragraphs only.
+- **Tested:** `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed. Screenshots at
+  1440, 1024 and 390 wide: no horizontal scroll.
+
 ## V1.5 Commercial Proof Final Refinements
 
 John's brief (29 October 2026): final visual refinements to the three commercial-proof areas. No approved copy
