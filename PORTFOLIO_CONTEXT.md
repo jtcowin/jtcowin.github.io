@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.4 Commercial Proof Polish, October 2026.
+- **Last updated:** V1.5 Commercial Proof Final Refinements, October 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -159,6 +159,15 @@ These are settled. Do not reopen them without a new instruction.
   1440x900 and 375x812 with no horizontal scroll. `count.js` was confirmed to load on every page.
 - **Deployment and live status:** recorded in the changelog and confirmed on johncowin.com after the
   push.
+
+### V1.5 Commercial Proof Final Refinements (October 2026)
+
+- **Homepage:** the commercial proof fades into Select Work's ink; more room around the figure, which no longer
+  has a label of its own; the downstream tile is centered.
+- **Technical Product Marketing:** the divider sits at the top of the section; the right column is the label,
+  the logos and "+ Additional downstream integrations".
+- **Events:** Commercial follow-through is an outlined proof card with a decorative flag icon.
+- **Detail and tests:** see the changelog.
 
 ### V1.4 Commercial Proof Polish (October 2026)
 

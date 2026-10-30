@@ -5,6 +5,32 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.5 Commercial Proof Final Refinements
+
+John's brief (29 October 2026): final visual refinements to the three commercial-proof areas. No approved copy
+changed; resume, About and The Road Here unchanged.
+
+- **Homepage (`CommercialProof.astro`):**
+  - The section runs longer, and its foot fades from the teal-charcoal into Select Work's exact ink
+    (`var(--c-ink)`) through eased stops, below all of the proof, finishing before the Select Work heading.
+    Measured with no visible band: adjacent rows differ by at most one level.
+  - "Commercial impact" sits higher, with clear space above `$0 → $300M+`.
+  - The "Processed protocol volume" label under the figure is removed (John, during the build): the paragraph
+    already says what it measures. A screen reader still hears "From $0 to more than $300 million".
+  - The downstream tile is centered, "+ additional" over "downstream integrations", with no rule beside it.
+- **Technical Product Marketing (`tpm/TpmEcosystem.astro`, `tpm.json`):** the divider moved from beneath the
+  paragraph to the top of the section, centered at the narrative's width, separating it from the campaign
+  results. The right column is one compact stack: "Direct aggregator integrations", the logos, then
+  "+ Additional downstream integrations". "Downstream reach" and the rule inside the column are gone.
+- **Events (`events/EvDeck.astro`, `Icon.astro`):** Commercial follow-through is a proof card: a thin teal
+  outline, a 10px radius, a faint teal fill, and a decorative outlined flag (new `flag` icon, hidden from
+  assistive technology) in a teal circle beside the label. The paragraph is unchanged; the credit stays below
+  the card. The label never breaks at its hyphen.
+- **Checks (`verify.mjs`):** the fade into ink, the centered tile, no label under the figure, the TPM column
+  order and divider position, and the Events card and decorative icon.
+- **Tested:** `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed. Screenshots at
+  1440, 1280, 1024, 390 and 360 wide: no horizontal scroll.
+
 ## V1.4 Commercial Proof Polish
 
 John's brief (29 October 2026): a surgical pass on the three V1.3 commercial-proof areas so they sit in the site

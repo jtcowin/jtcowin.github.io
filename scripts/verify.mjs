@@ -334,8 +334,9 @@ if (/id="how-i-work"/.test(home)) failures.push('[claim] How I Work is part of t
   const t = textOf(impact);
   // V1.4: the shorter paragraph (its two bold phrases), the label centered over the four-item row whose fourth item is
   // the downstream tile, and its own deep teal-charcoal surface against Select Work's ink.
-  const want = ['COMMERCIAL IMPACT', '$0 → $300M+', 'processed protocol volume', "I joined Bolt before launch and helped drive key integrations. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.", 'DIRECT AGGREGATOR INTEGRATIONS', 'additional downstream integrations'];
+  const want = ['COMMERCIAL IMPACT', '$0 → $300M+', "I joined Bolt before launch and helped drive key integrations. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.", 'DIRECT AGGREGATOR INTEGRATIONS', 'additional downstream integrations'];
   const missing = want.filter((w) => !t.replace(/[’‘]/g, "'").replace(/\+\s*additional/, 'additional').includes(w));
+  if (/processed protocol volume/i.test(t) || /impact__label/.test(impact)) failures.push('[claim] V1.5: the figure carries no label of its own; the paragraph says what it measures');
   if (!impact || missing.length) failures.push(`[claim] V1.3: the commercial proof carries John's approved copy word for word (missing: ${missing.join(' | ') || 'the section'})`);
   if (!(impactAt > home.indexOf('class="logobar') && impactAt < home.indexOf('id="work"'))) failures.push('[claim] V1.3: the commercial proof sits after the trust bar and before Select Work');
   const logos = [...impact.matchAll(/data-integration="([\w-]+)"/g)].map((m) => m[1]).join(',');
@@ -1130,6 +1131,11 @@ const tpmRules = (re) => CSS_RULES.filter((r) => re.test(bare(r.sel)));
   const body = CSS_RULES.filter((r) => /^\.impact$/.test(bare(r.sel)) && /--bg:/.test(r.body)).map((r) => r.body).join(';');
   const hex = (/--bg:\s*(#[0-9a-f]{6})/i.exec(body) || [])[1];
   if (!hex || hex.toLowerCase() === '#0d0f10') failures.push('[claim] V1.4: the commercial proof sits on a deep teal-charcoal, not the ink of Select Work');
+  // V1.5: its foot fades into Select Work's exact ink (the gradient ends on var(--c-ink)) below the proof, and the
+  // downstream tile is centered, with no rule beside it.
+  if (!/background:\s*linear-gradient\(\s*to bottom[\s\S]*var\(--c-ink\)\s*100%\s*\)/.test(body) || !/padding-bottom:\s*var\(--fade\)/.test(body)) failures.push('[claim] V1.5: the commercial proof fades into the exact ink of Select Work beneath its content');
+  const more = CSS_RULES.filter((r) => /^\.impact__more$/.test(bare(r.sel))).map((r) => r.body).join(';');
+  if (!/text-align:\s*center/.test(more) || /border/.test(more)) failures.push('[claim] V1.5: the downstream tile is centered, with no rule beside it');
 }
 // The body of one @keyframes block.
 const keyframesOf = (name) => (cssText.replace(/\/\*[\s\S]*?\*\//g, '').match(new RegExp(`@keyframes ${name}\\s*\\{((?:[^{}]*\\{[^{}]*\\})*)[^{}]*\\}`)) || [, ''])[1];
@@ -1726,7 +1732,7 @@ if (campEnd < 0 || ecoAt < campEnd || conclusionAt < ecoAt || tpmPage.slice(camp
   const ecoText = textOf(norm(ecoHtml));
   // V1.4: no eyebrow and no aggregator names in the text (the logos name them); the approved bold phrases; the
   // labels as restrained metadata beneath their proof.
-  const want = ['Product clarity carried into the market.', "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations. The work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.", 'Direct aggregator integrations', 'Downstream reach', 'Additional downstream integrations', '$300M+', 'Protocol volume processed'];
+  const want = ['Product clarity carried into the market.', "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations. The work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.", 'Direct aggregator integrations', '+ Additional downstream integrations', '$300M+', 'Protocol volume processed'];
   const missing = want.filter((w) => !ecoText.replace(/[’‘]/g, "'").includes(w));
   if (missing.length) failures.push(`[tpm] V1.3: Ecosystem Distribution carries John's approved copy word for word (missing: ${missing.join(' | ')})`);
   const logos = [...ecoHtml.matchAll(/data-integration="([\w-]+)"/g)].map((m) => m[1]).join(',');
@@ -1735,8 +1741,12 @@ if (campEnd < 0 || ecoAt < campEnd || conclusionAt < ecoAt || tpmPage.slice(camp
   if (/ECOSYSTEM DISTRIBUTION|CETUS · AFTERMATH · FLOWX|tpm-eco__eyebrow/i.test(ecoHtml) || /Cetus|Aftermath|FlowX/.test(ecoText)) failures.push('[tpm] V1.4: no eyebrow and no line of aggregator names; the logos name them');
   const ecoBold = [...((ecoHtml.match(/<p class="tpm-eco__copy"[^>]*>([\s\S]*?)<\/p>/) || [])[1] || '').matchAll(/<strong[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1])).join(' | ');
   if (ecoBold !== 'partner conversations and direct integrations | downstream integration paths | more than $300 million in processed volume') failures.push(`[tpm] V1.4: the approved phrases are set in bold (found ${ecoBold})`);
-  if (!/<div class="tpm-eco__fact"[^>]*>\s*<ul[\s\S]*?<\/ul>\s*<p class="tpm-eco__label"[^>]*>Direct aggregator integrations<\/p>/.test(ecoHtml)) failures.push('[tpm] V1.4: the integrations label sits beneath the logos');
-  const ecoCss = tpmRules(/^\.tpm-eco__(?:inner|head|volume|reach|fact)\b/).map((r) => r.body).join(';');
+  // V1.5: one compact stack (the label, the logos, the downstream line, nothing else), no "Downstream reach", no
+  // rule inside it; the section's divider sits above the narrative, not beneath it.
+  if (!/<div class="tpm-eco__reach"[^>]*>\s*<p class="tpm-eco__label"[^>]*>Direct aggregator integrations<\/p>\s*<ul[\s\S]*?<\/ul>\s*<p class="tpm-eco__label tpm-eco__down"[^>]*>\+ Additional downstream integrations<\/p>\s*<\/div>/.test(ecoHtml) || /Downstream reach/i.test(ecoText)) failures.push('[tpm] V1.5: the right column reads the integrations label, the logos, then "+ Additional downstream integrations", and nothing else');
+  const ecoHead = tpmRules(/^\.tpm-eco__head$/).map((r) => r.body).join(';');
+  if (!/border-top:\s*1px/.test(ecoHead) || /border-bottom/.test(ecoHead) || tpmRules(/^\.tpm-eco__(?:reach|down|fact)/).some((r) => /border/.test(r.body))) failures.push('[tpm] V1.5: the divider sits above the headline, none beneath the narrative or inside the integrations');
+  const ecoCss = tpmRules(/^\.tpm-eco__(?:inner|head|volume|reach)\b/).map((r) => r.body).join(';');
   if (!/justify-items:\s*center/.test(ecoCss) || !/text-align:\s*center/.test(ecoCss)) failures.push('[tpm] V1.4: the section is centered throughout');
   if (eco.accent && !(ecoHtml.match(/<span class="tpm-accent"[^>]*>([^<]*)<\/span>/) || [])[1]?.includes(eco.accent)) failures.push('[tpm] V1.3: the ecosystem headline sets its accent phrase');
 }
@@ -2357,6 +2367,14 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
   const EV_FOLLOW = 'Event-led introductions and follow-through helped secure direct integrations with key aggregators while opening strategic discussions with Sui Foundation and Mysten Labs. I created the shared working group as it grew to more than 20 cross-organizational stakeholders exploring a potential pilot.';
   const evCallouts = [...evNoCode.matchAll(/<div class="evd__callout"[^>]*>\s*<p class="evd__callout-label"[^>]*>([\s\S]*?)<\/p>\s*<p class="evd__outcome"[^>]*>([\s\S]*?)<\/p>\s*<\/div>/g)];
   if (evCallouts.length !== 1 || textOf(evCallouts[0][1]) !== 'COMMERCIAL FOLLOW-THROUGH' || textOf(norm(evCallouts[0][2])).replace(/[’‘]/g, "'") !== EV_FOLLOW) failures.push('[events] V1.3: the live presentation carries the approved Commercial Follow-Through, labeled, in its teal-ruled callout, once');
+  // V1.5: a proof card (a thin teal outline, a restrained radius, a faint teal fill), a decorative flag in a teal
+  // circle in the label's row, and the credit outside the card.
+  {
+    const callout = (evNoCode.match(/<div class="evd__callout"[\s\S]*?<\/div>/) || [''])[0];
+    const card = CSS_RULES.filter((r) => /^\.evd__callout$/.test(bare(r.sel))).map((r) => r.body).join(';');
+    if (!/<p class="evd__callout-label"[^>]*>\s*<span class="evd__callout-icon"[^>]*>\s*<svg[^>]*aria-hidden="true"/.test(callout) || /<div class="evd__callout"[\s\S]*evd__credit/.test(callout)) failures.push('[events] V1.5: the label row carries a decorative flag icon, and the credit sits outside the card');
+    if (!/border:\s*1px solid/.test(card) || !/border-radius:/.test(card) || !/background:/.test(card) || /border-left:\s*2px/.test(card)) failures.push('[events] V1.5: Commercial follow-through is an outlined, rounded, faintly filled card, not an open left rule');
+  }
   if (/Sui Foundation|Mysten/.test(textOf(norm(evNoCode.replace(/<div class="evd__callout"[\s\S]*?<\/div>/g, ' '))))) failures.push('[events] V1.3: Sui Foundation and Mysten Labs appear only in the Commercial Follow-Through');
   const evUnverified = evNoCode.replace(/<p class="ev-slot__metric[\s\S]*?<\/p>/g, ' ').replace(/<div class="evd__callout"[\s\S]*?<\/div>/g, ' ');
   const evUnverifiedText = textOf(norm(evUnverified));

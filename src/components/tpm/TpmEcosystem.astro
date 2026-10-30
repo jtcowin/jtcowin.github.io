@@ -6,11 +6,11 @@
  * partner and integration work, so it stands as its own section rather than
  * under the website or the documentation.
  *
- * V1.4: centered throughout. The narrative (headline and body, no eyebrow), a
- * centered divider beneath it, then two balanced, centered columns: $300M+ with
- * its label, and one proof stack of the three direct integrations (the shared
- * logo row, which names them), their label, a divider and the downstream reach,
- * which is never counted. Not a second results panel: no four columns. On the
+ * V1.4: centered throughout. V1.5: a centered divider above the narrative
+ * (headline and body, no eyebrow) separates it from the campaign's results;
+ * then two balanced, centered columns: $300M+ with its label, and one compact
+ * stack of the integrations label, the logo row (which names them) and the
+ * downstream line, which is never counted. Not a second results panel: no four columns. On the
  * campaign's dark ground, which the conclusion carries on. Copy: tpm.json
  * `ecosystem`; **text** is set in bold.
  */
@@ -35,22 +35,19 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
         <span class="tpm-eco__label">{e.volume.label}</span>
       </div>
       <div class="tpm-eco__reach">
-        <div class="tpm-eco__fact">
-          <IntegrationLogos class="tpm-eco__logos" label={e.integrations.label} />
-          <p class="tpm-eco__label">{e.integrations.label}</p>
-        </div>
-        <div class="tpm-eco__fact tpm-eco__fact--down">
-          <p class="tpm-eco__label">{e.downstream.label}</p>
-          <p class="tpm-eco__text">{e.downstream.text}</p>
-        </div>
+        <p class="tpm-eco__label">{e.integrations.label}</p>
+        <IntegrationLogos class="tpm-eco__logos" label={e.integrations.label} />
+        <p class="tpm-eco__label tpm-eco__down">{e.downstream}</p>
       </div>
     </div>
   </div>
 </section>
 
 <style>
+  /* V1.5: the divider at the top sits close under the campaign's results, so
+     it reads as the boundary between the two. */
   .tpm-eco {
-    padding-block: clamp(5rem, 3.5rem + 6vw, 9rem);
+    padding-block: 0 clamp(5rem, 3.5rem + 6vw, 9rem);
   }
 
   .tpm-eco__inner {
@@ -60,14 +57,15 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     text-align: center;
   }
 
-  /* The narrative, centered, with a fine centered divider beneath it. */
+  /* The narrative, centered, under a fine centered divider as wide as it that
+     separates it from the campaign's results. */
   .tpm-eco__head {
     display: grid;
     justify-items: center;
     gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
     width: min(100%, 48rem);
-    padding-bottom: clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
-    border-bottom: 1px solid var(--line-strong);
+    padding-top: clamp(3rem, 2rem + 3.5vw, 5rem);
+    border-top: 1px solid var(--line-strong);
   }
 
   .tpm-eco__title {
@@ -100,8 +98,7 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
   }
 
   .tpm-eco__volume,
-  .tpm-eco__reach,
-  .tpm-eco__fact {
+  .tpm-eco__reach {
     display: grid;
     justify-items: center;
   }
@@ -133,13 +130,14 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     color: var(--ink-3);
   }
 
+  /* One compact stack: the label, the marks, the downstream line. */
   .tpm-eco__reach {
+    gap: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
     width: min(100%, 36rem);
   }
 
-  .tpm-eco__fact {
-    gap: 1.1rem;
-    width: 100%;
+  .tpm-eco__down {
+    color: var(--ink-2);
   }
 
   /* A step smaller than on the homepage, so the three marks keep one centered
@@ -148,21 +146,6 @@ const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong
     --base: clamp(0.95rem, 0.6rem + 0.6vw, 1.2rem);
     --ilogos-col: clamp(1.25rem, 0.75rem + 1.25vw, 2.25rem);
     justify-content: center;
-  }
-
-  /* The divider between the integrations and the downstream reach. */
-  .tpm-eco__fact--down {
-    gap: 0.6rem;
-    margin-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
-    padding-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
-    border-top: 1px solid var(--line);
-  }
-
-  .tpm-eco__text {
-    margin: 0;
-    font-size: var(--text-md);
-    line-height: var(--leading-normal);
-    color: var(--heading);
   }
 
   @media (min-width: 64rem) {

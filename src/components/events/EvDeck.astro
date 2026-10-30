@@ -227,7 +227,7 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
                         <span class="evd__gap" aria-hidden="true" />
                         {ch.outcomeLabel ? (
                           <div class="evd__callout">
-                            <p class="evd__callout-label">{ch.outcomeLabel}</p>
+                            <p class="evd__callout-label"><span class="evd__callout-icon"><Icon name="flag" size={14} /></span><span>{ch.outcomeLabel.split(' ').map((w, i) => (<>{i > 0 && ' '}<span class="evd__keep-word">{w}</span></>))}</span></p>
                             <p class="evd__outcome">{ch.outcome}</p>
                           </div>
                         ) : (
@@ -1096,13 +1096,16 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
     color: var(--heading);
   }
 
-  /* V1.3: a labeled outcome (Commercial Follow-Through) keeps the same teal rule, now running the height of
-     the label and the fuller copy together. */
+  /* V1.3: a labeled outcome (Commercial Follow-Through). V1.5: a proof card, a thin teal outline with a
+     restrained radius and a faint teal-tinted fill, the label and its flag in one row above the copy. The
+     credit stays below, outside the card. */
   .evd__callout {
     display: grid;
-    gap: 0.45rem;
-    padding-left: 0.85rem;
-    border-left: 2px solid var(--accent);
+    gap: 0.75rem;
+    padding: clamp(1rem, 0.85rem + 0.5vw, 1.35rem) clamp(1.05rem, 0.9rem + 0.6vw, 1.5rem);
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    border-radius: 0.625rem;
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 
   .evd__callout .evd__outcome {
@@ -1111,12 +1114,36 @@ const sizes = '(min-width: 90rem) 760px, (min-width: 64rem) 56vw, 100vw';
   }
 
   .evd__callout-label {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
     margin: 0;
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--accent);
+  }
+
+  .evd__callout-icon {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+  }
+
+  /* A hyphenated word in the label never breaks at its hyphen. */
+  .evd__keep-word {
+    white-space: nowrap;
+  }
+
+  .evd__callout-icon :global(svg) {
+    display: block;
   }
 
   /* The fine print: the credit line, and the participating teams on a line of
