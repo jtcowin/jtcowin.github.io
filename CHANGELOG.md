@@ -5,6 +5,21 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## About: back to three paragraphs
+
+John's decision (29 October 2026): the homepage About returns to three paragraphs, without the Bolt Liquidity
+paragraph added in V1.3. The commercial-proof module right below About carries that story.
+
+- **Copy (`home.json` `about.paragraphs`):** the music project, Phi Labs Global (the V1.3 wording, "Over
+  time, I took ownership of..."), and the closing line, unchanged and still set bold. Highlights: "global music
+  project" and "more than 200,000 people".
+- **Layout (`About.astro`):** the V1.3 short-screen adjustment (frame unit `min(1vw, 1.52svh)` up to 63rem
+  tall) is removed, since it existed only for the longer story; the frame unit is `min(1vw, 1.8svh)` again.
+  About fits one frame at every size from 1280x720 to 2560x1440.
+- **Checks (`verify.mjs`):** three paragraphs word for word, two highlights, the closing line third.
+- **Tested:** `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed; no horizontal scroll
+  at 1440, 1280 or 390 wide.
+
 ## V1.6 width pass
 
 John's request (29 October 2026): two paragraph-width refinements and one headline break. No copy, type size,

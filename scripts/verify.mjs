@@ -186,14 +186,14 @@ const flow = (aboutHtml.match(/<div class="flow"[\s\S]*?<hr class="about__rule"/
 if (!flow) failures.push('[claim] the About narrative (flow, then the lower rule) was not found');
 const paragraphHtml = [...flow.matchAll(/<p class="flow__p[^"]*"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1]);
 // (About Copy delta, October 2026: all three paragraphs as John approved them.)
-// V1.3 (October 2026): John's approved four paragraphs, word for word.
+// V1.3 (October 2026): John's approved four paragraphs. Since 29 October 2026 (John): back to three, without the
+// Bolt Liquidity paragraph (the commercial proof below About tells that story).
 const approvedParagraphs = [
   'For a decade, I built audiences and ran the business side of a global music project. That work landed sponsorships, media appearances, and major bookings. In 2021, I brought those skills to DeFi.',
   'Phi Labs Global hired me in 2024 to lead social across a product portfolio with an audience of more than 200,000 people. Over time, I took ownership of positioning and messaging, technical documentation and websites, partnerships and KOL management, and campaigns and distribution.',
-  'At Bolt Liquidity, I joined before launch and worked across product marketing, partnerships, content, and growth, helping drive ecosystem relationships and integrations as the protocol grew from zero to more than $300 million in processed volume.',
   'Today, I turn complex products into stories people understand and connect with.',
 ];
-if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present the four approved paragraphs (found ${paragraphHtml.length})`);
+if (paragraphHtml.length !== approvedParagraphs.length) failures.push(`[claim] About must present the three approved paragraphs (found ${paragraphHtml.length})`);
 approvedParagraphs.forEach((copy, i) => {
   const html = paragraphHtml[i] || '';
   if (textOf(html) !== copy) failures.push(`[claim] About paragraph ${i + 1} must use the approved copy`);
@@ -204,25 +204,24 @@ approvedParagraphs.forEach((copy, i) => {
 // Each highlight is one <strong> around its words; a comma or period that
 // follows it sits inside, set plain, and is not part of the phrase.
 const marks = [...flow.matchAll(/<strong class="flow__mark"[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1].replace(/<span class="flow__plain">[\s\S]*?<\/span>/g, '')));
-if (marks.join(' | ') !== 'global music project | more than 200,000 people | more than $300 million in processed volume') {
-  failures.push(`[claim] About must highlight exactly the three chosen phrases, in order (found: ${marks.join(' | ') || 'none'})`);
+if (marks.join(' | ') !== 'global music project | more than 200,000 people') {
+  failures.push(`[claim] About must highlight exactly the two chosen phrases, in order (found: ${marks.join(' | ') || 'none'})`);
 }
 // The brief's retained wording, named so that no later edit drops it unnoticed.
 for (const [where, text, phrase] of [
   ['the headline', aboutHeadingText, 'Built for DeFi.'],
   ['the second paragraph', textOf(paragraphHtml[1] || ''), 'lead social'],
   ['the second paragraph', textOf(paragraphHtml[1] || ''), 'a product portfolio with an audience of more than 200,000 people'],
-  ['the third paragraph', textOf(paragraphHtml[2] || ''), 'from zero to more than $300 million in processed volume'],
-  ['the closing paragraph', textOf(paragraphHtml[3] || ''), 'understand and connect with.'],
+  ['the closing paragraph', textOf(paragraphHtml[2] || ''), 'understand and connect with.'],
 ]) {
   if (!text.includes(phrase)) failures.push(`[claim] About keeps "${phrase}" in ${where} (About Copy delta)`);
 }
 // The closing line ends on its last three words together, and only it does.
-if (!/<span class="flow__keep"[^>]*>\s*<span class="w">and<\/span>\s+<span class="w">connect<\/span>\s+<span class="w">with\.<\/span>\s*<\/span>\s*$/.test(paragraphHtml[3] || '') || (flow.match(/class="flow__keep"/g) || []).length !== 1) {
+if (!/<span class="flow__keep"[^>]*>\s*<span class="w">and<\/span>\s+<span class="w">connect<\/span>\s+<span class="w">with\.<\/span>\s*<\/span>\s*$/.test(paragraphHtml[2] || '') || (flow.match(/class="flow__keep"/g) || []).length !== 1) {
   failures.push('[claim] the closing paragraph keeps "and connect with." together, and nothing else is held');
 }
 if (/<(?:b|em|mark|u)[\s>]/.test(flow) || /<strong(?![^>]*class="flow__mark")/.test(flow)) {
-  failures.push('[claim] nothing in the About narrative may be emphasized besides the three approved phrases');
+  failures.push('[claim] nothing in the About narrative may be emphasized besides the two approved phrases');
 }
 const closing = (flow.match(/<div class="flow__close"[\s\S]*?<\/div>/) || [''])[0];
 const thirdAt = closing.indexOf('flow__p--close');

@@ -68,8 +68,9 @@ clients.
 - **About headline:** "Creative instincts. Operator discipline. Built for DeFi."
 - **Contact:** "Your product is complex. Its story shouldn't be." It offers the email, the resume and
   LinkedIn.
-- **About:** four paragraphs (the music project, Phi Labs Global, Bolt Liquidity) closing on "Today, I turn
-  complex products into stories people understand and connect with."
+- **About:** three paragraphs (the music project, Phi Labs Global) closing on "Today, I turn complex products
+  into stories people understand and connect with." The Bolt Liquidity paragraph added in V1.3 was removed on
+  29 October 2026 by John's decision; the commercial proof below About tells that story.
 - **Commercial proof:** $0 → $300M+ in processed protocol volume, with direct aggregator integrations with
   Cetus, Aftermath and FlowX (named by their logos, not in the copy) and downstream integrations, never
   counted. It appears on the homepage, the Technical Product Marketing case study (after the campaign

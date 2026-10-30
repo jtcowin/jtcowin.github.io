@@ -566,21 +566,6 @@ const headingLines = (about.heading.match(/[^.!?]+[.!?]+/g) ?? [about.heading]).
       }
     }
 
-    /* V1.3: the four-paragraph story is one paragraph longer, so on screens
-       up to 1008px tall (1280x720 to 1600x900 and most laptops) height
-       decides the frame unit a little sooner. Taller screens are unchanged. */
-    @media (max-height: 63rem) {
-      .about {
-        --fit: min(1vw, 1.52vh);
-      }
-
-      @supports (height: 1svh) {
-        .about {
-          --fit: min(1vw, 1.52svh);
-        }
-      }
-    }
-
     /* Three zones in one frame: the headline at the top, the story (the two
        paragraphs, the thesis and the resume action) centered in the room
        below it, and the trust bar anchored at the foot. The frame's spare
