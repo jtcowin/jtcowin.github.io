@@ -1,10 +1,12 @@
 ---
 /**
- * The Road Here (Phase 3A draft, October 2026): John's career before Web3, as one
- * editorial page in five chapters. 01 the hero, 02 from music school to the road
- * (with the milestones), 03 more than the drummer (the four areas of the business
- * he ran), 04 the 2020 pivot (a quiet timeline from the road into DeFi), 05 where
- * it led, leading back to the selected work. Then Contact and the footer.
+ * The Road Here (Phase 3A draft, October 2026; V1.7 build): John's career before
+ * Web3, as one editorial page in five sections: the hero, from music school to the
+ * road (with the milestones), more than the drummer (the four areas of the business
+ * he ran), the 2020 pivot (a quiet timeline from the road into DeFi), and where it
+ * led, back to the selected work. Then the shared Contact (as on the homepage) and
+ * the footer. V1.7: no numbered eyebrows or chapter navigation; each headline
+ * carries one accent phrase; at most one bold phrase a paragraph.
  *
  * Draft status: unlinked from the homepage and navigation, marked noindex and kept
  * out of the sitemap (astro.config.mjs) until John approves it.
@@ -18,66 +20,68 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import RoadFrame from '@components/road/RoadFrame.astro';
+import Icon from '@components/Icon.astro';
 import road from '@data/road.json';
 import { withBase } from '@lib/paths';
 
 const { meta, hero, school, operator, pivot, led } = road;
-const [headLead, headAccent] = (() => {
-  const i = hero.headline.indexOf(hero.accent);
-  if (i < 0) throw new Error('[road] the hero accent must appear in the headline');
-  return [hero.headline.slice(0, i), hero.accent];
-})();
+// A headline split around its accent phrase (which must appear in it).
+const accented = (headline: string, accent: string, where: string): [string, string, string] => {
+  const i = headline.indexOf(accent);
+  if (i < 0) throw new Error(`[road] the ${where} accent must appear in its headline`);
+  return [headline.slice(0, i), accent, headline.slice(i + accent.length)];
+};
+// **text** is set in bold; one phrase a paragraph at most.
+const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong: i % 2 === 1 }));
+const [headLead, headAccent] = accented(hero.headline, hero.accent, 'hero');
+const H = {
+  school: accented(school.headline, school.accent, 'school'),
+  operator: accented(operator.headline, operator.accent, 'operator'),
+  pivot: accented(pivot.headline, pivot.accent, 'pivot'),
+  led: accented(led.headline, led.accent, 'led'),
+};
+type GroupIcon = 'route' | 'pen' | 'users' | 'broadcast';
+const groups = operator.groups as Array<{ title: string; items: string[]; icon: GroupIcon }>;
 ---
 
 <BaseLayout title={meta.title} description={meta.description} path="/the-road-here/" noindex footerSurface="brand">
   <article class="road" aria-labelledby="road-title">
-    {/* 01 Hero */}
+    {/* Hero */}
     <section class="road-hero" data-surface="dark" aria-labelledby="road-title">
       <div class="container road-hero__grid">
         <div class="road-hero__copy">
-          <p class="eyebrow road-reveal">01 / {hero.label}</p>
           <h1 id="road-title" class="display road-hero__title road-reveal">
             {headLead}<span class="road-accent">{headAccent}</span>
           </h1>
-          <p class="lede road-hero__lede road-reveal">{hero.copy}</p>
-          <nav class="road-hero__chapters road-reveal" aria-label="Chapters">
-            <ol>
-              {hero.chapters.map((c, i) => (
-                <li>
-                  <a href={c.href}>
-                    <span class="road-num">0{i + 2}</span>
-                    {c.label}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
+          <p class="lede road-hero__lede road-reveal">{rich(hero.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
-        <RoadFrame id={hero.image} class="road-hero__portrait road-reveal" priority drift sizes="(min-width: 64rem) 40vw, 100vw" />
+        {/* No drift: the crop keeps his face and the whole cymbal, which a drift's zoom would trim. */}
+        <RoadFrame id={hero.image} class="road-hero__portrait road-reveal" priority sizes="(min-width: 64rem) 32rem, (min-width: 40rem) 30rem, 100vw" />
       </div>
     </section>
 
-    {/* 02 From music school to the road */}
+    {/* From music school to the road */}
     <section id="road-school" class="section road-school" data-surface="light" aria-labelledby="road-school-title">
       <div class="container">
         <div class="road-school__grid">
           <div class="road-school__copy">
-            <p class="eyebrow road-reveal">{school.index} / {school.label}</p>
-            <h2 id="road-school-title" class="display display-lg road-reveal">{school.headline}</h2>
+            <h2 id="road-school-title" class="display display-lg road-reveal">{H.school[0]}<span class="road-accent">{H.school[1]}</span>{H.school[2]}</h2>
             <div class="prose road-reveal">
-              {school.paragraphs.map((p) => <p>{p}</p>)}
+              {school.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
             </div>
           </div>
-          <div class="road-school__media road-reveal">
-            <RoadFrame id={school.image} drift sizes="(min-width: 64rem) 55vw, 100vw" />
-            {/* Reserved for one genuine artifact (a poster, a laminate, a press clipping), chosen and privacy-checked later. */}
-            <RoadFrame id={school.artifact} class="road-school__artifact" sizes="(min-width: 64rem) 16vw, 40vw" />
+          {/* Three pieces of real evidence (V1.7): the live performance, dominant, with the television appearance and
+              the festival poster (cropped above its lower-tier names) as supporting cards. Phones: in that order. */}
+          <div class="road-school__media">
+            <RoadFrame id={school.image} class="road-school__live road-reveal" drift sizes="(min-width: 64rem) 34vw, (min-width: 40rem) 58vw, 100vw" />
+            <RoadFrame id={school.tv} class="road-school__tv road-reveal" sizes="(min-width: 64rem) 20vw, (min-width: 40rem) 34vw, 100vw" />
+            <RoadFrame id={school.festival.image} caption={school.festival.caption} class="road-school__festival road-reveal" sizes="(min-width: 64rem) 20vw, (min-width: 40rem) 34vw, 100vw" />
           </div>
         </div>
         <ul class="road-milestones" aria-label="Milestones">
           {school.milestones.map((m) => (
             <li class="road-milestone road-reveal">
-              <span class="road-milestone__value">{m.value}</span>
+              <span class="road-milestone__value">{m.value.replace(' + ', '\u00a0+ ')}</span>
               <span class="road-milestone__label">{m.label}</span>
             </li>
           ))}
@@ -85,21 +89,21 @@ const [headLead, headAccent] = (() => {
       </div>
     </section>
 
-    {/* 03 More than the drummer */}
+    {/* More than the drummer */}
     <section id="road-operator" class="section road-operator" data-surface="soft" aria-labelledby="road-operator-title">
       <div class="container">
         <div class="road-operator__head">
           <div>
-            <p class="eyebrow road-reveal">{operator.index} / {operator.label}</p>
-            <h2 id="road-operator-title" class="display display-lg road-reveal">{operator.headline}</h2>
-            <p class="lede road-reveal">{operator.copy}</p>
+            <h2 id="road-operator-title" class="display display-lg road-reveal">{H.operator[0]}<span class="road-accent">{H.operator[1]}</span>{H.operator[2]}</h2>
+            <p class="lede road-reveal">{rich(operator.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
           </div>
-          <RoadFrame id={operator.image} class="road-operator__image road-reveal" drift sizes="(min-width: 64rem) 45vw, 100vw" />
+          {/* No drift: the whole kit stays in frame. */}
+          <RoadFrame id={operator.image} class="road-operator__image road-reveal" sizes="(min-width: 64rem) 45vw, 100vw" />
         </div>
         <ul class="road-groups">
-          {operator.groups.map((g, i) => (
+          {groups.map((g) => (
             <li class="road-group road-reveal">
-              <span class="road-num">0{i + 1}</span>
+              <span class="road-group__icon" aria-hidden="true"><Icon name={g.icon} size={18} /></span>
               <h3 class="road-group__title">{g.title}</h3>
               <ul class="road-group__items">
                 {g.items.map((it) => <li>{it}</li>)}
@@ -110,14 +114,13 @@ const [headLead, headAccent] = (() => {
       </div>
     </section>
 
-    {/* 04 The 2020 pivot */}
+    {/* The 2020 pivot */}
     <section id="road-pivot" class="section road-pivot" data-surface="dark" aria-labelledby="road-pivot-title">
       <div class="container road-pivot__grid">
         <div class="road-pivot__copy">
-          <p class="eyebrow road-reveal">{pivot.index} / {pivot.label}</p>
-          <h2 id="road-pivot-title" class="display display-lg road-reveal">{pivot.headline}</h2>
+          <h2 id="road-pivot-title" class="display display-lg road-reveal">{H.pivot[0]}<span class="road-accent">{H.pivot[1]}</span>{H.pivot[2]}</h2>
           <div class="prose road-reveal">
-            {pivot.paragraphs.map((p) => <p>{p}</p>)}
+            {pivot.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
         <ol class="road-timeline" data-road-timeline aria-label="From the road to Web3">
@@ -131,13 +134,12 @@ const [headLead, headAccent] = (() => {
       </div>
     </section>
 
-    {/* 05 Where it led */}
+    {/* Where it led */}
     <section id="road-led" class="section road-led" data-surface="light-return" aria-labelledby="road-led-title">
       <div class="container">
         <div class="road-led__head">
-          <p class="eyebrow road-reveal">{led.index} / {led.label}</p>
-          <h2 id="road-led-title" class="display display-xl road-reveal">{led.headline}</h2>
-          <p class="lede road-reveal">{led.copy}</p>
+          <h2 id="road-led-title" class="display display-xl road-reveal">{H.led[0]}<span class="road-accent">{H.led[1]}</span>{H.led[2]}</h2>
+          <p class="lede road-reveal">{rich(led.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
         <ul class="road-pairs" aria-label="Then and now">
           {led.pairs.map((p) => (
@@ -156,8 +158,9 @@ const [headLead, headAccent] = (() => {
     </section>
   </article>
 
+  {/* The shared Contact, exactly as the homepage sets it (V1.7). */}
   <div class="chapter" data-surface="brand">
-    <Contact compact />
+    <Contact />
   </div>
 </BaseLayout>
 
@@ -216,12 +219,10 @@ const [headLead, headAccent] = (() => {
     color: var(--accent-ink);
   }
 
-  .road-num {
-    font-size: var(--text-xs);
+  /* Bold for factual proof and key responsibilities: one phrase a paragraph. */
+  .road strong {
     font-weight: 700;
-    letter-spacing: 0.1em;
-    font-variant-numeric: tabular-nums;
-    color: var(--accent);
+    color: var(--heading);
   }
 
   /* ---- reveal: a short rise and fade, once ---- */
@@ -238,7 +239,7 @@ const [headLead, headAccent] = (() => {
     translate: 0 0;
   }
 
-  /* ---- 01 hero ---- */
+  /* ---- hero ---- */
   .road-hero {
     padding-top: calc(var(--header-row) + clamp(2.5rem, 6vw, 6rem));
     padding-bottom: clamp(3.5rem, 7vw, 7rem);
@@ -268,30 +269,6 @@ const [headLead, headAccent] = (() => {
     max-width: 34rem;
   }
 
-  .road-hero__chapters ol {
-    list-style: none;
-    margin: var(--space-4) 0 0;
-    padding: var(--space-4) 0 0;
-    border-top: 1px solid var(--line-strong);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-3) var(--space-5);
-  }
-
-  .road-hero__chapters a {
-    display: inline-flex;
-    gap: 0.6rem;
-    align-items: baseline;
-    color: var(--ink-2);
-    text-decoration: none;
-    font-size: var(--text-sm);
-    font-weight: 550;
-  }
-
-  .road-hero__chapters a:hover {
-    color: var(--heading);
-  }
-
   .road-hero :global(.road-hero__portrait) {
     width: min(100%, 30rem);
     justify-self: center;
@@ -309,7 +286,7 @@ const [headLead, headAccent] = (() => {
     }
   }
 
-  /* ---- 02 from music school to the road ---- */
+  /* ---- from music school to the road ---- */
   .road-school__grid {
     display: grid;
     gap: clamp(2.5rem, 5vw, 5rem);
@@ -321,31 +298,28 @@ const [headLead, headAccent] = (() => {
     gap: var(--space-5);
   }
 
+  /* The evidence group (V1.7): stacked on phones (live, television, festival);
+     from 40rem the live performance leads, a little over 1.7 times as wide as
+     the two supporting cards stacked beside it. Spacious, never a collage. */
   .road-school__media {
-    position: relative;
-    padding-bottom: clamp(2rem, 6vw, 4rem);
+    display: grid;
+    gap: clamp(1rem, 0.75rem + 1vw, 1.5rem);
   }
 
-  /* The reserved artifact overlaps the photograph's lower corner, slightly turned. */
-  .road-school__media :global(.road-school__artifact) {
-    position: absolute;
-    left: clamp(-1rem, -2vw, -0.5rem);
-    bottom: 0;
-    width: clamp(7rem, 26%, 12rem);
-    rotate: -3deg;
-    box-shadow: var(--shadow-lg);
-    border-radius: var(--radius);
-    background: var(--bg);
-    padding: 6px;
+  @media (min-width: 40rem) {
+    .road-school__media {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.58fr);
+      align-items: start;
+    }
+
+    .road-school__media :global(.road-school__live) {
+      grid-row: 1 / span 2;
+    }
   }
 
   @media (min-width: 64rem) {
     .road-school__grid {
       grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    }
-
-    .road-school__media :global(.road-school__artifact) {
-      left: -2.5rem;
     }
   }
 
@@ -354,14 +328,24 @@ const [headLead, headAccent] = (() => {
     margin: clamp(3rem, 6vw, 5rem) 0 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: var(--space-4);
     border-top: 1px solid var(--line-strong);
   }
 
+  @media (min-width: 64rem) {
+    .road-milestones {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* V1.7: each milestone spans two rows of the list's grid (value, then label),
+     so across a row every label starts level however the values wrap. */
   .road-milestone {
     display: grid;
-    gap: var(--space-2);
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: var(--space-3);
     align-content: start;
     padding: var(--space-6) var(--space-5) var(--space-5) 0;
   }
@@ -370,9 +354,12 @@ const [headLead, headAccent] = (() => {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
-    font-size: var(--text-2xl);
-    line-height: 1;
+    /* (V1.7: a step smaller than the old one-word values, for the approved labels.) */
+    font-size: clamp(1.625rem, 1.1rem + 1.4vw, 2.375rem);
+    line-height: 1.02;
     color: var(--heading);
+    text-wrap: balance;
+    align-self: end;
   }
 
   .road-milestone__label {
@@ -382,7 +369,7 @@ const [headLead, headAccent] = (() => {
     max-width: 22ch;
   }
 
-  /* ---- 03 more than the drummer ---- */
+  /* ---- more than the drummer ---- */
   .road-operator__head {
     display: grid;
     gap: clamp(2rem, 4vw, 4rem);
@@ -406,7 +393,22 @@ const [headLead, headAccent] = (() => {
     padding: 0;
     display: grid;
     gap: var(--space-4);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Two by two, then four across once each card is wide enough that every
+     title (the longest is "Business and relationships") holds one line, a step
+     smaller there; headings and lists start level across the row (V1.7). */
+  @media (min-width: 40rem) {
+    .road-groups {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 85rem) {
+    .road-groups {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   .road-group {
@@ -419,6 +421,22 @@ const [headLead, headAccent] = (() => {
     border-radius: var(--radius-lg);
   }
 
+  /* One restrained line icon a card, in the accent, in a fine circle. */
+  .road-group__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    margin-bottom: var(--space-2);
+    border: 1px solid var(--accent-line);
+    border-radius: 50%;
+    color: var(--accent);
+  }
+
+  .road-group__icon :global(svg) {
+    display: block;
+  }
+
   .road-group__title {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
@@ -426,6 +444,13 @@ const [headLead, headAccent] = (() => {
     font-size: var(--text-lg);
     line-height: 1.1;
     color: var(--heading);
+  }
+
+  @media (min-width: 85rem) {
+    .road-group__title {
+      font-size: 1.3125rem;
+      white-space: nowrap;
+    }
   }
 
   .road-group__items {
@@ -443,7 +468,7 @@ const [headLead, headAccent] = (() => {
     border-top: 1px solid var(--line);
   }
 
-  /* ---- 04 the 2020 pivot ---- */
+  /* ---- the 2020 pivot ---- */
   .road-pivot__grid {
     display: grid;
     gap: clamp(3rem, 6vw, 6rem);
@@ -530,7 +555,7 @@ const [headLead, headAccent] = (() => {
     max-width: 30ch;
   }
 
-  /* ---- 05 where it led ---- */
+  /* ---- where it led ---- */
   .road-led__head {
     display: grid;
     gap: var(--space-5);

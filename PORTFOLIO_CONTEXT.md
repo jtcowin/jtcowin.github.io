@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.6 Commercial Proof Copy Refinement, October 2026.
+- **Last updated:** V1.7 The Road Here page build, October 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -192,21 +192,21 @@ These are settled. Do not reopen them without a new instruction.
 - **Resume:** the two approved bullets; still two pages.
 - **Detail and tests:** see the changelog.
 
-### The Road Here, draft (Phase 3A, October 2026)
+### The Road Here, draft (Phase 3A, built out in V1.7, October 2026)
 
 - **What it is:** a standalone page at `/the-road-here/` in five sections: hero, music school to the road
-  (milestones), more than the drummer (four capability cards), the 2020 pivot (timeline), and where it led
-  (call to action to the selected work).
-- **Status:** draft, on hold by John's decision (October 2026). It is unlinked, `noindex`, and out of the
-  sitemap.
-- **Copy and photos:** the copy is placeholder (`src/data/road.json`). The photographs are four pending
-  `road-*` manifest entries, shown as labeled placeholders until supplied.
-- **Privacy rule:** the band is never named, linked or identifiable on this page or in its metadata.
-- **Next:**
-  - the copywriting pass
-  - photo selection
-  - choosing a genuine artifact
-  - after approval: remove `noindex`, add the page to the sitemap, and add the homepage preview
+  (live, television and festival evidence, then milestones), more than the drummer (four capability cards with
+  icons), the 2020 pivot (timeline), and where it led (call to action to the selected work). Then the shared
+  Contact, as on the homepage.
+- **Status:** private draft. Unlinked, `noindex`, out of the sitemap, until John approves launch.
+- **Copy and photos:** John's approved copy (`src/data/road.json`) and five of his photographs as
+  privacy-checked derivatives in `src/assets/road/` (manifest `road-*`). The festival poster is cropped above
+  its lower-tier names.
+- **Privacy rule:** the band is never named, linked or identifiable on this page, in its images or in its
+  metadata.
+- **Milestones:** John's approved labels: 13 years, 140+ shows, Sony Music subsidiary, Festivals + broadcast.
+- **Photo credits:** none published, by John's decision.
+- **Pending John's decision:** any timeline treatment beyond its line-draw; homepage placement and launch.
 
 ### Creator Retreat Videos (Phase 2, October 2026)
 

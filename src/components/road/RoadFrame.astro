@@ -18,20 +18,24 @@ interface Props {
   priority?: boolean;
   /** Gentle vertical drift with the scroll (motion allowed only). */
   drift?: boolean;
+  /** A short caption beneath the photograph (V1.7). */
+  caption?: string;
 }
 
-const { id, class: className, sizes = '(min-width: 64rem) 50vw, 100vw', priority = false, drift = false } = Astro.props;
+const { id, class: className, sizes = '(min-width: 64rem) 50vw, 100vw', priority = false, drift = false, caption } = Astro.props;
 const entry = getAsset(id);
 const image = resolveImage(entry);
 const real = isRenderable(entry) && Boolean(image);
 const ratio = aspectToCss(entry.aspect);
+// Responsive delivery (V1.7): a few widths up to the derivative's own, never upscaled.
+const widths = image ? [480, 800, 1200, 1600, 2048].filter((w) => w < image.width).concat(image.width) : undefined;
 ---
 
 <figure class:list={['rf', real ? 'rf--real' : 'rf--pending', className]} style={`--rf-ratio: ${ratio}`} data-asset={id}>
   <div class="rf__frame" data-road-drift={drift ? '' : undefined}>
     {
       real && image ? (
-        <Picture src={image} alt={entry.alt} sizes={sizes} formats={['avif', 'webp']} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} class="rf__img" />
+        <Picture src={image} alt={entry.alt} sizes={sizes} widths={widths} formats={['avif', 'webp']} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} class="rf__img" />
       ) : (
         <div class="rf__ph" role="img" aria-label={`Photograph to come: ${entry.label}`}>
           <span class="rf__ph-label">{entry.label}</span>
@@ -40,6 +44,7 @@ const ratio = aspectToCss(entry.aspect);
       )
     }
   </div>
+  {caption && <figcaption class="rf__caption">{caption}</figcaption>}
 </figure>
 
 <style>
@@ -53,6 +58,16 @@ const ratio = aspectToCss(entry.aspect);
     overflow: hidden;
     border-radius: var(--radius);
     background: var(--bg-sunk);
+  }
+
+  .rf__caption {
+    margin-top: 0.7rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    color: var(--ink-3);
+    text-wrap: balance;
   }
 
   .rf__img {

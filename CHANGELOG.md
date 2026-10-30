@@ -5,6 +5,50 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.7 The Road Here page build
+
+John's brief (30 October 2026): turn the Phase 3A scaffold into a credible editorial page, still a private draft
+(unlinked, `noindex`, out of the sitemap). Existing pages and the resume unchanged.
+
+- **Structure:** the five sections are kept. The numbered eyebrows (`01 /` to `05 /`) and the hero's chapter
+  links are removed. Each headline carries one accent phrase ("there was music.", "140+ shows a year.",
+  "Running the business by day.", "2020 happened.", "Familiar instincts."). Paragraphs carry at most one bold
+  phrase, on factual proof or key responsibilities.
+- **Copy (`road.json`):** the hero's 13-year framing (two years of study, then more than a decade as a
+  professional musician and operator) replaces the eight-year framing, in the copy and the page description.
+  Section 2's approved copy names the professional evidence: major festivals, television appearances, live
+  FM-radio performances and interviews, and worldwide distribution through The Orchard, a Sony Music
+  subsidiary. The study fields are performance and music business only.
+- **Photographs (`src/assets/road/`, manifest `road-*`):** five of John's photographs as privacy-checked
+  derivatives: neutral filenames, re-encoded with no embedded metadata, the TV image converted from
+  Display P3 to sRGB.
+  - Hero portrait (3:4).
+  - Section 2: the live performance (4:5) leads, with the television appearance (4:5) and the Mountain Jam
+    2014 poster (6:5) as supporting cards, stacked in that order on phones. The poster is cropped to its
+    festival identity and headliners and ends above the lower-tier names, so the former band's name is not in
+    the published file. Its caption reads "Selected festival appearance · Mountain Jam 2014". MJ2016 is held,
+    not published.
+  - Section 3: the drum kit (3:2), uncropped. No photo credits are published (John's decision).
+  - The unused "reserved artifact" placeholder is removed. The scroll drift stays on the live photograph only,
+    so the portrait's face and cymbal and the whole kit are never trimmed.
+  - `RoadFrame` gained captions and responsive widths (480 to 2048px, never upscaled).
+- **Operator cards:** a restrained line icon a card, in the accent, in a fine circle (new `route`, `pen` and
+  `broadcast` icons in `Icon.astro`, with the existing `users`); decorative and hidden from assistive
+  technology. They replace the card numbers. Two by two from 40rem, four across from 85rem with titles a step
+  smaller (21px), so "Business and relationships" holds one line and every list starts level.
+- **Contact:** the shared Contact exactly as the homepage sets it (`<Contact />` on the brand surface), in place
+  of the compact variant.
+- **Milestones (approved by John the same day):** "13 years" (music education and professional career),
+  "140+ shows" (live performances per year at peak), "Sony Music subsidiary" (worldwide distribution through
+  The Orchard), "Festivals + broadcast" (major festivals, television appearances, and live FM radio).
+  Set a step smaller than the old one-word values, the "+" kept with "Festivals"; two by two below 64rem,
+  four across above; each milestone spans two subgrid rows, so every label starts level across its row.
+- **Not changed (pending John):** the 2020 timeline keeps its line-draw and reveal only.
+- **Tested:** `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed. Screenshots at
+  1440, 1024, 768 and 390 wide: no horizontal scroll; card titles on one line with lists level. Privacy audit
+  of the build: `noindex, nofollow`, absent from the sitemap, linked from no other page; no source filenames,
+  held alternate or photographer name in the output; no metadata in any built image.
+
 ## About: back to three paragraphs
 
 John's decision (29 October 2026): the homepage About returns to three paragraphs, without the Bolt Liquidity
