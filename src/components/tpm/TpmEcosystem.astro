@@ -1,14 +1,18 @@
 ---
 /**
- * Technical Product Marketing, Ecosystem Distribution (V1.3, October 2026): after
- * the flagship campaign and its first-48-hours results, before the conclusion.
- * The point is the whole of John's product fluency carried into partner and
- * integration work, so it stands as its own section rather than under the website
- * or the documentation. Narrative first (eyebrow, headline, body), then one
- * dominant $300M+ beside the three direct integrations (the shared logo row) and
- * the downstream reach, which is never counted. Not a second results panel: no
- * four columns. On the campaign's dark ground, which the conclusion carries on.
- * Copy: tpm.json `ecosystem`.
+ * Technical Product Marketing, commercial proof (V1.3; polished in V1.4, October
+ * 2026): after the flagship campaign and its first-48-hours results, before the
+ * conclusion. The point is the whole of John's product fluency carried into
+ * partner and integration work, so it stands as its own section rather than
+ * under the website or the documentation.
+ *
+ * V1.4: centered throughout. The narrative (headline and body, no eyebrow), a
+ * centered divider beneath it, then two balanced, centered columns: $300M+ with
+ * its label, and one proof stack of the three direct integrations (the shared
+ * logo row, which names them), their label, a divider and the downstream reach,
+ * which is never counted. Not a second results panel: no four columns. On the
+ * campaign's dark ground, which the conclusion carries on. Copy: tpm.json
+ * `ecosystem`; **text** is set in bold.
  */
 import tpm from '@data/tpm.json';
 import { emphasize } from '@lib/tpm-copy';
@@ -16,33 +20,30 @@ import IntegrationLogos from '@components/IntegrationLogos.astro';
 
 const e = tpm.ecosystem;
 const headline = emphasize(e.headline, e.accent, 'Ecosystem headline');
+const rich = (text: string) => text.split('**').map((part, i) => ({ part, strong: i % 2 === 1 }));
 ---
 
 <section class="tpm-eco" data-surface="dark" aria-labelledby="tpm-eco-title" data-tpm-ecosystem>
   <div class="container tpm-eco__inner">
     <div class="tpm-eco__head">
-      <p class="tpm-eco__eyebrow">{e.eyebrow}</p>
       <h2 id="tpm-eco-title" class="display tpm-eco__title">{headline.map(({ text, em }) => (em ? <span class="tpm-accent">{text}</span> : text))}</h2>
-      <p class="tpm-eco__copy">{e.copy}</p>
+      <p class="tpm-eco__copy">{rich(e.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
     </div>
     <div class="tpm-eco__proof">
       <div class="tpm-eco__volume">
         <span class="tpm-eco__figure">{e.volume.value}</span>
-        <span class="tpm-eco__what">{e.volume.label}</span>
+        <span class="tpm-eco__label">{e.volume.label}</span>
       </div>
-      <dl class="tpm-eco__facts">
+      <div class="tpm-eco__reach">
         <div class="tpm-eco__fact">
-          <dt class="tpm-eco__eyebrow">{e.integrations.label}</dt>
-          <dd>
-            <IntegrationLogos class="tpm-eco__logos" label={e.integrations.text} />
-            <span class="tpm-eco__text">{e.integrations.text}</span>
-          </dd>
+          <IntegrationLogos class="tpm-eco__logos" label={e.integrations.label} />
+          <p class="tpm-eco__label">{e.integrations.label}</p>
         </div>
-        <div class="tpm-eco__fact">
-          <dt class="tpm-eco__eyebrow">{e.downstream.label}</dt>
-          <dd><span class="tpm-eco__text">{e.downstream.text}</span></dd>
+        <div class="tpm-eco__fact tpm-eco__fact--down">
+          <p class="tpm-eco__label">{e.downstream.label}</p>
+          <p class="tpm-eco__text">{e.downstream.text}</p>
         </div>
-      </dl>
+      </div>
     </div>
   </div>
 </section>
@@ -54,51 +55,59 @@ const headline = emphasize(e.headline, e.accent, 'Ecosystem headline');
 
   .tpm-eco__inner {
     display: grid;
-    gap: clamp(3rem, 2rem + 4vw, 5.5rem);
+    justify-items: center;
+    gap: clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
+    text-align: center;
   }
 
-  /* A fine divider takes over from the campaign's results above. */
+  /* The narrative, centered, with a fine centered divider beneath it. */
   .tpm-eco__head {
     display: grid;
+    justify-items: center;
     gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
-    max-width: 52rem;
-    padding-top: clamp(2.5rem, 2rem + 2vw, 4rem);
-    border-top: 1px solid var(--line-strong);
-  }
-
-  .tpm-eco__eyebrow {
-    margin: 0;
-    font-family: var(--font-sans);
-    font-size: var(--text-xs);
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    line-height: 1.4;
-    text-transform: uppercase;
-    color: var(--ink-3);
+    width: min(100%, 48rem);
+    padding-bottom: clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .tpm-eco__title {
     font-size: var(--text-2xl);
+    text-wrap: balance;
   }
 
   .tpm-eco__copy {
     margin: 0;
-    max-width: 44rem;
+    max-width: 42rem;
     font-size: var(--text-md);
     line-height: var(--leading-relaxed);
     color: var(--ink-2);
     text-wrap: pretty;
   }
 
+  .tpm-eco__copy strong {
+    font-weight: 700;
+    color: var(--heading);
+  }
+
+  /* Two balanced columns, each centered on its own axis. */
   .tpm-eco__proof {
     display: grid;
-    gap: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(2rem, 5vw, 6rem);
+    justify-items: center;
+    align-items: center;
+    gap: clamp(3rem, 2.5rem + 2vw, 4rem) clamp(2rem, 4vw, 5rem);
+    width: 100%;
+    max-width: 76rem;
+  }
+
+  .tpm-eco__volume,
+  .tpm-eco__reach,
+  .tpm-eco__fact {
+    display: grid;
+    justify-items: center;
   }
 
   .tpm-eco__volume {
-    display: grid;
-    align-content: start;
-    gap: 0.9rem;
+    gap: 1rem;
   }
 
   .tpm-eco__figure {
@@ -112,37 +121,45 @@ const headline = emphasize(e.headline, e.accent, 'Ecosystem headline');
     color: var(--heading);
   }
 
-  .tpm-eco__what {
-    font-size: var(--text-sm);
-    line-height: var(--leading-normal);
-    color: var(--ink-2);
+  /* The restrained metadata of "First 48 hours after launch". */
+  .tpm-eco__label {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--ink-3);
   }
 
-  .tpm-eco__facts {
-    display: grid;
-    align-content: start;
-    margin: 0;
+  .tpm-eco__reach {
+    width: min(100%, 36rem);
   }
 
   .tpm-eco__fact {
-    display: grid;
-    gap: 0.85rem;
-    padding-block: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    gap: 1.1rem;
+    width: 100%;
+  }
+
+  /* A step smaller than on the homepage, so the three marks keep one centered
+     row within the column (they may wrap on the narrowest phones). */
+  .tpm-eco__reach :global(.tpm-eco__logos) {
+    --base: clamp(0.95rem, 0.6rem + 0.6vw, 1.2rem);
+    --ilogos-col: clamp(1.25rem, 0.75rem + 1.25vw, 2.25rem);
+    justify-content: center;
+  }
+
+  /* The divider between the integrations and the downstream reach. */
+  .tpm-eco__fact--down {
+    gap: 0.6rem;
+    margin-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+    padding-top: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
     border-top: 1px solid var(--line);
   }
 
-  .tpm-eco__fact:first-child {
-    padding-top: 0;
-    border-top: 0;
-  }
-
-  .tpm-eco__fact dd {
-    display: grid;
-    gap: 0.85rem;
-    margin: 0;
-  }
-
   .tpm-eco__text {
+    margin: 0;
     font-size: var(--text-md);
     line-height: var(--leading-normal);
     color: var(--heading);
@@ -151,7 +168,6 @@ const headline = emphasize(e.headline, e.accent, 'Ecosystem headline');
   @media (min-width: 64rem) {
     .tpm-eco__proof {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: start;
     }
   }
 </style>

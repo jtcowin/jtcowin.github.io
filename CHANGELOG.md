@@ -5,6 +5,37 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.4 Commercial Proof Polish
+
+John's brief (29 October 2026): a surgical pass on the three V1.3 commercial-proof areas so they sit in the site
+rather than on top of it. Resume, About and The Road Here unchanged.
+
+- **Homepage commercial proof (`CommercialProof.astro`):**
+  - One centered stack: "Commercial impact" above `$0 → $300M+` (in the restrained metadata style of the TPM
+    page's "First 48 hours after launch"), "Processed protocol volume" beneath it.
+  - The shorter approved paragraph, with "key integrations" and "more than $300 million in processed volume" in
+    bold. It names no aggregator; the logos do.
+  - "Direct aggregator integrations" centered over one row of four: Cetus, Aftermath, FlowX, then a two-line
+    typographic tile, "+ additional / downstream integrations", set quieter than the marks. A 2 x 2 grid on
+    phones (`IntegrationLogos` gained a slot and a `quad` option).
+  - Its own surface, a deep teal-charcoal (`#0f1e1f`) a step off Select Work's ink, with full section padding,
+    so the change of ground marks the boundary. The header reads it like any surface. Small text on it holds
+    4.7:1 or better.
+- **Technical Product Marketing (`tpm/TpmEcosystem.astro`):** the eyebrow is gone; the headline and the
+  shorter approved paragraph (three bold phrases, no aggregator names) are centered, with a centered divider
+  beneath. Two balanced centered columns: $300M+ over "Protocol volume processed", and one proof stack of the
+  logos (one row from 1024px up), "Direct aggregator integrations", a divider, "Downstream reach" and
+  "Additional downstream integrations". The "Cetus · Aftermath · FlowX" line is removed.
+- **Events:** the Commercial follow-through paragraph is the revised approved copy ("key aggregators", unnamed;
+  "I created the shared working group"; "cross-organizational"). Label, teal callout, placement and credit
+  unchanged.
+- **Checks (`verify.mjs`):** the new copy and bold phrases, no aggregator names in either paragraph, the
+  four-item row with the tile last, the label placements, the centered TPM section, and the impact surface
+  differing from ink. The one-emphasis-per-paragraph rule now exempts these two approved paragraphs only.
+- **Tested:** `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed. Screenshots at
+  1440, 1280, 1024, 390 and 360 wide: no horizontal scroll; homepage row on one line on desktop and 2 x 2 on
+  phones; TPM logos on one row from 1024px up.
+
 ## V1.3 Commercial Proof and Case-Study Outcomes
 
 John's brief (October 2026): put the commercial result of the Bolt work on the homepage, in the resume and in

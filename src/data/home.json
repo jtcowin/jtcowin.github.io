@@ -236,14 +236,14 @@
     "headshot": "about-headshot"
   },
   "commercial": {
-    "_note": "V1.3 (October 2026): the homepage's commercial proof, after the trust bar and before Select Work (CommercialProof.astro). John's approved copy, word for word. One dominant result, the paragraph, then the direct integrations (integrations.json, in its order) with the downstream statement attached. No count for the downstream integrations; no Sui Foundation or Mysten Labs here.",
+    "_note": "V1.3, polished in V1.4 (October 2026): the homepage's commercial proof, after the trust bar and before Select Work (CommercialProof.astro), on its own deep teal-charcoal ground. John's approved copy, word for word; **text** is set in bold. One dominant result, the paragraph, then the direct integrations (integrations.json, in its order) with a fourth, typographic tile for the downstream integrations. Never a count for the downstream integrations; no Sui Foundation or Mysten Labs here.",
     "eyebrow": "COMMERCIAL IMPACT",
     "proof": "$0 → $300M+",
     "proofSpoken": "From $0 to more than $300 million",
     "proofLabel": "processed protocol volume",
-    "copy": "I joined Bolt before launch and helped drive direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths beyond the three direct relationships. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.",
+    "copy": "I joined Bolt before launch and helped drive **key integrations**. As Bolt's distribution expanded, the protocol grew from zero to **more than $300 million in processed volume**.",
     "integrationsLabel": "DIRECT AGGREGATOR INTEGRATIONS",
-    "downstream": "Additional downstream integrations through connected Sui applications"
+    "downstream": {"lead": "additional", "rest": "downstream integrations"}
   },
   "contact": {
     "_note": "Full Site Iteration V1 (October 2026): `accent`, the headline's second sentence, is set in the section's accent color wherever Contact appears (full and compact); the heading stays one sentence for assistive technology.",

@@ -110,18 +110,16 @@
     }
   },
   "ecosystem": {
-    "_note": "V1.3 (October 2026): Ecosystem Distribution, after the campaign's results and before the conclusion (TpmEcosystem.astro). John's approved copy, word for word. accent is the headline's phrase in the accent color. The downstream reach is never counted.",
-    "eyebrow": "ECOSYSTEM DISTRIBUTION",
+    "_note": "V1.3, polished in V1.4 (October 2026): after the campaign's results and before the conclusion (TpmEcosystem.astro). John's approved copy, word for word; **text** is set in bold. accent is the headline's phrase in the accent color. Centered throughout: the narrative, then a divider, then the volume beside the integrations. The logos name the aggregators, so the copy does not. The downstream reach is never counted.",
     "headline": "Product clarity carried into the market.",
     "accent": "carried into the market.",
-    "copy": "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.",
+    "copy": "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into **partner conversations and direct integrations**. The work also created **downstream integration paths** as the protocol grew from zero to **more than $300 million in processed volume**.",
     "integrations": {
-      "label": "CETUS · AFTERMATH · FLOWX",
-      "text": "Direct aggregator integrations"
+      "label": "Direct aggregator integrations"
     },
     "downstream": {
-      "label": "DOWNSTREAM REACH",
-      "text": "Additional integrations through connected Sui applications"
+      "label": "Downstream reach",
+      "text": "Additional downstream integrations"
     },
     "volume": {
       "value": "$300M+",

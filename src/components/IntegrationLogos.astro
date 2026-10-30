@@ -7,6 +7,9 @@
  * as one light monochrome (a filter, never an edit to the file), each at its
  * own height so the three read with comparable weight. The row wraps on narrow
  * screens rather than shrinking the marks.
+ * V1.4: anything in the default slot follows the marks as further items of the
+ * same list (the homepage's downstream tile), and `quad` sets the row as a 2 x 2
+ * grid on phones. The gap between marks can be tightened with --ilogos-col.
  */
 import { Image } from 'astro:assets';
 import data from '@data/integrations.json';
@@ -15,8 +18,10 @@ interface Props {
   class?: string;
   /** Accessible name for the list. */
   label?: string;
+  /** On phones, a 2 x 2 grid (three marks and the slotted fourth item). */
+  quad?: boolean;
 }
-const { class: className, label = 'Direct aggregator integrations' } = Astro.props;
+const { class: className, label = 'Direct aggregator integrations', quad = false } = Astro.props;
 const files = import.meta.glob<{ default: ImageMetadata }>('../assets/integrations/*.svg', { eager: true });
 const logos = data.logos.map((l) => {
   const mod = files[`../assets/integrations/${l.file}`];
@@ -25,7 +30,7 @@ const logos = data.logos.map((l) => {
 });
 ---
 
-<ul class:list={['ilogos', className]} aria-label={label}>
+<ul class:list={['ilogos', { 'ilogos--quad': quad }, className]} aria-label={label}>
   {
     logos.map((l) => (
       <li class="ilogos__item" data-integration={l.id} style={`--h: ${l.height}`}>
@@ -33,6 +38,7 @@ const logos = data.logos.map((l) => {
       </li>
     ))
   }
+  <slot />
 </ul>
 
 <style>
@@ -41,7 +47,7 @@ const logos = data.logos.map((l) => {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: clamp(1.25rem, 1rem + 1.5vw, 2.75rem) clamp(1.75rem, 1rem + 3vw, 3.5rem);
+    gap: clamp(1.25rem, 1rem + 1.5vw, 2.75rem) var(--ilogos-col, clamp(1.75rem, 1rem + 3vw, 3.5rem));
     margin: 0;
     padding: 0;
     list-style: none;
@@ -60,5 +66,14 @@ const logos = data.logos.map((l) => {
     max-width: none;
     /* One light monochrome on the dark ground; FlowX's half-tone stays a half-tone. */
     filter: brightness(0) invert(0.93);
+  }
+
+  @media (max-width: 39.99rem) {
+    .ilogos--quad {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-items: center;
+      gap: 1.75rem 1rem;
+    }
   }
 </style>

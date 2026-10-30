@@ -332,13 +332,23 @@ if (/id="how-i-work"/.test(home)) failures.push('[claim] How I Work is part of t
   const impact = (home.match(/<section id="impact"[\s\S]*?<\/section>/) || [''])[0];
   const impactAt = home.indexOf('<section id="impact"');
   const t = textOf(impact);
-  const want = ['COMMERCIAL IMPACT', '$0 → $300M+', 'processed protocol volume', "I joined Bolt before launch and helped drive direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths beyond the three direct relationships. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.", 'DIRECT AGGREGATOR INTEGRATIONS', 'Additional downstream integrations through connected Sui applications'];
-  const missing = want.filter((w) => !t.includes(w));
+  // V1.4: the shorter paragraph (its two bold phrases), the label centered over the four-item row whose fourth item is
+  // the downstream tile, and its own deep teal-charcoal surface against Select Work's ink.
+  const want = ['COMMERCIAL IMPACT', '$0 → $300M+', 'processed protocol volume', "I joined Bolt before launch and helped drive key integrations. As Bolt's distribution expanded, the protocol grew from zero to more than $300 million in processed volume.", 'DIRECT AGGREGATOR INTEGRATIONS', 'additional downstream integrations'];
+  const missing = want.filter((w) => !t.replace(/[’‘]/g, "'").replace(/\+\s*additional/, 'additional').includes(w));
   if (!impact || missing.length) failures.push(`[claim] V1.3: the commercial proof carries John's approved copy word for word (missing: ${missing.join(' | ') || 'the section'})`);
   if (!(impactAt > home.indexOf('class="logobar') && impactAt < home.indexOf('id="work"'))) failures.push('[claim] V1.3: the commercial proof sits after the trust bar and before Select Work');
   const logos = [...impact.matchAll(/data-integration="([\w-]+)"/g)].map((m) => m[1]).join(',');
   if (logos !== 'cetus,aftermath,flowx') failures.push(`[claim] V1.3: the integrations show Cetus, Aftermath and FlowX in that order (found ${logos})`);
   if ((impact.match(/class="impact__figure"/g) || []).length !== 1 || /Sui Foundation|Mysten/.test(t) || /\d+\s+(?:downstream|applications|apps)/i.test(t)) failures.push('[claim] V1.3: one dominant result, no Sui Foundation or Mysten Labs, and no count for the downstream integrations');
+  const copyHtml = (impact.match(/<p class="impact__copy"[^>]*>([\s\S]*?)<\/p>/) || [])[1] || '';
+  const bold = [...copyHtml.matchAll(/<strong[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1])).join(' | ');
+  if (bold !== 'key integrations | more than $300 million in processed volume' || /Cetus|Aftermath|FlowX|Sui applications/.test(textOf(copyHtml))) failures.push(`[claim] V1.4: the commercial paragraph sets "key integrations" and "more than $300 million in processed volume" in bold and names no aggregator (found ${bold})`);
+  const items = [...impact.matchAll(/<li\b[^>]*>/g)].map((m) => (/data-integration="([\w-]+)"/.exec(m[0]) || [, /data-downstream/.test(m[0]) ? 'downstream' : '?'])[1]).join(',');
+  if (items !== 'cetus,aftermath,flowx,downstream' || !/class="ilogos[^"]*\bilogos--quad\b/.test(impact)) failures.push(`[claim] V1.4: one row of four, the three marks then the downstream tile, a 2 x 2 grid on phones (found ${items})`);
+  const integ = (impact.match(/<div class="impact__integrations"[\s\S]*$/) || [''])[0];
+  if (!/^<div class="impact__integrations"[^>]*>\s*<p class="impact__eyebrow"[^>]*>DIRECT AGGREGATOR INTEGRATIONS<\/p>\s*<ul/.test(integ)) failures.push('[claim] V1.4: the integrations label sits directly above the complete row');
+  if (!/<section id="impact"[^>]*data-surface="dark"/.test(impact)) failures.push('[claim] V1.4: the commercial proof is its own surface, which the header reads');
   for (const f of ['cetus.svg', 'aftermath.svg', 'flowx.svg']) {
     const a = path.join(root, 'src/assets/integrations', f);
     if (!fs.existsSync(a) || /<script|https?:\/\/(?!www\.w3\.org)/i.test(fs.readFileSync(a, 'utf8'))) failures.push(`[asset] src/assets/integrations/${f} is John's supplied SVG, local, with no script or external reference`);
@@ -929,10 +939,13 @@ if (!emKey.length || emKey.some((r) => /background|box-shadow|text-decoration|bo
   failures.push('[claim] .em-key is a slightly heavier weight (600) and nothing more: no background, underline, border or padding');
 }
 // Site-wide (Full Site Iteration V1): one emphasized phrase per paragraph at most (a quotation keeps its approved
-// phrases), and no highlighter or underline mark anywhere.
+// phrases), and no highlighter or underline mark anywhere. V1.4 (October 2026): John approved two commercial-proof
+// paragraphs with more than one bold phrase (the homepage's impact__copy, two; Technical Product Marketing's
+// tpm-eco__copy, three); their exact phrases are checked where those sections are.
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8').replace(/<blockquote\b[\s\S]*?<\/blockquote>/g, '').replace(/<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>/g, '');
   for (const m of html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
+    if (/^<p\b[^>]*class="(?:impact__copy|tpm-eco__copy)[\s"]/.test(m[0])) continue;
     const n = (m[1].match(/<(?:strong|b|em)\b/g) || []).length;
     if (n > 1) failures.push(`[claim] ${path.relative(dist, f)}: a paragraph emphasizes ${n} phrases ("${textOf(m[1]).slice(0, 60)}"); one at most`);
   }
@@ -1112,6 +1125,12 @@ const spaced = (html) => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, '
 // A scoped rule's selector, with Astro's data-astro-cid attributes taken out.
 const bare = (sel) => sel.replace(/\[data-astro-cid-[^\]]*\]/g, '').replace(/:where\([^)]*\)/g, '');
 const tpmRules = (re) => CSS_RULES.filter((r) => re.test(bare(r.sel)));
+// V1.4: the homepage's commercial proof sits on a deep teal-charcoal of its own, not the ink of Select Work.
+{
+  const body = CSS_RULES.filter((r) => /^\.impact$/.test(bare(r.sel)) && /--bg:/.test(r.body)).map((r) => r.body).join(';');
+  const hex = (/--bg:\s*(#[0-9a-f]{6})/i.exec(body) || [])[1];
+  if (!hex || hex.toLowerCase() === '#0d0f10') failures.push('[claim] V1.4: the commercial proof sits on a deep teal-charcoal, not the ink of Select Work');
+}
 // The body of one @keyframes block.
 const keyframesOf = (name) => (cssText.replace(/\/\*[\s\S]*?\*\//g, '').match(new RegExp(`@keyframes ${name}\\s*\\{((?:[^{}]*\\{[^{}]*\\})*)[^{}]*\\}`)) || [, ''])[1];
 const TPM = {
@@ -1705,12 +1724,20 @@ if (campEnd < 0 || ecoAt < campEnd || conclusionAt < ecoAt || tpmPage.slice(camp
 {
   const eco = tpmData.ecosystem || {};
   const ecoText = textOf(norm(ecoHtml));
-  const want = ['ECOSYSTEM DISTRIBUTION', 'Product clarity carried into the market.', "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations with Cetus, Aftermath, and FlowX. Because other Sui applications were integrated with those aggregators, the work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.", 'CETUS · AFTERMATH · FLOWX', 'Direct aggregator integrations', 'DOWNSTREAM REACH', 'Additional integrations through connected Sui applications', '$300M+', 'Protocol volume processed'];
-  const missing = want.filter((w) => !ecoText.includes(w));
+  // V1.4: no eyebrow and no aggregator names in the text (the logos name them); the approved bold phrases; the
+  // labels as restrained metadata beneath their proof.
+  const want = ['Product clarity carried into the market.', "The same product fluency behind the positioning, website, documentation, and campaign also supported ecosystem growth. I helped translate Bolt's value and architecture into partner conversations and direct integrations. The work also created downstream integration paths as the protocol grew from zero to more than $300 million in processed volume.", 'Direct aggregator integrations', 'Downstream reach', 'Additional downstream integrations', '$300M+', 'Protocol volume processed'];
+  const missing = want.filter((w) => !ecoText.replace(/[’‘]/g, "'").includes(w));
   if (missing.length) failures.push(`[tpm] V1.3: Ecosystem Distribution carries John's approved copy word for word (missing: ${missing.join(' | ')})`);
   const logos = [...ecoHtml.matchAll(/data-integration="([\w-]+)"/g)].map((m) => m[1]).join(',');
   if (logos !== 'cetus,aftermath,flowx') failures.push(`[tpm] V1.3: the integrations show Cetus, Aftermath and FlowX in that order (found ${logos})`);
   if (/tpm-results__primary/.test(ecoHtml) || /Sui Foundation|Mysten/.test(ecoText) || /\d+\s+(?:downstream|applications|apps)/i.test(ecoText)) failures.push('[tpm] V1.3: Ecosystem Distribution is no second results panel, names no Sui Foundation or Mysten Labs, and never counts the downstream reach');
+  if (/ECOSYSTEM DISTRIBUTION|CETUS · AFTERMATH · FLOWX|tpm-eco__eyebrow/i.test(ecoHtml) || /Cetus|Aftermath|FlowX/.test(ecoText)) failures.push('[tpm] V1.4: no eyebrow and no line of aggregator names; the logos name them');
+  const ecoBold = [...((ecoHtml.match(/<p class="tpm-eco__copy"[^>]*>([\s\S]*?)<\/p>/) || [])[1] || '').matchAll(/<strong[^>]*>([\s\S]*?)<\/strong>/g)].map((m) => textOf(m[1])).join(' | ');
+  if (ecoBold !== 'partner conversations and direct integrations | downstream integration paths | more than $300 million in processed volume') failures.push(`[tpm] V1.4: the approved phrases are set in bold (found ${ecoBold})`);
+  if (!/<div class="tpm-eco__fact"[^>]*>\s*<ul[\s\S]*?<\/ul>\s*<p class="tpm-eco__label"[^>]*>Direct aggregator integrations<\/p>/.test(ecoHtml)) failures.push('[tpm] V1.4: the integrations label sits beneath the logos');
+  const ecoCss = tpmRules(/^\.tpm-eco__(?:inner|head|volume|reach|fact)\b/).map((r) => r.body).join(';');
+  if (!/justify-items:\s*center/.test(ecoCss) || !/text-align:\s*center/.test(ecoCss)) failures.push('[tpm] V1.4: the section is centered throughout');
   if (eco.accent && !(ecoHtml.match(/<span class="tpm-accent"[^>]*>([^<]*)<\/span>/) || [])[1]?.includes(eco.accent)) failures.push('[tpm] V1.3: the ecosystem headline sets its accent phrase');
 }
 
@@ -2324,9 +2351,10 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
     const a = evAsset(id);
     if (!a.id || a.type !== 'metric' || a.permission !== 'approved' || !a.value) failures.push(`[events] ${id}: a figure or named outcome on the page comes only from an approved metric entry`);
   }
-  // V1.3 (October 2026): John approved one outcome that names the integrations, Sui Foundation and Mysten Labs and
-  // a potential pilot; that exact sentence, in its labeled callout, is the only exception to what follows.
-  const EV_FOLLOW = 'Event-led introductions and follow-through helped secure direct integrations with Cetus, Aftermath, and FlowX while opening strategic discussions with Sui Foundation and Mysten Labs. I created and managed the shared working group as it grew to more than 20 cross-organization stakeholders exploring a potential pilot.';
+  // V1.3 (October 2026): John approved one outcome that names Sui Foundation and Mysten Labs and a potential pilot
+  // (V1.4 revised it: the integrations are with "key aggregators", unnamed); that exact sentence, in its labeled
+  // callout, is the only exception to what follows.
+  const EV_FOLLOW = 'Event-led introductions and follow-through helped secure direct integrations with key aggregators while opening strategic discussions with Sui Foundation and Mysten Labs. I created the shared working group as it grew to more than 20 cross-organizational stakeholders exploring a potential pilot.';
   const evCallouts = [...evNoCode.matchAll(/<div class="evd__callout"[^>]*>\s*<p class="evd__callout-label"[^>]*>([\s\S]*?)<\/p>\s*<p class="evd__outcome"[^>]*>([\s\S]*?)<\/p>\s*<\/div>/g)];
   if (evCallouts.length !== 1 || textOf(evCallouts[0][1]) !== 'COMMERCIAL FOLLOW-THROUGH' || textOf(norm(evCallouts[0][2])).replace(/[’‘]/g, "'") !== EV_FOLLOW) failures.push('[events] V1.3: the live presentation carries the approved Commercial Follow-Through, labeled, in its teal-ruled callout, once');
   if (/Sui Foundation|Mysten/.test(textOf(norm(evNoCode.replace(/<div class="evd__callout"[\s\S]*?<\/div>/g, ' '))))) failures.push('[events] V1.3: Sui Foundation and Mysten Labs appear only in the Commercial Follow-Through');
@@ -2383,7 +2411,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
       context: 'I led Bolt Liquidity’s Sui Summit presentation from early planning through session strategy, deck direction, live production, capture, and post-event distribution.',
       points: ['Secured the slot, helped shape the subject, and promoted the session', 'Directed the deck, presentation setup, and live slides', 'Captured the presentation from multiple angles and repackaged it for continued distribution'],
       // V1.3 (October 2026): the Commercial Follow-Through, John's approved copy, word for word.
-      outcome: 'Event-led introductions and follow-through helped secure direct integrations with Cetus, Aftermath, and FlowX while opening strategic discussions with Sui Foundation and Mysten Labs. I created and managed the shared working group as it grew to more than 20 cross-organization stakeholders exploring a potential pilot.',
+      outcome: 'Event-led introductions and follow-through helped secure direct integrations with key aggregators while opening strategic discussions with Sui Foundation and Mysten Labs. I created the shared working group as it grew to more than 20 cross-organizational stakeholders exploring a potential pilot.',
       credit: 'Organized, directed, and captured by John Cowin · Speaker Max McKendry · Deck design and video edit by Bob van der Meer',
       participants: '',
       preview: 'ev-hero-presentation', full: null,
