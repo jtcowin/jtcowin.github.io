@@ -5,6 +5,44 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.8 The Road Here visual refinement
+
+John's brief (31 October 2026): visual refinement of the private draft. Copy, icons, Contact, privacy and launch
+state as in V1.7. Still unlinked, `noindex` and out of the sitemap.
+
+- **Hero cutout:** `src/assets/road/music-hero-cutout.png` (890x1480, true alpha) replaces the boxed portrait.
+  - Only the black studio background is removed.
+  - The shadowed side of the shirt, arm and trousers, which is nearly as dark as the background, was traced by
+    hand on a shadow-lifted copy. The bright parts (face, hands, cymbal) come from a background-difference
+    matte. GrabCut snaps both to the real edges, and a guided filter softens the outline.
+  - Edge colours are cleaned of the black background, so there is no halo.
+  - The subject is not retouched. The original source is unchanged.
+  - Set like the homepage portrait, with no frame. On desktop it is anchored bottom right, standing on the
+    hero's lower edge, as tall as the frame below the header allows and clear of the navigation and headline,
+    so the hero is one screen at 1440x900 and 1024x768. Phones and tablets: centered under the copy, his face,
+    the cymbal and his hands whole.
+  - Responsive AVIF/WebP with alpha (480, 720, 890px).
+- **Section 2:** the headline and copy sit side by side on desktop, above a centered, layered composition.
+  - The live performance is large (up to 38rem wide) and dominant.
+  - The television card lies over its lower-left edge and the festival poster over its upper-right edge
+    (empty stage darkness there), with restrained rotation, frame and shadow, clear of John, the kit and the
+    riser.
+  - Phones: stacked in order (live, television, festival), the cards alternating sides, with no overlap.
+  - The festival caption is removed, along with `RoadFrame`'s caption support.
+- **Milestone bar:** removed: data, markup and styles.
+- **Living timeline:**
+  - After the line draws, a soft accent pulse rises along it from bottom to top (2.8s).
+  - Each milestone it passes brightens for a moment: its node fills and glows, and its year and words come up
+    to full strength.
+  - It rests 4.8s, then repeats, only while the section is on screen and the tab is visible.
+  - Reduced motion: no pulse, every milestone at full strength. No scripts: a static timeline.
+- **Tested:**
+  - `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed.
+  - Screenshots at 1440, 1280, 1024, 768 and 390 wide: no horizontal scroll.
+  - Motion sampled in a browser: bottom-to-top travel, milestones lit in order, rest, pause off screen.
+  - Privacy audit of the build: no metadata, source names, held alternate or credits; still `noindex`, absent
+    from the sitemap and unlinked.
+
 ## V1.7 The Road Here page build
 
 John's brief (30 October 2026): turn the Phase 3A scaffold into a credible editorial page, still a private draft

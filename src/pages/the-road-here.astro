@@ -2,7 +2,7 @@
 /**
  * The Road Here (Phase 3A draft, October 2026; V1.7 build): John's career before
  * Web3, as one editorial page in five sections: the hero, from music school to the
- * road (with the milestones), more than the drummer (the four areas of the business
+ * road (the live, television and festival evidence), more than the drummer (the four areas of the business
  * he ran), the 2020 pivot (a quiet timeline from the road into DeFi), and where it
  * led, back to the selected work. Then the shared Contact (as on the homepage) and
  * the footer. V1.7: no numbered eyebrows or chapter navigation; each headline
@@ -14,13 +14,16 @@
  * Words: src/data/road.json. Photographs: assets.json road-* entries, through
  * RoadFrame (a labeled placeholder until each photograph is supplied). Motion is
  * restrained: one reveal as each block comes into view, a gentle drift on the
- * photographs, and the timeline's line drawing down; all of it off with reduced
+ * photographs, the timeline's line drawing down and then a slow pulse rising along
+ * it (V1.8), lighting each milestone it passes; all of it off with reduced
  * motion or without scripts. Privacy: the band is never named here or in metadata.
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import RoadFrame from '@components/road/RoadFrame.astro';
 import Icon from '@components/Icon.astro';
+import { Picture } from 'astro:assets';
+import { getAsset, resolveImage } from '@lib/assets';
 import road from '@data/road.json';
 import { withBase } from '@lib/paths';
 
@@ -40,6 +43,10 @@ const H = {
   pivot: accented(pivot.headline, pivot.accent, 'pivot'),
   led: accented(led.headline, led.accent, 'led'),
 };
+// The hero figure (V1.8): a transparent cutout, set like the homepage portrait rather than in a frame.
+const heroEntry = getAsset(hero.image);
+const heroImg = resolveImage(heroEntry);
+if (!heroImg) throw new Error('[road] the hero cutout is missing');
 type GroupIcon = 'route' | 'pen' | 'users' | 'broadcast';
 const groups = operator.groups as Array<{ title: string; items: string[]; icon: GroupIcon }>;
 ---
@@ -55,8 +62,19 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
           </h1>
           <p class="lede road-hero__lede road-reveal">{rich(hero.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
-        {/* No drift: the crop keeps his face and the whole cymbal, which a drift's zoom would trim. */}
-        <RoadFrame id={hero.image} class="road-hero__portrait road-reveal" priority sizes="(min-width: 64rem) 32rem, (min-width: 40rem) 30rem, 100vw" />
+        {/* The figure stands on the hero's lower edge, out of any frame (V1.8). */}
+        <div class="road-hero__figure">
+          <Picture
+            src={heroImg}
+            alt={heroEntry.alt}
+            widths={[480, 720, 890]}
+            sizes="(min-width: 64rem) 30rem, (min-width: 40rem) 26rem, 88vw"
+            formats={['avif', 'webp']}
+            loading="eager"
+            fetchpriority="high"
+            class="road-hero__img"
+          />
+        </div>
       </div>
     </section>
 
@@ -70,22 +88,15 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
               {school.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
             </div>
           </div>
-          {/* Three pieces of real evidence (V1.7): the live performance, dominant, with the television appearance and
-              the festival poster (cropped above its lower-tier names) as supporting cards. Phones: in that order. */}
-          <div class="road-school__media">
-            <RoadFrame id={school.image} class="road-school__live road-reveal" drift sizes="(min-width: 64rem) 34vw, (min-width: 40rem) 58vw, 100vw" />
-            <RoadFrame id={school.tv} class="road-school__tv road-reveal" sizes="(min-width: 64rem) 20vw, (min-width: 40rem) 34vw, 100vw" />
-            <RoadFrame id={school.festival.image} caption={school.festival.caption} class="road-school__festival road-reveal" sizes="(min-width: 64rem) 20vw, (min-width: 40rem) 34vw, 100vw" />
-          </div>
         </div>
-        <ul class="road-milestones" aria-label="Milestones">
-          {school.milestones.map((m) => (
-            <li class="road-milestone road-reveal">
-              <span class="road-milestone__value">{m.value.replace(' + ', '\u00a0+ ')}</span>
-              <span class="road-milestone__label">{m.label}</span>
-            </li>
-          ))}
-        </ul>
+        {/* Three pieces of real evidence (V1.8): the live performance, large and centered, with the television
+            appearance and the festival poster (cropped above its lower-tier names) laid over its opposite outer
+            edges, clear of John and the kit. Phones: stacked in that order, without overlap. */}
+        <div class="road-stage">
+          <RoadFrame id={school.image} class="road-stage__live road-reveal" drift sizes="(min-width: 64rem) 38rem, (min-width: 40rem) 62vw, 100vw" />
+          <RoadFrame id={school.tv} class="road-stage__card road-stage__tv road-reveal" sizes="(min-width: 64rem) 16rem, (min-width: 40rem) 26vw, 82vw" />
+          <RoadFrame id={school.festival} class="road-stage__card road-stage__festival road-reveal" sizes="(min-width: 64rem) 18rem, (min-width: 40rem) 28vw, 82vw" />
+        </div>
       </div>
     </section>
 
@@ -207,6 +218,100 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     window.addEventListener('scroll', queue, { passive: true });
     window.addEventListener('resize', queue);
     update();
+
+    // The living timeline (V1.8). Once the line has drawn, a soft accent pulse travels up it from the bottom;
+    // each milestone it passes brightens briefly (its node, year and words). Then a long rest, and again, only
+    // while the section is on screen and the tab is visible. Reduced motion or no scripts: a static timeline.
+    if (timeline) {
+      const nodes = [...timeline.querySelectorAll<HTMLElement>('.road-timeline__item')];
+      const TRAVEL = 2800; // ms, bottom to top
+      const REST = 4800; // ms between pulses
+      const FIRST = 1500; // ms after the line starts drawing
+      let visible = false;
+      let running = false;
+      let frame = 0;
+      let timer = 0;
+      const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+
+      const geometry = () => {
+        const box = timeline.getBoundingClientRect();
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        const inset = rem * 0.45;
+        const top = inset;
+        const bottom = box.height - inset;
+        const centers = nodes.map((n) => {
+          const r = n.getBoundingClientRect();
+          return r.top - box.top + rem * 0.3 + 5.5; // the node's center: 0.3rem down, half of an 11px dot
+        });
+        return { top, bottom, centers };
+      };
+
+      const light = (n: HTMLElement) => {
+        n.classList.add('is-lit');
+        window.setTimeout(() => n.classList.remove('is-lit'), 1300);
+      };
+
+      const cycle = () => {
+        if (!visible || document.hidden) {
+          running = false;
+          return;
+        }
+        running = true;
+        const g = geometry();
+        const lit = new Set<number>();
+        const start = performance.now();
+        const step = (now: number) => {
+          if (!visible || document.hidden) {
+            timeline.style.setProperty('--pulse-o', '0');
+            running = false;
+            return;
+          }
+          const t = Math.min(1, (now - start) / TRAVEL);
+          const y = g.bottom - ease(t) * (g.bottom - g.top);
+          timeline.style.setProperty('--pulse-y', `${y.toFixed(1)}px`);
+          timeline.style.setProperty('--pulse-o', String(Math.min(1, t * 6, (1 - t) * 6)));
+          g.centers.forEach((c, i) => {
+            if (!lit.has(i) && y <= c + 4) {
+              lit.add(i);
+              light(nodes[i]);
+            }
+          });
+          if (t < 1) frame = requestAnimationFrame(step);
+          else {
+            timeline.style.setProperty('--pulse-o', '0');
+            timer = window.setTimeout(cycle, REST);
+          }
+        };
+        frame = requestAnimationFrame(step);
+      };
+
+      const stop = () => {
+        cancelAnimationFrame(frame);
+        window.clearTimeout(timer);
+        timeline.style.setProperty('--pulse-o', '0');
+        running = false;
+      };
+
+      let first = true;
+      const watch = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            visible = e.isIntersecting;
+            if (visible && !running) {
+              window.clearTimeout(timer);
+              timer = window.setTimeout(cycle, first ? FIRST : 700);
+              first = false;
+            } else if (!visible) stop();
+          }
+        },
+        { threshold: 0.35 },
+      );
+      watch.observe(timeline);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop();
+        else if (visible && !running) timer = window.setTimeout(cycle, 700);
+      });
+    }
   }
 </script>
 
@@ -240,18 +345,26 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
   }
 
   /* ---- hero ---- */
+  /* The figure stands on the section's lower edge, so the hero has no bottom
+     padding of its own; the copy keeps its room. */
   .road-hero {
     padding-top: calc(var(--header-row) + clamp(2.5rem, 6vw, 6rem));
-    padding-bottom: clamp(3.5rem, 7vw, 7rem);
+    padding-bottom: 0;
     min-height: min(100svh, 62rem);
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    overflow: hidden;
   }
 
   .road-hero__grid {
     display: grid;
     gap: clamp(2rem, 5vw, 5rem);
-    align-items: center;
+    align-items: end;
+    width: 100%;
+  }
+
+  .road-hero__copy {
+    align-self: center;
   }
 
   .road-hero__copy {
@@ -269,20 +382,47 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     max-width: 34rem;
   }
 
-  .road-hero :global(.road-hero__portrait) {
-    width: min(100%, 30rem);
+  /* The cutout, homepage style: no frame, card or shadow. Phones and tablets:
+     centered under the copy, sized so his face, the cymbal and his hands are
+     whole. Desktop: anchored bottom right, as tall as the room under the
+     header allows, clear of the navigation and the headline. */
+  .road-hero__figure {
     justify-self: center;
+    width: min(88vw, 26rem);
+    line-height: 0;
+  }
+
+  .road-hero__figure :global(picture),
+  .road-hero__figure :global(.road-hero__img) {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 
   @media (min-width: 64rem) {
     .road-hero__grid {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      min-height: calc(min(100svh, 62rem) - var(--header-row) - clamp(2.5rem, 6vw, 6rem));
     }
 
-    .road-hero :global(.road-hero__portrait) {
+    .road-hero__copy {
+      padding-bottom: clamp(3rem, 6vw, 6rem);
+    }
+
+    /* As tall as the frame below the header allows, rising into the hero's top
+       padding (never under the navigation), so the hero is one screen. */
+    .road-hero__figure {
       justify-self: end;
-      width: 100%;
-      max-width: 32rem;
+      width: auto;
+      height: min(calc(min(100svh, 62rem) - var(--header-row) - 1.5rem), 56rem);
+      aspect-ratio: 890 / 1480;
+      margin-top: calc(-1 * (clamp(2.5rem, 6vw, 6rem) - 1.5rem));
+    }
+
+    .road-hero__figure :global(picture),
+    .road-hero__figure :global(.road-hero__img) {
+      height: 100%;
+      width: auto;
     }
   }
 
@@ -290,7 +430,6 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
   .road-school__grid {
     display: grid;
     gap: clamp(2.5rem, 5vw, 5rem);
-    align-items: center;
   }
 
   .road-school__copy {
@@ -298,75 +437,74 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     gap: var(--space-5);
   }
 
-  /* The evidence group (V1.7): stacked on phones (live, television, festival);
-     from 40rem the live performance leads, a little over 1.7 times as wide as
-     the two supporting cards stacked beside it. Spacious, never a collage. */
-  .road-school__media {
-    display: grid;
-    gap: clamp(1rem, 0.75rem + 1vw, 1.5rem);
-  }
-
-  @media (min-width: 40rem) {
-    .road-school__media {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 0.58fr);
+  /* Desktop: the headline and the copy side by side above the composition. */
+  @media (min-width: 64rem) {
+    .road-school__copy {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      column-gap: clamp(3rem, 6vw, 6rem);
       align-items: start;
     }
-
-    .road-school__media :global(.road-school__live) {
-      grid-row: 1 / span 2;
-    }
   }
 
-  @media (min-width: 64rem) {
-    .road-school__grid {
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    }
-  }
-
-  .road-milestones {
-    list-style: none;
-    margin: clamp(3rem, 6vw, 5rem) 0 0;
-    padding: 0;
+  /* The layered composition (V1.8). Phones: stacked, live performance first,
+     the two cards a little narrower and alternating sides, no overlap. */
+  .road-stage {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--space-4);
-    border-top: 1px solid var(--line-strong);
+    gap: clamp(1.25rem, 4vw, 1.75rem);
+    margin-top: clamp(2.5rem, 6vw, 5rem);
   }
 
-  @media (min-width: 64rem) {
-    .road-milestones {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+  .road-stage :global(.road-stage__card) {
+    width: 82%;
+    padding: 6px;
+    background: var(--bg-elev);
+    border-radius: calc(var(--radius) + 6px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .road-stage :global(.road-stage__tv) {
+    justify-self: start;
+    rotate: -1.5deg;
+  }
+
+  .road-stage :global(.road-stage__festival) {
+    justify-self: end;
+    rotate: 1.5deg;
+  }
+
+  /* From 40rem: the live performance large and centered; the television card
+     over its lower-left edge and the festival poster over its upper-right edge
+     (empty stage darkness there), each overlapping by a little over a tenth of
+     its width, so neither touches John, the kit or the riser. */
+  @media (min-width: 40rem) {
+    .road-stage {
+      display: block;
+      position: relative;
+      width: min(100%, 66rem);
+      margin-inline: auto;
+      padding-block: clamp(1rem, 3vw, 2.5rem);
     }
-  }
 
-  /* V1.7: each milestone spans two rows of the list's grid (value, then label),
-     so across a row every label starts level however the values wrap. */
-  .road-milestone {
-    display: grid;
-    grid-row: span 2;
-    grid-template-rows: subgrid;
-    row-gap: var(--space-3);
-    align-content: start;
-    padding: var(--space-6) var(--space-5) var(--space-5) 0;
-  }
+    .road-stage :global(.road-stage__live) {
+      width: min(60%, 38rem);
+      margin-inline: auto;
+    }
 
-  .road-milestone__value {
-    font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-stretch: var(--display-stretch);
-    /* (V1.7: a step smaller than the old one-word values, for the approved labels.) */
-    font-size: clamp(1.625rem, 1.1rem + 1.4vw, 2.375rem);
-    line-height: 1.02;
-    color: var(--heading);
-    text-wrap: balance;
-    align-self: end;
-  }
+    .road-stage :global(.road-stage__card) {
+      position: absolute;
+    }
 
-  .road-milestone__label {
-    font-size: var(--text-sm);
-    line-height: var(--leading-normal);
-    color: var(--ink-3);
-    max-width: 22ch;
+    .road-stage :global(.road-stage__tv) {
+      width: 25%;
+      left: 0;
+      bottom: 12%;
+    }
+
+    .road-stage :global(.road-stage__festival) {
+      width: 27%;
+      right: 0;
+      top: 9%;
+    }
   }
 
   /* ---- more than the drummer ---- */
@@ -517,6 +655,29 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     scale: 1 1;
   }
 
+  /* The traveling pulse (V1.8): a short, soft accent segment on the line, head
+     up, moved by the script (--pulse-y is its center); invisible at rest and
+     with reduced motion or no scripts. */
+  .road-timeline::after {
+    content: '';
+    position: absolute;
+    left: calc(var(--dot) / 2 - 1.5px);
+    top: calc(var(--pulse-y, 0px) - 2.25rem);
+    width: 3px;
+    height: 4.5rem;
+    border-radius: 3px;
+    background: linear-gradient(to top, transparent, color-mix(in srgb, var(--accent) 75%, transparent) 65%, var(--accent-ink));
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+    opacity: var(--pulse-o, 0);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .road-timeline::after {
+      display: none;
+    }
+  }
+
   .road-timeline__item {
     position: relative;
     display: grid;
@@ -538,6 +699,43 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
   .road-timeline__item:last-child::before {
     background: var(--accent);
     border-color: var(--accent);
+  }
+
+  /* A milestone the pulse passes brightens for a moment: its node fills and
+     glows softly, its year and words come up to full strength (motion only). */
+  :global(html.road-motion) .road-timeline__item::before {
+    transition:
+      background-color 450ms var(--ease-out),
+      border-color 450ms var(--ease-out),
+      box-shadow 700ms var(--ease-out);
+  }
+
+  :global(html.road-motion) .road-timeline__when,
+  :global(html.road-motion) .road-timeline__what {
+    transition:
+      color 600ms var(--ease-out),
+      text-shadow 700ms var(--ease-out);
+  }
+
+  :global(html.road-motion) .road-timeline__what {
+    color: var(--ink-2);
+  }
+
+  .road-timeline__item.is-lit::before {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, var(--accent) 20%, transparent),
+      0 0 14px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  .road-timeline__item.is-lit .road-timeline__when {
+    color: var(--accent-ink);
+    text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  :global(html.road-motion) .road-timeline__item.is-lit .road-timeline__what {
+    color: var(--heading);
   }
 
   .road-timeline__when {

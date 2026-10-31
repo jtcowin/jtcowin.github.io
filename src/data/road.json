@@ -1,5 +1,5 @@
 {
-  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. The milestones are John's approved labels (V1.7, 30 October 2026).",
+  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout.",
   "meta": {
     "title": "The Road Here",
     "description": "Before Web3, John Cowin spent 13 years studying music, performing professionally and running the business behind an internationally distributed music project."
@@ -19,28 +19,7 @@
     ],
     "image": "road-live",
     "tv": "road-tv",
-    "festival": {
-      "image": "road-festival",
-      "caption": "Selected festival appearance · Mountain Jam 2014"
-    },
-    "milestones": [
-      {
-        "value": "13 years",
-        "label": "Music education and professional career"
-      },
-      {
-        "value": "140+ shows",
-        "label": "Live performances per year at peak"
-      },
-      {
-        "value": "Sony Music subsidiary",
-        "label": "Worldwide distribution through The Orchard"
-      },
-      {
-        "value": "Festivals + broadcast",
-        "label": "Major festivals, television appearances, and live FM radio"
-      }
-    ]
+    "festival": "road-festival"
   },
   "operator": {
     "headline": "On stage at night. Running the business by day.",
