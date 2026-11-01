@@ -5,6 +5,51 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.9 The Road Here component refinement
+
+John's brief (1 November 2026), with his structural reference for the timeline: a layout and component pass on
+the private draft. Hero untouched (markup and styles byte for byte). Copy, images and data unchanged. Still
+unlinked, `noindex` and out of the sitemap. Only `src/pages/the-road-here.astro` changed.
+
+- **Section 2:** two columns again from 56rem: headline and copy on the left (about 40%), level with the upper
+  middle of the photographs; the layered composition on the right (about 60%). The live performance is 64% of
+  the composition, the television card over its lower-left edge, the festival poster over its upper-right
+  edge. Below 56rem: copy, then the composition. Below 40rem: stacked, no overlap.
+- **Section 3:** the copy is centered against the drum-kit photograph. The four cards are replaced by one
+  connected touring operating-system panel: four indexed lanes (01 to 04), each opening on a stop (its icon)
+  on one continuous route line.
+  - A single rail across from 80rem, where "Business and relationships" holds one line.
+  - A connected two by two from 40rem, the route running across each row and down a column of its own.
+  - One vertical route on phones.
+  - Hover or keyboard focus (each lane is focusable) brings a lane forward and lights the route up to it.
+    Every capability is always visible.
+- **Timeline:** rebuilt on John's reference structure in the site's own styling.
+  - One central spine and a node per milestone. A branch runs outward from each node, the year and words
+    beneath it aligned toward the spine. Entries alternate left and right, each starting a little under
+    halfway down the previous one, and time runs top to bottom. Phones: the spine on the left.
+  - Motion: from the first milestone down, one at a time, about 3s each. The active node is larger with an
+    accent ring and glow, its branch in the accent and its entry at full strength, scaled 1.05; the others
+    stay readable at reduced emphasis. The spine fills down to it.
+  - It holds about 4s on the last, resets cleanly and repeats, only while on screen and the tab is visible.
+  - Hover, focus or a tap activates a milestone and pauses the cycle, which resumes after the interaction
+    (6s after a tap).
+  - The V1.8 bottom-to-top pulse is removed.
+- **Transition track:** the flat rows are replaced by a then-to-now track: "Then" and "Now" once at the head,
+  each origin on the left running along its own arrowed path into its destination on the right. As it comes
+  into view, each pairing in turn gains emphasis while its path draws left to right, then all settle. Hover
+  or focus brings one pairing forward and pauses the sequence. Phones: each pairing flows downward. The four
+  pairings are exact.
+- **Reduced motion or no scripts:** every component is complete and static at full strength. The route
+  highlight still answers hover and focus, without transitions.
+- **Tested:**
+  - `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed.
+  - Screenshots at 1440, 1280, 1024, 768, 600 and 390 wide: no horizontal scroll, no overlapping timeline
+    entries at any width.
+  - Browser-sampled motion: the timeline order and timing, hover pause and resume, the off-screen pause, the
+    track sequence, the route highlight on hover and keyboard focus, and the static state under reduced
+    motion.
+  - Privacy audit of the build passed.
+
 ## V1.8 The Road Here visual refinement
 
 John's brief (31 October 2026): visual refinement of the private draft. Copy, icons, Contact, privacy and launch

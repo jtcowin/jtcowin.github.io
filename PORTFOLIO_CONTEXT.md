@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.8 The Road Here visual refinement, October 2026.
+- **Last updated:** V1.9 The Road Here component refinement, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -192,12 +192,13 @@ These are settled. Do not reopen them without a new instruction.
 - **Resume:** the two approved bullets; still two pages.
 - **Detail and tests:** see the changelog.
 
-### The Road Here, draft (Phase 3A, built out in V1.7 and V1.8, October 2026)
+### The Road Here, draft (Phase 3A, built out in V1.7 to V1.9, October and November 2026)
 
 - **What it is:** a standalone page at `/the-road-here/` in five sections: hero (a transparent cutout of John
-  with a cymbal), music school to the road (the live performance with the television and festival cards
-  layered on it), more than the drummer (four capability cards with icons), the 2020 pivot (a living
-  timeline), and where it led (call to action to the selected work). Then the shared Contact, as on the
+  with a cymbal), music school to the road (copy beside the live performance with the television and
+  festival cards layered on it), more than the drummer (a connected touring operating-system panel), the
+  2020 pivot (an alternating central-spine timeline that steps from top to bottom), and where it led (a
+  then-to-now transition track, then the call to action to the selected work). Then the shared Contact, as on the
   homepage.
 - **Status:** private draft. Unlinked, `noindex`, out of the sitemap, until John approves launch.
 - **Copy and photos:** John's approved copy (`src/data/road.json`) and five of his photographs as
