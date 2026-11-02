@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.14 The Road Here memorabilia board, November 2026.
+- **Last updated:** V1.15 The Road Here Section 2 image revision, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -195,8 +195,8 @@ These are settled. Do not reopen them without a new instruction.
 ### The Road Here, draft (Phase 3A, built out in V1.7 to V1.12, October and November 2026)
 
 - **What it is:** a standalone page at `/the-road-here/` in five sections: hero (a transparent cutout of John
-  with a cymbal), music school to the road (copy beside a portrait memorabilia board built around the
-  live performance), more than the drummer (a four-card expanding capability rail with large cropped icons, an
+  with a cymbal), music school to the road (copy beside the live performance photograph, with three
+  supplied prints over its corners), more than the drummer (a four-card expanding capability rail with large cropped icons, an
   accordion on phones),
   the 2020 pivot (a nine-milestone alternating timeline driven by scroll, with dotted branches and one
   outline icon per milestone, beside a sticky narrative), and where it led (a centered, framed Then to Now
@@ -210,16 +210,13 @@ These are settled. Do not reopen them without a new instruction.
   metadata.
 - **Milestones:** removed in V1.8 by John's decision.
 - **Photo credits:** none published, by John's decision.
-- **Memorabilia board (V1.14):** `RoadBoard.astro`. Its real pieces are John's live, television and
-  poster photographs and the two logos he supplied (The Orchard, Trexist), all at native proportions.
-  Everything else is a designed artifact or a drawn prop:
-  - Designed artifacts: the Mountain Jam credential, the East Coast touring map (a footprint of cities
-    John toured, not an itinerary), the distribution and endorsement cards, and a setlist with
-    deliberately illegible lines.
-  - Drawn props: drumsticks, drum key, felt and wingnut, cable, wristband, tag and tape.
-  - The poster is the published crop, so the lower listings and the band name are not in any file.
-  - The words live in `road.json` `school.board`, the geometry in `src/lib/roadBoard.ts`, the props in
-    `src/lib/roadProps.ts`.
+- **Section 2 image group (V1.15):** the live photograph (`road-live`) is the dominant base. John's three
+  transparent PNGs sit over its corners, published byte for byte under neutral names: the festival poster
+  print upper right, the TV print lower left and the credential lower right.
+  - The poster print ends above the lower-tier names, so the band name is in no file.
+  - The source PNGs carry OpenAI content credentials (C2PA; no personal data). They are left as supplied;
+    the served copies are re-encoded at build.
+  - The V1.14 memorabilia board was replaced and its files removed.
 - **Motion:** the capability rail advances every 4.5s on wide screens, with a teal progress bar along its open
   card's top edge. Then to Now highlights one row every 4s on all screens. Both run only while in view and
   idle; hover or focus pauses them, and reduced motion stops them. Hover, focus or a tap overrides them, and a click holds the choice. Neither cycles

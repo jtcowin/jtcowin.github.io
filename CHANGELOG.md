@@ -5,6 +5,37 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.15 The Road Here Section 2 image revision
+
+John's Section 2 image brief (2 November 2026). Image composition only: copy, typography, background, grid,
+breakpoints and every other section are unchanged. Still unlinked, `noindex` and out of the sitemap.
+
+- **Composition:** the V1.14 memorabilia board is replaced. `RoadBoard.astro`, its geometry and props
+  modules and the two logo files are removed, along with their manifest entries.
+  - The live performance photograph (`road-live`, from `drummer-live.png`) is now the dominant base.
+  - John's three transparent PNGs from Music Years sit over its corners: `mjphoto.png` upper right
+    (`road-festival-print`), `tvphoto.png` lower left (`road-tv-print`) and `lanyard.png` lower right
+    (`road-credential`).
+  - The prints have restrained rotations (4°, -5°, 7°), different scales and soft shadows that follow
+    their own edges. They overlap the photograph's dark stage corners, so John and the kit stay clear.
+  - Everything is placed in % of the group, so it scales as one: beside the copy on desktop, below it
+    on phones and tablets (unchanged breakpoints).
+  - The prints follow the photograph in with the page's existing reveal; reduced motion makes them
+    static.
+- **Files:** the three PNGs are published byte for byte as supplied (verified with `cmp`), under neutral
+  names. Aspect ratios are preserved, with nothing cropped or stretched.
+  - The poster print shows only the poster's upper part and ends above the lower-tier names, so the
+    former band's name is in no file.
+  - The PNGs carry OpenAI C2PA content credentials, left as supplied. The site serves optimized copies
+    re-encoded at build.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Playwright at 1440,
+  1280, 1024, 768 and 390 checked:
+  - No horizontal overflow, and every print within the group's bounds.
+  - The group never reaches the copy column.
+  - Every image at its exact aspect ratio, with the live photo carrying roughly 65–70% of the group's
+    area.
+  - Reduced motion.
+
 ## V1.14 The Road Here memorabilia board
 
 John's memorabilia board brief, its asset addendum and the portrait-orientation addendum (2 November 2026).

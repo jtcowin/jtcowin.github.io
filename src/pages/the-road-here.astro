@@ -22,7 +22,6 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import RoadFrame from '@components/road/RoadFrame.astro';
-import RoadBoard from '@components/road/RoadBoard.astro';
 import Icon from '@components/Icon.astro';
 import { Picture } from 'astro:assets';
 import { getAsset, resolveImage } from '@lib/assets';
@@ -49,6 +48,18 @@ const H = {
 const heroEntry = getAsset(hero.image);
 const heroImg = resolveImage(heroEntry);
 if (!heroImg) throw new Error('[road] the hero cutout is missing');
+// Section 2's image group (V1.15): the live photograph and John's three transparent prints, as supplied.
+const stagePhoto = (id: string) => {
+  const entry = getAsset(id);
+  const image = resolveImage(entry);
+  if (!image) throw new Error(`[road] Section 2 needs the approved image ${id}`);
+  return { entry, image };
+};
+const stage = {
+  live: stagePhoto(school.stage.live),
+  overlays: school.stage.overlays.map((o) => ({ slot: o.slot, ...stagePhoto(o.asset) })),
+};
+const stageWidths = (w: number, max: number) => [320, 480, 640, 800, 1024].filter((x) => x < Math.min(w, max)).concat(Math.min(w, max));
 // The capability rail (V1.12): a short label for each collapsed panel, the full title in the open one.
 const groups = operator.groups as Array<{ label: string; title: string; items: string[]; icon: 'route' | 'pen' | 'users' | 'broadcast' }>;
 // V1.13: each open title grows from its collapsed label ("Operations" → "Operations and Touring").
@@ -86,7 +97,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       </div>
     </section>
 
-    {/* From music school to the road (V1.14: copy left, the memorabilia board right) */}
+    {/* From music school to the road (V1.15: copy left, the live photograph and its three prints right) */}
     <section id="road-school" class="section road-school" data-surface="light" aria-labelledby="road-school-title">
       <div class="container road-school__grid">
         <div class="road-school__copy">
@@ -95,9 +106,20 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
             {school.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
-        {/* The memorabilia board (V1.14): a portrait archive composition built around the live performance;
-            see RoadBoard.astro. Desktop: beside the copy. Phones and tablets: below it, scaled as one. */}
-        <RoadBoard />
+        {/* The image group (V1.15): the live performance photograph is the dominant base; John's three supplied
+            transparent prints sit over its corners (the poster upper right, the television still lower left, the
+            credential lower right), rotated a little, with soft shadows. Placed in % of the group, so it scales
+            as one: beside the copy on desktop, below it on phones and tablets. */}
+        <div class="road-stage">
+          <div class="road-stage__live road-reveal">
+            <Picture src={stage.live.image} alt={stage.live.entry.alt} widths={stageWidths(stage.live.image.width, 1024)} sizes="(min-width: 56rem) 28rem, 76vw" formats={['avif', 'webp']} loading="lazy" />
+          </div>
+          {stage.overlays.map((o, i) => (
+            <div class:list={['road-stage__print road-reveal', `road-stage__print--${o.slot}`]} style={`--i: ${i + 1}`}>
+              <Picture src={o.image} alt={o.entry.alt} widths={stageWidths(o.image.width, 1200)} sizes="(min-width: 56rem) 18rem, 46vw" formats={['avif', 'webp']} loading="lazy" />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
 
@@ -594,16 +616,78 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     align-content: start;
   }
 
-  /* Two columns while both stay readable (V1.14): the copy 42%, the
-     portrait memorabilia board 58%, the copy centered against the board so
-     the board begins near the headline and runs through the paragraphs.
-     Below 56rem: copy first, then the board, scaled as one. */
+  /* Two columns while both stay readable (V1.14): the copy 42%, the image
+     group 58%, the copy centered against it. Below 56rem: copy first, then
+     the image group, scaled as one. */
   @media (min-width: 56rem) {
     .road-school__grid {
       grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
       column-gap: clamp(2rem, 3.5vw, 4rem);
       align-items: center;
     }
+  }
+
+  /* The image group (V1.15). The live photograph carries most of the
+     weight: about three quarters of the group's width, set in from the edges
+     so the prints can sit over its corners without leaving the group. The
+     prints are John's transparent PNGs, shown whole, never cropped or
+     stretched, each with a soft shadow that follows its own edges. The upper
+     right and lower corners of the photograph are dark stage and floor, so
+     John and the kit stay clear. Everything is in % of the group, so the
+     arrangement holds from phones to desktop. */
+  .road-stage {
+    position: relative;
+    width: min(100%, 38rem);
+    margin-inline: auto;
+    padding: 9% 8% 15% 6%;
+  }
+
+  .road-stage :global(picture),
+  .road-stage :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .road-stage__live {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .road-stage__print {
+    position: absolute;
+    z-index: 2;
+    rotate: var(--rot);
+    filter: drop-shadow(0 2px 3px rgb(20 18 16 / 0.2)) drop-shadow(0 14px 24px rgb(20 18 16 / 0.22));
+  }
+
+  .road-stage__print--upper-right {
+    --rot: 4deg;
+    top: 1.5%;
+    right: 1.5%;
+    width: 50%;
+  }
+
+  .road-stage__print--lower-left {
+    --rot: -5deg;
+    left: 1.5%;
+    bottom: 4%;
+    width: 45%;
+  }
+
+  .road-stage__print--lower-right {
+    --rot: 7deg;
+    right: 2.5%;
+    bottom: 1.5%;
+    width: 29%;
+  }
+
+  /* The prints follow the photograph in, one after another. */
+  :global(html.road-motion) .road-stage__print.road-reveal {
+    transition-delay: calc(var(--i, 0) * 140ms + 120ms);
   }
 
   /* ---- more than the drummer ---- */
