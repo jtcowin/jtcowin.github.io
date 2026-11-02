@@ -2110,6 +2110,36 @@
       "permission": "approved",
       "credit": null,
       "variant": "light"
+    },
+    {
+      "id": "road-distributor-logo",
+      "page": "the-road-here",
+      "section": "school",
+      "type": "image",
+      "aspect": "1236:448",
+      "label": "Distributor logo (The Orchard)",
+      "filename": "road/distributor-logo.png",
+      "file": "road/distributor-logo.png",
+      "alt": "The Orchard",
+      "source": "Official logo file supplied by John (V1.14, November 2026) for the distribution milestone card on The Road Here's memorabilia board. Used at its native proportions, unaltered, on a cream card with clear space; re-encoded with no metadata.",
+      "permission": "approved",
+      "credit": null,
+      "variant": "light"
+    },
+    {
+      "id": "road-endorsement-logo",
+      "page": "the-road-here",
+      "section": "school",
+      "type": "image",
+      "aspect": "1:1",
+      "label": "Cymbal endorsement logo (Trexist)",
+      "filename": "road/endorsement-logo.jpg",
+      "file": "road/endorsement-logo.jpg",
+      "alt": "Trexist Handmade Turkish Cymbals",
+      "source": "Official logo file supplied by John (V1.14, November 2026) for the endorsement card on The Road Here's memorabilia board. Used at its native proportions, unaltered, on its own black ground; re-encoded with no metadata.",
+      "permission": "approved",
+      "credit": null,
+      "variant": "dark"
     }
   ]
 }

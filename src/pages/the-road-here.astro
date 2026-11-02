@@ -22,6 +22,7 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
 import RoadFrame from '@components/road/RoadFrame.astro';
+import RoadBoard from '@components/road/RoadBoard.astro';
 import Icon from '@components/Icon.astro';
 import { Picture } from 'astro:assets';
 import { getAsset, resolveImage } from '@lib/assets';
@@ -48,11 +49,6 @@ const H = {
 const heroEntry = getAsset(hero.image);
 const heroImg = resolveImage(heroEntry);
 if (!heroImg) throw new Error('[road] the hero cutout is missing');
-// The digital tour archive (V1.10): the lead photograph, then supporting pieces in named slots.
-type ArchiveItem = { asset: string; role: 'lead' | 'card' | 'object'; slot?: string; rotate?: number; width?: number };
-const archive = school.archive as ArchiveItem[];
-const archiveSizes = (it: ArchiveItem) =>
-  it.role === 'lead' ? '(min-width: 56rem) 32vw, (min-width: 40rem) 28rem, 100vw' : '(min-width: 56rem) 15vw, (min-width: 40rem) 12rem, 82vw';
 // The capability rail (V1.12): a short label for each collapsed panel, the full title in the open one.
 const groups = operator.groups as Array<{ label: string; title: string; items: string[]; icon: 'route' | 'pen' | 'users' | 'broadcast' }>;
 // V1.13: each open title grows from its collapsed label ("Operations" → "Operations and Touring").
@@ -90,7 +86,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       </div>
     </section>
 
-    {/* From music school to the road (V1.9: copy left, the layered evidence right) */}
+    {/* From music school to the road (V1.14: copy left, the memorabilia board right) */}
     <section id="road-school" class="section road-school" data-surface="light" aria-labelledby="road-school-title">
       <div class="container road-school__grid">
         <div class="road-school__copy">
@@ -99,22 +95,9 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
             {school.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
-        {/* The digital tour archive (V1.10): real evidence only, composed digitally. The live performance leads,
-            centered; framed photographs ("card") and cut-out artifacts ("object") sit in named slots around its
-            edges, clear of John and the kit. The pieces come from road.json school.archive, so a newly supplied
-            artifact is one asset and one line there. Phones: stacked in that order, without overlap. */}
-        <div class="road-stage">
-          {archive.map((it) => (
-            <RoadFrame
-              id={it.asset}
-              class:list={['road-reveal', it.role === 'lead' ? 'road-stage__live' : `road-stage__piece road-stage__piece--${it.role} road-stage__slot--${it.slot}`]}
-              drift={it.role === 'lead'}
-              bare={it.role === 'object'}
-              style={it.role === 'lead' ? '' : `--rot: ${it.rotate ?? 0}deg;${it.width ? ` --w: ${it.width}%;` : ''}`}
-              sizes={archiveSizes(it)}
-            />
-          ))}
-        </div>
+        {/* The memorabilia board (V1.14): a portrait archive composition built around the live performance;
+            see RoadBoard.astro. Desktop: beside the copy. Phones and tablets: below it, scaled as one. */}
+        <RoadBoard />
       </div>
     </section>
 
@@ -611,110 +594,15 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     align-content: start;
   }
 
-  /* Two columns while both stay readable: the copy about two fifths, the
-     evidence three fifths, the copy set level with the upper middle of the
-     photographs. Below 56rem: copy first, then the composition. */
+  /* Two columns while both stay readable (V1.14): the copy 42%, the
+     portrait memorabilia board 58%, the copy centered against the board so
+     the board begins near the headline and runs through the paragraphs.
+     Below 56rem: copy first, then the board, scaled as one. */
   @media (min-width: 56rem) {
     .road-school__grid {
-      grid-template-columns: minmax(0, 0.37fr) minmax(0, 0.63fr);
+      grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
       column-gap: clamp(2rem, 3.5vw, 4rem);
-      align-items: start;
-    }
-
-    .road-school__copy {
-      padding-top: clamp(2rem, 7vw, 6.5rem);
-    }
-  }
-
-  /* The digital tour archive (V1.10). Phones: stacked in the archive's order,
-     live performance first, the pieces a little narrower and alternating
-     sides, no overlap. */
-  .road-stage {
-    display: grid;
-    gap: clamp(1.25rem, 4vw, 1.75rem);
-  }
-
-  .road-stage :global(.road-stage__piece) {
-    width: 82%;
-    rotate: var(--rot, 0deg);
-  }
-
-  .road-stage :global(.road-stage__piece:nth-child(even)) {
-    justify-self: start;
-  }
-
-  .road-stage :global(.road-stage__piece:nth-child(odd)) {
-    justify-self: end;
-  }
-
-  /* A framed photograph: a light mount and a soft shadow. */
-  .road-stage :global(.road-stage__piece--card) {
-    padding: 6px;
-    background: var(--bg-elev);
-    border-radius: calc(var(--radius) + 6px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  /* A cut-out artifact sits directly on the page, its own shadow under it. */
-  .road-stage :global(.road-stage__piece--object) {
-    width: 60%;
-  }
-
-  /* From 40rem: the live performance leads, centered; each piece sits in its
-     slot over an outer edge, clear of John, the kit and the riser (the lower
-     left is the stage floor, the upper right empty stage darkness). Slots for
-     further artifacts are ready around the edges. */
-  @media (min-width: 40rem) {
-    .road-stage {
-      display: block;
-      position: relative;
-      width: min(100%, 54rem);
-      margin-inline: auto;
-      padding-block: clamp(1rem, 3vw, 2.5rem);
-    }
-
-    .road-stage :global(.road-stage__live) {
-      width: 66%;
-      margin-inline: auto;
-    }
-
-    .road-stage :global(.road-stage__piece) {
-      position: absolute;
-      width: var(--w, 27%);
-    }
-
-    .road-stage :global(.road-stage__piece--object) {
-      width: var(--w, 24%);
-    }
-
-    .road-stage :global(.road-stage__slot--upper-left) {
-      left: 1%;
-      top: 4%;
-    }
-
-    .road-stage :global(.road-stage__slot--upper-right) {
-      right: 0;
-      top: 8%;
-    }
-
-    .road-stage :global(.road-stage__slot--mid-left) {
-      left: -1%;
-      top: 40%;
-    }
-
-    .road-stage :global(.road-stage__slot--mid-right) {
-      right: -1%;
-      top: 46%;
-    }
-
-    .road-stage :global(.road-stage__slot--lower-left) {
-      left: 0;
-      bottom: 11%;
-    }
-
-    .road-stage :global(.road-stage__slot--lower-right) {
-      right: 1%;
-      bottom: 4%;
+      align-items: center;
     }
   }
 

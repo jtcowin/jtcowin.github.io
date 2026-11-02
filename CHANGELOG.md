@@ -5,6 +5,48 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.14 The Road Here memorabilia board
+
+John's memorabilia board brief, its asset addendum and the portrait-orientation addendum (2 November 2026).
+Section 2 only. Every other section is unchanged. Still unlinked, `noindex` and out of the sitemap.
+
+- **Layout:** copy on the left at 42% (wider than the previous 37%) and a portrait 4:5 board on the right at
+  58% (up to 38rem wide). The copy is centered against the board. Below 56rem the board sits under the
+  copy and scales as one composition, overlaps and hierarchy intact.
+- **Composition (`RoadBoard.astro`):** a warm cream archive surface with paper grain, built around the
+  live performance photograph.
+  - Mountain Jam poster above and behind it, top left; setlist top right; television still as an
+    instant print on the left.
+  - A lower tier of the Mountain Jam credential on its lanyard, the East Coast touring map, the
+    distribution card and the endorsement card.
+  - Drumsticks, drum key, felt and wingnut, cable, wristband, tag and tape tie it together.
+  - Every piece is placed in board units, so the arrangement scales as one.
+- **Real assets:** John's live, television and poster photographs (existing approved derivatives) and
+  the two logos he supplied in Music Years/Memorabilia.
+  - The logos are the Orchard (1236×448 PNG) and Trexist (447×447 JPEG), both used at native proportions,
+    unaltered, with metadata stripped, as manifest entries `road-distributor-logo` and
+    `road-endorsement-logo`.
+  - The folder's poster (`mj-lineup-full.jpeg`, 452×678) is the same poster as the existing 1080-wide
+    source, so the higher-resolution crop is used.
+  - The poster file is the published crop (festival identity and headliners), so the lower listings,
+    including the band name, are in no published file. On the board its sheet continues in the poster's
+    own dark green under the overlapping pieces.
+- **Designed artifacts (not reproductions):**
+  - The credential reads "Mountain Jam / Artist Access", with no logo, serial or barcode.
+  - The map is titled "East Coast touring". The ten cities John named sit on a simplified coast with a
+    dotted route, as a footprint, not an itinerary; the city list is also in accessible text.
+  - The distribution card shows the logo, "Worldwide distribution", "Sony Music subsidiary" and "2016".
+  - The endorsement card shows the brand's logo on its own black ground and "Artist endorsement".
+  - The setlist's lines are generated scribbles, illegible by construction, some struck through.
+  - There are no signatures, song titles or legal wording anywhere.
+- **Props:** drawn as SVG and hidden from assistive technology.
+- **Motion:** the pieces settle into place with a slight stagger as the board enters view, the live
+  photograph first, and don't float afterward. With reduced motion or without scripts everything is shown
+  in place.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed; 136 manifest entries).
+  Playwright at 1440, 1280, 1024, 768 and 390 checked layout, no horizontal overflow, that every piece
+  settles, image delivery, reduced motion and no-script. Not in the sitemap.
+
 ## V1.13 The Road Here capability cards and Then to Now
 
 John's mandatory Section 3 and Section 5 revision (2 November 2026). The timeline and every other section are

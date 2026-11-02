@@ -1,5 +1,5 @@
 {
-  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.13: operator.groups carry a short label (the collapsed card) and a title that begins with it (the open card adds the rest), plus an icon (each card's large, faint, cropped graphic); each timeline milestone names its outline icon (Icon.astro). V1.10: school.archive is the digital tour archive: the lead photograph (role \"lead\"), then supporting pieces, each a road-* asset with a role (\"card\": a framed photograph; \"object\": a cut-out artifact on a transparent background) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right); add a real artifact by adding its asset and one line here. Phones show them stacked in this order.",
+  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.13: operator.groups carry a short label (the collapsed card) and a title that begins with it (the open card adds the rest), plus an icon (each card's large, faint, cropped graphic); each timeline milestone names its outline icon (Icon.astro). V1.14: school.board is the memorabilia board (RoadBoard.astro): John's three photographs (road-* assets), the two supplied logos, and the words on the designed artifacts (credential, touring map with the cities John toured, distribution and endorsement cards, setlist title). The map is a touring footprint, not an itinerary; the setlist lines are drawn illegible on purpose.",
   "meta": {
     "title": "The Road Here",
     "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring business, and running the operations behind it."
@@ -17,24 +17,30 @@
       "I studied **performance, music business, and media**, then put that training to work building an original music project from the ground up.",
       "What began with local shows grew into more than a decade as a professional musician. Along the way, I played major festivals, appeared on television and FM radio, earned an artist endorsement from an instrument brand, and secured **worldwide distribution through a Sony Music subsidiary**."
     ],
-    "archive": [
-      {
-        "asset": "road-live",
-        "role": "lead"
+    "board": {
+      "live": "road-live",
+      "tv": "road-tv",
+      "poster": "road-festival",
+      "credential": { "event": "Mountain Jam", "lines": ["Artist", "Access"] },
+      "map": {
+        "title": "East Coast touring",
+        "cities": [
+          { "name": "Boston", "lat": 42.36, "lon": -71.06 },
+          { "name": "Albany", "lat": 42.65, "lon": -73.75 },
+          { "name": "New York City", "lat": 40.71, "lon": -74.0 },
+          { "name": "New Jersey", "lat": 40.22, "lon": -74.4 },
+          { "name": "Philadelphia", "lat": 39.95, "lon": -75.17 },
+          { "name": "Raleigh", "lat": 35.78, "lon": -78.64 },
+          { "name": "Atlanta", "lat": 33.75, "lon": -84.39 },
+          { "name": "Tampa", "lat": 27.95, "lon": -82.46 },
+          { "name": "Key West", "lat": 24.55, "lon": -81.78 },
+          { "name": "Miami", "lat": 25.76, "lon": -80.19 }
+        ]
       },
-      {
-        "asset": "road-tv",
-        "role": "card",
-        "slot": "lower-left",
-        "rotate": -1.5
-      },
-      {
-        "asset": "road-festival",
-        "role": "card",
-        "slot": "upper-right",
-        "rotate": 1.5
-      }
-    ]
+      "distribution": { "logo": "road-distributor-logo", "lines": ["Worldwide", "distribution"], "sub": "Sony Music subsidiary", "year": "2016" },
+      "endorsement": { "logo": "road-endorsement-logo", "lines": ["Artist", "endorsement"] },
+      "setlist": "Setlist"
+    }
   },
   "operator": {
     "headline": "On stage at night. Running the business by day.",
