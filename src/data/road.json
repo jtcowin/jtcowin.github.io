@@ -1,30 +1,45 @@
 {
-  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout.",
+  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.10: school.archive is the digital tour archive: the lead photograph (role \"lead\"), then supporting pieces, each a road-* asset with a role (\"card\": a framed photograph; \"object\": a cut-out artifact on a transparent background) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right); add a real artifact by adding its asset and one line here. Phones show them stacked in this order.",
   "meta": {
     "title": "The Road Here",
-    "description": "Before Web3, John Cowin spent 13 years studying music, performing professionally and running the business behind an internationally distributed music project."
+    "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring business, and running the operations behind it."
   },
   "hero": {
-    "headline": "Before Web3, there was music.",
-    "accent": "there was music.",
-    "copy": "Before Web3, I spent **13 years** studying music, performing professionally, and running the business behind an internationally distributed music project. What started behind a drum kit grew into an education in entrepreneurship, marketing, partnerships, creative work, and day-to-day operations.",
+    "headline": "Before Web3. There was music.",
+    "accent": "There was music.",
+    "copy": "Before Web3, I spent **over a decade** turning an original music project into a professional touring business. What started behind a drum kit grew into an education in entrepreneurship, marketing, partnerships, creative work, and day-to-day operations.",
     "image": "road-hero-portrait"
   },
   "school": {
     "headline": "From practice rooms to 140+ shows a year.",
     "accent": "140+ shows a year.",
     "paragraphs": [
-      "I studied **performance and music business**, then put that training to work building an original music project from the ground up.",
-      "What began with local shows grew into **more than a decade as a professional musician**, including major festivals, television appearances, live FM-radio performances and interviews, and worldwide distribution through The Orchard, a Sony Music subsidiary."
+      "I studied **performance, music business, and media**, then put that training to work building an original music project from the ground up.",
+      "What began with local shows grew into more than a decade as a professional musician. Along the way, I played major festivals, appeared on television and FM radio, earned an artist endorsement from an instrument brand, and secured **worldwide distribution through a Sony Music subsidiary**."
     ],
-    "image": "road-live",
-    "tv": "road-tv",
-    "festival": "road-festival"
+    "archive": [
+      {
+        "asset": "road-live",
+        "role": "lead"
+      },
+      {
+        "asset": "road-tv",
+        "role": "card",
+        "slot": "lower-left",
+        "rotate": -1.5
+      },
+      {
+        "asset": "road-festival",
+        "role": "card",
+        "slot": "upper-right",
+        "rotate": 1.5
+      }
+    ]
   },
   "operator": {
     "headline": "On stage at night. Running the business by day.",
     "accent": "Running the business by day.",
-    "copy": "Before professional management and distribution came on board, I handled **much of the business side myself**. Even after management joined, I stayed on as tour manager.",
+    "copy": "Before professional management and distribution came on board, I handled much of the **daily operation of the business** myself. Even after the team grew, I remained the tour manager, coordinating routing, scheduling, travel, and the **logistics required to sustain a national touring schedule**.",
     "image": "road-gear",
     "groups": [
       {
@@ -81,8 +96,28 @@
     ],
     "timeline": [
       {
-        "when": "The road",
-        "what": "Years of touring, sometimes 140+ shows a year"
+        "when": "2008 to 2010",
+        "what": "Studied performance, music business, and media"
+      },
+      {
+        "when": "2010",
+        "what": "Launched the original music project"
+      },
+      {
+        "when": "2012",
+        "what": "Began professional touring"
+      },
+      {
+        "when": "2014",
+        "what": "Played the first major festival"
+      },
+      {
+        "when": "2016",
+        "what": "Secured worldwide distribution through a Sony Music subsidiary"
+      },
+      {
+        "when": "2018",
+        "what": "Appeared on television"
       },
       {
         "when": "2020",
@@ -90,11 +125,11 @@
       },
       {
         "when": "2020",
-        "what": "Discovering DeFi: studying the technology, investing, joining communities"
+        "what": "Began studying DeFi, investing, and joining communities"
       },
       {
         "when": "2021",
-        "what": "First professional role in Web3"
+        "what": "Started the first professional role in Web3"
       }
     ],
     "accent": "2020 happened."

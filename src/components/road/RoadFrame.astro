@@ -18,9 +18,13 @@ interface Props {
   priority?: boolean;
   /** Gentle vertical drift with the scroll (motion allowed only). */
   drift?: boolean;
+  /** A cut-out object on a transparent background (V1.10): no frame, fill or crop, a soft shadow under it. */
+  bare?: boolean;
+  /** Inline style (custom properties such as --rot). */
+  style?: string;
 }
 
-const { id, class: className, sizes = '(min-width: 64rem) 50vw, 100vw', priority = false, drift = false } = Astro.props;
+const { id, class: className, sizes = '(min-width: 64rem) 50vw, 100vw', priority = false, drift = false, bare = false, style: extra = '' } = Astro.props;
 const entry = getAsset(id);
 const image = resolveImage(entry);
 const real = isRenderable(entry) && Boolean(image);
@@ -29,7 +33,7 @@ const ratio = aspectToCss(entry.aspect);
 const widths = image ? [480, 800, 1200, 1600, 2048].filter((w) => w < image.width).concat(image.width) : undefined;
 ---
 
-<figure class:list={['rf', real ? 'rf--real' : 'rf--pending', className]} style={`--rf-ratio: ${ratio}`} data-asset={id}>
+<figure class:list={['rf', real ? 'rf--real' : 'rf--pending', { 'rf--bare': bare }, className]} style={`--rf-ratio: ${ratio};${extra}`} data-asset={id}>
   <div class="rf__frame" data-road-drift={drift ? '' : undefined}>
     {
       real && image ? (
@@ -62,6 +66,18 @@ const widths = image ? [480, 800, 1200, 1600, 2048].filter((w) => w < image.widt
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  /* A cut-out artifact: the object itself, whole, resting with a soft shadow. */
+  .rf--bare .rf__frame {
+    overflow: visible;
+    border-radius: 0;
+    background: none;
+  }
+
+  .rf--bare .rf__img {
+    object-fit: contain;
+    filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.22)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.18));
   }
 
   /* Gentle image movement: a real photograph is set a little larger than its frame and drifts with the scroll

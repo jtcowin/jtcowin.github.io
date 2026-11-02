@@ -5,6 +5,53 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.10 The Road Here narrative and archival expansion
+
+John's brief (2 November 2026): narrative revisions, an expanded timeline, and the start of a digital tour archive
+on the private draft. Hero cutout, composition and motion unchanged. Still unlinked, `noindex` and out of the
+sitemap.
+
+- **Hero:** the headline is "Before Web3." over "There was music." (the accent): two intentional lines, each
+  held whole from 40rem and wrapping within itself only on the narrowest phones. New paragraph: "over a
+  decade" (bold) turning an original music project into a professional touring business. The page
+  description is updated to match.
+- **Section 2:** John's revised copy, with bold on "performance, music business, and media" and "worldwide
+  distribution through a Sony Music subsidiary". Media, the artist endorsement and FM radio are added, and
+  The Orchard is not named.
+- **Section 2, digital tour archive:** `road.json` `school.archive` drives the composition.
+  - The lead photograph comes first. Supporting pieces are road-* assets, each with a role ("card": a framed
+    photograph; "object": a cut-out artifact on a transparent background, rendered frameless with its own
+    soft shadow) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right), with an
+    optional rotation and width.
+  - Adding a real artifact is one asset plus one line. `RoadFrame` gained `bare` and `style` props for
+    objects; a throwaway test confirmed the object path renders correctly.
+  - The composition is larger: about 37/63 columns, the live photograph 66% of the archive, about 525px wide
+    at 1440.
+  - No artifacts were supplied during this pass, so the archive holds the three existing pieces.
+- **Section 3:** John's tour-management copy, with bold on "daily operation of the business" and "logistics
+  required to sustain a national touring schedule". The 01 to 04 labels are removed; the component is
+  otherwise unchanged pending his reference.
+- **Timeline:** nine approved milestones from 2008 to 2021 on the alternating central spine, taller and
+  airier (about 1,030px on desktop).
+  - Activation is driven by scroll, top to bottom: the milestone whose node passes the reading line just above
+    mid-screen is active, the spine filled down to it, and scrolling back winds it back.
+  - Hover, focus or a tap activates a milestone without moving the page.
+  - It listens only while on screen.
+  - On desktop the pivot narrative stays in place below the header beside the timeline and is released at the
+    section's end. Phones: one column.
+- **Section transitions:** the dark pivot section blends in from the pale section above and out into the fog
+  below over bands of its own padding, so no text sits on a gradient.
+- **Section 5:** the headline, paragraph (a balanced 40rem measure), transition track and calls to action are
+  centered. Each path now starts from a small stop.
+- **Checks:** `verify.mjs`'s one-emphasis rule now also exempts the Section 3 paragraph (two phrases John
+  recommended).
+- **Tested:**
+  - `astro check` (0 errors, 0 warnings); build; `verify.mjs` all checks passed.
+  - Headline two lines from 390 to 1440 wide (three at 360, allowed).
+  - No horizontal scroll and no timeline overlaps at 1440, 1280, 1024, 768, 390 and 360.
+  - Scroll-sampled activation top to bottom, the sticky narrative's hold and release, and hover activation.
+  - Privacy audit of the build passed.
+
 ## V1.9 The Road Here component refinement
 
 John's brief (1 November 2026), with his structural reference for the timeline: a layout and component pass on

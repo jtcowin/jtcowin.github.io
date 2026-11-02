@@ -48,6 +48,11 @@ const heroEntry = getAsset(hero.image);
 const heroImg = resolveImage(heroEntry);
 if (!heroImg) throw new Error('[road] the hero cutout is missing');
 type GroupIcon = 'route' | 'pen' | 'users' | 'broadcast';
+// The digital tour archive (V1.10): the lead photograph, then supporting pieces in named slots.
+type ArchiveItem = { asset: string; role: 'lead' | 'card' | 'object'; slot?: string; rotate?: number; width?: number };
+const archive = school.archive as ArchiveItem[];
+const archiveSizes = (it: ArchiveItem) =>
+  it.role === 'lead' ? '(min-width: 56rem) 32vw, (min-width: 40rem) 28rem, 100vw' : '(min-width: 56rem) 15vw, (min-width: 40rem) 12rem, 82vw';
 const groups = operator.groups as Array<{ title: string; items: string[]; icon: GroupIcon }>;
 ---
 
@@ -58,7 +63,7 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
       <div class="container road-hero__grid">
         <div class="road-hero__copy">
           <h1 id="road-title" class="display road-hero__title road-reveal">
-            {headLead}<span class="road-accent">{headAccent}</span>
+            <span class="road-hero__line">{headLead.trim()}</span>{' '}<span class="road-hero__line road-accent">{headAccent}</span>
           </h1>
           <p class="lede road-hero__lede road-reveal">{rich(hero.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
@@ -87,13 +92,21 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
             {school.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
-        {/* Three pieces of real evidence: the live performance, dominant and centered in its column, with the television
-            appearance and the festival poster (cropped above its lower-tier names) laid over its opposite outer edges,
-            clear of John and the kit. Phones: stacked in that order, without overlap. */}
+        {/* The digital tour archive (V1.10): real evidence only, composed digitally. The live performance leads,
+            centered; framed photographs ("card") and cut-out artifacts ("object") sit in named slots around its
+            edges, clear of John and the kit. The pieces come from road.json school.archive, so a newly supplied
+            artifact is one asset and one line there. Phones: stacked in that order, without overlap. */}
         <div class="road-stage">
-          <RoadFrame id={school.image} class="road-stage__live road-reveal" drift sizes="(min-width: 56rem) 30vw, (min-width: 40rem) 26rem, 100vw" />
-          <RoadFrame id={school.tv} class="road-stage__card road-stage__tv road-reveal" sizes="(min-width: 56rem) 14vw, (min-width: 40rem) 11rem, 82vw" />
-          <RoadFrame id={school.festival} class="road-stage__card road-stage__festival road-reveal" sizes="(min-width: 56rem) 15vw, (min-width: 40rem) 12rem, 82vw" />
+          {archive.map((it) => (
+            <RoadFrame
+              id={it.asset}
+              class:list={['road-reveal', it.role === 'lead' ? 'road-stage__live' : `road-stage__piece road-stage__piece--${it.role} road-stage__slot--${it.slot}`]}
+              drift={it.role === 'lead'}
+              bare={it.role === 'object'}
+              style={it.role === 'lead' ? '' : `--rot: ${it.rotate ?? 0}deg;${it.width ? ` --w: ${it.width}%;` : ''}`}
+              sizes={archiveSizes(it)}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -104,7 +117,7 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
         <div class="road-operator__head">
           <div class="road-operator__copy">
             <h2 id="road-operator-title" class="display display-lg road-reveal">{H.operator[0]}<span class="road-accent">{H.operator[1]}</span>{H.operator[2]}</h2>
-            <p class="lede road-reveal">{rich(operator.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
+            <p class="lede road-operator__lede road-reveal">{rich(operator.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
           </div>
           {/* No drift: the whole kit stays in frame. */}
           <RoadFrame id={operator.image} class="road-operator__image road-reveal" sizes="(min-width: 64rem) 45vw, 100vw" />
@@ -117,7 +130,6 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
               <li class="road-os__lane" tabindex="0" aria-labelledby={`road-os-${i}`} data-lane={i}>
                 <span class="road-os__node" aria-hidden="true"><Icon name={g.icon} size={18} /></span>
                 <div class="road-os__body">
-                  <p class="road-os__index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</p>
                   <h3 id={`road-os-${i}`} class="road-os__title">{g.title}</h3>
                   <ul class="road-os__items">
                     {g.items.map((it) => <li>{it}</li>)}
@@ -259,92 +271,73 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     });
   }
 
-  // ---- The timeline: one milestone at a time, top to bottom, about three seconds each; the spine fills down to the
-  // active one. After the last, a short hold, a clean reset, and again, only while on screen and the tab is visible.
-  // Pointer, focus or a tap activates a milestone and pauses the cycle, which resumes after the interaction ends.
+  // ---- The timeline (V1.10): driven by scroll, so the reader sets the pace. The milestone whose node has passed the
+  // reading line (a little above the middle of the screen) is active, top to bottom; the spine fills down to it.
+  // Hover, focus or a tap activates a milestone without moving the page; the next scroll hands control back.
+  // Nothing runs while the timeline is off screen.
   const tl = document.querySelector<HTMLElement>('[data-road-timeline]');
   if (tl && motion) {
     const steps = [...tl.querySelectorAll<HTMLElement>('.road-tl__item')];
-    const HOLD = 3000;
-    const LAST_HOLD = 4200;
-    let active = -1;
-    let timer = 0;
-    let visible = false;
-    let paused = false;
     tl.classList.add('is-live');
-
+    let active = -2;
+    let held = false;
+    let frame = 0;
     const show = (k: number) => {
+      if (k === active) return;
       active = k;
       steps.forEach((s, i) => {
         s.classList.toggle('is-active', i === k);
         s.classList.toggle('is-done', k >= 0 && i < k);
       });
     };
-    const schedule = (ms: number) => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(tick, ms);
+    const read = () => {
+      frame = 0;
+      if (held) return;
+      const line = window.innerHeight * 0.48;
+      let k = -1;
+      steps.forEach((s, i) => {
+        const node = s.querySelector<HTMLElement>('.road-tl__node');
+        if (node && node.getBoundingClientRect().top <= line) k = i;
+      });
+      show(k);
     };
-    function tick() {
-      if (!visible || paused || document.hidden) return;
-      if (active < 0) {
-        show(0);
-        schedule(HOLD);
-      } else if (active < steps.length - 1) {
-        show(active + 1);
-        schedule(active === steps.length - 1 ? LAST_HOLD : HOLD);
-      } else {
-        // reset cleanly: the spine empties, then the first milestone again
-        tl!.classList.add('is-resetting');
-        show(-1);
-        window.setTimeout(() => tl!.classList.remove('is-resetting'), 500);
-        schedule(900);
-      }
-    }
-    const stop = () => window.clearTimeout(timer);
-    new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          visible = e.isIntersecting;
-          if (visible && !paused) schedule(active < 0 ? 400 : HOLD);
-          else stop();
+    const onScroll = () => {
+      held = false;
+      if (!frame) frame = requestAnimationFrame(read);
+    };
+    new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          window.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('resize', onScroll);
+          onScroll();
+        } else {
+          window.removeEventListener('scroll', onScroll);
+          window.removeEventListener('resize', onScroll);
         }
-      },
-      { threshold: 0.3 },
-    ).observe(tl);
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) stop();
-      else if (visible && !paused) schedule(HOLD);
-    });
+      }
+    }).observe(tl);
 
-    let resume = 0;
     const take = (i: number) => {
-      paused = true;
-      stop();
-      window.clearTimeout(resume);
+      held = true;
       show(i);
     };
-    const release = (ms: number) => {
-      window.clearTimeout(resume);
-      resume = window.setTimeout(() => {
-        paused = false;
-        if (visible) schedule(HOLD);
-      }, ms);
+    const release = () => {
+      held = false;
+      read();
     };
     steps.forEach((s, i) => {
       s.addEventListener('pointerenter', (e) => {
         if ((e as PointerEvent).pointerType === 'mouse') take(i);
       });
       s.addEventListener('focus', () => take(i));
-      s.addEventListener('click', () => {
-        take(i);
-        release(6000);
-      });
+      s.addEventListener('click', () => take(i));
     });
     tl.addEventListener('pointerleave', (e) => {
-      if ((e as PointerEvent).pointerType === 'mouse' && !tl.contains(document.activeElement)) release(1200);
+      if ((e as PointerEvent).pointerType === 'mouse' && !tl.contains(document.activeElement)) release();
     });
     tl.addEventListener('focusout', (e) => {
-      if (!tl.contains(e.relatedTarget as Node | null)) release(1200);
+      if (!tl.contains(e.relatedTarget as Node | null)) release();
     });
   }
 
@@ -481,6 +474,19 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     line-height: 0.95;
   }
 
+  /* V1.10: two intentional lines, "Before Web3." over "There was music."; from
+     40rem each line holds whole, and on the narrowest phones a line may wrap
+     within itself, keeping the order. */
+  .road-hero__line {
+    display: block;
+  }
+
+  @media (min-width: 40rem) {
+    .road-hero__line {
+      white-space: nowrap;
+    }
+  }
+
   .road-hero__lede {
     max-width: 34rem;
   }
@@ -546,8 +552,8 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
      photographs. Below 56rem: copy first, then the composition. */
   @media (min-width: 56rem) {
     .road-school__grid {
-      grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
-      column-gap: clamp(2.5rem, 4.5vw, 5rem);
+      grid-template-columns: minmax(0, 0.37fr) minmax(0, 0.63fr);
+      column-gap: clamp(2rem, 3.5vw, 4rem);
       align-items: start;
     }
 
@@ -556,63 +562,95 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     }
   }
 
-  /* The layered composition. Phones: stacked, live performance first, the two
-     cards a little narrower and alternating sides, no overlap. */
+  /* The digital tour archive (V1.10). Phones: stacked in the archive's order,
+     live performance first, the pieces a little narrower and alternating
+     sides, no overlap. */
   .road-stage {
     display: grid;
     gap: clamp(1.25rem, 4vw, 1.75rem);
   }
 
-  .road-stage :global(.road-stage__card) {
+  .road-stage :global(.road-stage__piece) {
     width: 82%;
+    rotate: var(--rot, 0deg);
+  }
+
+  .road-stage :global(.road-stage__piece:nth-child(even)) {
+    justify-self: start;
+  }
+
+  .road-stage :global(.road-stage__piece:nth-child(odd)) {
+    justify-self: end;
+  }
+
+  /* A framed photograph: a light mount and a soft shadow. */
+  .road-stage :global(.road-stage__piece--card) {
     padding: 6px;
     background: var(--bg-elev);
     border-radius: calc(var(--radius) + 6px);
     box-shadow: var(--shadow-lg);
   }
 
-  .road-stage :global(.road-stage__tv) {
-    justify-self: start;
-    rotate: -1.5deg;
+  /* A cut-out artifact sits directly on the page, its own shadow under it. */
+  .road-stage :global(.road-stage__piece--object) {
+    width: 60%;
   }
 
-  .road-stage :global(.road-stage__festival) {
-    justify-self: end;
-    rotate: 1.5deg;
-  }
-
-  /* From 40rem: the live performance dominant and centered in the composition;
-     the television card over its lower-left edge and the festival poster over
-     its upper-right edge (empty stage darkness there), each overlapping by about
-     a fifth of its width, clear of John, the kit and the riser. */
+  /* From 40rem: the live performance leads, centered; each piece sits in its
+     slot over an outer edge, clear of John, the kit and the riser (the lower
+     left is the stage floor, the upper right empty stage darkness). Slots for
+     further artifacts are ready around the edges. */
   @media (min-width: 40rem) {
     .road-stage {
       display: block;
       position: relative;
-      width: min(100%, 44rem);
+      width: min(100%, 54rem);
       margin-inline: auto;
-      padding-block: clamp(0.5rem, 2vw, 1.5rem);
+      padding-block: clamp(1rem, 3vw, 2.5rem);
     }
 
     .road-stage :global(.road-stage__live) {
-      width: 64%;
+      width: 66%;
       margin-inline: auto;
     }
 
-    .road-stage :global(.road-stage__card) {
+    .road-stage :global(.road-stage__piece) {
       position: absolute;
+      width: var(--w, 27%);
     }
 
-    .road-stage :global(.road-stage__tv) {
-      width: 27%;
+    .road-stage :global(.road-stage__piece--object) {
+      width: var(--w, 24%);
+    }
+
+    .road-stage :global(.road-stage__slot--upper-left) {
+      left: 1%;
+      top: 4%;
+    }
+
+    .road-stage :global(.road-stage__slot--upper-right) {
+      right: 0;
+      top: 8%;
+    }
+
+    .road-stage :global(.road-stage__slot--mid-left) {
+      left: -1%;
+      top: 40%;
+    }
+
+    .road-stage :global(.road-stage__slot--mid-right) {
+      right: -1%;
+      top: 46%;
+    }
+
+    .road-stage :global(.road-stage__slot--lower-left) {
       left: 0;
       bottom: 11%;
     }
 
-    .road-stage :global(.road-stage__festival) {
-      width: 30%;
-      right: 0;
-      top: 8%;
+    .road-stage :global(.road-stage__slot--lower-right) {
+      right: 1%;
+      bottom: 4%;
     }
   }
 
@@ -714,16 +752,6 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     padding-top: 0.15rem;
   }
 
-  .road-os__index {
-    margin: 0;
-    font-size: var(--text-xs);
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    font-variant-numeric: tabular-nums;
-    color: var(--ink-3);
-    transition: color 350ms var(--ease-out);
-  }
-
   .road-os__title {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
@@ -757,7 +785,6 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     color: var(--bg-elev);
   }
 
-  .road-os__lane:is(.is-active, :hover, :focus-visible) .road-os__index,
   .road-os__lane:is(.is-active, :hover, :focus-visible) .road-os__title {
     color: var(--accent-ink);
   }
@@ -865,13 +892,31 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     .road-os__lane::before,
     .road-os__lane::after,
     .road-os__node,
-    .road-os__index,
     .road-os__title {
       transition: none;
     }
   }
 
   /* ---- the 2020 pivot ---- */
+  /* V1.10: the dark section blends in from the pale section above and out into
+     the fog of the next, over bands of its own padding, so no text ever sits on
+     the gradient. */
+  .road-pivot {
+    --blend: clamp(5rem, 4rem + 6vw, 10rem);
+    padding-block: calc(var(--section-y) + var(--blend));
+    background: linear-gradient(
+      to bottom,
+      var(--c-pale) 0,
+      color-mix(in srgb, var(--c-pale) 62%, var(--c-ink)) calc(var(--blend) * 0.3),
+      color-mix(in srgb, var(--c-pale) 22%, var(--c-ink)) calc(var(--blend) * 0.65),
+      var(--c-ink) var(--blend),
+      var(--c-ink) calc(100% - var(--blend)),
+      color-mix(in srgb, var(--c-fog) 22%, var(--c-ink)) calc(100% - var(--blend) * 0.65),
+      color-mix(in srgb, var(--c-fog) 62%, var(--c-ink)) calc(100% - var(--blend) * 0.3),
+      var(--c-fog) 100%
+    );
+  }
+
   .road-pivot__grid {
     display: grid;
     gap: clamp(3rem, 6vw, 6rem);
@@ -882,10 +927,17 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     gap: var(--space-5);
   }
 
+  /* Desktop: the narrative stays in view, below the header, while the longer
+     timeline runs beside it; it is released at the end of the section. */
   @media (min-width: 64rem) {
     .road-pivot__grid {
       grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-      align-items: center;
+      align-items: start;
+    }
+
+    .road-pivot__copy {
+      position: sticky;
+      top: calc(var(--header-row) + 3rem);
     }
   }
 
@@ -901,7 +953,7 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     --node: 13px;
     --node-y: 0.1rem;
     --gap-x: 0px;
-    --gap-y: clamp(1.75rem, 4vw, 2.25rem);
+    --gap-y: clamp(2.25rem, 6vw, 3rem);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -1017,8 +1069,8 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     /* Each entry is given the same height and the next begins a little under
        halfway down it, so the alternate sides never meet. */
     .road-tl {
-      --entry: 7.5rem;
-      --gap-y: calc(-1 * (var(--entry) / 2 - 0.75rem));
+      --entry: 10.5rem;
+      --gap-y: calc(-1 * (var(--entry) / 2 - 1.5rem));
     }
 
     .road-tl__item {
@@ -1079,10 +1131,6 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     background-size: 100% 100%, auto;
   }
 
-  .road-tl.is-live.is-resetting .road-tl__item::before {
-    transition-duration: 400ms;
-  }
-
   .road-tl.is-live .road-tl__item.is-active .road-tl__node {
     transform: scale(1.3);
     background: var(--accent);
@@ -1111,10 +1159,19 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
   }
 
   /* ---- where it led ---- */
+  /* V1.10: one centered introduction, track and pair of actions. */
   .road-led__head {
     display: grid;
+    justify-items: center;
     gap: var(--space-5);
-    max-width: 52rem;
+    max-width: 46rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .road-led__head :global(.lede) {
+    max-width: 40rem;
+    text-wrap: balance;
   }
 
   /* The transition track (V1.9). Phones: each pairing runs downward, the then
@@ -1122,7 +1179,8 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
      origin on the left, the destination on the right, a path between them
      pointing left to right; "Then" and "Now" once, at the head. */
   .road-track {
-    margin-top: clamp(2.5rem, 5vw, 4rem);
+    max-width: 64rem;
+    margin: clamp(2.5rem, 5vw, 4rem) auto 0;
   }
 
   .road-track__labels {
@@ -1181,6 +1239,19 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     transition: transform 700ms var(--ease-out);
   }
 
+  /* The path starts at a small stop beside its origin. */
+  .road-track__line::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    translate: -50% 0;
+  }
+
   .road-track__line::after {
     content: '';
     position: absolute;
@@ -1231,6 +1302,12 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
 
     .road-track__line {
       transform-origin: left;
+    }
+
+    .road-track__line::before {
+      left: -3px;
+      top: 50%;
+      translate: 0 -50%;
     }
 
     .road-track__line::after {
@@ -1285,6 +1362,7 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
   .road-led__actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-3);
     margin-top: clamp(2.5rem, 5vw, 3.5rem);
   }

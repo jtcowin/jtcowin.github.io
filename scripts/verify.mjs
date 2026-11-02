@@ -942,11 +942,11 @@ if (!emKey.length || emKey.some((r) => /background|box-shadow|text-decoration|bo
 // phrases), and no highlighter or underline mark anywhere. V1.4 (October 2026): John approved two commercial-proof
 // paragraphs with more than one bold phrase (the homepage's impact__copy and Technical Product Marketing's
 // tpm-eco__copy, two each; V1.6 adds the Events Commercial follow-through card, two); their exact phrases are
-// checked where those sections are.
+// checked where those sections are. V1.10 adds The Road Here's Section 3 paragraph (two phrases John recommended).
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8').replace(/<blockquote\b[\s\S]*?<\/blockquote>/g, '').replace(/<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>/g, '');
   for (const m of html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
-    if (/^<p\b[^>]*class="(?:impact__copy|tpm-eco__copy|evd__outcome)[\s"]/.test(m[0]) && /<strong\b/.test(m[1])) continue;
+    if (/^<p\b[^>]*class="(?:impact__copy|tpm-eco__copy|evd__outcome|lede road-operator__lede)[\s"]/.test(m[0]) && /<strong\b/.test(m[1])) continue;
     const n = (m[1].match(/<(?:strong|b|em)\b/g) || []).length;
     if (n > 1) failures.push(`[claim] ${path.relative(dist, f)}: a paragraph emphasizes ${n} phrases ("${textOf(m[1]).slice(0, 60)}"); one at most`);
   }
