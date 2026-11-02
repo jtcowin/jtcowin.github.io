@@ -1,5 +1,5 @@
 {
-  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.10: school.archive is the digital tour archive: the lead photograph (role \"lead\"), then supporting pieces, each a road-* asset with a role (\"card\": a framed photograph; \"object\": a cut-out artifact on a transparent background) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right); add a real artifact by adding its asset and one line here. Phones show them stacked in this order.",
+  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.12: operator.groups carry a short label (the collapsed rail panel) and a title (the open panel); each timeline milestone names its outline icon (Icon.astro). V1.10: school.archive is the digital tour archive: the lead photograph (role \"lead\"), then supporting pieces, each a road-* asset with a role (\"card\": a framed photograph; \"object\": a cut-out artifact on a transparent background) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right); add a real artifact by adding its asset and one line here. Phones show them stacked in this order.",
   "meta": {
     "title": "The Road Here",
     "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring business, and running the operations behind it."
@@ -39,10 +39,11 @@
   "operator": {
     "headline": "On stage at night. Running the business by day.",
     "accent": "Running the business by day.",
-    "copy": "Before professional management and distribution came on board, I handled much of the **daily operation of the business** myself. Even after the team grew, I remained the tour manager, coordinating routing, scheduling, travel, and the **logistics required to sustain a national touring schedule**.",
+    "copy": "Before professional management and distribution came on board, I **handled much of the daily operation myself**. Even after the team grew, I **stayed close to the work** across touring, marketing, relationships, and live events.",
     "image": "road-gear",
     "groups": [
       {
+        "label": "Operations",
         "title": "Touring and operations",
         "items": [
           "Booking shows",
@@ -50,10 +51,10 @@
           "Logistics",
           "Tour management",
           "Accounting and coordination"
-        ],
-        "icon": "route"
+        ]
       },
       {
+        "label": "Marketing",
         "title": "Marketing and creative",
         "items": [
           "Website design and management",
@@ -61,10 +62,10 @@
           "Promotion and audience development",
           "Merchandise design and sourcing",
           "Creative assets"
-        ],
-        "icon": "pen"
+        ]
       },
       {
+        "label": "Business",
         "title": "Business and relationships",
         "items": [
           "Talent buyers and booking agencies",
@@ -72,10 +73,10 @@
           "Sponsorships and endorsements",
           "Artist relations",
           "Industry networking"
-        ],
-        "icon": "users"
+        ]
       },
       {
+        "label": "Live events",
         "title": "Events and distribution",
         "items": [
           "Live event production",
@@ -83,8 +84,7 @@
           "Release coordination",
           "Music distribution",
           "Commercial operations"
-        ],
-        "icon": "broadcast"
+        ]
       }
     ]
   },
@@ -97,62 +97,71 @@
     "timeline": [
       {
         "when": "2008 to 2010",
-        "what": "Studied performance, music business, and media"
+        "what": "Studied performance, music business, and media",
+        "icon": "education"
       },
       {
         "when": "2010",
-        "what": "Launched the original music project"
+        "what": "Launched the original music project",
+        "icon": "launch"
       },
       {
         "when": "2012",
-        "what": "Began professional touring"
+        "what": "Began professional touring",
+        "icon": "touring"
       },
       {
         "when": "2014",
-        "what": "Played the first major festival"
+        "what": "Played the first major festival",
+        "icon": "stage"
       },
       {
         "when": "2016",
-        "what": "Secured worldwide distribution through a Sony Music subsidiary"
+        "what": "Secured worldwide distribution through a Sony Music subsidiary",
+        "icon": "globe"
       },
       {
-        "when": "2018",
-        "what": "Appeared on television"
+        "when": "2019",
+        "what": "Appeared on television",
+        "icon": "television"
       },
       {
         "when": "2020",
-        "what": "Live music stops"
+        "what": "Live music stops",
+        "icon": "paused"
       },
       {
         "when": "2020",
-        "what": "Began studying DeFi, investing, and joining communities"
+        "what": "Began studying DeFi, investing, and joining communities",
+        "icon": "discover"
       },
       {
         "when": "2021",
-        "what": "Started the first professional role in Web3"
+        "what": "Started the first professional role in Web3",
+        "icon": "chain"
       }
     ],
     "accent": "2020 happened."
   },
   "led": {
-    "headline": "Different industry. Familiar instincts.",
-    "copy": "The work changed. The instincts didn't. Building an audience, promoting a product, running events, and keeping a business moving became **the foundation for the marketing work I do today**.",
+    "headline": "Different industry. Same operating instincts.",
+    "copy": "The context changed. The instincts did not. What I learned building audiences, relationships, and an operating rhythm on the road now shapes how I bring products to market.",
     "pairs": [
       {
-        "then": "Booking, routing and running tours",
+        "then": "Booking, routing, and running tours",
         "now": "Event activations and on-site production"
       },
       {
-        "then": "Growing an audience city by city",
-        "now": "Content, social and audience growth"
+        "then": "Growing audiences city by city",
+        "now": "Content, social, and audience growth"
       },
       {
-        "then": "Sponsors, endorsements and industry relationships",
+        "then": "Sponsors, endorsements, and industry relationships",
         "now": "Partnerships and KOL programs"
       },
       {
-        "then": "Running the business side of the music",
-        "now": "Positioning, operations and go-to-market"
+        "then": "Running the music business",
+        "now": "Positioning, operations, and go-to-market"
       }
     ],
     "cta": {
@@ -163,6 +172,6 @@
       "label": "Back to home",
       "href": "/"
     },
-    "accent": "Familiar instincts."
+    "accent": "Same operating instincts."
   }
 }

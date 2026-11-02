@@ -14,9 +14,10 @@
  * Words: src/data/road.json. Photographs: assets.json road-* entries, through
  * RoadFrame (a labeled placeholder until each photograph is supplied). Motion is
  * restrained: one reveal as each block comes into view, a gentle drift on the
- * photographs, the timeline's line drawing down and then a slow pulse rising along
- * it (V1.8), lighting each milestone it passes; all of it off with reduced
- * motion or without scripts. Privacy: the band is never named here or in metadata.
+ * live photograph, the timeline following the scroll from top to bottom, and the
+ * capability rail and signal bridge advancing every 4.5s while in view and idle
+ * (V1.12); all of it off with reduced motion, and without scripts everything is
+ * laid out open and static. Privacy: the band is never named here or in metadata.
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Contact from '@components/Contact.astro';
@@ -47,13 +48,15 @@ const H = {
 const heroEntry = getAsset(hero.image);
 const heroImg = resolveImage(heroEntry);
 if (!heroImg) throw new Error('[road] the hero cutout is missing');
-type GroupIcon = 'route' | 'pen' | 'users' | 'broadcast';
 // The digital tour archive (V1.10): the lead photograph, then supporting pieces in named slots.
 type ArchiveItem = { asset: string; role: 'lead' | 'card' | 'object'; slot?: string; rotate?: number; width?: number };
 const archive = school.archive as ArchiveItem[];
 const archiveSizes = (it: ArchiveItem) =>
   it.role === 'lead' ? '(min-width: 56rem) 32vw, (min-width: 40rem) 28rem, 100vw' : '(min-width: 56rem) 15vw, (min-width: 40rem) 12rem, 82vw';
-const groups = operator.groups as Array<{ title: string; items: string[]; icon: GroupIcon }>;
+// The capability rail (V1.12): a short label for each collapsed panel, the full title in the open one.
+const groups = operator.groups as Array<{ label: string; title: string; items: string[] }>;
+type MilestoneIcon = 'education' | 'launch' | 'touring' | 'stage' | 'globe' | 'television' | 'paused' | 'discover' | 'chain';
+const timeline = pivot.timeline as Array<{ when: string; what: string; icon: MilestoneIcon }>;
 ---
 
 <BaseLayout title={meta.title} description={meta.description} path="/the-road-here/" noindex footerSurface="brand">
@@ -122,22 +125,28 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
           {/* No drift: the whole kit stays in frame. */}
           <RoadFrame id={operator.image} class="road-operator__image road-reveal" sizes="(min-width: 64rem) 45vw, 100vw" />
         </div>
-        {/* The touring operating system (V1.9): one panel, four indexed lanes joined by a route line. Hover or focus
-            brings a lane forward and lights the route up to it; every capability is always visible. */}
-        <div class="road-os road-reveal">
-          <ol class="road-os__lanes" data-road-os aria-label="The business behind the music">
-            {groups.map((g, i) => (
-              <li class="road-os__lane" tabindex="0" aria-labelledby={`road-os-${i}`} data-lane={i}>
-                <span class="road-os__node" aria-hidden="true"><Icon name={g.icon} size={18} /></span>
-                <div class="road-os__body">
-                  <h3 id={`road-os-${i}`} class="road-os__title">{g.title}</h3>
-                  <ul class="road-os__items">
-                    {g.items.map((it) => <li>{it}</li>)}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ol>
+        {/* The capability rail (V1.12): four adjacent panels, one open at a time. Desktop: a stable-height row in
+            which the open panel takes about 44% and shows its full title and list, while the other three keep their
+            short labels; it advances every 4.5s while in view and idle, and hover, focus or a tap opens a panel at
+            once. Phones and tablets: a vertical accordion that never cycles on its own. Collapsed lists stay in the
+            accessible text; without scripts all four are simply laid out open. */}
+        <div class="road-rail road-reveal" data-road-rail>
+          {groups.map((g, i) => (
+            <div class:list={['road-rail__panel', { 'is-open': i === 0 }]} data-panel={i}>
+              <h3 class="road-rail__head">
+                <button type="button" class="road-rail__btn" id={`road-rail-btn-${i}`} aria-controls={`road-rail-list-${i}`} aria-expanded={i === 0 ? 'true' : 'false'}>
+                  <span class="road-rail__short" aria-hidden="true">{g.label}</span>
+                  <span class="road-rail__full">{g.title}</span>
+                  <Icon name="chevron-down" size={16} class="road-rail__chev" />
+                </button>
+              </h3>
+              <div class="road-rail__content" id={`road-rail-list-${i}`}>
+                <ul class="road-rail__items">
+                  {g.items.map((it) => <li>{it}</li>)}
+                </ul>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -151,13 +160,15 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
             {pivot.paragraphs.map((p) => <p>{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
-        {/* The timeline (V1.9): a central spine, milestones alternating left and right on short branches, in order from
-            top to bottom. The script steps through them one at a time, the spine filling down to the active one. */}
+        {/* The timeline (V1.9; V1.12 branches and icons): a central spine, milestones alternating left and right on
+            dotted branches, each ending in one small outline icon for the milestone, in order from top to bottom.
+            Scroll sets the active milestone, the spine filling down to it. */}
         <ol class="road-tl road-reveal" data-road-timeline aria-label="From the road to Web3">
-          {pivot.timeline.map((t, i) => (
+          {timeline.map((t, i) => (
             <li class:list={['road-tl__item', i % 2 ? 'road-tl__item--right' : 'road-tl__item--left']} tabindex="0" data-step={i}>
               <span class="road-tl__node" aria-hidden="true"></span>
               <div class="road-tl__body">
+                <span class="road-tl__icon" aria-hidden="true"><Icon name={t.icon} size={18} /></span>
                 <span class="road-tl__when">{t.when}</span>
                 <span class="road-tl__what">{t.what}</span>
               </div>
@@ -171,18 +182,23 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     <section id="road-led" class="section road-led" data-surface="light-return" aria-labelledby="road-led-title">
       <div class="container">
         <div class="road-led__head">
-          <h2 id="road-led-title" class="display display-xl road-reveal">{H.led[0]}<span class="road-accent">{H.led[1]}</span>{H.led[2]}</h2>
+          <h2 id="road-led-title" class="display display-xl road-led__title road-reveal"><span class="road-led__line">{H.led[0].trim()}</span>{' '}<span class="road-led__line road-accent">{H.led[1]}</span>{H.led[2]}</h2>
           <p class="lede road-reveal">{rich(led.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
-        {/* The transition track (V1.9): each music-career origin runs along its own path into the work it became. */}
-        <div class="road-track road-reveal">
-          <p class="road-track__labels" aria-hidden="true"><span>Then</span><span>Now</span></p>
-          <ol class="road-track__rows" data-road-track aria-label="Then and now">
+        {/* The signal bridge (V1.12): one centered bridge from Then to Now. Each row is a past-career origin, a
+            fine channel and the present-day application; one row at a time comes forward as a signal crosses its
+            channel left to right, every 4.5s while in view and idle. Hover, focus or a tap selects a row and holds
+            it. Phones: each relationship stacks, origin over a short connector over application. */}
+        <div class="road-bridge road-reveal">
+          <p class="road-bridge__ends" aria-hidden="true"><span>Then</span><span>Now</span></p>
+          <ol class="road-bridge__rows" data-road-bridge aria-label="Then and now">
             {led.pairs.map((p) => (
-              <li class="road-track__row" tabindex="0">
-                <span class="road-track__then"><span class="sr-only">Then: </span>{p.then}</span>
-                <span class="road-track__path" aria-hidden="true"><span class="road-track__line"></span></span>
-                <span class="road-track__now"><span class="sr-only">Now: </span>{p.now}</span>
+              <li class="road-bridge__row">
+                <button type="button" class="road-bridge__btn" aria-pressed="false">
+                  <span class="road-bridge__then"><span class="sr-only">Then: </span>{p.then}</span>
+                  <span class="road-bridge__channel" aria-hidden="true"><span class="road-bridge__signal"></span></span>
+                  <span class="road-bridge__now"><span class="sr-only">Now: </span>{p.now}</span>
+                </button>
               </li>
             ))}
           </ol>
@@ -203,10 +219,9 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
 
 <script>
   // Restrained motion: each block reveals once as it comes into view and the live photograph drifts gently with the
-  // scroll. V1.9 adds three components: the operating system's route lights up to the lane in focus (any motion
-  // setting: it is a response, not an animation); the timeline steps through its milestones from top to bottom; the
-  // transition track draws each then-to-now path in turn. Reduced motion, no IntersectionObserver or no scripts:
-  // everything is simply shown, complete and static.
+  // scroll. Three components (V1.12): the capability rail and the signal bridge each advance on a calm 4.5s sequence
+  // that any hover, focus or tap overrides; the timeline follows the scroll from top to bottom. Reduced motion, no
+  // IntersectionObserver or no scripts: everything is simply shown, complete and static.
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const items = [...document.querySelectorAll<HTMLElement>('.road-reveal')];
   const motion = !reduce && 'IntersectionObserver' in window;
@@ -247,27 +262,81 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     update();
   }
 
-  // ---- The touring operating system: the lane under the pointer or in focus comes forward, and the route lights
-  // up from the first stop to it. Leaving the panel returns it to rest.
-  const os = document.querySelector<HTMLElement>('[data-road-os]');
-  if (os) {
-    const lanes = [...os.querySelectorAll<HTMLElement>('.road-os__lane')];
-    const setActive = (k: number | null) => {
-      os.toggleAttribute('data-active', k !== null);
-      lanes.forEach((l, i) => {
-        l.classList.toggle('is-active', i === k);
-        l.classList.toggle('is-route', k !== null && i < k);
+  // ---- A calm, interruptible sequence (V1.12), shared by the capability rail and the signal bridge: it advances
+  // every 4.5s only while its component is on screen, the tab is visible, nothing is under the pointer or in focus,
+  // nothing has been chosen by a click or tap, and the layout is the wide one. Reduced motion never starts it.
+  const STEP = 4500;
+  const sequence = (root: HTMLElement, wide: MediaQueryList, advance: () => void) => {
+    let visible = false;
+    let hover = false;
+    let focus = false;
+    let pinned = false;
+    let timer = 0;
+    const idle = () => visible && !hover && !focus && !pinned && wide.matches && !document.hidden && !reduce;
+    const arm = () => {
+      window.clearTimeout(timer);
+      if (idle()) timer = window.setTimeout(tick, STEP);
+    };
+    const tick = () => {
+      if (!idle()) return;
+      advance();
+      arm();
+    };
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => {
+          visible = entries.some((e) => e.isIntersecting);
+          if (!visible) pinned = false; // a choice holds until the reader moves on
+          arm();
+        },
+        { threshold: 0.4 },
+      ).observe(root);
+    }
+    root.addEventListener('pointerenter', (e) => {
+      if ((e as PointerEvent).pointerType === 'mouse') { hover = true; arm(); }
+    });
+    root.addEventListener('pointerleave', (e) => {
+      if ((e as PointerEvent).pointerType === 'mouse') { hover = false; arm(); }
+    });
+    root.addEventListener('focusin', () => { focus = true; arm(); });
+    root.addEventListener('focusout', (e) => {
+      if (!root.contains(e.relatedTarget as Node | null)) { focus = false; arm(); }
+    });
+    document.addEventListener('visibilitychange', arm);
+    wide.addEventListener('change', arm);
+    return { pin: () => { pinned = true; arm(); } };
+  };
+
+  // ---- The capability rail (V1.12): exactly one panel open. Wide screens: hover, focus or a tap opens a panel at
+  // once (a tap or click keeps it); it cycles when idle. Narrow screens: an accordion, opened by tap or keyboard.
+  const rail = document.querySelector<HTMLElement>('[data-road-rail]');
+  if (rail) {
+    const panels = [...rail.querySelectorAll<HTMLElement>('.road-rail__panel')];
+    const buttons = panels.map((p) => p.querySelector<HTMLButtonElement>('.road-rail__btn')!);
+    const wide = window.matchMedia('(min-width: 60rem)');
+    let open = 0;
+    const show = (k: number) => {
+      open = k;
+      panels.forEach((p, i) => {
+        p.classList.toggle('is-open', i === k);
+        buttons[i].setAttribute('aria-expanded', String(i === k));
       });
     };
-    lanes.forEach((l, i) => {
-      l.addEventListener('pointerenter', () => setActive(i));
-      l.addEventListener('focus', () => setActive(i));
-    });
-    os.addEventListener('pointerleave', () => {
-      if (!os.contains(document.activeElement)) setActive(null);
-    });
-    os.addEventListener('focusout', (e) => {
-      if (!os.contains(e.relatedTarget as Node | null)) setActive(null);
+    rail.classList.add('is-live');
+    show(0);
+    const seq = sequence(rail, wide, () => show((open + 1) % panels.length));
+    panels.forEach((p, i) => {
+      p.addEventListener('pointerenter', (e) => {
+        if ((e as PointerEvent).pointerType === 'mouse' && wide.matches) show(i);
+      });
+      buttons[i].addEventListener('focus', () => { if (wide.matches) show(i); });
+      buttons[i].addEventListener('click', () => { show(i); seq.pin(); });
+      buttons[i].addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        buttons[(i + d + buttons.length) % buttons.length].focus();
+      });
     });
   }
 
@@ -341,72 +410,43 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     });
   }
 
-  // ---- The transition track: as it comes into view, each pairing in turn (origin, path and destination together)
-  // gains emphasis while its path draws left to right, then settles. Pointer, focus or a tap brings one pairing
-  // forward and pauses the sequence.
-  const track = document.querySelector<HTMLElement>('[data-road-track]');
-  if (track && motion) {
-    const rows = [...track.querySelectorAll<HTMLElement>('.road-track__row')];
-    const STEP = 1500;
-    let next = 0;
-    let timer = 0;
-    let paused = false;
-    let started = false;
-    track.classList.add('is-live');
-
-    const run = () => {
-      if (paused) return;
-      rows.forEach((r, i) => {
-        r.classList.toggle('is-on', i === next);
-        if (i < next) r.classList.add('is-drawn');
-      });
-      if (next < rows.length) {
-        rows[next].classList.add('is-drawn');
-        next += 1;
-        timer = window.setTimeout(run, STEP);
-      } else {
-        rows.forEach((r) => r.classList.remove('is-on'));
-        track.classList.add('is-settled');
-      }
+  // ---- The signal bridge (V1.12): one row at a time comes forward while its signal crosses from Then to Now.
+  // It starts on the first row once in view; hover, focus or a tap selects a row (a tap or click holds it). Phones
+  // and reduced motion: no sequence, every row equally readable until the reader picks one.
+  const bridge = document.querySelector<HTMLElement>('[data-road-bridge]');
+  if (bridge) {
+    const rows = [...bridge.querySelectorAll<HTMLElement>('.road-bridge__row')];
+    const btns = rows.map((r) => r.querySelector<HTMLButtonElement>('.road-bridge__btn')!);
+    const wide = window.matchMedia('(min-width: 48rem)');
+    let on = -1;
+    const show = (k: number) => {
+      on = k;
+      rows.forEach((r, i) => r.classList.toggle('is-on', i === k));
+      btns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+      bridge.toggleAttribute('data-on', k >= 0);
     };
-    new IntersectionObserver(
-      (entries, obs) => {
-        if (entries.some((e) => e.isIntersecting) && !started) {
-          started = true;
-          obs.disconnect();
-          timer = window.setTimeout(run, 500);
-        }
-      },
-      { threshold: 0.35 },
-    ).observe(track);
-
-    const focusRow = (k: number | null) => {
-      rows.forEach((r, i) => r.classList.toggle('is-focus', i === k));
-      track.toggleAttribute('data-focus', k !== null);
-    };
+    const seq = sequence(bridge, wide, () => show((on + 1) % rows.length));
+    if (!reduce && 'IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries, obs) => {
+          if (entries.some((e) => e.isIntersecting) && on < 0 && wide.matches) {
+            obs.disconnect();
+            window.setTimeout(() => { if (on < 0) show(0); }, 400);
+          }
+        },
+        { threshold: 0.4 },
+      ).observe(bridge);
+    }
     rows.forEach((r, i) => {
-      const take = () => {
-        paused = true;
-        window.clearTimeout(timer);
-        rows.forEach((x) => x.classList.remove('is-on'));
-        r.classList.add('is-drawn');
-        focusRow(i);
-      };
-      r.addEventListener('pointerenter', take);
-      r.addEventListener('focus', take);
-    });
-    const leave = () => {
-      focusRow(null);
-      if (paused) {
-        paused = false;
-        if (started && !track.classList.contains('is-settled')) timer = window.setTimeout(run, 600);
-      }
-    };
-    track.addEventListener('pointerleave', () => {
-      if (!track.contains(document.activeElement)) leave();
-    });
-    track.addEventListener('focusout', (e) => {
-      if (!track.contains(e.relatedTarget as Node | null)) leave();
+      r.addEventListener('pointerenter', (e) => {
+        if ((e as PointerEvent).pointerType === 'mouse') show(i);
+      });
+      btns[i].addEventListener('focus', () => show(i));
+      btns[i].addEventListener('click', () => {
+        show(i);
+        btns.forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+        seq.pin();
+      });
     });
   }
 </script>
@@ -673,227 +713,284 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     }
   }
 
-  /* The touring operating system (V1.9): one panel; four indexed lanes, each
-     opening on a stop on one continuous route line (drawn lane by lane, so it
-     follows the layout: a single rail across from 80rem, a connected two by two
-     between, one vertical route on phones). The lane in focus comes forward and
-     the route lights up to it; nothing is hidden behind the interaction. */
-  .road-os {
-    --node: 2.5rem;
-    --lane-gap: clamp(1.5rem, 2.5vw, 2.5rem);
-    --row-gap: clamp(2rem, 4vw, 3rem);
+  /* The capability rail (V1.12). Without scripts: the four groups laid out
+     open (one column, two from 40rem, four from 72rem). With scripts: a
+     vertical accordion, and from 60rem one horizontal row of four adjacent
+     panels at a fixed height, the open panel 44% of it. No icons, numbers,
+     badges, connector or rules under the items; the open panel's one accent
+     is a fine top rule over a slightly lifted tone. */
+  .road-rail {
+    --pad: clamp(1.25rem, 2vw, 2rem);
     margin-top: clamp(3rem, 5vw, 4.5rem);
-    padding: clamp(1.5rem, 3vw, 2.75rem);
-    background: var(--bg-elev);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: grid;
   }
 
-  .road-os__lanes {
-    list-style: none;
+  .road-rail__panel {
+    position: relative;
+    min-width: 0;
+    padding: var(--pad);
+  }
+
+  .road-rail__panel + .road-rail__panel {
+    border-top: 1px solid var(--line);
+  }
+
+  .road-rail__head {
     margin: 0;
-    padding: 0;
-    display: grid;
-    row-gap: var(--row-gap);
+    font: inherit;
   }
 
-  .road-os__lane {
-    position: relative;
-    display: grid;
-    grid-template-columns: var(--node) minmax(0, 1fr);
-    column-gap: 1.1rem;
-    align-items: start;
-    border-radius: var(--radius);
-    outline-offset: 6px;
-    transition: opacity 400ms var(--ease-out);
-  }
-
-  /* Phones: the route runs down the left, from each stop to the next. */
-  .road-os__lane:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    z-index: 0;
-    left: calc(var(--node) / 2 - 0.5px);
-    top: calc(var(--node) / 2);
-    bottom: calc(-1 * (var(--row-gap) + var(--node) / 2));
-    width: 1px;
-    background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 0 / 100% 0%, var(--line-strong);
-    transition: background-size 500ms var(--ease-out);
-  }
-
-  .road-os__lane.is-route::before {
-    background-size: 100% 100%, auto;
-  }
-
-  .road-os__node {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    width: var(--node);
-    height: var(--node);
-    border: 1px solid var(--accent-line);
-    border-radius: 50%;
-    background: var(--bg-elev);
-    color: var(--accent);
-    transition:
-      background-color 350ms var(--ease-out),
-      color 350ms var(--ease-out),
-      border-color 350ms var(--ease-out);
-  }
-
-  .road-os__node :global(svg) {
-    display: block;
-  }
-
-  .road-os__body {
-    display: grid;
-    gap: 0.35rem;
-    padding-top: 0.15rem;
-  }
-
-  .road-os__title {
+  .road-rail__btn {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
     font-family: var(--font-display);
     font-weight: var(--display-weight);
     font-stretch: var(--display-stretch);
     font-size: var(--text-lg);
-    line-height: 1.1;
+    line-height: 1.15;
     color: var(--heading);
-    transition: color 350ms var(--ease-out);
+    cursor: pointer;
+    border-radius: 4px;
   }
 
-  .road-os__items {
+  .road-rail__btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  .road-rail__short,
+  :global(.road-rail__chev) {
+    display: none;
+  }
+
+  .road-rail__items {
     list-style: none;
-    margin: 0.6rem 0 0;
+    margin: 1rem 0 0;
     padding: 0;
     display: grid;
-    gap: 0.45rem;
-    font-size: var(--text-sm);
+    gap: 0.55rem;
+    font-size: var(--text-md);
+    line-height: 1.35;
     color: var(--ink-2);
   }
 
-  .road-os__items li {
-    padding-top: 0.45rem;
-    border-top: 1px solid var(--line);
-  }
-
-  /* The lane in focus: its stop fills, its index and title take the accent; the
-     other lanes step back a little. */
-  .road-os__lane:is(.is-active, :hover, :focus-visible) .road-os__node {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg-elev);
-  }
-
-  .road-os__lane:is(.is-active, :hover, :focus-visible) .road-os__title {
-    color: var(--accent-ink);
-  }
-
-  .road-os__lanes[data-active] .road-os__lane:not(.is-active) {
-    opacity: 0.72;
-  }
-
-  /* Two by two: the stop on top of each lane; the route runs across each row
-     and down the left from the first row to the second. */
   @media (min-width: 40rem) {
-    .road-os__lanes {
+    .road-rail:not(.is-live) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: var(--lane-gap);
     }
 
-    /* The stop keeps a column of its own, so the route down the left never
-       crosses text; each lane's words begin under its row's rail. */
-    .road-os__body {
-      padding-top: calc(var(--node) / 2 + 1rem);
+    .road-rail:not(.is-live) .road-rail__panel + .road-rail__panel {
+      border-top: 0;
     }
 
-    .road-os__lane:not(:last-child)::before {
-      display: none;
+    .road-rail:not(.is-live) .road-rail__panel:nth-child(even) {
+      border-left: 1px solid var(--line);
     }
 
-    .road-os__lane:nth-child(odd)::before {
-      display: block;
-      top: calc(var(--node) / 2 - 0.5px);
-      bottom: auto;
-      left: calc(var(--node) / 2);
-      right: calc(-1 * var(--lane-gap));
-      width: auto;
-      height: 1px;
-      background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 0 / 0% 100%, var(--line-strong);
-    }
-
-    .road-os__lane:nth-child(odd).is-route::before {
-      background-size: 100% 100%, auto;
-    }
-
-    .road-os__lane:first-child::after {
-      content: '';
-      position: absolute;
-      z-index: 0;
-      left: calc(var(--node) / 2 - 0.5px);
-      top: calc(var(--node) / 2);
-      bottom: calc(-1 * (var(--row-gap) + var(--node) / 2));
-      width: 1px;
-      background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 0 / 100% 0%, var(--line-strong);
-      transition: background-size 500ms var(--ease-out);
-    }
-
-    .road-os__lanes:has(.road-os__lane:nth-child(n + 3).is-active) .road-os__lane:first-child::after {
-      background-size: 100% 100%, auto;
+    .road-rail:not(.is-live) .road-rail__panel:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
     }
   }
 
-  /* One rail across: four lanes, each joined to the next, the stop above its
-     lane's words. */
-  @media (min-width: 80rem) {
-    .road-os__lanes {
+  @media (min-width: 72rem) {
+    .road-rail:not(.is-live) {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    .road-os__lane {
-      grid-template-columns: minmax(0, 1fr);
-      row-gap: 1rem;
+    .road-rail:not(.is-live) .road-rail__panel + .road-rail__panel {
+      border-top: 0;
+      border-left: 1px solid var(--line);
+    }
+  }
+
+  /* The accordion (scripts on, below 60rem): each title a full-width button
+     with a small chevron; the list folds open under it. A folded list is
+     clipped, not removed, so it stays in the accessible text. */
+  .road-rail.is-live .road-rail__panel {
+    padding-block: 0;
+    transition: background-color 400ms var(--ease-out);
+  }
+
+  .road-rail.is-live .road-rail__btn {
+    padding-block: 1.15rem;
+  }
+
+  .road-rail.is-live :global(.road-rail__chev) {
+    display: block;
+    flex: none;
+    color: var(--ink-3);
+    transition: rotate 300ms var(--ease-out);
+  }
+
+  .road-rail.is-live .road-rail__panel.is-open :global(.road-rail__chev) {
+    rotate: 180deg;
+    color: var(--accent);
+  }
+
+  .road-rail.is-live .road-rail__content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 400ms var(--ease-out);
+  }
+
+  .road-rail.is-live .road-rail__items {
+    min-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+    padding-bottom: 0;
+    transition: padding-bottom 400ms var(--ease-out);
+  }
+
+  .road-rail.is-live .road-rail__panel.is-open .road-rail__content {
+    grid-template-rows: 1fr;
+  }
+
+  .road-rail.is-live .road-rail__panel.is-open .road-rail__items {
+    padding-bottom: 1.35rem;
+  }
+
+  .road-rail.is-live .road-rail__panel.is-open {
+    background: var(--bg-elev);
+  }
+
+  /* The rail (scripts on, from 60rem): one stable-height row. The open panel
+     takes 44%; the three others share the rest and keep their short label,
+     horizontal and whole. The open list is laid out at the open width from
+     the start, so it never rewraps while the panels resize. */
+  @media (min-width: 60rem) {
+    .road-rail.is-live {
+      --open-n: 44;
+      container-type: inline-size;
+      display: flex;
+      height: clamp(17.5rem, 15rem + 3vw, 19.5rem);
     }
 
-    .road-os__body {
-      padding-top: 0.15rem;
+    .road-rail.is-live .road-rail__panel {
+      flex: 1 1 0;
+      padding: var(--pad);
+      overflow: hidden;
+      background: transparent;
+      transition:
+        flex-grow 600ms var(--ease-out),
+        flex-basis 600ms var(--ease-out),
+        background-color 500ms var(--ease-out);
     }
 
-    /* (Scoped to the list so these outrank the two-by-two rules above.) */
-    .road-os__lanes .road-os__lane:not(:last-child)::before {
-      display: block;
-      top: calc(var(--node) / 2 - 0.5px);
-      bottom: auto;
-      left: calc(var(--node) / 2);
-      right: calc(-1 * var(--lane-gap));
-      width: auto;
-      height: 1px;
-      background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 0 / 0% 100%, var(--line-strong);
-      transition: background-size 500ms var(--ease-out);
+    .road-rail.is-live .road-rail__panel + .road-rail__panel {
+      border-top: 0;
+      border-left: 1px solid var(--line);
     }
 
-    .road-os__lanes .road-os__lane:not(:last-child).is-route::before {
-      background-size: 100% 100%, auto;
+    .road-rail.is-live .road-rail__panel.is-open {
+      flex: 0 0 calc(var(--open-n) * 1%);
+      background: var(--bg-elev);
     }
 
-    .road-os__lanes .road-os__lane:first-child::after {
+    /* The one accent: a fine rule across the top of the open panel. */
+    .road-rail.is-live .road-rail__panel::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 500ms var(--ease-out);
+    }
+
+    .road-rail.is-live .road-rail__panel.is-open::before {
+      opacity: 1;
+    }
+
+    .road-rail.is-live .road-rail__btn {
+      padding-block: 0;
+      white-space: nowrap;
+    }
+
+    /* The whole collapsed panel is the button's target. */
+    .road-rail.is-live .road-rail__btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+
+    .road-rail.is-live .road-rail__panel.is-open .road-rail__btn::after {
       display: none;
     }
 
-    /* "Business and relationships" holds one line. */
-    .road-os__title {
-      font-size: 1.3125rem;
+    .road-rail.is-live :global(.road-rail__chev) {
+      display: none;
+    }
+
+    .road-rail.is-live .road-rail__short {
+      display: block;
+      color: var(--ink-2);
+      transition: color 300ms var(--ease-out);
+    }
+
+    .road-rail.is-live .road-rail__panel:not(.is-open) .road-rail__full {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
       white-space: nowrap;
+    }
+
+    .road-rail.is-live .road-rail__panel.is-open .road-rail__short {
+      display: none;
+    }
+
+    .road-rail.is-live .road-rail__panel:not(.is-open) .road-rail__btn:is(:hover, :focus-visible) .road-rail__short {
+      color: var(--heading);
+    }
+
+    /* The list: laid out at the open panel's width, fading and easing in a
+       moment after its panel opens; folded lists stay in the accessible text,
+       clipped by their narrow panels. */
+    .road-rail.is-live .road-rail__content {
+      display: block;
+      position: absolute;
+      left: var(--pad);
+      top: calc(var(--pad) + var(--text-lg) * 1.15 + 1.4rem);
+      width: calc(var(--open-n) * 1cqw - 2 * var(--pad));
+      opacity: 0;
+      translate: 0.75rem 0;
+      pointer-events: none;
+      transition:
+        opacity 250ms var(--ease-out),
+        translate 250ms var(--ease-out);
+    }
+
+    .road-rail.is-live .road-rail__items,
+    .road-rail.is-live .road-rail__panel.is-open .road-rail__items {
+      overflow: visible;
+      padding-bottom: 0;
+      gap: 0.7rem;
+    }
+
+    .road-rail.is-live .road-rail__panel.is-open .road-rail__content {
+      opacity: 1;
+      translate: 0 0;
+      pointer-events: auto;
+      transition:
+        opacity 500ms var(--ease-out) 220ms,
+        translate 500ms var(--ease-out) 220ms;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .road-os__lane,
-    .road-os__lane::before,
-    .road-os__lane::after,
-    .road-os__node,
-    .road-os__title {
-      transition: none;
+    .road-rail *,
+    .road-rail .road-rail__panel,
+    .road-rail .road-rail__panel::before {
+      transition: none !important;
     }
   }
 
@@ -946,8 +1043,8 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
      the year and words set beneath the branch and aligned toward the spine; the
      entries alternate left and right, each starting about halfway down the one
      before; time runs top to bottom. Translated into the site's own type and
-     colors, with a small accent tick at the branch's outer end in place of an
-     icon. Phones: the spine on the left, every entry to its right. The spine is
+     colors. V1.12: the branches are dotted, and each ends in one small outline
+     icon for its milestone, in the site's icon family and weight. Phones: the spine on the left, every entry to its right. The spine is
      drawn node to node so it can fill down to the active milestone. */
   .road-tl {
     --node: 13px;
@@ -1019,27 +1116,33 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
       transform 500ms var(--ease-out);
   }
 
+  /* The branch: a dotted line from the node outward, and at its outer end
+     the milestone's icon, centered on the line. */
+  .road-tl__body {
+    --branch: min(100% - 1.9rem, 13rem);
+  }
+
   .road-tl__body::before {
     content: '';
     position: absolute;
-    top: calc(var(--node-y) + var(--node) / 2 - 0.5px);
+    top: calc(var(--node-y) + var(--node) / 2 - 1px);
     left: 0;
-    width: min(100%, 15rem);
-    height: 1px;
-    background: var(--line-strong);
-    transition: background-color 500ms var(--ease-out);
+    width: var(--branch);
+    border-top: 2px dotted var(--line-strong);
+    transition: border-color 500ms var(--ease-out);
   }
 
-  .road-tl__body::after {
-    content: '';
+  .road-tl__icon {
     position: absolute;
-    top: calc(var(--node-y) + var(--node) / 2 - 2.5px);
-    left: calc(min(100%, 15rem) - 5px);
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--line-strong);
-    transition: background-color 500ms var(--ease-out);
+    top: calc(var(--node-y) + var(--node) / 2 - 9px);
+    left: calc(var(--branch) + 0.45rem);
+    line-height: 0;
+    color: var(--ink-3);
+    transition: color 500ms var(--ease-out);
+  }
+
+  .road-tl__icon :global(svg) {
+    display: block;
   }
 
   .road-tl__when {
@@ -1100,9 +1203,9 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
       right: 0;
     }
 
-    .road-tl__item--left .road-tl__body::after {
+    .road-tl__item--left .road-tl__icon {
       left: auto;
-      right: calc(min(100%, 15rem) - 5px);
+      right: calc(var(--branch) + 0.45rem);
     }
 
     .road-tl__item--right .road-tl__body {
@@ -1145,47 +1248,69 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     transform: scale(1.05);
   }
 
-  .road-tl.is-live .road-tl__item:is(.is-active, .is-done) .road-tl__body::before,
-  .road-tl.is-live .road-tl__item:is(.is-active, .is-done) .road-tl__body::after {
-    background: var(--accent);
+  .road-tl.is-live .road-tl__item:is(.is-active, .is-done) .road-tl__body::before {
+    border-color: var(--accent);
+  }
+
+  .road-tl.is-live .road-tl__item:is(.is-active, .is-done) .road-tl__icon {
+    color: var(--accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
     .road-tl__node,
     .road-tl__body,
+    .road-tl__body::before,
+    .road-tl__icon,
     .road-tl__item::before {
       transition: none;
     }
   }
 
   /* ---- where it led ---- */
-  /* V1.10: one centered introduction, track and pair of actions. */
+  /* V1.10: one centered introduction, bridge (V1.12) and pair of actions. */
   .road-led__head {
     display: grid;
     justify-items: center;
     gap: var(--space-5);
-    max-width: 46rem;
+    max-width: 68rem;
     margin-inline: auto;
     text-align: center;
   }
 
   .road-led__head :global(.lede) {
-    max-width: 40rem;
+    max-width: 46rem;
     text-wrap: balance;
   }
 
-  /* The transition track (V1.9). Phones: each pairing runs downward, the then
-     statement, a short path with its arrow, the now statement. From 48rem: the
-     origin on the left, the destination on the right, a path between them
-     pointing left to right; "Then" and "Now" once, at the head. */
-  .road-track {
-    max-width: 64rem;
+  /* The approved two lines: "Different industry." over "Same operating
+     instincts."; each holds whole where it fits, and on phones may wrap
+     within itself, keeping the order. */
+  .road-led__line {
+    display: block;
+  }
+
+  @media (min-width: 56rem) {
+    .road-led__line {
+      white-space: nowrap;
+    }
+  }
+
+  /* The signal bridge (V1.12). Phones: each relationship stacks, its origin
+     over a short vertical connector over its application. From 48rem: one
+     centered bridge, every row a balanced three-part grid (origin right-
+     aligned toward the channel, the channel, the application left-aligned
+     away from it), "Then" and "Now" set over their endpoints. From 75rem
+     every label holds one line. No card, frame, arrows or table rules. */
+  .road-bridge {
+    --channel: clamp(5rem, 9vw, 10rem);
+    --side: 1.5rem;
+    max-width: 82rem;
     margin: clamp(2.5rem, 5vw, 4rem) auto 0;
   }
 
-  .road-track__labels {
+  .road-bridge__ends {
     display: none;
-    margin: 0 0 var(--space-4);
+    margin: 0 0 var(--space-3);
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.14em;
@@ -1193,170 +1318,204 @@ const groups = operator.groups as Array<{ title: string; items: string[]; icon: 
     color: var(--ink-3);
   }
 
-  .road-track__rows {
+  .road-bridge__rows {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: clamp(1.75rem, 3vw, 2.25rem);
+    gap: clamp(1.5rem, 4vw, 2rem);
   }
 
-  .road-track__row {
+  .road-bridge__btn {
+    all: unset;
+    box-sizing: border-box;
     display: grid;
-    gap: 0.6rem;
+    justify-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
     border-radius: var(--radius);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .road-bridge__btn:focus-visible {
+    outline: 2px solid var(--accent);
     outline-offset: 6px;
   }
 
-  .road-track__then {
+  .road-bridge__then,
+  .road-bridge__now {
     font-size: var(--text-md);
-    color: var(--ink-3);
+    line-height: 1.35;
+    text-wrap: balance;
     transition: color 450ms var(--ease-out);
   }
 
-  .road-track__now {
-    font-size: var(--text-md);
+  .road-bridge__then {
+    color: var(--ink-2);
+  }
+
+  .road-bridge__now {
     font-weight: 600;
     color: var(--heading);
-    transition: color 450ms var(--ease-out);
   }
 
-  /* The path: a fine line with an arrowhead at its end; it draws in the
-     direction of travel. */
-  .road-track__path {
+  /* The channel: a fine line between two small endpoints; the signal is a
+     fill that crosses it in the direction of travel. Phones: downward. */
+  .road-bridge__channel {
     position: relative;
     display: block;
     width: 1px;
-    height: 1.75rem;
-    margin-left: 0.4rem;
+    height: 1.5rem;
+    background: var(--line-strong);
   }
 
-  .road-track__line {
+  .road-bridge__channel::before,
+  .road-bridge__channel::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    translate: -50% 0;
+    transition: background-color 450ms var(--ease-out);
+  }
+
+  .road-bridge__channel::before {
+    top: -2px;
+  }
+
+  .road-bridge__channel::after {
+    bottom: -2px;
+  }
+
+  .road-bridge__signal {
     position: absolute;
     inset: 0;
     background: var(--accent);
+    transform: scaleY(0);
     transform-origin: top;
-    transition: transform 700ms var(--ease-out);
-  }
-
-  /* The path starts at a small stop beside its origin. */
-  .road-track__line::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: -3px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent);
-    translate: -50% 0;
-  }
-
-  .road-track__line::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    width: 7px;
-    height: 7px;
-    border-right: 1.5px solid var(--accent);
-    border-bottom: 1.5px solid var(--accent);
-    translate: -50% 0;
-    rotate: 45deg;
+    opacity: 0;
+    /* Leaving: it fades where it is, then resets unseen, so it never runs back. */
+    transition:
+      opacity 450ms var(--ease-out),
+      transform 0s linear 450ms;
   }
 
   @media (min-width: 48rem) {
-    .road-track__labels {
+    .road-bridge__ends {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) clamp(6rem, 16vw, 13rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) var(--channel) minmax(0, 1fr);
     }
 
-    .road-track__labels span:first-child {
+    .road-bridge__ends span:first-child {
       text-align: right;
+      padding-right: var(--side);
     }
 
-    .road-track__labels span:last-child {
+    .road-bridge__ends span:last-child {
       grid-column: 3;
+      padding-left: var(--side);
     }
 
-    .road-track__row {
-      grid-template-columns: minmax(0, 1fr) clamp(6rem, 16vw, 13rem) minmax(0, 1fr);
+    .road-bridge__rows {
+      grid-auto-rows: 1fr;
       gap: 0;
+    }
+
+    .road-bridge__btn {
+      grid-template-columns: minmax(0, 1fr) var(--channel) minmax(0, 1fr);
       align-items: center;
+      justify-items: stretch;
+      gap: 0;
+      padding-block: clamp(0.85rem, 1.5vw, 1.15rem);
     }
 
-    .road-track__then {
+    .road-bridge__then {
       text-align: right;
-      padding-right: 1.25rem;
+      padding-right: var(--side);
     }
 
-    .road-track__now {
-      padding-left: 1.25rem;
+    .road-bridge__now {
+      text-align: left;
+      padding-left: var(--side);
     }
 
-    .road-track__path {
+    .road-bridge__channel {
       width: auto;
       height: 1px;
       margin: 0;
     }
 
-    .road-track__line {
-      transform-origin: left;
-    }
-
-    .road-track__line::before {
-      left: -3px;
+    .road-bridge__channel::before,
+    .road-bridge__channel::after {
       top: 50%;
+      bottom: auto;
       translate: 0 -50%;
     }
 
-    .road-track__line::after {
+    .road-bridge__channel::before {
+      left: -2px;
+    }
+
+    .road-bridge__channel::after {
       left: auto;
-      right: 0;
-      bottom: 50%;
-      translate: 0 50%;
-      rotate: -45deg;
+      right: -2px;
     }
-  }
 
-  /* The sequence (motion only): pairings not yet reached wait at reduced
-     emphasis with their paths undrawn; the pairing in turn, or under the
-     pointer or in focus, comes forward together. */
-  .road-track__rows.is-live .road-track__row:not(.is-drawn) .road-track__line {
-    transform: scaleY(0);
-  }
-
-  @media (min-width: 48rem) {
-    .road-track__rows.is-live .road-track__row:not(.is-drawn) .road-track__line {
+    .road-bridge__signal {
       transform: scaleX(0);
+      transform-origin: left;
     }
   }
 
-  .road-track__rows.is-live .road-track__row:not(.is-drawn) :is(.road-track__then, .road-track__now) {
-    color: var(--ink-3);
-    opacity: 0.6;
+  @media (min-width: 75rem) {
+    .road-bridge__then,
+    .road-bridge__now {
+      white-space: nowrap;
+    }
   }
 
-  .road-track__row :is(.road-track__then, .road-track__now) {
-    transition:
-      color 450ms var(--ease-out),
-      opacity 450ms var(--ease-out);
-  }
-
-  .road-track__row:is(.is-on, .is-focus, :hover, :focus-visible) .road-track__then {
+  /* The active row: slightly stronger type, the application in the accent,
+     the endpoints lit and the signal crossing from Then to Now. The others
+     stay fully readable. Pointer hover gives the same emphasis. */
+  .road-bridge__row.is-on .road-bridge__then,
+  .road-bridge__btn:hover .road-bridge__then {
     color: var(--ink);
   }
 
-  .road-track__row:is(.is-on, .is-focus, :hover, :focus-visible) .road-track__now {
+  .road-bridge__row.is-on .road-bridge__now,
+  .road-bridge__btn:hover .road-bridge__now {
     color: var(--accent-ink);
   }
 
-  .road-track__rows[data-focus] .road-track__row:not(.is-focus) {
-    opacity: 0.6;
+  .road-bridge__row.is-on .road-bridge__channel::before,
+  .road-bridge__row.is-on .road-bridge__channel::after {
+    background: var(--accent);
   }
 
-  .road-track__row {
-    transition: opacity 400ms var(--ease-out);
+  .road-bridge__row.is-on .road-bridge__channel::after {
+    transition-delay: 900ms;
+  }
+
+  .road-bridge__row.is-on .road-bridge__signal {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 200ms var(--ease-out),
+      transform 1100ms var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .road-bridge *,
+    .road-bridge *::before,
+    .road-bridge *::after {
+      transition: none !important;
+    }
   }
 
   .road-led__actions {

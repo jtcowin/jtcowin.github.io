@@ -5,6 +5,52 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.12 The Road Here expanding capabilities and signal bridge
+
+John's brief (2 November 2026): the Section 3 capability rail, the Section 5 signal bridge and the V1.11
+timeline refinements (2019 television, dotted branches, milestone icons) on the private draft. Hero, archive,
+section gradients, Contact and privacy are unchanged. Still unlinked, `noindex` and out of the sitemap.
+
+- **Section 3 copy:** "Before professional management and distribution came on board, I **handled much of
+  the daily operation myself**. Even after the team grew, I **stayed close to the work** across touring,
+  marketing, relationships, and live events." Only those two phrases are bold. The headline accent is
+  unchanged.
+- **Section 3, capability rail:** replaces the operating-system panel. The icons, badges, connector line,
+  numbers and the rules under list items are gone.
+  - Desktop (from 60rem) is one stable-height row of four adjacent panels; the open panel takes 44% and
+    shows its full title and five items.
+  - The collapsed panels keep their short labels, horizontal and whole: Operations, Marketing, Business,
+    Live events (`road.json` `operator.groups[].label`).
+  - Touring and operations opens first. The rail advances every 4.5s while in view and idle. Hover, focus
+    or a tap opens a panel at once; a click holds it until the rail leaves view.
+  - The open panel's one accent is a fine top rule over a lifted tone. The rail stays 280–283px tall
+    through every change.
+  - Phones and tablets get a vertical accordion that never cycles.
+  - Semantic buttons with `aria-expanded` and `aria-controls`; arrow keys move between them. Collapsed
+    lists are clipped, not removed, so they stay in the accessible text. Without scripts all four groups
+    are laid out open.
+- **Timeline:** television corrected to 2019. Branches are dotted, and each ends in one 18px outline icon
+  for its milestone. The nine new icons (education, launch, touring, stage, globe, television, paused,
+  discover, chain) are in `Icon.astro`, in the site's stroke family. The icons take the accent with their
+  branch as the scroll passes. Scroll progression and the sticky narrative are unchanged.
+- **Section 5:** "Different industry." over "Same operating instincts." (the accent), two lines from 56rem.
+  John's new paragraph. The pairings now use Oxford commas.
+- **Section 5, signal bridge:** replaces the transition track.
+  - Desktop is a centered, balanced three-part grid: origin right-aligned, a fine channel, application
+    left-aligned, with THEN and NOW over their endpoints.
+  - All eight labels hold one line from 75rem (checked at 1280 and 1440). Below that they may wrap,
+    balanced.
+  - One row at a time comes forward as a signal crosses its channel left to right, every 4.5s while in
+    view and idle. It fades out in place, so it never runs backward.
+  - Hover, focus or a tap selects a row (buttons; `aria-pressed` marks a held choice). Inactive rows stay
+    fully readable.
+  - Phones stack each relationship, centered, around a short vertical connector, with no cycling. Reduced
+    motion makes it static.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Playwright at 1440, 1280,
+  1024, 960, 900, 768 and 390 measured panel widths, label fit, rail height, label line counts and
+  overflow. It also checked timing, hover/focus/keyboard override, pinning, no cycling on phones, reduced
+  motion, the no-script layout and timeline scroll activation.
+
 ## V1.10 The Road Here narrative and archival expansion
 
 John's brief (2 November 2026): narrative revisions, an expanded timeline, and the start of a digital tour archive
