@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.12 The Road Here expanding capabilities and signal bridge, November 2026.
+- **Last updated:** V1.12 delta, The Road Here headline hierarchy and capability cards, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -213,7 +213,7 @@ These are settled. Do not reopen them without a new instruction.
   transparent PNG derivative in `src/assets/road/` (neutral name, no metadata), add its `road-*` manifest
   entry, then one line in `road.json` `school.archive` (role "object", a slot, optional rotate and width).
 - **Motion (V1.12):** the capability rail and the signal bridge each advance every 4.5s, only while in view
-  and idle on wide screens. Hover, focus or a tap overrides them, and a click holds the choice. Neither cycles
+  and idle on wide screens (the rail shows this as a teal progress bar along its open card's top edge). Hover, focus or a tap overrides them, and a click holds the choice. Neither cycles
   on phones or with reduced motion. The timeline follows the scroll.
 - **Pending John's decision:** real artifacts for the archive; homepage placement and launch.
 

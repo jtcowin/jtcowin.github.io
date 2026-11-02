@@ -5,6 +5,36 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.12 delta: The Road Here headline hierarchy and capability cards
+
+John's delta brief (2 November 2026), on top of V1.12. The timeline is approved and untouched. Still unlinked,
+`noindex` and out of the sitemap.
+
+- **Headline hierarchy:** the hero keeps its larger size; every content-section headline is `display-lg`.
+  "Different industry. Same operating instincts." moves down from `display-xl`. The shared Contact stays
+  `display-xl` as the closing bookend.
+- **Section 3 headline:** "On stage at night." over "Running the business by day.", so "Running" never sits
+  on the first line.
+  - From 75rem each line holds whole: the copy column widens to fit the second line and the gear photograph
+    takes the rest (about 423px at 1280, 549px at 1440).
+  - Below 75rem the second line may wrap within itself.
+- **Capability cards:**
+  - A thin teal progress bar fills left to right along the open card's top edge over 4.5s, on a faint track.
+    When it completes, the next card opens as the previous one closes. The script advances on the bar's own
+    `animationend`, so the bar and the rotation cannot drift apart.
+  - Hover or focus opens a card and holds its bar; leaving resumes it. A new card's bar always starts empty.
+  - A card chosen by click or tap, or any card under reduced motion, shows the bar full as a plain rule.
+  - The lists are real bullets (small teal discs) with no rules between items.
+  - The open card carries its capability icon as a large, thin-lined watermark at 7% opacity, low on the
+    right and partly cropped by the card edge. There is no circle, and it never sits behind the title.
+  - `road.json` groups carry their `icon` again.
+  - The small icon beside each label was not restored. On the open card it would repeat the watermark, and
+    on the collapsed cards V1.12 removed it so the short labels stay legible.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Playwright at 1600, 1440,
+  1280, 1152, 1024, 960, 900, 768 and 390 checked the headline lines and sizes, the rail's constant height,
+  that the bar is in sync (sampled every 0.5s across two full cycles), and hover pause and resume, pinning
+  and reduced motion.
+
 ## V1.12 The Road Here expanding capabilities and signal bridge
 
 John's brief (2 November 2026): the Section 3 capability rail, the Section 5 signal bridge and the V1.11

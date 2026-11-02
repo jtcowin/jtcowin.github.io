@@ -1,5 +1,5 @@
 {
-  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.12: operator.groups carry a short label (the collapsed rail panel) and a title (the open panel); each timeline milestone names its outline icon (Icon.astro). V1.10: school.archive is the digital tour archive: the lead photograph (role \"lead\"), then supporting pieces, each a road-* asset with a role (\"card\": a framed photograph; \"object\": a cut-out artifact on a transparent background) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right); add a real artifact by adding its asset and one line here. Phones show them stacked in this order.",
+  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.12: operator.groups carry a short label (the collapsed rail panel), a title (the open panel) and an icon (the open panel's faint watermark, V1.12 delta); each timeline milestone names its outline icon (Icon.astro). V1.10: school.archive is the digital tour archive: the lead photograph (role \"lead\"), then supporting pieces, each a road-* asset with a role (\"card\": a framed photograph; \"object\": a cut-out artifact on a transparent background) and a slot (upper-left, upper-right, mid-left, mid-right, lower-left, lower-right); add a real artifact by adding its asset and one line here. Phones show them stacked in this order.",
   "meta": {
     "title": "The Road Here",
     "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring business, and running the operations behind it."
@@ -51,7 +51,8 @@
           "Logistics",
           "Tour management",
           "Accounting and coordination"
-        ]
+        ],
+        "icon": "route"
       },
       {
         "label": "Marketing",
@@ -62,7 +63,8 @@
           "Promotion and audience development",
           "Merchandise design and sourcing",
           "Creative assets"
-        ]
+        ],
+        "icon": "pen"
       },
       {
         "label": "Business",
@@ -73,7 +75,8 @@
           "Sponsorships and endorsements",
           "Artist relations",
           "Industry networking"
-        ]
+        ],
+        "icon": "users"
       },
       {
         "label": "Live events",
@@ -84,7 +87,8 @@
           "Release coordination",
           "Music distribution",
           "Commercial operations"
-        ]
+        ],
+        "icon": "broadcast"
       }
     ]
   },

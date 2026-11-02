@@ -54,7 +54,7 @@ const archive = school.archive as ArchiveItem[];
 const archiveSizes = (it: ArchiveItem) =>
   it.role === 'lead' ? '(min-width: 56rem) 32vw, (min-width: 40rem) 28rem, 100vw' : '(min-width: 56rem) 15vw, (min-width: 40rem) 12rem, 82vw';
 // The capability rail (V1.12): a short label for each collapsed panel, the full title in the open one.
-const groups = operator.groups as Array<{ label: string; title: string; items: string[] }>;
+const groups = operator.groups as Array<{ label: string; title: string; items: string[]; icon: 'route' | 'pen' | 'users' | 'broadcast' }>;
 type MilestoneIcon = 'education' | 'launch' | 'touring' | 'stage' | 'globe' | 'television' | 'paused' | 'discover' | 'chain';
 const timeline = pivot.timeline as Array<{ when: string; what: string; icon: MilestoneIcon }>;
 ---
@@ -119,7 +119,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       <div class="container">
         <div class="road-operator__head">
           <div class="road-operator__copy">
-            <h2 id="road-operator-title" class="display display-lg road-reveal">{H.operator[0]}<span class="road-accent">{H.operator[1]}</span>{H.operator[2]}</h2>
+            <h2 id="road-operator-title" class="display display-lg road-reveal"><span class="road-operator__line">{H.operator[0].trim()}</span>{' '}<span class="road-operator__line road-accent">{H.operator[1]}</span>{H.operator[2]}</h2>
             <p class="lede road-operator__lede road-reveal">{rich(operator.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
           </div>
           {/* No drift: the whole kit stays in frame. */}
@@ -133,6 +133,8 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
         <div class="road-rail road-reveal" data-road-rail>
           {groups.map((g, i) => (
             <div class:list={['road-rail__panel', { 'is-open': i === 0 }]} data-panel={i}>
+              <span class="road-rail__progress" aria-hidden="true"></span>
+              <Icon name={g.icon} size={176} class="road-rail__mark" />
               <h3 class="road-rail__head">
                 <button type="button" class="road-rail__btn" id={`road-rail-btn-${i}`} aria-controls={`road-rail-list-${i}`} aria-expanded={i === 0 ? 'true' : 'false'}>
                   <span class="road-rail__short" aria-hidden="true">{g.label}</span>
@@ -182,7 +184,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     <section id="road-led" class="section road-led" data-surface="light-return" aria-labelledby="road-led-title">
       <div class="container">
         <div class="road-led__head">
-          <h2 id="road-led-title" class="display display-xl road-led__title road-reveal"><span class="road-led__line">{H.led[0].trim()}</span>{' '}<span class="road-led__line road-accent">{H.led[1]}</span>{H.led[2]}</h2>
+          <h2 id="road-led-title" class="display display-lg road-led__title road-reveal"><span class="road-led__line">{H.led[0].trim()}</span>{' '}<span class="road-led__line road-accent">{H.led[1]}</span>{H.led[2]}</h2>
           <p class="lede road-reveal">{rich(led.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
         {/* The signal bridge (V1.12): one centered bridge from Then to Now. Each row is a past-career origin, a
@@ -262,11 +264,13 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     update();
   }
 
-  // ---- A calm, interruptible sequence (V1.12), shared by the capability rail and the signal bridge: it advances
-  // every 4.5s only while its component is on screen, the tab is visible, nothing is under the pointer or in focus,
-  // nothing has been chosen by a click or tap, and the layout is the wide one. Reduced motion never starts it.
+  // ---- A calm, interruptible sequence (V1.12), shared by the capability rail and the signal bridge: it runs only
+  // while its component is on screen, the tab is visible, nothing is under the pointer or in focus, nothing has been
+  // chosen by a click or tap, and the layout is the wide one. Reduced motion never starts it. By default it advances
+  // on a 4.5s timer; with `onRun` the caller is told when it runs or pauses and advances itself (the rail follows
+  // its progress bar, so the two can never drift apart).
   const STEP = 4500;
-  const sequence = (root: HTMLElement, wide: MediaQueryList, advance: () => void) => {
+  const sequence = (root: HTMLElement, wide: MediaQueryList, advance: () => void, onRun?: (running: boolean) => void, onUnpin?: () => void) => {
     let visible = false;
     let hover = false;
     let focus = false;
@@ -274,6 +278,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     let timer = 0;
     const idle = () => visible && !hover && !focus && !pinned && wide.matches && !document.hidden && !reduce;
     const arm = () => {
+      if (onRun) return onRun(idle());
       window.clearTimeout(timer);
       if (idle()) timer = window.setTimeout(tick, STEP);
     };
@@ -286,7 +291,10 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       new IntersectionObserver(
         (entries) => {
           visible = entries.some((e) => e.isIntersecting);
-          if (!visible) pinned = false; // a choice holds until the reader moves on
+          if (!visible && pinned) {
+            pinned = false; // a choice holds until the reader moves on
+            onUnpin?.();
+          }
           arm();
         },
         { threshold: 0.4 },
@@ -304,11 +312,14 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     });
     document.addEventListener('visibilitychange', arm);
     wide.addEventListener('change', arm);
+    arm();
     return { pin: () => { pinned = true; arm(); } };
   };
 
-  // ---- The capability rail (V1.12): exactly one panel open. Wide screens: hover, focus or a tap opens a panel at
-  // once (a tap or click keeps it); it cycles when idle. Narrow screens: an accordion, opened by tap or keyboard.
+  // ---- The capability rail (V1.12): exactly one panel open. Wide screens: the open panel's progress bar fills
+  // along its top edge over 4.5s and, when full, the next panel opens; hover or focus opens a panel at once and
+  // pauses the bar, which resumes on leaving; a tap or click keeps the choice (its bar shown full). Narrow screens:
+  // an accordion, opened by tap or keyboard, that never cycles.
   const rail = document.querySelector<HTMLElement>('[data-road-rail]');
   if (rail) {
     const panels = [...rail.querySelectorAll<HTMLElement>('.road-rail__panel')];
@@ -316,6 +327,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     const wide = window.matchMedia('(min-width: 60rem)');
     let open = 0;
     const show = (k: number) => {
+      if (k === open && panels[k].classList.contains('is-open')) return;
       open = k;
       panels.forEach((p, i) => {
         p.classList.toggle('is-open', i === k);
@@ -323,14 +335,28 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       });
     };
     rail.classList.add('is-live');
+    if (!reduce) rail.classList.add('is-auto');
     show(0);
-    const seq = sequence(rail, wide, () => show((open + 1) % panels.length));
+    const seq = sequence(
+      rail,
+      wide,
+      () => {},
+      (running) => rail.classList.toggle('is-paused', !running),
+      () => rail.classList.remove('is-pinned'),
+    );
     panels.forEach((p, i) => {
+      p.querySelector('.road-rail__progress')!.addEventListener('animationend', () => {
+        if (p.classList.contains('is-open') && !rail.classList.contains('is-paused')) show((i + 1) % panels.length);
+      });
       p.addEventListener('pointerenter', (e) => {
         if ((e as PointerEvent).pointerType === 'mouse' && wide.matches) show(i);
       });
       buttons[i].addEventListener('focus', () => { if (wide.matches) show(i); });
-      buttons[i].addEventListener('click', () => { show(i); seq.pin(); });
+      buttons[i].addEventListener('click', () => {
+        show(i);
+        rail.classList.add('is-pinned');
+        seq.pin();
+      });
       buttons[i].addEventListener('keydown', (e) => {
         const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
         if (!d) return;
@@ -713,6 +739,25 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     }
   }
 
+  /* The headline (V1.12 delta): "On stage at night." over "Running the
+     business by day."; "Running" never sits on the first line. From 75rem
+     each line holds whole, the copy column widening as far as the second
+     line needs and the photograph taking the rest; below that the second
+     line may wrap within itself. */
+  .road-operator__line {
+    display: block;
+  }
+
+  @media (min-width: 75rem) {
+    .road-operator__head {
+      grid-template-columns: minmax(min-content, 1fr) minmax(0, 1fr);
+    }
+
+    .road-operator__line {
+      white-space: nowrap;
+    }
+  }
+
   /* The capability rail (V1.12). Without scripts: the four groups laid out
      open (one column, two from 40rem, four from 72rem). With scripts: a
      vertical accordion, and from 60rem one horizontal row of four adjacent
@@ -767,14 +812,27 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
   }
 
   .road-rail__short,
+  .road-rail__progress,
+  .road-rail :global(.road-rail__mark),
   :global(.road-rail__chev) {
     display: none;
   }
 
+  @keyframes road-rail-fill {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Real bullets (V1.12 delta): small teal discs, no rules between items. */
   .road-rail__items {
-    list-style: none;
+    list-style: disc;
     margin: 1rem 0 0;
-    padding: 0;
+    padding: 0 0 0 1.1em;
     display: grid;
     gap: 0.55rem;
     font-size: var(--text-md);
@@ -841,6 +899,11 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     transition: grid-template-rows 400ms var(--ease-out);
   }
 
+  .road-rail__items li::marker {
+    color: var(--accent);
+    font-size: 0.85em;
+  }
+
   .road-rail.is-live .road-rail__items {
     min-height: 0;
     overflow: hidden;
@@ -894,19 +957,70 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       background: var(--bg-elev);
     }
 
-    /* The one accent: a fine rule across the top of the open panel. */
-    .road-rail.is-live .road-rail__panel::before {
-      content: '';
+    /* The progress bar (V1.12 delta): a fine teal line along the open
+       panel's top edge, on a faint track, filling left to right over the
+       4.5s the panel is open; when it is full the next panel opens (the
+       script listens for its end, so the two never drift apart). It holds
+       while the rail is paused, starts empty on each new panel, and shows
+       full, as a plain rule, when a panel is chosen by a tap or click or
+       motion is reduced. */
+    .road-rail.is-live .road-rail__progress {
+      display: block;
       position: absolute;
+      z-index: 2;
       inset: 0 0 auto;
       height: 2px;
-      background: var(--accent);
+      background: color-mix(in srgb, var(--accent) 16%, transparent);
       opacity: 0;
+      transition: opacity 400ms var(--ease-out);
+    }
+
+    .road-rail.is-live .road-rail__progress::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform-origin: left;
+    }
+
+    .road-rail.is-live .road-rail__panel.is-open .road-rail__progress {
+      opacity: 1;
+    }
+
+    .road-rail.is-auto:not(.is-pinned) .road-rail__panel.is-open .road-rail__progress::after {
+      animation: road-rail-fill 4500ms linear both;
+    }
+
+    .road-rail.is-auto.is-paused .road-rail__panel.is-open .road-rail__progress::after {
+      animation-play-state: paused;
+    }
+
+    /* The open panel's watermark (V1.12 delta): its capability icon, large
+       and very faint, low on the right, partly beyond the panel's edge;
+       thin-lined, never behind the title, never in a badge. */
+    .road-rail.is-live :global(.road-rail__mark) {
+      display: block;
+      position: absolute;
+      z-index: 0;
+      right: -1rem;
+      bottom: -1.5rem;
+      width: clamp(8.5rem, 4rem + 7vw, 11rem);
+      height: auto;
+      color: var(--accent-ink);
+      stroke-width: 0.6;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 500ms var(--ease-out);
     }
 
-    .road-rail.is-live .road-rail__panel.is-open::before {
-      opacity: 1;
+    .road-rail.is-live .road-rail__panel.is-open :global(.road-rail__mark) {
+      opacity: 0.07;
+      transition-delay: 250ms;
+    }
+
+    .road-rail.is-live .road-rail__head {
+      position: relative;
+      z-index: 1;
     }
 
     .road-rail.is-live .road-rail__btn {
@@ -973,7 +1087,11 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     .road-rail.is-live .road-rail__panel.is-open .road-rail__items {
       overflow: visible;
       padding-bottom: 0;
-      gap: 0.7rem;
+      gap: 0.6rem;
+    }
+
+    .road-rail.is-live .road-rail__content {
+      z-index: 1;
     }
 
     .road-rail.is-live .road-rail__panel.is-open .road-rail__content {
@@ -988,9 +1106,10 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
 
   @media (prefers-reduced-motion: reduce) {
     .road-rail *,
-    .road-rail .road-rail__panel,
-    .road-rail .road-rail__panel::before {
+    .road-rail *::after,
+    .road-rail .road-rail__panel {
       transition: none !important;
+      animation: none !important;
     }
   }
 
