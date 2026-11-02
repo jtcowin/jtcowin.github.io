@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.12 delta, The Road Here headline hierarchy and capability cards, November 2026.
+- **Last updated:** V1.13 The Road Here capability cards and Then to Now, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -196,10 +196,11 @@ These are settled. Do not reopen them without a new instruction.
 
 - **What it is:** a standalone page at `/the-road-here/` in five sections: hero (a transparent cutout of John
   with a cymbal), music school to the road (copy beside a modular digital tour archive led by the live
-  performance), more than the drummer (a four-panel expanding capability rail, an accordion on phones),
+  performance), more than the drummer (a four-card expanding capability rail with large cropped icons, an
+  accordion on phones),
   the 2020 pivot (a nine-milestone alternating timeline driven by scroll, with dotted branches and one
-  outline icon per milestone, beside a sticky narrative), and where it led (a centered then-to-now signal
-  bridge and calls to action). Then the shared Contact, as on the
+  outline icon per milestone, beside a sticky narrative), and where it led (a centered, framed Then to Now
+  panel of four mappings and calls to action). Then the shared Contact, as on the
   homepage.
 - **Status:** private draft. Unlinked, `noindex`, out of the sitemap, until John approves launch.
 - **Copy and photos:** John's approved copy (`src/data/road.json`) and five of his photographs as
@@ -212,8 +213,9 @@ These are settled. Do not reopen them without a new instruction.
 - **Adding an artifact:** photograph it alone against a plain contrasting background; cut it out to a
   transparent PNG derivative in `src/assets/road/` (neutral name, no metadata), add its `road-*` manifest
   entry, then one line in `road.json` `school.archive` (role "object", a slot, optional rotate and width).
-- **Motion (V1.12):** the capability rail and the signal bridge each advance every 4.5s, only while in view
-  and idle on wide screens (the rail shows this as a teal progress bar along its open card's top edge). Hover, focus or a tap overrides them, and a click holds the choice. Neither cycles
+- **Motion:** the capability rail advances every 4.5s on wide screens, with a teal progress bar along its open
+  card's top edge. Then to Now highlights one row every 4s on all screens. Both run only while in view and
+  idle; hover or focus pauses them, and reduced motion stops them. Hover, focus or a tap overrides them, and a click holds the choice. Neither cycles
   on phones or with reduced motion. The timeline follows the scroll.
 - **Pending John's decision:** real artifacts for the archive; homepage placement and launch.
 

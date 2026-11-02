@@ -5,6 +5,42 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.13 The Road Here capability cards and Then to Now
+
+John's mandatory Section 3 and Section 5 revision (2 November 2026). The timeline and every other section are
+unchanged. Still unlinked, `noindex` and out of the sitemap.
+
+- **Section 3 titles:** each expanded title now begins with its collapsed word. The pairs are Operations /
+  Operations and Touring, Marketing / Marketing and Creative, Business / Business and Relationships, and
+  Events / Events and Distribution. "Live events" is now "Events".
+  - The first word stays anchored as the second phrase unfolds after it.
+  - The full title stays in the button's accessible name when collapsed.
+  - The page build fails if a title doesn't begin with its label.
+- **Section 3 icons:** every card carries its icon in both states: large, thin-lined and cropped by the card
+  edges, at 6% opacity collapsed and 8% open.
+  - On collapsed cards it fills the empty space below the label.
+  - As a card opens, the same icon scales up and settles further into the wider card (a 700ms transform), so
+    the change is continuous.
+  - Icons sit behind the title and list and are sized to the rail. Accordion rows on phones carry them too.
+  - The V1.12 delta watermark (open card only) is replaced.
+- **Section 3, kept:** one card always open, the 4.5s rotation with its synchronized progress bar, hover and
+  focus pause, bullets, and reduced motion.
+- **Section 5, rebuilt:** the signal bridge is removed and replaced by Then to Now, one wide framed panel.
+  - Four rows share the panel's columns (subgrid): origin right-aligned, a fine connector ending in a small
+    arrowhead, and today's work left-aligned in stronger type. THEN and NOW sit over their columns.
+  - From 75rem the outer columns size to their longest phrase, so every phrase holds one line (checked at
+    1200, 1280 and 1440).
+  - One row at a time is highlighted with a light teal tint, starting with the first and moving top to
+    bottom every 4s while in view and idle. Its connector draws left to right and the arrowhead lights.
+  - Hover or focus takes a row and pauses the cycle, which resumes when the interaction ends.
+  - Phones stack each mapping inside its row (origin, a short downward arrow, today's work) and keep
+    cycling. Reduced motion makes it static.
+  - The centered headline (`display-lg`), paragraph and calls to action are unchanged.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Playwright at 1440, 1280,
+  1200, 1024, 768 and 390 checked line counts, overflow, title text and widths, the row sequence sampled
+  each second on desktop and phone (rows 0→1→2→3→0 at 4s each), hover hold and resume, and the rail's
+  constant height and rotation.
+
 ## V1.12 delta: The Road Here headline hierarchy and capability cards
 
 John's delta brief (2 November 2026), on top of V1.12. The timeline is approved and untouched. Still unlinked,
