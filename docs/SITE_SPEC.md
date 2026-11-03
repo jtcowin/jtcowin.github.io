@@ -244,9 +244,9 @@ formal title for the Phi Labs role is still "Social Media Manager", on the resum
 
   | Card | Video | Length | File |
   | --- | --- | --- | --- |
-  | 01 | The creator montage (`cc-creator-montage`) | 15.52 s | `home-creator-montage.mp4`, 1600x900, 25 fps, 4.7 MB |
-  | 02 | The hero animation (`tm-hero-animation`), unchanged | 11.68 s | `bolt-hero-animation-loop.mp4`, 1600x900, 1.4 MB |
-  | 03 | The events montage (`ev-events-montage`), the Events page's four edits whole since V1.3 | 38.37 s | `home-events-montage-fs13.mp4`, 1600x900, 23.976 fps, 8.9 MB |
+  | 01 | The hero animation (`tm-hero-animation`), unchanged | 11.68 s | `bolt-hero-animation-loop.mp4`, 1600x900, 1.4 MB |
+  | 02 | The events montage (`ev-events-montage`), the Events page's four edits whole since V1.3 | 38.37 s | `home-events-montage-fs13.mp4`, 1600x900, 23.976 fps, 8.9 MB |
+  | 03 | The creator montage (`cc-creator-montage`) | 15.52 s | `home-creator-montage.mp4`, 1600x900, 25 fps, 4.7 MB |
 
   The creator montage keeps the Costa Rica aftermovie's crescendo (1:44.56 to 1:53.20, its own cuts and
   acceleration) as its foundation, opened by slower destination imagery (Marina Bay from the air in golden

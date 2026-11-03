@@ -466,9 +466,10 @@ if (ledeMarks.join(' | ') !== 'strategy through execution' || (workLede.match(/<
 const cardsHtml = [...workHtml.matchAll(/<article class="card"[\s\S]*?<\/article>/g)].map((m) => m[0]);
 // (Creator Marketing V1.2: the creator card no longer claims the logistics; drafted for John's confirmation.)
 const approvedCards = [
-  ['Creator Marketing and Partnerships', 'Helped lead international creator campaigns, from sponsor strategy and creative direction to production and distribution.', 'work/creator-campaigns/'],
+  // V1.21 (November 2026): technical product marketing first, then events, then creator (John's order).
   ['Technical Product Marketing', 'Turned a complex DeFi protocol into a clear positioning, documentation, website, and content system.', 'work/technical-marketing/'],
   ['Events and Multimedia Production', 'Led event strategy and multi-camera production that turned live technical moments into reusable content.', 'work/events-video/'],
+  ['Creator Marketing and Partnerships', 'Helped lead international creator campaigns, from sponsor strategy and creative direction to production and distribution.', 'work/creator-campaigns/'],
 ];
 if (cardsHtml.length !== approvedCards.length) failures.push(`[claim] Select Work must show three cards (found ${cardsHtml.length})`);
 approvedCards.forEach(([title, sub, href], i) => {
@@ -549,7 +550,7 @@ if (/pointerenter|mouseenter|mouseover|\(hover: hover\)/.test(playback)) failure
 // below its head, and every head keeps room for a two-line subline, so the
 // three frames share one size and one aspect ratio at any width.
 const sourcesOf = (html) => [...html.matchAll(/<source\b[^>]*\bsrc="([^"]+)"/g)].map((m) => path.basename(m[1]));
-const CARD_MEDIA = ['home-creator-montage.mp4', 'bolt-hero-animation-loop.mp4', 'home-events-montage-fs13.mp4'];
+const CARD_MEDIA = ['bolt-hero-animation-loop.mp4', 'home-events-montage-fs13.mp4', 'home-creator-montage.mp4'];
 cardsHtml.forEach((c, i) => {
   const v = (c.match(/<video\b[\s\S]*?<\/video>/) || [''])[0];
   if (!/\bdata-card-video\b/.test(v) || sourcesOf(v).join() !== CARD_MEDIA[i]) failures.push(`[claim] card ${i + 1} must play ${CARD_MEDIA[i]} (found ${sourcesOf(v).join(', ') || 'none'})`);
@@ -1161,7 +1162,7 @@ if (/class="cs-hero[\s"_]/.test(tpmPage)) failures.push('[tpm] the page must not
 // softens a little and the Foundation headline fades up 24 to 40px: a layered
 // reveal within about 0.8 to 1.2 viewports, nothing passing from one section
 // to the other (V1.3, unchanged).
-const HERO_LABEL = '02 / Technical Product Marketing';
+const HERO_LABEL = '01 / Technical Product Marketing';
 if (tpmText(/<p class="tpm-hero__label[^"]*"[^>]*>([\s\S]*?)<\/p>/) !== HERO_LABEL || tpmData.hero?.label !== HERO_LABEL) failures.push(`[tpm] the hero opens with its section label, ${HERO_LABEL}`);
 if (!tpmRules(/^\.tpm-hero__label$/).some((r) => /text-transform:\s*uppercase/.test(r.body))) failures.push('[tpm] the section label is set in capitals, as the brief writes it');
 if (/tpm-hero__kicker/.test(tpmPage)) failures.push('[tpm] the label is the section label, not a kicker');
@@ -2007,7 +2008,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
 
   // ---- 01 Hero (V1.2): the approved words; one editorial reel, no category control
   const EV = {
-    kicker: '03 / Events and Multimedia Production',
+    kicker: '02 / Events and Multimedia Production',
     headline: 'From live experience to lasting momentum.',
     copy: 'I turn live opportunities into complete marketing systems, from sponsorship and on-site production to content, distribution, and the relationships that continue after the room clears.',
   };
@@ -2869,7 +2870,7 @@ if (!/const t = still \? 1 : clamp\(\(y \+ vh - r\.top\) \/ \(vh \* [\d.]+\)\);/
 
   // ---- 05 Hero: the approved words over one layered composition
   const CM = {
-    label: '01 / Creator Marketing and Partnerships',
+    label: '03 / Creator Marketing and Partnerships',
     headline: 'Creator campaigns, built to travel.',
     // V1.2: John's ownership alone; the collaborators are credited once, in the credits.
     copy: 'I helped lead creator programs across Costa Rica, Singapore, and Mykonos, owning campaign strategy, creative direction, sponsor coordination, on-site production, and distribution.',
@@ -3778,7 +3779,7 @@ if (!rulesFor(/:hover \.brand__house/).some((r) => !r.at && /translateY\(-1px\)/
 // JavaScript, hover and focus still open it). Escape closes it, the arrow keys
 // move through it, and closed it is out of reach. The phone menu lists the
 // case studies under Work.
-const WORK_MENU = [['01', 'Creator Marketing and Partnerships', '/work/creator-campaigns/'], ['02', 'Technical Product Marketing', '/work/technical-marketing/'], ['03', 'Events and Multimedia Production', '/work/events-video/']];
+const WORK_MENU = [['01', 'Technical Product Marketing', '/work/technical-marketing/'], ['02', 'Events and Multimedia Production', '/work/events-video/'], ['03', 'Creator Marketing and Partnerships', '/work/creator-campaigns/']];
 const workWant = WORK_MENU.map(([n, t, h]) => `${n} ${t} ${BASE}${h}`).join(' | ');
 for (const f of htmlFiles) {
   const html = fs.readFileSync(f, 'utf8');

@@ -5,6 +5,31 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.21 Case study order
+
+John's reorder brief (3 November 2026): technical product marketing first. Content, imagery, design and routes
+are unchanged.
+
+- **New order:** 01 Technical Product Marketing, 02 Events and Multimedia Production, 03 Creator Marketing and
+  Partnerships (was creator, technical, events).
+- **Source of the order:** the case studies' `order` frontmatter (`src/content/work/*.mdx`). Everything sorts
+  by it: the Select Work cards and their numbers, the desktop Work menu and the phone menu (Header), the case
+  study layout's previous and next links, and each conclusion's onward link.
+- **Hard-coded labels:** the case-study hero labels that carried the old numbers now read "01 / Technical
+  Product Marketing" (`tpm.json`), "02 / Events and Multimedia Production" (`events.json`) and "03 / Creator
+  Marketing and Partnerships" (`creator.json`).
+- **Next-project links:** the onward sequence is the same cycle starting at a new place (Technical → Events →
+  Creator → Technical), so every conclusion's onward sentence and link is unchanged and still correct.
+  `verify.mjs` checks each against the order.
+- **Card tones:** the Select Work cards keep their three position-based tones, warm to cool down the stack, so
+  each card takes its new slot's tone.
+- **verify.mjs:** the pinned card order (titles, sublines, links and videos), the Work menu and the three
+  labels follow the new order.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed).
+  - The homepage cards read 01, 02, 03 in the new order and link to their own pages.
+  - Every page's desktop and phone Work menus list the new order.
+  - Each case study shows its new number. Onward links run Technical → Events → Creator → Technical.
+
 ## V1.20 Homepage share card positioning
 
 John's share card brief (3 November 2026). Metadata only; the hero, layout and every other page are unchanged.

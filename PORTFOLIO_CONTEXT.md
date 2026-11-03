@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.20 Homepage share card positioning, November 2026.
+- **Last updated:** V1.21 Case study order, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -25,9 +25,9 @@ clients.
 | Route | Content |
 | --- | --- |
 | `/` | Hero, About and logo bar, Commercial impact ($0 → $300M+ and the direct integrations), Select Work (3 stacked cards), work reel, "From positioning to production" (capabilities and stack), Contact |
-| `/work/creator-campaigns/` | 01 Creator Marketing and Partnerships |
-| `/work/technical-marketing/` | 02 Technical Product Marketing |
-| `/work/events-video/` | 03 Events and Multimedia Production |
+| `/work/technical-marketing/` | 01 Technical Product Marketing |
+| `/work/events-video/` | 02 Events and Multimedia Production |
+| `/work/creator-campaigns/` | 03 Creator Marketing and Partnerships |
 | `/resume/John-Cowin-Resume.pdf` | Resume download (the master resume, see section 7) |
 | `/404.html` | Not-found page |
 | `/the-road-here/` | The Road Here, the career before Web3. Launched in V1.18: indexed, in the sitemap, linked from About |

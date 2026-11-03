@@ -9,7 +9,7 @@
   ],
   "hero": {
     "_hero": "One editorial reel (V1.2), in place of V1.1's three programs and their control: the chapters below, in this order (V1.6: the technical explainer first, then the Sui Fest event footage, the Jungle Talk podcast and the live presentation), each one video cut from the brief's ranges (assets.json has each chapter's ranges and edits), played through once and crossfaded (350ms) into the next, round and round, muted. The label at the top left of the frame reads the chapter's number and title, numbered in order among the chapters whose video is approved and present: the team interview's chapter is pending, so it is left out entirely (no placeholder) and the chapters after it carry the lower numbers until its video is added. The deck's live presentation and event film play the same files as their chapters here (V1.6). `pos` places the crop of the wide cinematic frame on each video (object-position), chosen so the burned-in captions stay whole and clear of the rail, and heads stay in, at both of the frame's proportions (2.2:1, and 2.4:1 on shorter wide screens); `fitNarrow` is how the video fills the 16:9 frame on narrow screens.",
-    "kicker": "03 / Events and Multimedia Production",
+    "kicker": "02 / Events and Multimedia Production",
     "headline": "From live experience to lasting momentum.",
     "accent": "lasting momentum.",
     "copy": "I turn live opportunities into complete marketing systems, from sponsorship and on-site production to content, distribution, and the relationships that continue after the room clears.",
