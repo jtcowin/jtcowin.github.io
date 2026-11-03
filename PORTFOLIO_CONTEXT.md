@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.15 The Road Here Section 2 image revision, November 2026.
+- **Last updated:** V1.16 The Road Here consolidated copy and Section 2 viewport fit, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -210,6 +210,8 @@ These are settled. Do not reopen them without a new instruction.
   metadata.
 - **Milestones:** removed in V1.8 by John's decision.
 - **Photo credits:** none published, by John's decision.
+- **Section 2 viewport fit (V1.16):** on desktop the section fills exactly one viewport below the header,
+  with the image group sized to the remaining height.
 - **Section 2 image group (V1.15):** the live photograph (`road-live`) is the dominant base. John's three
   transparent PNGs sit over its corners, published byte for byte under neutral names: the festival poster
   print upper right, the TV print lower left and the credential lower right.

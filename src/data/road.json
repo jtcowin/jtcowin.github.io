@@ -1,21 +1,21 @@
 {
-  "_readme": "The Road Here (V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.13: operator.groups carry a short label (the collapsed card) and a title that begins with it (the open card adds the rest), plus an icon (each card's large, faint, cropped graphic); each timeline milestone names its outline icon (Icon.astro). V1.15: school.stage is Section 2's image group: the live performance photograph as the dominant base, with John's three supplied transparent prints (festival poster, television still, artist credential) laid over its corners, each in a named slot (upper-right, lower-left, lower-right).",
+  "_readme": "The Road Here (V1.16, November 2026: John's consolidated copy; Road Here paragraphs may carry several **bold** phrases, approved per paragraph. Earlier: V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.13: operator.groups carry a short label (the collapsed card) and a title that begins with it (the open card adds the rest), plus an icon (each card's large, faint, cropped graphic); each timeline milestone names its outline icon (Icon.astro). V1.15: school.stage is Section 2's image group: the live performance photograph as the dominant base, with John's three supplied transparent prints (festival poster, television still, artist credential) laid over its corners, each in a named slot (upper-right, lower-left, lower-right).",
   "meta": {
     "title": "The Road Here",
-    "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring business, and running the operations behind it."
+    "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring operation, and managing the day-to-day operations behind it."
   },
   "hero": {
     "headline": "Before Web3. There was music.",
     "accent": "There was music.",
-    "copy": "Before Web3, I spent **over a decade** turning an original music project into a professional touring business. What started behind a drum kit grew into an education in entrepreneurship, marketing, partnerships, creative work, and day-to-day operations.",
+    "copy": "Before Web3, I spent **over a decade** turning an original music project into a **professional touring operation**. What started behind a drum kit grew into an education in entrepreneurship, marketing, partnerships, creative work, and managing day-to-day operations.",
     "image": "road-hero-portrait"
   },
   "school": {
-    "headline": "From practice rooms to 140+ shows a year.",
-    "accent": "140+ shows a year.",
+    "headline": "From practice rooms to national stages.",
+    "accent": "national stages.",
     "paragraphs": [
       "I studied **performance, music business, and media**, then put that training to work building an original music project from the ground up.",
-      "What began with local shows grew into more than a decade as a professional musician. Along the way, I played major festivals, appeared on television and FM radio, earned an artist endorsement from an instrument brand, and secured **worldwide distribution through a Sony Music subsidiary**."
+      "What began with local shows grew into **more than a decade as a professional musician**. Along the way, I played **major festivals**, appeared on television and FM radio, earned an endorsement from an instrument manufacturer, and secured **worldwide distribution through a Sony Music subsidiary**."
     ],
     "stage": {
       "live": "road-live",
@@ -29,7 +29,7 @@
   "operator": {
     "headline": "On stage at night. Running the business by day.",
     "accent": "Running the business by day.",
-    "copy": "Before professional management and distribution came on board, I **handled much of the daily operation myself**. Even after the team grew, I **stayed close to the work** across touring, marketing, relationships, and live events.",
+    "copy": "Before **professional management and distribution** came on board, I **managed much of the day-to-day operation myself**. After signing those deals, I **remained deeply involved** across touring, marketing, partnerships, logistics, and release coordination.",
     "image": "road-gear",
     "groups": [
       {
@@ -52,7 +52,7 @@
           "Social media",
           "Promotion and audience development",
           "Merchandise design and sourcing",
-          "Creative assets"
+          "Branding and creative assets"
         ],
         "icon": "pen"
       },
@@ -85,18 +85,18 @@
   "pivot": {
     "headline": "Then 2020 happened.",
     "paragraphs": [
-      "After years of near-constant touring, I was already ready for a life with more time at home. Then COVID brought live music to a stop.",
-      "Around the same time, I found DeFi. I studied the technology, joined projects as an investor and community member, and built relationships the same way I had in music: by showing up and contributing. That led to my **first professional role in Web3**."
+      "After years of near-constant touring, I was ready for a life with more time at home. Then COVID brought live music to a stop.",
+      "Around the same time, I **discovered DeFi**, and **the potential clicked immediately**. I immersed myself in the technology, began investing, joined communities, and built relationships the same way I had in music: by showing up and contributing. That led to my **first professional role in Web3**."
     ],
     "timeline": [
       {
-        "when": "2008 to 2010",
-        "what": "Studied performance, music business, and media",
+        "when": "2008",
+        "what": "Studied music performance, business, and media",
         "icon": "education"
       },
       {
         "when": "2010",
-        "what": "Launched the original music project",
+        "what": "Original music project began",
         "icon": "launch"
       },
       {
@@ -106,7 +106,7 @@
       },
       {
         "when": "2014",
-        "what": "Played the first major festival",
+        "what": "First major festival appearance",
         "icon": "stage"
       },
       {
@@ -121,17 +121,17 @@
       },
       {
         "when": "2020",
-        "what": "Live music stops",
+        "what": "Live music stopped",
         "icon": "paused"
       },
       {
         "when": "2020",
-        "what": "Began studying DeFi, investing, and joining communities",
+        "what": "Discovered DeFi and began studying the technology",
         "icon": "discover"
       },
       {
         "when": "2021",
-        "what": "Started the first professional role in Web3",
+        "what": "First professional role in Web3",
         "icon": "chain"
       }
     ],
@@ -139,19 +139,19 @@
   },
   "led": {
     "headline": "Different industry. Same operating instincts.",
-    "copy": "The context changed. The instincts did not. What I learned building audiences, relationships, and an operating rhythm on the road now shapes how I bring products to market.",
+    "copy": "Music taught me to **go deep in a craft** without losing sight of how the whole operation worked. Along the way, I learned that **audiences are earned**, **relationships compound**, and ideas are only as valuable as the execution behind them. I bring that same **range, depth, and follow-through** to Web3.",
     "pairs": [
       {
         "then": "Booking, routing, and running tours",
-        "now": "Event activations and on-site production"
+        "now": "Event activations, logistics, and on-site production"
       },
       {
         "then": "Growing audiences city by city",
-        "now": "Content, social, and audience growth"
+        "now": "Social content, community growth, and engagement"
       },
       {
         "then": "Sponsors, endorsements, and industry relationships",
-        "now": "Partnerships and KOL programs"
+        "now": "Networking, partnerships, and KOL programs"
       },
       {
         "then": "Running the music business",

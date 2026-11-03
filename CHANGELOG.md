@@ -5,6 +5,48 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.16 The Road Here consolidated copy and Section 2 viewport fit
+
+John's consolidated Road Here brief and his Section 2 viewport-fit addendum (3 November 2026). Copy across all
+five sections plus the Section 2 fit. Layout, imagery, interactions, the shared Contact and the footer are
+otherwise unchanged. Still unlinked, `noindex` and out of the sitemap. Not deployed.
+
+- **Hero:** the paragraph now says "professional touring operation" and ends "managing day-to-day
+  operations", with two bold phrases. The page description matches.
+- **Section 2:** headline "From practice rooms to national stages." (accent "national stages."). The
+  copy now reads "endorsement from an instrument manufacturer". Bold sits on four of the suggested
+  targets (education; more than a decade as a professional musician; major festivals; the Sony Music
+  subsidiary), kept selective.
+- **Section 3:** the new paragraph ("managed much of the day-to-day operation myself", "After signing
+  those deals, I remained deeply involved…"), with its three bold phrases. The Marketing panel ends
+  "Branding and creative assets".
+- **Section 4:** "I was ready", and "I discovered DeFi, and the potential clicked immediately" (bold), with
+  "first professional role in Web3" bold. The timeline labels follow the brief: 2008 "Studied music
+  performance, business, and media", through 2021 "First professional role in Web3", with television in
+  2019.
+- **Section 5:** the new range, depth and follow-through paragraph, with four bold phrases. The new
+  right-hand mappings ("Event activations, logistics, and on-site production"; "Social content, community
+  growth, and engagement"; "Networking, partnerships, and KOL programs") each hold one line from 1200px.
+- **Emphasis rule:** Road Here paragraphs with several approved bold phrases carry `road-rich`, which
+  `verify.mjs` exempts from the one-phrase-per-paragraph rule.
+- **Section 2 viewport fit:** from 56rem wide and 40rem tall, the section is exactly one viewport below
+  the fixed header (`min-height: calc(100svh - header)`, border-box). Its padding scales with the viewport
+  height (`clamp(1.5rem, 5svh, 3.5rem)`), and the copy and image group are centered as one composition.
+  - The image group's width is bounded by the remaining height, so it keeps its ratio of 1.315.
+  - The room around the live photograph moved from the group's padding to the photograph's margin, so it
+    resolves against the group's own width and the ratio is exact.
+  - The gap between headline and copy is tightened one step.
+  - Type sizes, imagery and overlay placement are unchanged. Phones and portrait tablets keep their natural
+    height.
+- **Tested:** `astro check` (0 errors, 0 warnings), build (no warnings), `verify.mjs` (all checks passed).
+  - Section 2 parked under the header at 1920×1080, 1728×1117 and 1440×900 (also 1280×800 and 1024×768):
+    the section exactly fills the space below the header, with the image group inside it.
+  - Hero, Section 2, Section 3 and Section 5 headlines are two lines at the three test sizes. All eight
+    Section 5 labels hold one line at 1280 and up.
+  - No horizontal overflow at 768 or 390; all prints within their group. Every approved copy string is
+    present; the CTAs point to `/#work` and `/`.
+  - The only em dash on the page is the shared footer's approved one, left untouched.
+
 ## V1.15 The Road Here Section 2 image revision
 
 John's Section 2 image brief (2 November 2026). Image composition only: copy, typography, background, grid,
