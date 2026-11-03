@@ -4131,6 +4131,25 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   const maps = fs.readdirSync(dist).filter((n) => /^sitemap.*\.xml$/.test(n)).map((n) => fs.readFileSync(path.join(dist, n), 'utf8')).join('\n');
   const locs = [...maps.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
   if (!/^Sitemap: https:\/\/johncowin\.com\/sitemap-index\.xml$/m.test(robots) || !locs.length || locs.some((u) => !u.startsWith(ORIGIN))) failures.push('[share] V1.1: robots.txt and the sitemap point at johncowin.com');
+  // V1.18 (November 2026): The Road Here is launched. It is indexed (no robots meta), carries its canonical and og:url
+  // on johncowin.com, is listed in the sitemap, and the homepage's About section links to it once, right after the
+  // first paragraph, as "Before Web3: The Road Here". The 404 page stays noindex and unlisted.
+  {
+    const roadFile = path.join(dist, 'the-road-here', 'index.html');
+    const road = fs.existsSync(roadFile) ? fs.readFileSync(roadFile, 'utf8') : '';
+    const roadHead = (road.match(/<head\b[^>]*>[\s\S]*?<\/head>/) || [''])[0];
+    if (/<meta name="robots"/.test(roadHead)) failures.push('[road] V1.18: The Road Here is indexed (no robots meta)');
+    if ((roadHead.match(/<link rel="canonical" href="([^"]*)"/) || [])[1] !== `${ORIGIN}the-road-here/` || prop(road, 'og:url') !== `${ORIGIN}the-road-here/`) failures.push('[road] V1.18: The Road Here\'s canonical and og:url are https://johncowin.com/the-road-here/');
+    if (!/<title>The Road Here \| John Cowin<\/title>/.test(roadHead) || !(named(road, 'description') || '').startsWith('Before Web3, John Cowin')) failures.push('[road] V1.18: The Road Here has its own title and meta description');
+    if (!locs.includes(`${ORIGIN}the-road-here/`)) failures.push('[road] V1.18: the sitemap lists https://johncowin.com/the-road-here/');
+    if (locs.some((u) => /\/404\/?$/.test(u))) failures.push('[road] V1.18: the 404 page stays out of the sitemap');
+    const notFound = fs.existsSync(path.join(dist, '404.html')) ? fs.readFileSync(path.join(dist, '404.html'), 'utf8') : '';
+    if (!/<meta name="robots" content="noindex/.test(notFound)) failures.push('[road] V1.18: the 404 page stays noindex');
+    const links = [...home.matchAll(/<a\b[^>]*href="\/the-road-here\/"[^>]*>[\s\S]*?<\/a>/g)];
+    const about = (home.match(/<section id="about"[\s\S]*?<\/section>/) || [''])[0];
+    const firstPara = about.indexOf('flow__p--one'), link = about.indexOf('class="flow__road"'), secondPara = about.indexOf('flow__p--two');
+    if (links.length !== 1 || !/Before Web3: The Road Here/.test(textOf(links[0][0])) || !(firstPara > -1 && firstPara < link && link < secondPara)) failures.push('[road] V1.18: the homepage links to The Road Here once, from About, between its first and second paragraphs ("Before Web3: The Road Here")');
+  }
   // The homepage card.
   const ogHome = cardManifest.find((a) => a.id === 'og-home') || {};
   const card = path.join(root, 'public', ogHome.file || '-');

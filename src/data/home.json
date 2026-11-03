@@ -230,6 +230,11 @@
       "label": "Read the full resume",
       "href": "resume"
     },
+    "roadLink": {
+      "_note": "V1.18 (November 2026): the editorial link to The Road Here, set directly after the first paragraph (the music foundation), before the Phi Labs Global paragraph. An up-right arrow on its left, the words underlined.",
+      "label": "Before Web3: The Road Here",
+      "href": "/the-road-here/"
+    },
     "headshot": "about-headshot"
   },
   "commercial": {

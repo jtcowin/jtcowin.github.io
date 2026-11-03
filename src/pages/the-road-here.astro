@@ -1,15 +1,15 @@
 ---
 /**
- * The Road Here (Phase 3A draft, October 2026; V1.7 build): John's career before
+ * The Road Here (Phase 3A, October 2026; V1.7 build; launched V1.18): John's career before
  * Web3, as one editorial page in five sections: the hero, from music school to the
  * road (the live, television and festival evidence), more than the drummer (the four areas of the business
  * he ran), the 2020 pivot (a quiet timeline from the road into DeFi), and where it
  * led, back to the selected work. Then the shared Contact (as on the homepage) and
  * the footer. V1.7: no numbered eyebrows or chapter navigation; each headline
- * carries one accent phrase; at most one bold phrase a paragraph.
+ * carries one accent phrase (V1.16: paragraphs marked road-rich carry several approved bold phrases).
  *
- * Draft status: unlinked from the homepage and navigation, marked noindex and kept
- * out of the sitemap (astro.config.mjs) until John approves it.
+ * Status: live (V1.18, November 2026). Indexed, in the sitemap, canonical on
+ * johncowin.com, and linked from the homepage's About section.
  *
  * Words: src/data/road.json. Photographs: assets.json road-* entries, through
  * RoadFrame (a labeled placeholder until each photograph is supplied). Motion is
@@ -70,7 +70,7 @@ type MilestoneIcon = 'education' | 'launch' | 'touring' | 'stage' | 'globe' | 't
 const timeline = pivot.timeline as Array<{ when: string; what: string; icon: MilestoneIcon }>;
 ---
 
-<BaseLayout title={meta.title} description={meta.description} path="/the-road-here/" noindex footerSurface="brand">
+<BaseLayout title={meta.title} description={meta.description} path="/the-road-here/" footerSurface="brand">
   <article class="road" aria-labelledby="road-title">
     {/* Hero */}
     <section class="road-hero" data-surface="dark" aria-labelledby="road-title">

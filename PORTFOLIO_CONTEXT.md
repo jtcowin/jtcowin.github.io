@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.17 The Road Here typography and Section 2 refinements, November 2026.
+- **Last updated:** V1.18 The Road Here launch and homepage link, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -30,7 +30,7 @@ clients.
 | `/work/events-video/` | 03 Events and Multimedia Production |
 | `/resume/John-Cowin-Resume.pdf` | Resume download (the master resume, see section 7) |
 | `/404.html` | Not-found page |
-| `/the-road-here/` | **Draft (Phase 3A):** The Road Here, the career before Web3. Unlisted, noindex, not in the sitemap |
+| `/the-road-here/` | The Road Here, the career before Web3. Launched in V1.18: indexed, in the sitemap, linked from About |
 
 ## 2. Technical architecture
 
@@ -71,6 +71,7 @@ clients.
 - **About:** three paragraphs (the music project, Phi Labs Global) closing on "Today, I turn complex products
   into stories people understand and connect with." The Bolt Liquidity paragraph added in V1.3 was removed on
   29 October 2026 by John's decision; the commercial proof below About tells that story.
+  V1.18: an editorial link, "Before Web3: The Road Here", sits between the first and second paragraphs.
 - **Commercial proof:** $0 → $300M+ in processed protocol volume, with direct aggregator integrations with
   Cetus, Aftermath and FlowX (named by their logos, not in the copy) and downstream integrations, never
   counted. It appears on the homepage, the Technical Product Marketing case study (after the campaign
@@ -192,7 +193,7 @@ These are settled. Do not reopen them without a new instruction.
 - **Resume:** the two approved bullets; still two pages.
 - **Detail and tests:** see the changelog.
 
-### The Road Here, draft (Phase 3A, built out in V1.7 to V1.12, October and November 2026)
+### The Road Here (Phase 3A, built out in V1.7 to V1.17, launched in V1.18, October and November 2026)
 
 - **What it is:** a standalone page at `/the-road-here/` in five sections: hero (a transparent cutout of John
   with a cymbal), music school to the road (copy beside the live performance photograph, with three
@@ -202,7 +203,15 @@ These are settled. Do not reopen them without a new instruction.
   outline icon per milestone, beside a sticky narrative), and where it led (a centered, framed Then to Now
   panel of four mappings and calls to action). Then the shared Contact, as on the
   homepage.
-- **Status:** private draft. Unlinked, `noindex`, out of the sitemap, until John approves launch.
+- **Status:** live since V1.18 (John approved the launch on 3 November 2026).
+  - Indexed: no robots meta, so the canonical link and `og:url` are https://johncowin.com/the-road-here/.
+  - Listed in the sitemap.
+  - Linked once from the homepage's About section, right after the first paragraph ("Before Web3: The Road
+    Here").
+  - Indexing is set per page (the BaseLayout `noindex` prop, which only the 404 page still uses) and by the
+    sitemap filter in `astro.config.mjs`, which excludes only the 404. `robots.txt` allows everything.
+  - `verify.mjs` `[road]` guards all of this.
+  - It shares the homepage's link-preview card; a dedicated card is an optional follow-up.
 - **Copy and photos:** John's approved copy (`src/data/road.json`) and five of his photographs as
   privacy-checked derivatives in `src/assets/road/` (manifest `road-*`). The festival poster is cropped above
   its lower-tier names.
@@ -224,7 +233,7 @@ These are settled. Do not reopen them without a new instruction.
   card's top edge. Then to Now highlights one row every 4s on all screens. Both run only while in view and
   idle; hover or focus pauses them, and reduced motion stops them. Hover, focus or a tap overrides them, and a click holds the choice. Neither cycles
   on phones or with reduced motion. The timeline follows the scroll.
-- **Pending John's decision:** real artifacts for the archive; homepage placement and launch.
+- **Pending John's decision:** none for launch. Optional: a dedicated share card for the page.
 
 ### Creator Retreat Videos (Phase 2, October 2026)
 
@@ -250,11 +259,8 @@ LinkedIn and case-study share cards (24 Oct 2026).
    cover Web3 marketing expertise, strategic marketing, product marketing and GTM, creative
    direction, versatility and leadership potential. It must not reduce John to community management,
    social media or a single employer.
-2. **Earlier work.** Present the music career, entrepreneurship, consulting, event production and
-   other marketing work. The direction to explore is a short homepage feature plus a dedicated page
-   with professional photography, work examples, responsibilities and evidence. The open decisions
-   are the title, narrative structure, which work to feature, photos, evidence, and where it sits in
-   the site's structure. Let the work speak for itself, with no motivational "lessons" framing.
+2. **Earlier work.** The music career now has its own launched page, The Road Here, linked from About
+   (V1.18). Still open: entrepreneurship, consulting and other marketing work beyond music.
 3. **Articles.** Review the published long-form articles, pick the strongest, and decide how and
    where to feature them. Nothing gets added without reviewing the actual content.
 4. **Production tabs and Singapore (optional follow-up).**

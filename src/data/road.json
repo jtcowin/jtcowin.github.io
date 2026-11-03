@@ -2,7 +2,7 @@
   "_readme": "The Road Here (V1.16, November 2026: John's consolidated copy; Road Here paragraphs may carry several **bold** phrases, approved per paragraph. Earlier: V1.7 build, October 2026; Phase 3A scaffold): every word on the page, section by section. **text** is set in bold (one phrase a paragraph at most); `accent` is the headline phrase in the accent color. No numbered eyebrows or chapter navigation (V1.7). Images are asset ids in assets.json (road-*). Privacy: the band is never named, linked or described in identifying detail anywhere on this page or in its metadata. V1.8: the milestone bar and the festival caption are removed; the hero portrait is a transparent cutout. V1.13: operator.groups carry a short label (the collapsed card) and a title that begins with it (the open card adds the rest), plus an icon (each card's large, faint, cropped graphic); each timeline milestone names its outline icon (Icon.astro). V1.15: school.stage is Section 2's image group: the live performance photograph as the dominant base, with John's three supplied transparent prints (festival poster, television still, artist credential) laid over its corners, each in a named slot (upper-right, lower-left, lower-right).",
   "meta": {
     "title": "The Road Here",
-    "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring operation, and managing the day-to-day operations behind it."
+    "description": "Before Web3, John Cowin spent over a decade turning an original music project into a professional touring operation, and running the business behind it."
   },
   "hero": {
     "headline": "Before Web3. There was music.",

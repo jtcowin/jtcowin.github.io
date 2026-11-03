@@ -5,6 +5,43 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.18 The Road Here launch and homepage link
+
+John's homepage-link brief and his launch instruction (3 November 2026). The Road Here goes live; its content
+and design are unchanged.
+
+- **Homepage link:** "Before Web3: The Road Here" sits in About, directly after the first paragraph ("…In
+  2021, I brought those skills to DeFi.") and before the Phi Labs Global paragraph, left-aligned with the copy
+  (`home.json` `about.roadLink`, About.astro).
+  - It's a standard anchor to `/the-road-here/`, one link covering the arrow and the words.
+  - An up-right arrow (the site's `arrow-up-right` icon) sits on the left, and the words are underlined in
+    the light accent line; the arrow isn't underlined.
+  - Display face at weight 600, in the blue-teal accent, a step smaller than the paragraphs and set closer
+    to the first paragraph than to the second. It is an editorial text link, not a button.
+  - Hover firms the underline and nudges the arrow 2px up and to the right (still under reduced motion).
+    Keyboard focus shows a 2px accent outline.
+  - On phones the words wrap beside the arrow.
+  - In the About flow it fades up as the first paragraph resolves; reduced motion, print or no scripts show
+    it at once. No other homepage copy, layout or section changed, and About still fits one desktop frame.
+- **Launch:**
+  - The page no longer passes `noindex`, so it carries no robots meta and gains its canonical link and
+    `og:url` at https://johncowin.com/the-road-here/.
+  - The sitemap filter drops its Road Here exclusion and now excludes only the 404, which stays `noindex`.
+  - `robots.txt` (Allow: /) was already global and is unchanged.
+  - Title "The Road Here | John Cowin". The meta description is tidied to "…into a professional touring
+    operation, and running the business behind it."
+  - The page shares the homepage's preview card.
+- **verify.mjs `[road]`:** asserts the launch state and that the 404 page stays noindex and unlisted.
+  - The launch state: indexed, canonical and `og:url` on johncowin.com, its own title and description, and
+    listed in the sitemap.
+  - The homepage links to the page exactly once, from About, between its first and second paragraphs.
+  - No previous rule blocked links to the page.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Playwright on the homepage:
+  - About fits one frame at 1920×1080, 1728×1117, 1440×900 and 1280×720, with the trust bar inside it; it
+    also works at 1024×768 and 390×844.
+  - The link's position and gaps, underline only on the words, and the arrow inside the click target.
+  - Its reveal timing, hover, keyboard focus and Enter navigation to the page.
+
 ## V1.17 The Road Here typography and Section 2 refinements
 
 John's typography and Section 2 brief (3 November 2026), replacing the V1.16 height adjustment. Still
