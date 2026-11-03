@@ -103,7 +103,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
         <div class="road-school__copy">
           <h2 id="road-school-title" class="display display-lg road-reveal">{H.school[0]}<span class="road-accent">{H.school[1]}</span>{H.school[2]}</h2>
           <div class="prose road-reveal">
-            {school.paragraphs.map((p) => <p class="road-rich">{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
+            {school.paragraphs.map((p) => <p class="road-rich road-body">{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
         {/* The image group (V1.15): the live performance photograph is the dominant base; John's three supplied
@@ -129,7 +129,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
         <div class="road-operator__head">
           <div class="road-operator__copy">
             <h2 id="road-operator-title" class="display display-lg road-reveal"><span class="road-operator__line">{H.operator[0].trim()}</span>{' '}<span class="road-operator__line road-accent">{H.operator[1]}</span>{H.operator[2]}</h2>
-            <p class="lede road-operator__lede road-reveal">{rich(operator.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
+            <p class="road-rich road-body road-operator__lede road-reveal">{rich(operator.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
           </div>
           {/* No drift: the whole kit stays in frame. */}
           <RoadFrame id={operator.image} class="road-operator__image road-reveal" sizes="(min-width: 64rem) 45vw, 100vw" />
@@ -167,7 +167,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
         <div class="road-pivot__copy">
           <h2 id="road-pivot-title" class="display display-lg road-reveal">{H.pivot[0]}<span class="road-accent">{H.pivot[1]}</span>{H.pivot[2]}</h2>
           <div class="prose road-reveal">
-            {pivot.paragraphs.map((p) => <p class="road-rich">{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
+            {pivot.paragraphs.map((p) => <p class="road-rich road-body">{rich(p).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>)}
           </div>
         </div>
         {/* The timeline (V1.9; V1.12 branches and icons): a central spine, milestones alternating left and right on
@@ -193,7 +193,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
       <div class="container">
         <div class="road-led__head">
           <h2 id="road-led-title" class="display display-lg road-led__title road-reveal"><span class="road-led__line">{H.led[0].trim()}</span>{' '}<span class="road-led__line road-accent">{H.led[1]}</span>{H.led[2]}</h2>
-          <p class="road-rich lede road-reveal">{rich(led.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
+          <p class="road-rich road-body road-reveal">{rich(led.copy).map(({ part, strong }) => (strong ? <strong>{part}</strong> : part))}</p>
         </div>
         {/* Then to Now (V1.13): one wide framed panel of four mappings, each on one row: the music-career origin,
             a connector pointing right, and today's work, in stronger type. One row at a time is highlighted, top to
@@ -481,8 +481,23 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
 </script>
 
 <style>
+  /* One body style for the page's section paragraphs (V1.17): the size the
+     longer copy already used (--text-md with relaxed leading), set once here
+     and applied by .road-body in Sections 2 to 5. The hero's opening
+     paragraph keeps the larger lede size as the page's introduction, and the
+     shared Contact keeps its own. */
   .road {
+    --road-body-size: var(--text-md);
+    --road-body-leading: var(--leading-relaxed);
     margin-top: calc(-1 * var(--header-row));
+  }
+
+  .road-body {
+    font-size: var(--road-body-size);
+    line-height: var(--road-body-leading);
+    color: var(--ink-2);
+    text-wrap: pretty;
+    max-width: var(--measure);
   }
 
   .road-accent {
@@ -627,21 +642,18 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     }
   }
 
-  /* One desktop screen (V1.16): from 56rem, on screens at least 40rem tall,
-     the section is exactly one viewport beneath the fixed header (padding
-     included, border-box), its copy and image group centered in it as one
-     composition. The padding scales with the viewport height, and the image
-     group's width is bounded by the height left over, so it shrinks with
-     its aspect ratio intact rather than overflowing. Phones and short
-     screens keep the natural height. */
+  /* Near one desktop screen (V1.17): from 56rem, on screens at least 40rem
+     tall, the image group is sized to the height left beneath the fixed
+     header (less the section's own padding), up to 48rem wide, so it fills
+     the screen at every size instead of stopping at a fixed cap and leaving
+     empty bands; the copy is centered against it. No forced min-height: the
+     section is simply as tall as its content (border-box), which comes to
+     about one screen. Phones and short screens keep the natural height. */
   @media (min-width: 56rem) and (min-height: 40rem) {
     .road-school {
-      --s2-pad: clamp(1.5rem, 5svh, 3.5rem);
+      --s2-pad: clamp(1.5rem, 4.5svh, 3.25rem);
       box-sizing: border-box;
-      min-height: calc(100svh - var(--header-row));
       padding-block: var(--s2-pad);
-      display: flex;
-      align-items: center;
     }
 
     .road-school__grid {
@@ -651,7 +663,7 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     /* The group is 1.315 times as tall as it is wide (the photograph plus
        the room the prints take around it). */
     .road-school .road-stage {
-      width: min(100%, 38rem, calc((100svh - var(--header-row) - 2 * var(--s2-pad)) / 1.315));
+      width: min(100%, 48rem, calc((100svh - var(--header-row) - 2 * var(--s2-pad)) / 1.315));
     }
   }
 
@@ -1456,8 +1468,8 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     text-align: center;
   }
 
-  .road-led__head :global(.lede) {
-    max-width: 46rem;
+  .road-led__head .road-body {
+    max-width: 40rem;
     text-wrap: balance;
   }
 

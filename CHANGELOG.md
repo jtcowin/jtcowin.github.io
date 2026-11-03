@@ -5,6 +5,35 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.17 The Road Here typography and Section 2 refinements
+
+John's typography and Section 2 brief (3 November 2026), replacing the V1.16 height adjustment. Still
+unlinked, `noindex` and out of the sitemap.
+
+- **Body typography:** one style for section paragraphs.
+  - The audit found two sizes. Sections 2 and 4 used `.prose`, 18/30.6px (`--text-md`, 1.7). Sections 3 and
+    5 used `.lede`, 24/37.2px (`--text-lg`, 1.55).
+  - The smaller setting, which the longer copy already used, is now the standard: `--road-body-size:
+    var(--text-md)` and `--road-body-leading: var(--leading-relaxed)` on `.road`, applied by `.road-body` (with
+    ink-2 color, pretty wrapping and the site measure) in Sections 2 to 5.
+  - Section 5's centered paragraph is narrowed from 46rem to 40rem for the smaller size.
+  - The hero's opening paragraph keeps the larger lede size as the page introduction, and the shared Contact
+    is unchanged. Headings, labels, cards and the timeline are untouched.
+- **Section 2 sizing:**
+  - V1.16 forced the section to exactly one viewport and capped the image group at 38rem. On large screens
+    that left empty bands above and below the group.
+  - Now the group is sized to the height below the header, less the section's padding
+    (`clamp(1.5rem, 4.5svh, 3.25rem)`), up to 48rem wide, and the copy is centered against it.
+  - There is no forced min-height; the section is as tall as its content, which comes to about one screen.
+  - At 1728×1117 the group grows from 608 to 721px wide and spans the screen; at 1920×1080 it grows to
+    696px. Phones and portrait tablets are unchanged.
+- **Section 2 copy:** "I studied **music performance, business, and media**, then put that training to work
+  building an original music project from the ground up."
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Playwright at 1920×1080,
+  1728×1117, 1440×900, 1728×1000, 1440×789, 1280×800, 1024×768, 768×1024 and 390×844 checked that every
+  section paragraph is 18/30.6px. Section 2 ends at the bottom of the screen on desktop. There is no
+  overflow, and the new copy is in place.
+
 ## V1.16 The Road Here consolidated copy and Section 2 viewport fit
 
 John's consolidated Road Here brief and his Section 2 viewport-fit addendum (3 November 2026). Copy across all
