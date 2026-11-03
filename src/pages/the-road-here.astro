@@ -642,18 +642,29 @@ const timeline = pivot.timeline as Array<{ when: string; what: string; icon: Mil
     }
   }
 
-  /* Near one desktop screen (V1.17): from 56rem, on screens at least 40rem
-     tall, the image group is sized to the height left beneath the fixed
-     header (less the section's own padding), up to 48rem wide, so it fills
-     the screen at every size instead of stopping at a fixed cap and leaving
-     empty bands; the copy is centered against it. No forced min-height: the
-     section is simply as tall as its content (border-box), which comes to
-     about one screen. Phones and short screens keep the natural height. */
+  /* One desktop screen (V1.17, corrected in V1.19): from 56rem, on screens
+     at least 40rem tall. The header floats over the page (sticky, taking the
+     surface beneath it), so the section's resting position is flush with
+     the top of the screen with the header over its top edge, as About on
+     the homepage. The section is therefore one full viewport tall
+     (border-box) and reserves the header's height inside its top padding;
+     the content is centered in the room below the header. The image group
+     is sized to that room (less the section's padding), up to 48rem wide,
+     so the content always fits; min-height keeps the section a full screen
+     even where the 48rem cap leaves the group smaller. In-page links land
+     flush too. Phones and short screens keep the natural height. (V1.17
+     sized the section to the viewport minus the header, which left the
+     header's 68px of Section 3 showing at the foot and put the collage's
+     top under the header.) */
   @media (min-width: 56rem) and (min-height: 40rem) {
     .road-school {
       --s2-pad: clamp(1.5rem, 4.5svh, 3.25rem);
       box-sizing: border-box;
-      padding-block: var(--s2-pad);
+      min-height: 100svh;
+      padding-block: calc(var(--header-row) + var(--s2-pad)) var(--s2-pad);
+      display: flex;
+      align-items: center;
+      scroll-margin-top: calc(-1 * var(--scroll-pad));
     }
 
     .road-school__grid {

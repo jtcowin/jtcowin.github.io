@@ -5,6 +5,35 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.19 The Road Here Section 2 viewport fix
+
+John's Section 2 viewport-fit fix (3 November 2026). CSS only; copy, imagery, collage composition and
+typography are unchanged.
+
+- **Cause:** the header is sticky and floats over the page, taking on the surface beneath it. Section 2's
+  resting position is therefore flush with the top of the screen, with the header over its top edge, the
+  same way About sits on the homepage. V1.16 and V1.17 sized the section as if it began below the header
+  (viewport minus 68px).
+  - Parked flush, the section was exactly the header's height short of the screen: 832px of 900 at
+    1440×900, 700 of 768 at 1366×768.
+  - That left a 68px strip of Section 3 at the foot, and the collage's top (from 32px down) sat under the
+    header.
+- **Fix (`.road-school`, from 56rem wide and 40rem tall):**
+  - `min-height: 100svh` (border-box).
+  - `padding-block: calc(var(--header-row) + var(--s2-pad)) var(--s2-pad)`, so the header's height is
+    reserved inside the section.
+  - `display: flex; align-items: center`, so the content is centered in the room below the header.
+  - `scroll-margin-top: calc(-1 * var(--scroll-pad))`, so `#road-school` links land flush, as About's do.
+  - The collage's size formula, `(100svh - header - 2 × padding) / 1.315`, is unchanged, so the collage
+    is exactly as large as before. The 48rem cap still holds, and `min-height` keeps a full screen when it
+    binds.
+  - Phones and portrait tablets keep their natural height.
+- **Tested:** `astro check` (0 errors), build, `verify.mjs` (all checks passed). Section 2 flush at the
+  top of 1440×900, 1366×768, 1920×1080, 1728×1117 and 1280×720:
+  - The section is exactly the viewport height, and no Section 3 shows.
+  - The collage and copy begin below the header (no overlap) and end inside the section.
+  - `#road-school` lands at 0, and phones and tablets have no overflow.
+
 ## V1.18 The Road Here launch and homepage link
 
 John's homepage-link brief and his launch instruction (3 November 2026). The Road Here goes live; its content
