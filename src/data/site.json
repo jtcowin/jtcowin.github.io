@@ -11,8 +11,8 @@
   "ogDefault": "og-home",
   "ogSiteName": "John Cowin Portfolio",
   "homeShare": {
-    "_note": "Social Share Polish V1 and V1.1: the homepage's link preview (Open Graph and X), decoupled from its browser title (browserTitle, unchanged). title and description are the homepage's share title and description; the site name for every page's preview is ogSiteName. image is the small text on the crop-safe portrait card that scripts/og.mjs renders (og-home): the eyebrow at the upper left and the disciplines at the lower right, both outside the central 630 by 630 square.",
-    "title": "Web3 Marketing, Strategy & Production",
+    "_note": "Social Share Polish V1 and V1.1: the homepage's link preview (Open Graph and X), decoupled from its browser title (browserTitle, unchanged). title and description are the homepage's share title and description; the site name for every page's preview is ogSiteName. V1.20 (November 2026): the share title matches the hero's descriptor (home.json hero.descriptor) word for word, Oxford comma included. image is the small text on the crop-safe portrait card that scripts/og.mjs renders (og-home): the eyebrow at the upper left and the disciplines at the lower right, both outside the central 630 by 630 square.",
+    "title": "Web3 Marketing, Strategy, & Content",
     "description": "Selected work across positioning, technical content, creator campaigns, events, and multimedia production.",
     "image": {
       "eyebrow": "Portfolio / Selected Work",

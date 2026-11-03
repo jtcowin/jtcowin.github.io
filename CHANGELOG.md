@@ -5,6 +5,25 @@ what changed and how it was tested. Until October 2026 this history lived in the
 unchanged in Cleanup V1. For how the site works today, see [`README.md`](README.md) and
 [`docs/SITE_SPEC.md`](docs/SITE_SPEC.md); for decisions and status, [`PORTFOLIO_CONTEXT.md`](PORTFOLIO_CONTEXT.md).
 
+## V1.20 Homepage share card positioning
+
+John's share card brief (3 November 2026). Metadata only; the hero, layout and every other page are unchanged.
+
+- **Share title:** `site.json` `homeShare.title` changed from "Web3 Marketing, Strategy & Production" to "Web3
+  Marketing, Strategy, & Content", the hero's descriptor word for word, Oxford comma included. The homepage's
+  `og:title` and `twitter:title` both carry it, one tag each.
+- **Card image alt** (`og-home`, used for `og:image:alt` and `twitter:image:alt`): now "Portrait of John
+  Cowin for his Web3 marketing, strategy, and content portfolio." (was "…marketing and production
+  portfolio.").
+- **Card artwork:** unchanged. It has no headline baked in, only the "Portfolio / Selected Work" eyebrow
+  and the stacked disciplines, so it was not re-rendered and its URL hash is unchanged.
+- **Oxford commas:** the share description and the meta description already use them; no other change.
+- **verify.mjs:** the pinned share title and alt are updated, and a new rule ties the share title to
+  `home.json` `hero.descriptor`.
+- **Tested:** build, `verify.mjs` (all checks passed). The built homepage has exactly one `og:title`,
+  `twitter:title`, `og:description`, `og:image` and `twitter:image`, and no "Strategy & Production"
+  anywhere.
+
 ## V1.19 The Road Here Section 2 viewport fix
 
 John's Section 2 viewport-fit fix (3 November 2026). CSS only; copy, imagery, collage composition and

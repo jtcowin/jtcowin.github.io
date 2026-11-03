@@ -4094,9 +4094,12 @@ if (!fs.existsSync(path.join(root, 'public/resume/John-Cowin-Resume.pdf'))) {
   const sha1 = (file) => createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 10);
   const ORIGIN = 'https://johncowin.com/';
   const SITE_NAME = 'John Cowin Portfolio';
-  const WANT = { title: 'Web3 Marketing, Strategy & Production', description: 'Selected work across positioning, technical content, creator campaigns, events, and multimedia production.' };
-  const ALT = 'Portrait of John Cowin for his Web3 marketing and production portfolio.';
+  const WANT = { title: 'Web3 Marketing, Strategy, & Content', description: 'Selected work across positioning, technical content, creator campaigns, events, and multimedia production.' };
+  const ALT = 'Portrait of John Cowin for his Web3 marketing, strategy, and content portfolio.';
   if (share.title !== WANT.title || share.description !== WANT.description) failures.push('[share] site.json homeShare holds the approved homepage share title and description');
+  // V1.20: the share title is the hero's own descriptor, word for word (Oxford comma included).
+  const heroDescriptor = JSON.parse(fs.readFileSync(path.join(root, 'src/data/home.json'), 'utf8')).hero?.descriptor;
+  if (share.title !== heroDescriptor) failures.push(`[share] V1.20: the homepage share title matches the hero's descriptor (found "${share.title}" and "${heroDescriptor}")`);
   if (prop(home, 'og:title') !== WANT.title || prop(home, 'og:description') !== WANT.description) failures.push(`[share] the homepage's og:title and og:description are its share metadata, not its browser title (found ${prop(home, 'og:title')} | ${prop(home, 'og:description')})`);
   if (named(home, 'twitter:title') !== WANT.title || named(home, 'twitter:description') !== WANT.description || named(home, 'twitter:card') !== 'summary_large_image') failures.push('[share] X takes the same title and description, with the large image');
   if (named(home, 'description') !== siteData.description) failures.push('[share] the homepage meta description is unchanged (the share description is for link previews)');

@@ -9,7 +9,7 @@ site is, how it is built and published, the decisions already made, and what is 
 - **History:** the site was built across many sessions from September to October 2026. Those working
   conversations are no longer available. Everything here about past decisions comes from the
   changelog, the commit history, the code and the data files, not from memory.
-- **Last updated:** V1.19 The Road Here Section 2 viewport fix, November 2026.
+- **Last updated:** V1.20 Homepage share card positioning, November 2026.
 
 Sections are kept separate on purpose: **Confirmed decisions** (settled), **Completed** (done and
 verified) and **Deferred** (needs discussion before any work). No approved work is outstanding.
@@ -64,7 +64,8 @@ clients.
 
 ## 4. Content architecture and positioning (as published)
 
-- **Homepage descriptor:** "Web3 Marketing, Strategy, & Content".
+- **Homepage descriptor:** "Web3 Marketing, Strategy, & Content". The homepage share title (og:title, twitter:title) is the same
+  words (V1.20).
 - **About headline:** "Creative instincts. Operator discipline. Built for DeFi."
 - **Contact:** "Your product is complex. Its story shouldn't be." It offers the email, the resume and
   LinkedIn.
